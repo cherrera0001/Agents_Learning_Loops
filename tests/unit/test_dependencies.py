@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-PYPROJECT = tomllib.loads((Path(__file__).parent.parent / "pyproject.toml").read_text("utf-8"))
+ROOT = next(p for p in Path(__file__).resolve().parents if (p / "pyproject.toml").exists())
+PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text("utf-8"))
 
 
 def test_core_dependencies_are_minimal():

@@ -23,9 +23,20 @@ Cada issue es un episodio del bucle de aprendizaje del propio repo ([`learning/R
 ```bash
 ruff check . && ruff format --check .
 mypy
-pytest --cov
+pytest --cov                                # unit + integration, cobertura ≥ 90 %
 python -m scripts.export_schema --check     # specs/memory_schema.json sincronizado
+python -m scripts.mutation_check            # cada propiedad detecta su defecto inyectado
 ```
+
+## Tests
+
+| Carpeta | Qué contiene | Ejecutar |
+|---|---|---|
+| `tests/unit/` | Grafo, modelos, activación (valores a mano), consolidación, embeddings, configuración y **propiedades** (`hypothesis`) | `pytest tests/unit` |
+| `tests/integration/` | Agente completo, benchmark, CLI, bitácora `learning/`, valencia contextual entre dominios | `pytest tests/integration` |
+
+Los tests marcados `embeddings` requieren el extra `[embeddings]` y se omiten sin él.
+Al añadir una propiedad, añade también su mutación en `scripts/mutation_check.py`: una propiedad que ninguna mutación rompe no está probando nada.
 
 ## Convenciones
 

@@ -1,0 +1,27 @@
+{
+  "seq": 13,
+  "id": "issue-7",
+  "goal": "Suite de tests rigurosa: propiedades con hypothesis, separar unitarios e integración, cobertura",
+  "ref": "#7",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "canal léxico sin resultados para la consulta de tests"},
+    {"action": "recall_memory", "success": true, "note": "--embedder fastembed recuperó 'revisar que cada test pueda fallar' y 'añadir un control'"},
+    {"action": "review_code", "success": true, "note": "la mayoría de las brechas ya estaban cerradas por #1-#9; quedaban propiedades, separación y main.py (37 %)"},
+    {"action": "edit_module", "success": false, "error": "test_dependencies ubicaba pyproject.toml con una ruta relativa a la profundidad antigua"},
+    {"action": "edit_module", "success": true, "note": "búsqueda del pyproject.toml hacia arriba desde el test"},
+    {"action": "write_tests", "success": true, "note": "5 propiedades hypothesis y CLI en proceso (main.py 37 % → 97 %)"},
+    {"action": "write_tests", "success": false, "error": "mutación sobrevivió: la propiedad de saturación no generaba semillas fuertes convergentes"},
+    {"action": "review_code", "success": true, "note": "la verificación por mutación (lección de los episodios 003 y 009) lo detectó"},
+    {"action": "edit_module", "success": true, "note": "generador sesgado hacia 1.0 y 150 ejemplos: 5/5 mutaciones detectadas"},
+    {"action": "write_code", "success": false, "error": "el script de mutación restauraba con write_text y cambiaba fin de línea a CRLF en src/"},
+    {"action": "edit_module", "success": true, "note": "restauración byte a byte; scripts/mutation_check.py en el repo y en CI"},
+    {"action": "run_tests", "success": true, "note": "87 passed; cobertura 98.5 %"}
+  ],
+  "lessons": [
+    "Las propiedades con floats uniformes rara vez generan casos límite: sesgar el generador hacia los bordes (1.0, 0.0)",
+    "Verificar cada propiedad con una mutación que deba romperla; una propiedad que no detecta nada no prueba nada",
+    "Restaurar archivos con read_bytes/write_bytes: write_text en Windows cambia LF por CRLF",
+    "Localizar archivos del repo buscando hacia arriba (pyproject.toml) y no con rutas relativas a la profundidad del test",
+    "Por segunda vez el canal semántico recuperó lo que el léxico no encontró: usar --embedder fastembed por defecto al empezar un issue"
+  ]
+}

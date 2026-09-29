@@ -25,7 +25,7 @@ pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, 
 aal-benchmark                 # benchmark legible (= python -m associative_agent_loop.main)
 aal-benchmark --json          # reporte determinista (misma semilla ⇒ mismo JSON)
 aal-benchmark -vv             # con logging DEBUG de cada transición (stderr)
-pytest                        # los tests marcados `embeddings` se omiten si falta el extra
+pytest                        # unit + integration; los marcados `embeddings` se omiten sin el extra
 ```
 
 | Instalación | Incluye |
@@ -133,9 +133,11 @@ usadas decaen con el tiempo y la poda las elimina. Tabla completa en
 │   │   └── text.py, fsutil.py
 │   ├── config.py            # AppConfig desde TOML + variables AAL_*
 │   └── main.py              # benchmark (aal-benchmark)
-├── scripts/                 # devlog (memoria del propio repo), export_schema
+├── scripts/                 # devlog (memoria del propio repo), export_schema, mutation_check
 ├── learning/                # episodios de desarrollo y dev_memory.json
-└── tests/                   # unitarios, de propiedades (hypothesis) y del benchmark
+└── tests/
+    ├── unit/                # componentes, valores calculados a mano, propiedades (hypothesis)
+    └── integration/         # agente completo, benchmark, CLI, bitácora
 ```
 
 ## Uso como librería
