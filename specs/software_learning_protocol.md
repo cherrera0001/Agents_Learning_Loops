@@ -58,6 +58,34 @@ memory snapshot, retrieval paths, considered and selected strategies, inspection
 order and file hashes, unified patches, actual test command/stdout/stderr/exit
 code, iterations, wall time, diagnosis and structured reflection.
 
+### Source hash normalization (receipt schema v2, issue #42)
+
+Receipts are written as `schema_id: software-learning-receipt/v2` and declare
+`source_hash_normalization: "lf/v1"` (task_run and memory_update alike). Every
+hash of source or test content goes through one function,
+`experiments.evidence.normalize_source`: decode UTF-8, drop one leading BOM, map
+CRLF and lone CR to LF. It applies to `provenance.source_manifest`,
+`initial_source` (the recorded text itself is normalized) and
+`initial_source_sha256`, `acceptance_sha256`, `inspection_sha256`, the files in
+`agent_context_sha256`, and the evaluator's check of the private annotations.
+A Windows (CRLF) and a Linux (LF) checkout of the same git blobs therefore yield
+identical hashes. Harness-written workspace files use LF on every OS.
+
+`memory_before_sha256`, `memory_after_sha256` and `receipt_sha256` hash JSON
+documents, not checkout bytes. They are portable for identical inputs, but memory
+fingerprints include lesson run IDs (UUIDs), so they are identity hashes of one
+run and are excluded from the replication projection.
+
+v1 receipts (the 144 files in `evidence/runs/`) are immutable and remain valid.
+They carry no normalization field; readers treat them as `checkout-bytes/v0`:
+application text was read with universal newlines, but `acceptance_sha256`
+hashed raw checkout bytes. The published campaign ran with CRLF contract tests,
+so its test hashes cannot match an LF checkout although behaviour is identical.
+The schema version was raised because the meaning of `acceptance_sha256`
+changed: equal inputs can hash differently under v1 and v2, and `schema_id` is
+the only version signal consumers dispatch on. The reader accepts exactly v1
+(without the field) and v2 (with a known scheme) and rejects anything else.
+
 Each file is atomically published by hard-linking a flushed temporary file to a
 new UUID filename. Existing receipts are never replaced. SHA-256 detects later
 alteration; this is **not** a digital signature, WORM storage, or protection
@@ -140,7 +168,21 @@ misleading-memory condition with a one-attempt budget: it must retain failure.
 No harness test requires a positive aggregate learning gain.
 
 UUIDs and measured times differ on rerun. Replication compares a declared
-semantic projection: source/test hashes, retrieval task IDs, decisions, actions,
-patches, inspections, test exits and outcomes. Same-seed replications check
-determinism, not independent samples; three transfer tasks cannot support broad
-statistical claims. Report negative, equal and improved pairs together.
+semantic projection: hash normalization scheme, source/test hashes, retrieval
+task IDs, decisions, actions, patches, inspections, test exits and outcomes.
+Hashes are compared only between receipts that share one normalization scheme:
+evaluating or comparing a mix of v1 (`checkout-bytes/v0`) and v2 (`lf/v1`)
+receipts is an explicit error, never a reported difference. Same-seed
+replications check determinism, not independent samples; three transfer tasks
+cannot support broad statistical claims. Report negative, equal and improved
+pairs together.
+
+Cross-platform replication: `evidence/reference-lf-v1/` is a committed reference
+campaign (`--seeds 7 --replicates 1`) generated on Windows.
+`python -m experiments compare --reference evidence/reference-lf-v1 --candidate <dir>`
+fails unless every condition (seed, task, memory mode) is deterministic inside
+each campaign, present in both, and has an identical projection including
+hashes; it lists the differing fields. CI reruns that campaign on Ubuntu and
+compares it with the reference. Any intended change to the agent, the project
+under repair or the benchmark changes the projection, so the reference must be
+regenerated and reviewed in the same pull request.

@@ -1,7 +1,6 @@
 """Controller: immutable evidence from real subprocess tests in fresh copies."""
 
 import difflib
-import hashlib
 import json
 import os
 import platform
@@ -16,7 +15,15 @@ from itertools import pairwise
 from pathlib import Path
 
 from .agent import RULES, AgentView, BoundedRepairAgent
-from .evidence import digest, publish
+from .evidence import (
+    RECEIPT_SCHEMA,
+    SOURCE_HASH_NORMALIZATION,
+    digest,
+    normalize_source,
+    publish,
+    source_sha256,
+    sources_digest,
+)
 from .memory import EvidenceMemory
 from .models import MemoryMode, PublicTask, Reflection
 
@@ -55,11 +62,12 @@ def source_manifest(root=ROOT):
             and "__pycache__" not in p.parts
             and not any(part.endswith(".egg-info") for part in p.parts)
         )
-    # Text hashes normalize CRLF/LF, matching git's text normalization across OSes.
-    return {
-        p.relative_to(root).as_posix(): hashlib.sha256(p.read_text("utf-8").encode("utf-8")).hexdigest()
-        for p in sorted(paths)
-    }
+    # Hashes of normalized text (normalize_source): identical for CRLF and LF checkouts.
+    return {p.relative_to(root).as_posix(): source_sha256(p.read_bytes()) for p in sorted(paths)}
+
+
+def git_commit(root=ROOT):
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root).decode().strip()
 
 
 def load_task(task, root=ROOT):
@@ -85,15 +93,21 @@ def prepare(task: PublicTask, workspace: Path, root=ROOT):
     source = target.read_text("utf-8")
     if source.count(mutation["before"]) != 1:
         raise ValueError("defect precondition no longer matches the application")
-    target.write_text(source.replace(mutation["before"], mutation["after"]), encoding="utf-8")
+    target.write_text(source.replace(mutation["before"], mutation["after"]), encoding="utf-8", newline="\n")
     return metadata["split"]
 
 
 def app_files(workspace):
+    """Normalized application text: what the agent sees, what is hashed and recorded."""
     return {
-        p.relative_to(workspace).as_posix(): p.read_text("utf-8")
+        p.relative_to(workspace).as_posix(): normalize_source(p.read_bytes())
         for p in sorted((workspace / "app").rglob("*.py"))
     }
+
+
+def protected_files(workspace):
+    """Raw bytes of the protected tests, used to detect tampering during a run."""
+    return {p.name: p.read_bytes() for p in sorted((workspace / "tests").glob("*.py"))}
 
 
 def execute_tests(workspace, index, timeout=20):
@@ -159,7 +173,8 @@ def run_experiment(
     links_path = root / "benchmark/issues.json"
     links = json.loads(links_path.read_text("utf-8")) if links_path.exists() else {}
     record = {
-        "schema_id": "software-learning-receipt/v1",
+        "schema_id": RECEIPT_SCHEMA,
+        "source_hash_normalization": SOURCE_HASH_NORMALIZATION,
         "kind": "task_run",
         "run_id": run,
         "batch_id": batch_id,
@@ -180,7 +195,7 @@ def run_experiment(
         "memory_input": memory.snapshot() if mode != "NO_MEMORY" else None,
         "provenance": {
             "source_manifest": source_manifest(root),
-            "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root).decode().strip(),
+            "git_commit": git_commit(root),
             "python": sys.version,
             "platform": platform.platform(),
             "dependencies": {name: version(name) for name in ("networkx", "pydantic")},
@@ -192,17 +207,22 @@ def run_experiment(
             workspace = Path(directory)
             record["split"] = prepare(task, workspace, root)
             initial = app_files(workspace)
-            protected = {p.name: p.read_bytes() for p in (workspace / "tests").glob("*.py")}
+            protected = protected_files(workspace)
             record["initial_source"] = initial
-            record["initial_source_sha256"] = digest(initial)
-            record["acceptance_sha256"] = digest({k: v.decode("utf-8") for k, v in protected.items()})
+            # Every source/test hash goes through normalize_source (lf/v1).
+            record["initial_source_sha256"] = sources_digest(initial)
+            record["acceptance_sha256"] = sources_digest(protected)
             advance(record, "RETRIEVE")
             memories, paths = memory.retrieve(task.query(), mode)
             record["retrieval"] = {"memories": memories, "paths": paths}
             record["retrieved_memories"] = [m["id"] for m in memories]
             view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
             record["agent_context_sha256"] = digest(
-                {"task": view.task, "files": view.files, "memories": memories}
+                {
+                    "task": view.task,
+                    "files": {k: normalize_source(v) for k, v in view.files.items()},
+                    "memories": memories,
+                }
             )
             decision = agent.plan(view)
             record["decision"] = decision
@@ -219,7 +239,7 @@ def run_experiment(
                 advance(record, "CHANGE")
                 # Each strategy is an independent intervention on the same bug.
                 for filename, content in initial.items():
-                    (workspace / filename).write_text(content, encoding="utf-8")
+                    (workspace / filename).write_text(content, encoding="utf-8", newline="\n")
                 patch = ""
                 if path is not None:
                     if path not in initial:
@@ -232,20 +252,20 @@ def run_experiment(
                             tofile=path,
                         )
                     )
-                    (workspace / path).write_text(replacement, encoding="utf-8")
+                    (workspace / path).write_text(replacement, encoding="utf-8", newline="\n")
                 record["actions"].append(
                     {
                         "iteration": index,
                         "strategy": strategy,
                         "inspected": inspected,
                         "hypothesis": RULES[strategy],
-                        "inspection_sha256": {p: digest(initial[p]) for p in inspected},
+                        "inspection_sha256": {p: digest(normalize_source(initial[p])) for p in inspected},
                         "changed_files": [path] if path else [],
                         "patch": patch,
                         "memory_ids": decision["memory_ids"] if index == 1 else [],
                     }
                 )
-                if protected != {p.name: p.read_bytes() for p in (workspace / "tests").glob("*.py")}:
+                if protected != protected_files(workspace):
                     raise ValueError("acceptance tests modified")
                 advance(record, "TEST")
                 result = execute_tests(workspace, index)
@@ -309,7 +329,8 @@ def update_memory(memory, receipt_path, evidence_dir):
     record = {
         "run_id": "RUN-" + uuid.uuid4().hex,
         "kind": "memory_update",
-        "schema_id": "software-learning-receipt/v1",
+        "schema_id": RECEIPT_SCHEMA,
+        "source_hash_normalization": SOURCE_HASH_NORMALIZATION,
         "source_receipt": receipt_path.name,
         "phases": ["MEMORY_UPDATE"],
         "memory_before": before,
