@@ -4,6 +4,10 @@
   baseline tests and repeated synthetic benchmark output.
 - `pilot/`: exploratory pre-freeze runs retained for audit; excluded from final
   results. They predate the final source commit and are not replication claims.
+- `pilot/misleading-v1/`: pilot campaign of task set `misleading-v1` (EXP-01..09,
+  misleading tasks without lexical cues, #45); seeds 1 4 5 6 7 9, one
+  replicate. Evaluated in `results/pilot/misleading-v1/`. Not part of
+  `results/experiment1.json`.
 - `runs/`: fixed-protocol immutable task and memory-update receipts. Raw failures
   stay in these files. `python -m experiments evaluate` regenerates results.
 - `validation/`: captured development/check outputs, separate from task evidence.
