@@ -90,7 +90,9 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e ".[dev]"
-      - run: python -m experiments run --seeds 7 --replicates 2 --evidence-dir evidence/ci
+      # --task-set v1 pins the six published tasks (EXP-01..06), the set of the
+      # committed reference; misleading-v1 (#45) is a separate pilot campaign.
+      - run: python -m experiments run --task-set v1 --seeds 7 --replicates 2 --evidence-dir evidence/ci
       - run: python -m experiments evaluate --evidence-dir evidence/ci --output results/ci
       - name: assert semantic reproducibility (not scientific improvement)
         run: >-
@@ -102,7 +104,7 @@ jobs:
       # (evidence/reference-lf-v1), rerun on Ubuntu, must match it including
       # source/test hashes. Fails on any difference or on mixed hash schemes.
       - name: cross-platform portability (Ubuntu vs Windows reference, hashes included)
-        run: python -m experiments run --seeds 7 --replicates 1 --evidence-dir evidence/ci-portability
+        run: python -m experiments run --task-set v1 --seeds 7 --replicates 1 --evidence-dir evidence/ci-portability
       - run: python -m experiments compare --reference evidence/reference-lf-v1 --candidate evidence/ci-portability
       - uses: actions/upload-artifact@v4
         if: always()

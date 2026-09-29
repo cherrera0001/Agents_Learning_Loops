@@ -5,6 +5,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from .benchmark import check_extra_annotations, private_metadata, write_breakdown
 from .evidence import (
     SOURCE_HASH_NORMALIZATION,
     digest,
@@ -13,7 +14,7 @@ from .evidence import (
     read_receipt,
     source_sha256,
 )
-from .runner import ROOT
+from .runner import ROOT, source_manifest
 
 
 def ratio(numerator, denominator):
@@ -93,7 +94,7 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
     evidence_dir = Path(evidence_dir or root / "evidence/runs")
     paths, receipts, runs = load_runs(evidence_dir)
     single_scheme(receipts)
-    metadata = json.loads((root / "benchmark/private/tasks.json").read_text("utf-8"))
+    metadata = private_metadata(root)
     by_id = {r["run_id"]: r for r in runs}
     # Same normalization as the runner's source manifest. For v1 receipts it is
     # equivalent (universal-newline text) unless the file starts with a BOM.
@@ -122,6 +123,7 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
             refs = {prior["run_id"] + "#" + t["id"] for t in prior["tests"]}
             if not lesson["evidence"] or not set(lesson["evidence"]) <= refs:
                 raise ValueError("unresolvable memory evidence")
+    check_extra_annotations(runs, root, source_manifest(root))
     index = {}
     for r in runs:
         key = (r["batch_id"], r["seed"], r["task"]["id"], r["memory_mode"])
@@ -313,6 +315,8 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
             ]
         )
         (output / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+        # Separate files so experiment1.json of the published campaign is unchanged (#45).
+        write_breakdown(output, runs, metadata)
     return report
 
 
