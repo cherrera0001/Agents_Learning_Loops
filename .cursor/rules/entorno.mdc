@@ -1,0 +1,12 @@
+---
+description: Contrato de entorno de Agents Learning Loops
+alwaysApply: true
+---
+
+Antes de editar este repositorio, lee y sigue `AGENTS.md`.
+
+Usa los términos exactos de `docs/entorno/glosario.md`: agente de biblioteca, solver acotado, agente de
+entorno, skill de memoria, skill de entorno, harness de experimento y harness de entorno. No los intercambies.
+
+El protocolo científico está en `specs/software_learning_protocol.md` y `specs/loop_protocol.md`: enlázalos,
+no los dupliques.

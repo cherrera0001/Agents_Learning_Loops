@@ -1,5 +1,12 @@
 # Experiment 1 protocol (software-learning-v1)
 
+> **Terminology** ([glosario](../docs/entorno/glosario.md)). "The agent", "the bounded agent" and "the
+> solver" below mean the *solver acotado* (`BoundedRepairAgent`), not an open-ended language model; the
+> only exception is "a future solver" in *Leakage boundary*, a hypothetical adapter that does not exist.
+> The `Skill` node type and the `promoted_to_skill` relation are the *skill de memoria*, still future
+> work, unrelated to the environment skills in `skills/`. The controller, receipts and leakage boundary
+> form the *harness de experimento*, which is not an operating-system sandbox.
+
 ## Question and interpretation
 
 We are testing whether prior task evidence changes decisions and outcomes on

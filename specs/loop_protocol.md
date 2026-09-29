@@ -1,5 +1,9 @@
 # Protocolo del bucle de aprendizaje
 
+Esta especificación describe el **agente de biblioteca** ([glosario](../docs/entorno/glosario.md), término 1),
+objeto de estudio del Experimento 0. No describe al solver acotado del Experimento 1 ni el trabajo de
+quien edita el repositorio: el harness de entorno está en [`docs/entorno/harness.md`](../docs/entorno/harness.md).
+
 Especificación de los estados y transiciones del agente (`src/agent/core.py`).
 
 ## 1. Máquina de estados

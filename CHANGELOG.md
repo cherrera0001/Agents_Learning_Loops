@@ -3,6 +3,11 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado [SemVer](https://semver.org/lang/es/).
 Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes/`.
 
+## [Unreleased]
+
+### Añadido
+- Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.
+
 ## [0.2.0] - 2026-09-29
 
 ### Añadido
