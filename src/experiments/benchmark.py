@@ -195,6 +195,8 @@ def write_breakdown(output, runs, metadata):
     breakdown = task_breakdown(runs, metadata)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
-    (output / "task_breakdown.json").write_text(json.dumps(breakdown, indent=2) + "\n", encoding="utf-8")
-    (output / "task_breakdown.md").write_text(breakdown_markdown(breakdown), encoding="utf-8")
+    (output / "task_breakdown.json").write_text(
+        json.dumps(breakdown, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+    (output / "task_breakdown.md").write_text(breakdown_markdown(breakdown), encoding="utf-8", newline="\n")
     return breakdown

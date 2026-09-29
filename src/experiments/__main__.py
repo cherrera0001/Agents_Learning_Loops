@@ -7,7 +7,7 @@ from pathlib import Path
 
 from .agent import BoundedRepairAgent
 from .benchmark import TASK_SETS
-from .evaluate import evaluate
+from .evaluate import compare, evaluate
 from .evidence import read_receipt
 from .memory import EvidenceMemory
 from .models import MemoryMode
@@ -69,11 +69,28 @@ def main():
     ev = sub.add_parser("evaluate")
     ev.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
     ev.add_argument("--output", type=Path, default=ROOT / "results")
+    cmp = sub.add_parser(
+        "compare",
+        help="compare two campaigns' semantic projections, source/test hashes included",
+    )
+    cmp.add_argument("--reference", type=Path, required=True)
+    cmp.add_argument("--candidate", type=Path, required=True)
     repro = sub.add_parser("reproduce")
     repro.add_argument("task")
     args = parser.parse_args()
     if args.command == "run":
         campaign(args.seeds, args.replicates, args.evidence_dir, TASK_SETS[args.task_set])
+    elif args.command == "compare":
+        try:
+            result = compare(args.reference, args.candidate)
+        except ValueError as error:
+            raise SystemExit(f"compare: {error}") from error
+        print(json.dumps(result, indent=2))
+        if not result["identical"]:
+            raise SystemExit(
+                "compare: candidate differs from reference. If the change in behaviour or "
+                "benchmark is intended, regenerate the reference campaign and review it."
+            )
     elif args.command == "evaluate":
         report = evaluate(args.evidence_dir, args.output)
         print(

@@ -315,6 +315,26 @@ def test_breakdown_reports_misleading_retrieval_with_denominators(pilot, tmp_pat
         assert breakdown["tasks"][task_id]["NO_MEMORY"]["IterationDeltaVsNoMemory"] is None
 
 
+def test_changed_misleading_annotation_is_rejected_only_where_used(pilot, tmp_path):
+    """Control: changing EXP-07's causal label must invalidate evidence that ran
+    EXP-07, while the published v1 campaign (which never used the file) stays valid."""
+    import shutil
+
+    evidence, _, _ = pilot
+    root = tmp_path / "root"
+    for folder in ("src", "benchmark", "experiments/software_project"):
+        shutil.copytree(ROOT / folder, root / folder, ignore=shutil.ignore_patterns("__pycache__"))
+    evaluate(evidence, root=root)  # unchanged copy: accepted
+    path = root / "benchmark/private/tasks_misleading.json"
+    annotations = json.loads(path.read_text("utf-8"))
+    annotations["EXP-07"]["hidden_cause_id"] = "READY-01"
+    path.write_text(json.dumps(annotations, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="private annotations differ"):
+        evaluate(evidence, root=root)
+    published = json.loads((ROOT / "results/experiment1.json").read_text("utf-8"))
+    assert evaluate(ROOT / "evidence/runs", root=root) == published
+
+
 def test_task_breakdown_is_null_without_misleading_tasks():
     assert task_breakdown([], METADATA)["MisleadingRetrievalRate"] == {}
 
