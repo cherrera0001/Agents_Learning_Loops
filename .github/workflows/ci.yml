@@ -98,10 +98,17 @@ jobs:
           r=json.load(open('results/ci/experiment1.json'));
           assert r['replication']['replicated_groups'] == 18;
           assert r['replication']['all_semantic_projections_equal']"
+      # Issue #42: the same campaign as the committed Windows reference
+      # (evidence/reference-lf-v1), rerun on Ubuntu, must match it including
+      # source/test hashes. Fails on any difference or on mixed hash schemes.
+      - name: cross-platform portability (Ubuntu vs Windows reference, hashes included)
+        run: python -m experiments run --seeds 7 --replicates 1 --evidence-dir evidence/ci-portability
+      - run: python -m experiments compare --reference evidence/reference-lf-v1 --candidate evidence/ci-portability
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: experiment1-ci-evidence
           path: |
             evidence/ci/
+            evidence/ci-portability/
             results/ci/
