@@ -21,6 +21,10 @@ flowchart LR
 | `episodes/NNN-<id>.json` | **Fuente de verdad**: un episodio por issue/hito, revisable en el PR |
 | `dev_memory.json` | Grafo **derivado**; se regenera con `rebuild` (no editar a mano) |
 
+Los episodios son la **fuente de verdad**. [`skills/`](../skills/README.md) contiene skills de entorno
+([glosario](../docs/entorno/glosario.md)): una **proyección legible** de procedimientos ya fijados en este
+archivo y en `CONTRIBUTING.md`. No sustituyen a los episodios ni son nodos de ninguna memoria.
+
 ## Formato de un episodio
 
 ```json

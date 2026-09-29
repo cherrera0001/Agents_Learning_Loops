@@ -18,15 +18,19 @@ adquirida en un contexto no debe contaminar decisiones en contextos no relaciona
 El propio repositorio se desarrolla con este mecanismo: cada issue se registra como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
 
+> **Terminología.** «Agente», «skill» y «harness» tienen significados distintos según la capa (agente de
+> biblioteca, solver acotado, agente de entorno…). Todos los textos usan los nombres del
+> [glosario](docs/entorno/glosario.md); el contrato para quien edita el repositorio está en [`docs/entorno/`](docs/entorno/README.md).
+
 ---
 
 ## Contenido
 
 1. [Características](#1-características)
 2. [Inicio rápido](#2-inicio-rápido)
-3. [Arquitectura](#3-arquitectura)
+3. [Arquitectura](#3-arquitectura) · [3.1 Entorno de desarrollo](#31-entorno-de-desarrollo)
 4. [Modelo de datos](#4-modelo-de-datos)
-5. [Ciclo del agente](#5-ciclo-del-agente)
+5. [Ciclo del agente de biblioteca](#5-ciclo-del-agente-de-biblioteca)
 6. [Algoritmos](#6-algoritmos)
 7. [Resultados experimentales](#7-resultados-experimentales)
 8. [Aseguramiento de calidad](#8-aseguramiento-de-calidad)
@@ -82,7 +86,7 @@ pytest                              # tests unitarios y de integración
 
 ## 3. Arquitectura
 
-El sistema se organiza en tres capas. El **agente** orquesta el ciclo y no conoce los detalles del
+El sistema se organiza en tres capas. El **agente de biblioteca** orquesta el ciclo y no conoce los detalles del
 grafo; la **memoria** encapsula representación, recuperación y aprendizaje; la **infraestructura**
 provee configuración, persistencia y utilidades sin dependencias internas.
 
@@ -92,7 +96,7 @@ flowchart TB
         CLI["main.py<br/>aal-benchmark"]
         CFG["config.py<br/>AppConfig (TOML + AAL_*)"]
     end
-    subgraph AGENT["Capa de agente"]
+    subgraph AGENT["Capa del agente de biblioteca"]
         CORE["agent/core.py<br/>Agent · Episode · TRANSITIONS"]
         PLAN["Planner (Protocol)<br/>RuleBasedPlanner"]
         TOOLS["agent/tools.py<br/>Tool · ToolResult · escenarios"]
@@ -130,7 +134,7 @@ flowchart TB
 
 | Módulo | Responsabilidad | Punto de extensión |
 |---|---|---|
-| `agent/core.py` | Ciclo del agente, máquina de estados, construcción desde configuración | `Planner`, `Evaluator` |
+| `agent/core.py` | Ciclo del agente de biblioteca, máquina de estados, construcción desde configuración | `Planner`, `Evaluator` |
 | `agent/tools.py` | Contrato de herramientas y escenarios de benchmark (`weather`, `flaky`, `domain`) | `Tool` |
 | `memory/models.py` | Contrato formal del grafo (Pydantic) | — |
 | `memory/graph.py` | Almacenamiento en memoria, decaimiento, serialización v2 y migración v1 | — |
@@ -138,6 +142,23 @@ flowchart TB
 | `memory/embeddings.py` | Vectorización de etiquetas | `Embedder` |
 | `memory/consolidation.py` | Escritura de trayectorias, aprendizaje, lecciones, decaimiento, poda | parámetros de `ConsolidationConfig` |
 | `memory/store.py` | Persistencia | `GraphStore` |
+
+### 3.1 Entorno de desarrollo
+
+La arquitectura anterior es el **agente de biblioteca**. El Experimento 1 añade el **solver acotado** y su
+**harness de experimento** (§ 7.2). Quien edita el repositorio, sea una persona o un agente de Cursor o
+Claude, es un **agente de entorno** y trabaja bajo un contrato documental, sin código propio:
+
+| Pieza | Archivo |
+|---|---|
+| Entrada para cualquier agente de entorno | [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` y `.cursor/rules/entorno.mdc` remiten a él) |
+| Glosario de los siete términos | [`docs/entorno/glosario.md`](docs/entorno/glosario.md) |
+| Roles: implementador, revisor, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
+| Harness de entorno (permisos, parada, evidencia) y resumen del harness de experimento | [`docs/entorno/harness.md`](docs/entorno/harness.md) |
+| Skills de entorno: procedimientos ya fijados, en Markdown | [`skills/`](skills/README.md) · regla de admisión en [`docs/entorno/skills.md`](docs/entorno/skills.md) |
+
+Las skills de entorno no son la **skill de memoria** del esquema `software-learning-memory/v1`, que sigue
+sin implementarse.
 
 ## 4. Modelo de datos
 
@@ -227,7 +248,7 @@ graph LR
 
 Especificación completa: [`specs/loop_protocol.md`](specs/loop_protocol.md).
 
-## 5. Ciclo del agente
+## 5. Ciclo del agente de biblioteca
 
 ### 5.1 Máquina de estados
 
@@ -480,7 +501,7 @@ Salida de referencia:
 
 ### 7.2 Experimento 1: transferencia entre tareas de software
 
-**Pregunta**: ¿un agente de software puede usar evidencia de tareas previas para cambiar su estrategia
+**Pregunta**: ¿un agente de software (aquí, el [solver acotado](docs/entorno/glosario.md)) puede usar evidencia de tareas previas para cambiar su estrategia
 en una tarea distinta con una causa relacionada? Almacenar no es recuperar, y recuperar no es aprender.
 La cadena que se exige demostrar es:
 
@@ -507,7 +528,7 @@ alcance. Protocolo completo: [`specs/software_learning_protocol.md`](specs/softw
 | Configuración | EXP-02 (#25) | EXP-05 (#28) | L5 otro componente |
 | Disponibilidad | EXP-03 (#26) | EXP-06 (#29) | L4 multi-salto |
 
-**Condiciones** (mismo agente acotado, operadores, presupuesto, fuentes y tests):
+**Condiciones** (mismo solver acotado, operadores, presupuesto, fuentes y tests):
 
 | Condición | Memoria disponible |
 |---|---|
@@ -542,7 +563,7 @@ verificó los 144 recibos y replicó la campaña (54/54 comportamientos idéntic
   causa puede desviar la primera estrategia (transferencia negativa).
 
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
-> superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. El agente
+> superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. El solver acotado
 > tiene tres operadores de reparación escritos a mano y las réplicas con la misma semilla verifican
 > determinismo, no observaciones independientes.
 
@@ -575,7 +596,7 @@ flowchart LR
 |---|---|---|
 | Unitarios | Grafo, modelos, activación con valores calculados a mano, consolidación, embeddings, configuración | `tests/unit/` |
 | Propiedades | Invariantes sobre entradas aleatorias con `hypothesis` | `tests/unit/test_properties.py` |
-| Integración | Agente completo, benchmark, CLI, bitácora de desarrollo, valencia entre dominios | `tests/integration/` |
+| Integración | Agente de biblioteca completo, benchmark, CLI, bitácora de desarrollo, valencia entre dominios | `tests/integration/` |
 | Mutación | Cada propiedad debe detectar un defecto inyectado deliberadamente | `scripts/mutation_check.py` |
 
 | Mutación inyectada | Propiedad que la detecta |
@@ -695,15 +716,22 @@ Lecciones de proceso incorporadas como mecanismos, no solo como recordatorios: v
 `mergedAt` antes de cerrar una tarjeta, verificación por mutación en CI y chequeo de sincronización
 del esquema. Formato y vocabulario de acciones: [`learning/README.md`](learning/README.md).
 
+Los procedimientos ya fijados de este ciclo (recuperar antes de un issue, registrar un episodio, proteger
+la evidencia) también están escritos como **skills de entorno** en [`skills/`](skills/README.md). Son una
+proyección legible: los episodios de `learning/episodes/` siguen siendo la fuente de verdad y
+`learning/dev_memory.json` sigue siendo derivado. El rol que ejecuta `recall` y `rebuild` es la
+**bitácora** ([`docs/entorno/agentes.md`](docs/entorno/agentes.md)).
+
 ## 12. Limitaciones conocidas
 
 | Limitación | Impacto | Mitigación / línea de trabajo |
 |---|---|---|
 | Búsqueda vectorial por fuerza bruta en Python | Coste O(N) por consulta; adecuado hasta miles de nodos | Índice ANN (FAISS, hnswlib) detrás de `Embedder`/`Retriever` |
-| Episodios de un solo nivel | El agente ordena herramientas; no descompone metas en subobjetivos | `Planner` basado en LLM |
+| Episodios de un solo nivel | El agente de biblioteca ordena herramientas; no descompone metas en subobjetivos | `Planner` basado en LLM |
 | Experimento 1 acotado: 6 tareas, un proyecto, 3 operadores escritos a mano | No sustenta generalización ni significancia estadística | Tareas adicionales y benchmark con distractores (§ 13) |
 | Hashes de recibos sobre bytes del checkout | Réplicas en otra configuración CRLF/LF difieren en hash aunque el comportamiento coincida | Normalización antes de hashear (#42) |
-| El solver es código local auditado, no un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
+| El solver acotado es código local auditado y el harness de experimento no es un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
+| No existía un contrato explícito para quien edita el repositorio | Reglas de trabajo repartidas entre `CONTRIBUTING.md`, `learning/README.md` y el protocolo | Cubierto por la base documental de [`docs/entorno/`](docs/entorno/README.md); es documentación, no cambia el algoritmo |
 | Valencia global saturable (`tanh`) | Varias acciones pueden empatar en +1.00 en historiales largos | La valencia contextual domina cuando hay evidencia |
 | Asociación `Outcome` → `Goal` por convención de identificadores (`goal:{episode}`) | Acopla la valencia contextual al esquema de ids | Relación explícita en el grafo tipado (#34) |
 | Sin control de concurrencia | Un único escritor por archivo de memoria | Backend transaccional vía `GraphStore` |
@@ -734,6 +762,7 @@ flowchart TB
 ```
 
 La estimación por tallas y el modelo asignado a cada issue están en [`docs/estimation.md`](docs/estimation.md).
+El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentación de proceso y no forma parte de esta hoja de ruta.
 
 ## 14. Estructura del repositorio
 
@@ -754,7 +783,7 @@ La estimación por tallas y el modelo asignado a cada issue están en [`docs/est
 │   │   └── fsutil.py          # escritura atómica
 │   ├── config.py              # AppConfig (TOML + variables AAL_*)
 │   └── main.py                # CLI aal-benchmark
-├── src/experiments/           # Experimento 1: agente acotado, runner A/B/C, recibos, evaluación
+├── src/experiments/           # Experimento 1: solver acotado, harness de experimento, recibos, evaluación
 ├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana
 ├── benchmark/
 │   ├── public/                # tareas y tests de aceptación visibles para el solver
@@ -767,11 +796,14 @@ La estimación por tallas y el modelo asignado a cada issue están en [`docs/est
 │   ├── software_learning_protocol.md  # protocolo del Experimento 1
 │   └── software_memory_schema_v1.json, reflection_schema_v1.json
 ├── docs/                      # verificación, estimación, referencia histórica del Experimento 0
+│   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills
+├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
+├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
 ├── learning/                  # episodios de desarrollo y memoria derivada
 ├── scripts/                   # devlog, export_schema, mutation_check, verify_experiment1
 ├── tests/
 │   ├── unit/                  # componentes y propiedades
-│   ├── integration/           # agente, benchmark, CLI, bitácora
+│   ├── integration/           # agente de biblioteca, benchmark, CLI, bitácora
 │   └── test_experiment_harness.py  # Experimento 1
 └── .github/workflows/ci.yml   # 12 jobs (incluye la reproducibilidad A/B/C)
 ```
