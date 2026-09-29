@@ -1,0 +1,20 @@
+{
+  "seq": 4,
+  "id": "issue-13",
+  "goal": "Corregir consolidación que asocia como resolución todo éxito posterior a un fallo",
+  "ref": "#13",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "lecciones fallback espurias hacia acciones posteriores al primer éxito"},
+    {"action": "review_code", "success": true, "note": "causa: consolidate_episode no vaciaba los fallos pendientes; y el fallo se había atribuido a review_code"},
+    {"action": "edit_module", "success": true, "note": "failures.clear() tras el primer éxito"},
+    {"action": "write_tests", "success": true, "note": "regresión fallo → éxito → éxito"},
+    {"action": "update_docs", "success": true, "note": "reglas de registro en learning/README.md; episodio 003 corregido"},
+    {"action": "run_tests", "success": true, "note": "21 passed"},
+    {"action": "rebuild_memory", "success": true}
+  ],
+  "lessons": [
+    "Registrar el fallo en la acción que lo causó, no en la que lo detectó: si no, la memoria aprende a evitar las revisiones",
+    "Solo el primer éxito tras un fallo es su resolución; el agente no lo evidenciaba porque sus episodios terminan en el primer éxito",
+    "Consultar la memoria sobre datos reales (dogfooding) expone defectos que los escenarios sintéticos no muestran"
+  ]
+}

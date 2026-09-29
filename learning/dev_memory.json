@@ -1,5 +1,5 @@
 {
-  "clock": 3,
+  "clock": 4,
   "decay_rate": 0.05,
   "nodes": [
     {
@@ -110,7 +110,7 @@
       "type": "Action",
       "label": "run_tests",
       "created_at": 1,
-      "last_seen": 3
+      "last_seen": 4
     },
     {
       "id": "outcome:1:2",
@@ -137,7 +137,7 @@
       "type": "Action",
       "label": "edit_module",
       "created_at": 1,
-      "last_seen": 3
+      "last_seen": 4
     },
     {
       "id": "outcome:1:3",
@@ -213,30 +213,6 @@
       "id": "concept:lesson:fallback:run_tests:edit_module",
       "type": "Concept",
       "label": "Si 'run_tests' falla con 'KeyError 'type' en stats(): add_edge creó un nodo sin atributos', usar 'edit_module'",
-      "created_at": 1,
-      "last_seen": 1,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:run_tests:run_tests",
-      "type": "Concept",
-      "label": "Si 'run_tests' falla con 'KeyError 'type' en stats(): add_edge creó un nodo sin atributos', usar 'run_tests'",
-      "created_at": 1,
-      "last_seen": 1,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:run_tests:validate_schema",
-      "type": "Concept",
-      "label": "Si 'run_tests' falla con 'KeyError 'type' en stats(): add_edge creó un nodo sin atributos', usar 'validate_schema'",
-      "created_at": 1,
-      "last_seen": 1,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:run_tests:git_push",
-      "type": "Concept",
-      "label": "Si 'run_tests' falla con 'KeyError 'type' en stats(): add_edge creó un nodo sin atributos', usar 'git_push'",
       "created_at": 1,
       "last_seen": 1,
       "kind": "lesson"
@@ -471,14 +447,6 @@
       "kind": "lesson"
     },
     {
-      "id": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "type": "Concept",
-      "label": "Si 'write_issue_bodies' falla con 'heredoc largo en Git Bash: unexpected EOF while looking for matching quote', usar 'gh_create_issues'",
-      "created_at": 2,
-      "last_seen": 2,
-      "kind": "lesson"
-    },
-    {
       "id": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
       "type": "Concept",
       "label": "'gh_project_add' falló con 'item de la épica no visible en gh project item-list tras item-add'",
@@ -487,33 +455,9 @@
       "kind": "lesson"
     },
     {
-      "id": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "type": "Concept",
-      "label": "Si 'write_issue_bodies' falla con 'heredoc largo en Git Bash: unexpected EOF while looking for matching quote', usar 'gh_project_add'",
-      "created_at": 2,
-      "last_seen": 2,
-      "kind": "lesson"
-    },
-    {
       "id": "concept:lesson:fallback:gh_project_add:gh_project_add",
       "type": "Concept",
       "label": "Si 'gh_project_add' falla con 'item de la épica no visible en gh project item-list tras item-add', usar 'gh_project_add'",
-      "created_at": 2,
-      "last_seen": 2,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "type": "Concept",
-      "label": "Si 'write_issue_bodies' falla con 'heredoc largo en Git Bash: unexpected EOF while looking for matching quote', usar 'gh_link_subissues'",
-      "created_at": 2,
-      "last_seen": 2,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "type": "Concept",
-      "label": "Si 'gh_project_add' falla con 'item de la épica no visible en gh project item-list tras item-add', usar 'gh_link_subissues'",
       "created_at": 2,
       "last_seen": 2,
       "kind": "lesson"
@@ -588,7 +532,7 @@
       "type": "Concept",
       "label": "como",
       "created_at": 3,
-      "last_seen": 3,
+      "last_seen": 4,
       "kind": "topic"
     },
     {
@@ -604,7 +548,7 @@
       "type": "Action",
       "label": "recall_memory",
       "created_at": 3,
-      "last_seen": 3
+      "last_seen": 4
     },
     {
       "id": "outcome:3:0",
@@ -635,29 +579,10 @@
       "type": "Action",
       "label": "write_tests",
       "created_at": 3,
-      "last_seen": 3
+      "last_seen": 4
     },
     {
       "id": "outcome:3:2",
-      "type": "Outcome",
-      "label": "success",
-      "created_at": 3,
-      "last_seen": 3,
-      "success": true,
-      "latency_ms": 0.0,
-      "error": null,
-      "episode": 3,
-      "step": 2
-    },
-    {
-      "id": "action:review_code",
-      "type": "Action",
-      "label": "review_code",
-      "created_at": 3,
-      "last_seen": 3
-    },
-    {
-      "id": "outcome:3:3",
       "type": "Outcome",
       "label": "failure: test de determinismo tautológico: siempre pasaba",
       "created_at": 3,
@@ -666,7 +591,7 @@
       "latency_ms": 0.0,
       "error": "test de determinismo tautológico: siempre pasaba",
       "episode": 3,
-      "step": 3
+      "step": 2
     },
     {
       "id": "concept:error:test_de_determinismo_tautol_gico_siempre",
@@ -675,6 +600,25 @@
       "created_at": 3,
       "last_seen": 3,
       "kind": "error"
+    },
+    {
+      "id": "action:review_code",
+      "type": "Action",
+      "label": "review_code",
+      "created_at": 3,
+      "last_seen": 4
+    },
+    {
+      "id": "outcome:3:3",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 3,
+      "last_seen": 3,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 3,
+      "step": 3
     },
     {
       "id": "outcome:3:4",
@@ -705,7 +649,7 @@
       "type": "Action",
       "label": "rebuild_memory",
       "created_at": 3,
-      "last_seen": 3
+      "last_seen": 4
     },
     {
       "id": "outcome:3:6",
@@ -740,33 +684,17 @@
       "kind": "error"
     },
     {
-      "id": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "id": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "type": "Concept",
-      "label": "'review_code' falló con 'test de determinismo tautológico: siempre pasaba'",
+      "label": "'write_tests' falló con 'test de determinismo tautológico: siempre pasaba'",
       "created_at": 3,
       "last_seen": 3,
       "kind": "lesson"
     },
     {
-      "id": "concept:lesson:fallback:review_code:edit_module",
+      "id": "concept:lesson:fallback:write_tests:review_code",
       "type": "Concept",
-      "label": "Si 'review_code' falla con 'test de determinismo tautológico: siempre pasaba', usar 'edit_module'",
-      "created_at": 3,
-      "last_seen": 3,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:review_code:run_tests",
-      "type": "Concept",
-      "label": "Si 'review_code' falla con 'test de determinismo tautológico: siempre pasaba', usar 'run_tests'",
-      "created_at": 3,
-      "last_seen": 3,
-      "kind": "lesson"
-    },
-    {
-      "id": "concept:lesson:fallback:review_code:rebuild_memory",
-      "type": "Concept",
-      "label": "Si 'review_code' falla con 'test de determinismo tautológico: siempre pasaba', usar 'rebuild_memory'",
+      "label": "Si 'write_tests' falla con 'test de determinismo tautológico: siempre pasaba', usar 'review_code'",
       "created_at": 3,
       "last_seen": 3,
       "kind": "lesson"
@@ -802,6 +730,218 @@
       "created_at": 3,
       "last_seen": 3,
       "kind": "lesson"
+    },
+    {
+      "id": "goal:4",
+      "type": "Goal",
+      "label": "Corregir consolidación que asocia como resolución todo éxito posterior a un fallo",
+      "created_at": 4,
+      "last_seen": 4,
+      "episode": 4,
+      "ref": "issue-13"
+    },
+    {
+      "id": "concept:topic:corregir",
+      "type": "Concept",
+      "label": "corregir",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:consolidacion",
+      "type": "Concept",
+      "label": "consolidacion",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:asocia",
+      "type": "Concept",
+      "label": "asocia",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:resolucion",
+      "type": "Concept",
+      "label": "resolucion",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:todo",
+      "type": "Concept",
+      "label": "todo",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:exito",
+      "type": "Concept",
+      "label": "exito",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:posterior",
+      "type": "Concept",
+      "label": "posterior",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:fallo",
+      "type": "Concept",
+      "label": "fallo",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "topic"
+    },
+    {
+      "id": "outcome:4:0",
+      "type": "Outcome",
+      "label": "failure: lecciones fallback espurias hacia acciones posteriores al primer éxito",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": false,
+      "latency_ms": 0.0,
+      "error": "lecciones fallback espurias hacia acciones posteriores al primer éxito",
+      "episode": 4,
+      "step": 0
+    },
+    {
+      "id": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "type": "Concept",
+      "label": "lecciones fallback espurias hacia acciones posteriores al primer éxito",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "error"
+    },
+    {
+      "id": "outcome:4:1",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 1
+    },
+    {
+      "id": "outcome:4:2",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 2
+    },
+    {
+      "id": "outcome:4:3",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 3
+    },
+    {
+      "id": "action:update_docs",
+      "type": "Action",
+      "label": "update_docs",
+      "created_at": 4,
+      "last_seen": 4
+    },
+    {
+      "id": "outcome:4:4",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 4
+    },
+    {
+      "id": "outcome:4:5",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 5
+    },
+    {
+      "id": "outcome:4:6",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 4,
+      "last_seen": 4,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 4,
+      "step": 6
+    },
+    {
+      "id": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "type": "Concept",
+      "label": "'recall_memory' falló con 'lecciones fallback espurias hacia acciones posteriores al primer éxito'",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:fallback:recall_memory:review_code",
+      "type": "Concept",
+      "label": "Si 'recall_memory' falla con 'lecciones fallback espurias hacia acciones posteriores al primer éxito', usar 'review_code'",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "type": "Concept",
+      "label": "Registrar el fallo en la acción que lo causó, no en la que lo detectó: si no, la memoria aprende a evitar las revisiones",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "type": "Concept",
+      "label": "Solo el primer éxito tras un fallo es su resolución; el agente no lo evidenciaba porque sus episodios terminan en el primer éxito",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "type": "Concept",
+      "label": "Consultar la memoria sobre datos reales (dogfooding) expone defectos que los escenarios sintéticos no muestran",
+      "created_at": 4,
+      "last_seen": 4,
+      "kind": "lesson"
     }
   ],
   "edges": [
@@ -812,7 +952,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -821,7 +961,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -830,7 +970,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -839,7 +979,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -848,7 +988,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -857,7 +997,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -866,7 +1006,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -876,7 +1016,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -885,7 +1025,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -895,7 +1035,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -904,7 +1044,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -914,7 +1054,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 4,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -923,7 +1063,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -933,7 +1073,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 3,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -942,7 +1082,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -952,7 +1092,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 5,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -961,7 +1101,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -971,7 +1111,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 6,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:1",
@@ -980,7 +1120,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:write_code",
@@ -989,7 +1129,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:write_code",
@@ -998,7 +1138,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:run_demo",
@@ -1007,7 +1147,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:run_tests",
@@ -1016,7 +1156,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:run_tests",
@@ -1025,15 +1165,15 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "type": "FAILED_DUE_TO",
-      "weight": 0.256,
-      "last_updated": 3,
-      "count": 3,
+      "weight": 0.2048,
+      "last_updated": 4,
+      "count": 4,
       "recency_factor": 1.0
     },
     {
@@ -1042,6 +1182,15 @@
       "type": "LEADS_TO",
       "weight": 1.0,
       "last_updated": 3,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:4:5",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
       "count": 0,
       "recency_factor": 1.0
     },
@@ -1052,7 +1201,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1061,34 +1210,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
-      "target": "action:run_tests",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
-      "target": "action:validate_schema",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
-      "target": "action:git_push",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:edit_module",
@@ -1097,7 +1219,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:edit_module",
@@ -1105,6 +1227,15 @@
       "type": "LEADS_TO",
       "weight": 1.0,
       "last_updated": 3,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:edit_module",
+      "target": "outcome:4:2",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
       "count": 0,
       "recency_factor": 1.0
     },
@@ -1115,7 +1246,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:git_push",
@@ -1124,7 +1255,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1133,7 +1264,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1142,7 +1273,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1151,7 +1282,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1160,7 +1291,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1169,7 +1300,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1178,7 +1309,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1187,7 +1318,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1196,7 +1327,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1205,7 +1336,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1214,7 +1345,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1223,7 +1354,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1232,7 +1363,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1241,7 +1372,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1250,7 +1381,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1259,7 +1390,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1268,7 +1399,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1277,223 +1408,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "action:run_tests",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:implementar",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:memoria",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:asociativa",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:grafo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:bucle",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:aprendizaje",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:run_tests",
-      "target": "concept:topic:agente",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "action:validate_schema",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:implementar",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:memoria",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:asociativa",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:grafo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:bucle",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:aprendizaje",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:validate_schema",
-      "target": "concept:topic:agente",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "action:git_push",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:implementar",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:memoria",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:asociativa",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:grafo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:bucle",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:aprendizaje",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:git_push",
-      "target": "concept:topic:agente",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1502,7 +1417,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1511,7 +1426,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1520,7 +1435,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1529,7 +1444,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1538,7 +1453,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1547,7 +1462,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1556,7 +1471,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1565,7 +1480,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1574,7 +1489,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1583,7 +1498,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1592,7 +1507,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1601,7 +1516,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1610,7 +1525,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1619,7 +1534,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1628,7 +1543,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1637,7 +1552,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1646,7 +1561,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1655,7 +1570,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1664,7 +1579,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1673,7 +1588,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1682,7 +1597,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1691,7 +1606,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1700,7 +1615,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1709,7 +1624,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1718,7 +1633,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1727,7 +1642,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1736,7 +1651,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1745,7 +1660,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1754,7 +1669,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1763,7 +1678,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1772,7 +1687,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1781,7 +1696,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1791,7 +1706,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1800,7 +1715,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1810,7 +1725,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 2,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1819,7 +1734,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1829,7 +1744,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 4,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1838,7 +1753,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1848,7 +1763,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 5,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:2",
@@ -1857,7 +1772,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:write_issue_bodies",
@@ -1866,7 +1781,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:write_issue_bodies",
@@ -1875,7 +1790,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:write_issue_bodies",
@@ -1884,7 +1799,7 @@
       "weight": 0.32,
       "last_updated": 2,
       "count": 2,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "outcome:2:0",
@@ -1893,7 +1808,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1902,34 +1817,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
-      "target": "action:gh_create_issues",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
-      "target": "action:gh_project_add",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
-      "target": "action:gh_link_subissues",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:gh_create_issues",
@@ -1938,7 +1826,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:gh_project_add",
@@ -1947,7 +1835,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:gh_project_add",
@@ -1956,7 +1844,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:gh_project_add",
@@ -1965,7 +1853,7 @@
       "weight": 0.32,
       "last_updated": 2,
       "count": 2,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "outcome:2:3",
@@ -1974,7 +1862,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:error:item_de_la_pica_no_visible_en_gh_project",
@@ -1983,16 +1871,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:item_de_la_pica_no_visible_en_gh_project",
-      "target": "action:gh_link_subissues",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:gh_link_subissues",
@@ -2001,7 +1880,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2010,7 +1889,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2019,7 +1898,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2028,7 +1907,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2037,7 +1916,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2046,7 +1925,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2055,7 +1934,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2064,7 +1943,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2073,7 +1952,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2082,7 +1961,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -2091,7 +1970,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2100,7 +1979,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2109,7 +1988,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2118,7 +1997,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2127,7 +2006,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2136,7 +2015,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2145,7 +2024,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2154,7 +2033,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2163,7 +2042,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2172,88 +2051,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "action:gh_create_issues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:convertir",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:evaluacion",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:tecnica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:issues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:proyecto",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:github",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:epica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_create_issues",
-      "target": "concept:topic:sub",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2262,7 +2060,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2271,7 +2069,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2280,7 +2078,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2289,7 +2087,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2298,7 +2096,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2307,7 +2105,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2316,7 +2114,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2325,7 +2123,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2334,7 +2132,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2343,88 +2141,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "action:gh_project_add",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:convertir",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:evaluacion",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:tecnica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:issues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:proyecto",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:github",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:epica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_project_add",
-      "target": "concept:topic:sub",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2433,7 +2150,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2442,7 +2159,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2451,7 +2168,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2460,7 +2177,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2469,7 +2186,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2478,7 +2195,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2487,7 +2204,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2496,7 +2213,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2505,169 +2222,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "action:gh_link_subissues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:convertir",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:evaluacion",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:tecnica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:issues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:proyecto",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:github",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:epica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:write_issue_bodies:gh_link_subissues",
-      "target": "concept:topic:sub",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "action:gh_link_subissues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:convertir",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:evaluacion",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:tecnica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:issues",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:proyecto",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:github",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:epica",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:lesson:fallback:gh_project_add:gh_link_subissues",
-      "target": "concept:topic:sub",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 2,
-      "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2676,7 +2231,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2685,7 +2240,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2694,7 +2249,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2703,7 +2258,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2712,7 +2267,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2721,7 +2276,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2730,7 +2285,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2739,7 +2294,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2748,7 +2303,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2757,7 +2312,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2766,7 +2321,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2775,7 +2330,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2784,7 +2339,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2793,7 +2348,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2802,7 +2357,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2811,7 +2366,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2820,7 +2375,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2829,7 +2384,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2838,7 +2393,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2847,7 +2402,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2856,7 +2411,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2865,7 +2420,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2874,7 +2429,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2883,7 +2438,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2892,7 +2447,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2901,7 +2456,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2910,7 +2465,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2919,7 +2474,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2928,7 +2483,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2937,7 +2492,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2946,7 +2501,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2955,7 +2510,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2964,7 +2519,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2973,7 +2528,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2982,7 +2537,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2991,7 +2546,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -3000,7 +2555,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3009,7 +2564,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3018,7 +2573,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3027,7 +2582,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3036,7 +2591,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3045,7 +2600,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3054,7 +2609,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3064,15 +2619,15 @@
       "last_updated": 3,
       "count": 0,
       "step": 7,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
       "target": "action:recall_memory",
       "type": "RESOLVED_BY",
-      "weight": 0.32,
-      "last_updated": 3,
-      "count": 2,
+      "weight": 0.256,
+      "last_updated": 4,
+      "count": 3,
       "recency_factor": 1.0
     },
     {
@@ -3083,7 +2638,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3092,7 +2647,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3102,16 +2657,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 2,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "goal:3",
-      "target": "action:write_tests",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3121,7 +2667,16 @@
       "last_updated": 3,
       "count": 0,
       "step": 3,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:3",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 3,
+      "count": 1,
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3131,7 +2686,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 4,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3140,7 +2695,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3150,7 +2705,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 5,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3159,7 +2714,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3169,7 +2724,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 6,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:3",
@@ -3178,7 +2733,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:recall_memory",
@@ -3187,7 +2742,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:recall_memory",
@@ -3196,7 +2751,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:recall_memory",
@@ -3204,6 +2759,24 @@
       "type": "FAILED_DUE_TO",
       "weight": 0.4,
       "last_updated": 3,
+      "count": 1,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:recall_memory",
+      "target": "outcome:4:0",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:recall_memory",
+      "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "type": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "last_updated": 4,
       "count": 1,
       "recency_factor": 1.0
     },
@@ -3214,7 +2787,43 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:write_tests",
+      "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
+      "type": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "last_updated": 4,
+      "count": 2,
       "recency_factor": 1.0
+    },
+    {
+      "source": "action:write_tests",
+      "target": "outcome:4:3",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:3:2",
+      "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 3,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:error:test_de_determinismo_tautol_gico_siempre",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 3,
+      "count": 1,
+      "recency_factor": 0.951229
     },
     {
       "source": "action:review_code",
@@ -3223,51 +2832,15 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:review_code",
-      "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
-      "type": "FAILED_DUE_TO",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "outcome:3:3",
-      "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
-      "type": "FAILED_DUE_TO",
+      "target": "outcome:4:1",
+      "type": "LEADS_TO",
       "weight": 1.0,
-      "last_updated": 3,
+      "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:error:test_de_determinismo_tautol_gico_siempre",
-      "target": "action:edit_module",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:error:test_de_determinismo_tautol_gico_siempre",
-      "target": "action:run_tests",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:error:test_de_determinismo_tautol_gico_siempre",
-      "target": "action:rebuild_memory",
-      "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
       "recency_factor": 1.0
     },
     {
@@ -3276,6 +2849,15 @@
       "type": "LEADS_TO",
       "weight": 1.0,
       "last_updated": 3,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:rebuild_memory",
+      "target": "outcome:4:6",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
       "count": 0,
       "recency_factor": 1.0
     },
@@ -3286,304 +2868,160 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
-      "target": "action:review_code",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
+      "target": "action:write_tests",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:registrar",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:desarrollo",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:repo",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:como",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:episodios",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:memoria",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:review_code:test_de_determinismo_tautol_gico_siempre",
+      "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
       "target": "concept:topic:asociativa",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
-      "target": "action:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "action:review_code",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:registrar",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:desarrollo",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:repo",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:como",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:episodios",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:memoria",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:fallback:review_code:edit_module",
+      "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:asociativa",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "action:run_tests",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:registrar",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:desarrollo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:repo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:como",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:episodios",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:memoria",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:run_tests",
-      "target": "concept:topic:asociativa",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "action:rebuild_memory",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:registrar",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:desarrollo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:repo",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:como",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:episodios",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:memoria",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:review_code:rebuild_memory",
-      "target": "concept:topic:asociativa",
-      "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3592,7 +3030,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3601,7 +3039,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3610,7 +3048,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3619,7 +3057,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3628,7 +3066,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3637,7 +3075,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3646,7 +3084,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3655,7 +3093,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3664,7 +3102,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3673,7 +3111,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3682,7 +3120,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3691,7 +3129,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3700,7 +3138,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3709,7 +3147,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3718,7 +3156,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3727,7 +3165,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3736,7 +3174,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3745,7 +3183,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3754,7 +3192,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3763,7 +3201,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3772,7 +3210,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3781,7 +3219,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3790,7 +3228,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3799,7 +3237,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3808,7 +3246,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3817,7 +3255,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3826,7 +3264,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3835,7 +3273,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3844,7 +3282,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3853,7 +3291,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3862,7 +3300,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3871,7 +3309,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3879,6 +3317,697 @@
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 3,
+      "count": 1,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:recall_memory",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:review_code",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:edit_module",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 2,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:edit_module",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:write_tests",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 3,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:write_tests",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:update_docs",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 4,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:update_docs",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:run_tests",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 5,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:run_tests",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:rebuild_memory",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 4,
+      "count": 0,
+      "step": 6,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:4",
+      "target": "action:rebuild_memory",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:4:0",
+      "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:4:4",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 4,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "action:recall_memory",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "action:review_code",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "goal:4",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "goal:4",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "goal:4",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:corregir",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:consolidacion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:asocia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:resolucion",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:todo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:exito",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:posterior",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
+      "target": "concept:topic:fallo",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 4,
       "count": 1,
       "recency_factor": 1.0
     }
