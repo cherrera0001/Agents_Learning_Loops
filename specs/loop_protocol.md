@@ -38,16 +38,33 @@ stateDiagram-v2
 seeds(q)  = { g ↦ sim(q, g.label)  | g ∈ Goal, sim ≥ 0.2 }
           ∪ { topic(t) ↦ 1.0       | t ∈ tokens(q), topic(t) ∈ G }
 
-A₀ = seeds
-Aₖ₊₁(v) = Σ_{u→v} Aₖ(u) · δ · w̃(u,v)  +  Σ_{v→u} Aₖ(u) · δ · ρ(tipo) · w̃(v,u)
-A(v)    = min(1, Σₖ Aₖ(v))                       k ≤ max_hops, Aₖ ≥ umbral
+A ← seeds;  F ← ∅ (disparados);  frontera₀ = { u | A(u) ≥ θ }
+
+por cada salto k < max_hops:
+    F ← F ∪ fronteraₖ                                   (refracción: cada nodo dispara una vez)
+    para u ∈ fronteraₖ, para cada vecino v ∉ F:
+        Δ(v) += A(u) · δ · τ(u,v) / norm(grado(u))
+    A(v) ← min(1, A(v) + Δ(v))                          (un nodo en F ya no acumula)
+    fronteraₖ₊₁ = { v | Δ(v) > 0, A(v) ≥ θ }            (umbral sobre la activación ACUMULADA)
+
+resultado = { v | A(v) ≥ θ }
+
+τ(u,v)  = w̃(u→v)                    si la arista va hacia adelante
+        = ρ(relación) · w̃(v→u)      si se recorre hacia atrás
+norm(d) = 1 | √d | d                según fan_out = none | sqrt | linear
 
 w̃(e)     = weight(e) · exp(-λₑ · (clock − last_updated(e)))      λₑ = decay_factor de la arista
 valencia(a) = tanh( Σ w̃(· -RESOLVED_BY-> a)  −  Σ w̃(a -FAILED_DUE_TO-> ·) )
 score(a)  = A(a) · valencia(a)
 ```
 
-`δ = 0.7`, `max_hops = 3`, `ρ(ASSOCIATED_WITH) = 1.0`, `ρ(resto) = 0.5`.
+Parámetros (`RetrievalConfig`): `δ = 0.7`, `θ = 0.01`, `max_hops = 3`, `fan_out = sqrt`;
+`ρ(ASSOCIATED_WITH) = 1.0`, `ρ(resto) = 0.5`.
+
+- **Refracción**: un nodo que ya disparó no vuelve a disparar ni acumula, así que los ciclos A→B→A no inflan la activación.
+- **Fan-out**: los hubs (p. ej. `Concept(topic)` frecuentes) reparten su activación entre sus vecinos en lugar de saturar a todos. Sin esta normalización, la memoria de desarrollo asignaba relevancia 1.0 a todas las acciones (#4).
+- **Efecto en memoria**: `retrieve` fija `Node.activation_level` (0 para los no activados) y `last_accessed_at = clock` en los activados; es la entrada de la consolidación hebbiana (#5).
+- **Explicabilidad**: cada `ActionScore.path` es el camino de mayor aporte desde una semilla hasta la acción.
 
 ## 4. Consolidación (CONSOLIDATE)
 

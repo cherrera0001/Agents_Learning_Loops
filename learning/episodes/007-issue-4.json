@@ -1,0 +1,25 @@
+{
+  "seq": 7,
+  "id": "issue-4",
+  "goal": "Spreading Activation: umbral de disparo, refracción y fan-out; relevancia saturada",
+  "ref": "#4",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "sin experiencia relacionada: la siembra ignora el texto de lecciones y errores"},
+    {"action": "review_code", "success": true, "note": "evidencia documentada en #3 (sembrar todos los tipos de nodo)"},
+    {"action": "edit_module", "success": false, "error": "heredoc largo en Git Bash: unexpected EOF while looking for matching quote"},
+    {"action": "edit_module", "success": true, "note": "ediciones con herramienta de archivos; RetrievalConfig, refracción, θ acumulado, fan-out, trazas, persistencia"},
+    {"action": "run_demo", "success": true, "note": "benchmark idéntico (19/20, 21 llamadas); scores menores por la normalización"},
+    {"action": "recall_memory", "success": true, "note": "relevancia en la memoria real: de 1.00 para todas a 0.01-0.17 y dependiente del contexto"},
+    {"action": "write_tests", "success": false, "error": "expectativa errónea: se asumió que el camino partía del topic, pero la Goal pasada también es semilla"},
+    {"action": "review_code", "success": true, "note": "el código era correcto; se corrigió la expectativa del test"},
+    {"action": "run_tests", "success": true, "note": "45 passed (13 nuevos con valores calculados a mano)"},
+    {"action": "update_spec", "success": true, "note": "loop_protocol §3: algoritmo con refracción, θ acumulado y fan-out"}
+  ],
+  "lessons": [
+    "La memoria ya advertía no usar heredocs grandes en Git Bash y se repitió el error: consultar las lecciones recuperadas antes de elegir la herramienta",
+    "Normalizar por fan-out con √grado elimina la saturación sin alterar las decisiones del benchmark",
+    "Aplicar el umbral sobre la activación acumulada permite que varias señales débiles sumen hasta disparar",
+    "Con refracción, el camino de mayor aporte siempre termina en una semilla: la explicación es gratuita",
+    "Cuando un test falla, verificar primero si el código o la expectativa está mal antes de cambiar el código"
+  ]
+}
