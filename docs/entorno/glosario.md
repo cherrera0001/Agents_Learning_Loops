@@ -14,6 +14,20 @@ refiere al término de esta tabla que corresponda según su contexto.
 | 6 | **Harness de experimento** | El controlador del Experimento 1: tabla de fases, copia del workspace, lista de archivos editables, variables de entorno permitidas, recibos inmutables y frontera entre `benchmark/public` y `benchmark/private`. | No es un sandbox del sistema operativo. El protocolo exige aislamiento de proceso antes de usar un adaptador de modelo no confiable. | [`src/experiments/runner.py`](../../src/experiments/runner.py) (`PHASES`, `TRANSITIONS`, `prepare`, `protected_files`, `execute_tests`), [`src/experiments/evidence.py`](../../src/experiments/evidence.py); especificación: [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md) (*Execution and receipts*, *Leakage boundary*) |
 | 7 | **Harness de entorno** | El contrato de quien edita este repositorio: qué puede leer, qué puede escribir, cuándo se detiene y qué evidencia deja. | No reimplementa el harness de experimento; apunta a él. | [`docs/entorno/harness.md`](harness.md) |
 
+## Tres usos de «modelo»
+
+Tabla complementaria a los siete términos anteriores, que conservan su numeración.
+
+| Uso | Qué es | Qué no es | Dónde vive |
+|---|---|---|---|
+| **Modelo de datos** | El grafo Pydantic: `Node`, `Edge`, `GraphDocument` | No es un modelo de Claude ni de embedding | [`src/associative_agent_loop/memory/models.py`](../../src/associative_agent_loop/memory/models.py); README § 4 |
+| **Modelo de embedding** | `LexicalEmbedder` o `FastEmbedEmbedder`; `GraphDocument.embedding_model` nombra este | No es el modelo de Claude que construye un issue | [`src/associative_agent_loop/memory/embeddings.py`](../../src/associative_agent_loop/memory/embeddings.py); README § 6 |
+| **Modelo de construcción** | El modelo de Claude que construye un issue, elegido por talla | No se fija en un Markdown de sesión: el ID se aplica al crear el subagente | Política: [`docs/estimation.md`](../estimation.md); aplicación: [`enrutamiento.md`](enrutamiento.md); registro: campos *Talla*, *Modelo* y *Puntos* del Project #5 |
+
+Par que no debe confundirse: **Task Ledger** ([`experiments/software_project/`](../../experiments/software_project/README.md))
+es la aplicación bajo reparación del Experimento 1 y no asigna modelos; el registro de modelos de
+construcción es [`docs/estimation.md`](../estimation.md) junto con el Project #5.
+
 ## Pares que suelen confundirse
 
 - **Agente de biblioteca y solver acotado**: el primero elige herramientas en escenarios simulados

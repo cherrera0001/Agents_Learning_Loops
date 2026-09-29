@@ -9,7 +9,7 @@ Los términos siguen el [glosario](glosario.md).
 ```mermaid
 flowchart TB
     subgraph E["Capa de entorno · quien edita el repositorio"]
-        AG["Agentes de entorno<br/>implementador · revisor · evaluador · bitácora"]
+        AG["Agentes de entorno<br/>orquestador · implementador · revisor · evaluador · bitácora"]
         SK["Skills de entorno<br/>skills/*/SKILL.md"]
         HE["Harness de entorno<br/>permisos · parada · evidencia"]
     end
@@ -34,6 +34,7 @@ flowchart TB
 | Entorno | Punto de entrada para cualquier agente de entorno | [`AGENTS.md`](../../AGENTS.md) |
 | Entorno | Terminología | [`glosario.md`](glosario.md) |
 | Entorno | Roles | [`agentes.md`](agentes.md) |
+| Entorno | Modelo de construcción (qué modelo de Claude construye cada issue) | [`docs/estimation.md`](../estimation.md); cómo se aplica y con qué fuerza: [`enrutamiento.md`](enrutamiento.md) |
 | Entorno | Permisos, parada y evidencia | [`harness.md`](harness.md) |
 | Entorno | Regla de admisión de skills | [`skills.md`](skills.md) y [`skills/`](../../skills/README.md) |
 | Entorno | Flujo por issue y comprobaciones de CI | [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |

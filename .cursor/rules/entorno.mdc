@@ -8,5 +8,8 @@ Antes de editar este repositorio, lee y sigue `AGENTS.md`.
 Usa los términos exactos de `docs/entorno/glosario.md`: agente de biblioteca, solver acotado, agente de
 entorno, skill de memoria, skill de entorno, harness de experimento y harness de entorno. No los intercambies.
 
+Antes de delegar, el modelo de construcción se elige según `docs/entorno/enrutamiento.md` (política en
+`docs/estimation.md`); esta regla no cambia el modelo del chat.
+
 El protocolo científico está en `specs/software_learning_protocol.md` y `specs/loop_protocol.md`: enlázalos,
 no los dupliques.
