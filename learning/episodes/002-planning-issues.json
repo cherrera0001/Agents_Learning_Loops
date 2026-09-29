@@ -1,0 +1,20 @@
+{
+  "seq": 2,
+  "id": "planning-v0.2",
+  "goal": "Convertir la evaluación técnica en issues del proyecto GitHub con épica y sub-issues",
+  "ref": "issues #1-#10, Project #5",
+  "steps": [
+    {"action": "write_issue_bodies", "success": false, "error": "heredoc largo en Git Bash: unexpected EOF while looking for matching quote"},
+    {"action": "write_issue_bodies", "success": true, "note": "cuerpos escritos como archivos y enviados con --body-file"},
+    {"action": "gh_create_issues", "success": true, "note": "9 issues + etiquetas + milestone v0.2.0"},
+    {"action": "gh_project_add", "success": false, "error": "item de la épica no visible en gh project item-list tras item-add"},
+    {"action": "gh_project_add", "success": true, "note": "reintento de item-add (idempotente) y verificación"},
+    {"action": "gh_link_subissues", "success": true, "note": "sub_issues_summary mostró 8 de 9; /sub_issues confirmó 9"}
+  ],
+  "lessons": [
+    "Escribir cuerpos largos de issues en archivos y usar --body-file; evitar heredocs grandes en Git Bash sobre Windows",
+    "Tras gh project item-add verificar con item-list; item-add es idempotente y se puede reintentar",
+    "sub_issues_summary de la API de GitHub puede estar desfasado: verificar con el endpoint /sub_issues",
+    "Separar en cada issue lo ya implementado de la brecha real evita trabajo duplicado"
+  ]
+}

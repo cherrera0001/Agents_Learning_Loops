@@ -124,6 +124,20 @@ episode.retrieval.lessons      # lecciones para inyectar en el prompt de un LLM
 agent.memory.save("memory_graph.json")
 ```
 
+## La vida del proyecto: el repo aprende de sí mismo
+
+El desarrollo de este repositorio usa su propio bucle de aprendizaje. Cada issue
+es un episodio en [`learning/episodes/`](learning/episodes/) (meta, pasos con sus
+fallos reales, lecciones), y [`learning/dev_memory.json`](learning/dev_memory.json)
+es la memoria asociativa derivada. Antes de empezar un issue se consulta:
+
+```bash
+python -m scripts.devlog recall "Spreading Activation: umbral de disparo y fan-out"
+python -m scripts.devlog rebuild
+```
+
+Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md).
+
 ## Extensiones naturales
 
 - **Embeddings**: `Retriever(memory, similarity=mi_funcion)` acepta cualquier `similarity(a, b) -> float`.

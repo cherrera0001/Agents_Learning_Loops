@@ -1,0 +1,21 @@
+{
+  "seq": 3,
+  "id": "issue-11",
+  "goal": "Registrar el desarrollo del repo como episodios en la memoria asociativa",
+  "ref": "#11",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "sin memoria previa: se partió de los episodios retroactivos"},
+    {"action": "write_code", "success": true, "note": "scripts/devlog.py (recall, rebuild) y Consolidator.add_lesson"},
+    {"action": "write_tests", "success": true, "note": "tests/test_devlog.py"},
+    {"action": "review_code", "success": false, "error": "test de determinismo tautológico: siempre pasaba"},
+    {"action": "edit_module", "success": true, "note": "rebuild ordena por seq; test compara orden directo vs inverso"},
+    {"action": "run_tests", "success": true, "note": "20 passed"},
+    {"action": "rebuild_memory", "success": true},
+    {"action": "recall_memory", "success": false, "error": "relevancia saturada en 1.00 para todas las acciones: no discrimina"}
+  ],
+  "lessons": [
+    "Mantener los episodios como fuente de verdad y el grafo como artefacto derivado evita conflictos de merge",
+    "Revisar que cada test pueda fallar: un test con 'or' entre condiciones equivalentes es tautológico",
+    "La activación acumulada con saturación en 1.0 no discrimina relevancia en grafos densos: normalizar por fan-out y usar umbral de disparo (#4)"
+  ]
+}
