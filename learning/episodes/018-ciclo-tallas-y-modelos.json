@@ -1,0 +1,26 @@
+{
+  "seq": 18,
+  "id": "cycle-sizing-routing",
+  "goal": "Estimar issues por tallas, enrutar modelos por talla y cerrar todos los issues abiertos con evidencia",
+  "ref": "#24-#36, #41-#46, PR #40, #48-#53",
+  "steps": [
+    {"action": "update_docs", "success": true, "note": "docs/estimation.md: 4 factores A+I+R+V, tallas XS-XL, modelo por talla; campos Talla/Modelo/Puntos en el Project"},
+    {"action": "merge_pr", "success": true, "note": "PR #40 integrado tras 42 min de inactividad del otro agente; merge commit para preservar el orden evidencia-antes-que-agregados"},
+    {"action": "gh_create_issues", "success": true, "note": "7 cierres XS delegados a Haiku 4.5, verificados de forma independiente"},
+    {"action": "review_code", "success": true, "note": "#43 (Sonnet): 13/13 mutaciones re-ejecutadas por el orquestador antes del merge"},
+    {"action": "review_code", "success": true, "note": "#42 (Opus): corrida propia en otra máquina idéntica a la referencia, hashes incluidos"},
+    {"action": "review_code", "success": true, "note": "#45 (Opus): diseño sin pistas léxicas confirmado con otra medida de similitud"},
+    {"action": "merge_pr", "success": false, "error": "riesgo detectado a tiempo: el squash eliminaría de main el commit citado por los recibos de #44"},
+    {"action": "merge_pr", "success": true, "note": "merge commit; manifiesto 76/76 contra 62d6ff7"},
+    {"action": "gh_create_issues", "success": false, "error": "un agente Sonnet publicó un comentario con BOM (texto escrito en Windows)"},
+    {"action": "edit_module", "success": true, "note": "BOM eliminado vía API; los agentes siguientes recibieron la instrucción de escribir UTF-8 sin BOM"},
+    {"action": "run_tests", "success": true, "note": "0 issues abiertos, 0 PR abiertos, 32/32 tarjetas en Done, 46/46 puntos"}
+  ],
+  "lessons": [
+    "Estimar con factores explícitos (alcance, incertidumbre, riesgo, verificación) hace defendible la elección de modelo por issue",
+    "Delegar por talla funciona si el orquestador re-verifica cada entrega con medios propios antes del merge: ninguna entrega requirió escalar de modelo",
+    "Avisar a un agente en ejecución de un conflicto previsible (tasks.json, esquema v2) evita retrabajo al integrar",
+    "Cuando la evidencia cita commits (proveniencia, pre-registro), integrar con merge commit y nunca con squash",
+    "Pedir explícitamente UTF-8 sin BOM a los agentes que escriben comentarios en Windows"
+  ]
+}

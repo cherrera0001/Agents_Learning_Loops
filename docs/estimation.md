@@ -89,3 +89,21 @@ flowchart LR
 ```
 
 Los issues sin dependencias entre sí (#42, #43 y #45) se ejecutan en paralelo, cada uno en su worktree.
+
+## 5. Resultado (2026-09-29)
+
+**46/46 puntos cerrados**, 0 issues abiertos. Ninguna entrega necesitó escalar de modelo (regla 2).
+
+| Talla | Issues | Modelo | Entrega | Verificación del orquestador antes de cerrar |
+|---|---|---|---|---|
+| XS | #24–#29, #31 | Haiku 4.5 | Cierre con evidencia ya verificada | Estado, razón y comentario de cada issue |
+| S | #43 | Sonnet 5.5 | PR #48 | 13/13 mutaciones re-ejecutadas |
+| S | #33, #34, #35, #36, #41 | Sonnet 5.5 | Cierre con evidencia fresca | Estado final; se corrigió un BOM en #33 |
+| M | #44 | Sonnet 5.5 | PR #51 | Verificador independiente (396 recibos) y manifiesto 76/76 contra `62d6ff7` |
+| M | #30, #32 | Sonnet 5.5 | Cierre de síntesis | Números re-verificados por comando, sin discrepancias |
+| L | #42 | Opus 5.5 | PR #49 | Corrida propia idéntica a la referencia, hashes incluidos |
+| L | #45 | Opus 5.5 | PR #50 | Ausencia de pistas léxicas confirmada con otra medida de similitud |
+| XL | #46 | Opus 5.5 (orquestador) | PR #53 | Pre-registro y código de análisis comprometidos antes de los datos |
+
+Lección de proceso (episodio `018`): la delegación por talla fue segura porque cada entrega se verificó con
+medios independientes del agente que la produjo.
