@@ -1,0 +1,22 @@
+{
+  "seq": 9,
+  "id": "issue-5",
+  "goal": "Aprendizaje hebbiano en la consolidación, decaimiento explícito y poda de aristas",
+  "ref": "#5",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recuperó las lecciones de #13 sobre a quién se asigna el crédito en la consolidación"},
+    {"action": "write_code", "success": true, "note": "regla hebbiana acotada (1−w)/w, co-activación desde el RETRIEVE, decay() explícito, poda por max_edges"},
+    {"action": "edit_module", "success": true, "note": "la penalización uniforme de metas pasadas se reemplazó por depresión hebbiana ∝ A(g')"},
+    {"action": "run_demo", "success": true, "note": "benchmark idéntico: 19/20, 21 llamadas"},
+    {"action": "write_tests", "success": false, "error": "test tautológico: el refuerzo EMA posterior ocultaba si la regla hebbiana debilitaba la lección"},
+    {"action": "review_code", "success": true, "note": "la lección del episodio 003 ('revisar que cada test pueda fallar') lo detectó; test aislado con control"},
+    {"action": "run_tests", "success": true, "note": "58 passed; hypothesis: pesos acotados para cualquier secuencia de episodios"},
+    {"action": "update_spec", "success": true, "note": "loop_protocol §4 (hebbiana, EMA, decaimiento) y §5 (poda)"}
+  ],
+  "lessons": [
+    "Excluir ASSOCIATED_WITH y FAILED_DUE_TO del aprendizaje hebbiano: un fallo no debe debilitar la lección que lo advertía",
+    "Los factores (1−w) para potenciar y w para deprimir acotan el peso en [0, 1] sin recortes ni normalizaciones extra",
+    "Escalar la penalización por la activación del RETRIEVE vuelve contextual el aprendizaje: solo cambia lo que se recordó",
+    "Al testear una regla que se compone con otra posterior, aislarla y añadir un control que demuestre que el test puede fallar"
+  ]
+}

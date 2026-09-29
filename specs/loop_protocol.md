@@ -72,15 +72,41 @@ Parámetros (`RetrievalConfig`): `α = 0.7`, `τ_seed = 0.25`, `top_k = 20`, `δ
 
 ## 4. Consolidación (CONSOLIDATE)
 
-Regla: `w ← w + η · (objetivo − w)`, con `last_updated ← clock` y `count += 1`.
+Toda actualización fija `last_updated ← clock` y `count += 1`.
+
+### 4.1 Regla hebbiana (rutas entre nodos co-activados)
+
+```
+r = +1 (éxito):  Δw = η_h · a_i · a_j · (1 − w)      potenciación, satura en 1
+r = −1 (fallo):  Δw = −η_h · a_i · a_j · w           depresión, satura en 0
+```
+
+`η_h = 0.3`. Para cada paso con acción `a` (`a_j = 1`):
+
+| Arista | `a_i` |
+|---|---|
+| `g -LEADS_TO-> a` (meta actual) | 1 |
+| `u -LEADS_TO/RESOLVED_BY-> a` (contexto: metas pasadas, errores resueltos) | `A(u)` del RETRIEVE previo (0 si no se recuperó: sin cambio) |
+
+`ASSOCIATED_WITH` y `FAILED_DUE_TO` **no** son hebbianas: que una acción falle no debe debilitar la lección que advertía ese fallo.
+
+### 4.2 Refuerzo dirigido (EMA) de relaciones agregadas
+
+Regla: `w ← w + η · (objetivo − w)`.
 
 | Evento | Arista | Objetivo | η |
 |---|---|---|---|
 | Acción `a` resuelve la meta `g` | `g -RESOLVED_BY-> a` | 1 | 0.4 |
 | Acción `a` tiene éxito | `a -FAILED_DUE_TO-> e` (todas) | 0 | 0.2 |
-| `a` tiene éxito tras fallo con error `e` | `e -RESOLVED_BY-> a` | 1 | 0.4 |
+| `a` es el primer éxito tras fallo con error `e` | `e -RESOLVED_BY-> a` | 1 | 0.4 |
 | Acción `a` falla con error `e` | `a -FAILED_DUE_TO-> e` | 1 | 0.4 |
-| Acción `a` falla | `g' -RESOLVED_BY-> a` (metas pasadas) | 0 | 0.2 |
+
+La penalización de metas pasadas `g' -RESOLVED_BY-> a` ante un fallo ya no es uniforme: la aplica la regla hebbiana en proporción a `A(g')`, así que solo se debilitan las experiencias que efectivamente se recordaron en este contexto.
+
+### 4.3 Decaimiento
+
+- **Perezoso**: `w̃ = w · exp(−λₑ · Δt)` al leer (lo usa la recuperación).
+- **Explícito**: `Consolidator.decay()` materializa `w ← w̃` y `last_updated ← clock`; es equivalente (test de equivalencia) e idempotente en el mismo tick.
 
 Lecciones (`Concept kind=lesson`) generadas:
 
@@ -89,7 +115,11 @@ Lecciones (`Concept kind=lesson`) generadas:
 
 ## 5. Poda
 
-Cada `prune_every` episodios: eliminar aristas con `w̃ < 0.02` y luego nodos de grado 0, **excepto** `Goal` (registro episódico).
+Cada `prune_every` episodios:
+
+1. eliminar aristas con `w̃ < prune_threshold` (0.02);
+2. si `max_edges` está definido, eliminar las más débiles (por `w̃`) hasta respetarlo;
+3. eliminar nodos de grado 0, **excepto** `Goal` (registro episódico).
 
 ## 6. Criterio de aceptación (benchmark)
 

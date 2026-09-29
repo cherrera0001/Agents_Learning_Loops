@@ -128,7 +128,9 @@ class Agent:
         ep.transitions.append(State.CONSOLIDATE)
         if goal_node:
             ep.lessons = self.consolidator.consolidate_episode(
-                goal_node, [(s.tool, s.result) for s in ep.steps]
+                goal_node,
+                [(s.tool, s.result) for s in ep.steps],
+                activation=ep.retrieval.activation if ep.retrieval else None,
             )
             if self.prune_every and episode_id % self.prune_every == 0:
                 self.consolidator.prune()
