@@ -2,12 +2,12 @@
 
 Algoritmo
 ---------
-1. **Siembra**: la consulta (texto de la meta) activa
-   - nodos ``Goal`` pasados, con activación = similitud léxica con la consulta;
-   - nodos ``Concept`` de tipo *topic* cuyo término aparece en la consulta.
-2. **Propagación**: durante ``max_hops`` saltos, cada nodo transmite
-   ``a · decay · peso_efectivo`` a sus vecinos (hacia adelante y, atenuado por
-   ``REVERSE_FACTOR``, hacia atrás). La activación acumulada se satura en 1.0.
+1. **Siembra híbrida**: la consulta activa todo nodo con texto (Goal, Action,
+   Concept) cuya similitud ``α · coseno(embeddings) + (1 − α) · léxica`` supere
+   ``min_seed_similarity`` (top-k), más los ``Concept(topic)`` cuyo término
+   aparece literalmente en la consulta.
+2. **Propagación**: activación propagada con umbral de disparo, refracción y
+   normalización por fan-out (ver ``spread_trace``).
 3. **Puntuación de acciones**: ``score(a) = relevancia(a) · valencia(a)``
    - ``relevancia`` = activación que llegó al nodo ``Action`` (¿cuán asociado
      está al contexto actual?);
@@ -17,31 +17,23 @@ Algoritmo
 Una acción nunca vista tiene score 0: queda por debajo de las acciones exitosas
 y por encima de las que ya fallaron. Así el agente *no repite el mismo error*.
 
-La similitud es deliberadamente simple (bolsa de palabras + coseno) para no
-depender de modelos de embeddings; ``Retriever`` acepta cualquier función
-``similarity(a, b) -> float`` si se quiere sustituir por embeddings reales.
+Por defecto los embeddings son léxicos (``LexicalEmbedder``, sin dependencias);
+con el extra ``[embeddings]`` se puede usar ``FastEmbedEmbedder`` para recuperar
+paráfrasis sin palabras en común.
 """
 
 from __future__ import annotations
 
 import math
-import re
-import unicodedata
-from collections import Counter, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Callable, Iterable, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .graph import EdgeType, MemoryGraph, NodeType
-
-STOPWORDS = {
-    # español
-    "el", "la", "los", "las", "de", "del", "en", "para", "por", "con", "un", "una",
-    "y", "o", "a", "al", "que", "es", "hoy", "mi", "su",
-    # inglés
-    "the", "of", "for", "in", "on", "to", "and", "or", "an", "is", "my", "get",
-}
+from .embeddings import Embedder, LexicalEmbedder, cosine
+from .graph import EdgeType, MemoryGraph, Node, NodeType
+from .text import STOPWORDS, cosine_similarity, tokenize  # noqa: F401  (API pública)
 
 # Las asociaciones son simétricas; el resto de relaciones se recorren hacia
 # atrás con menor intensidad (p. ej. de una Action a las Goals que la usaron).
@@ -51,25 +43,6 @@ REVERSE_FACTOR = {
     EdgeType.RESOLVED_BY.value: 0.5,
     EdgeType.FAILED_DUE_TO.value: 0.5,
 }
-
-
-def _strip_accents(text: str) -> str:
-    return "".join(
-        c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c)
-    )
-
-
-def tokenize(text: str) -> list[str]:
-    words = re.findall(r"[a-z0-9_]+", _strip_accents(text.lower()))
-    return [w for w in words if w not in STOPWORDS and len(w) > 1]
-
-
-def cosine_similarity(a: str, b: str) -> float:
-    ca, cb = Counter(tokenize(a)), Counter(tokenize(b))
-    if not ca or not cb:
-        return 0.0
-    dot = sum(ca[t] * cb[t] for t in ca)
-    return dot / (math.sqrt(sum(v * v for v in ca.values())) * math.sqrt(sum(v * v for v in cb.values())))
 
 
 class RetrievalConfig(BaseModel):
@@ -85,7 +58,18 @@ class RetrievalConfig(BaseModel):
     fan_out: Literal["none", "sqrt", "linear"] = Field(
         "sqrt", description="Normalización de la salida por el grado del nodo que dispara."
     )
-    min_goal_similarity: float = Field(0.2, ge=0.0, le=1.0)
+    alpha: float = Field(
+        0.7, ge=0.0, le=1.0, description="Peso del canal semántico en la similitud híbrida."
+    )
+    min_seed_similarity: float = Field(
+        0.25, ge=0.0, le=1.0, description="Similitud híbrida mínima para sembrar un nodo."
+    )
+    seed_top_k: int = Field(20, ge=1, description="Máximo de nodos sembrados por similitud.")
+
+
+# Tipos de nodo con texto que participan en la siembra. Los Outcome se excluyen:
+# sus etiquetas ("success", "failure: ...") duplican a los Concept(error).
+INDEXED_TYPES = {NodeType.GOAL, NodeType.ACTION, NodeType.CONCEPT}
 
 
 @dataclass
@@ -135,25 +119,56 @@ class Retriever:
     def __init__(
         self,
         memory: MemoryGraph,
-        similarity: Callable[[str, str], float] = cosine_similarity,
+        embedder: Embedder | None = None,
         config: RetrievalConfig | None = None,
+        lexical_similarity: Callable[[str, str], float] = cosine_similarity,
     ) -> None:
         self.memory = memory
-        self.similarity = similarity
+        self.embedder = embedder or LexicalEmbedder()
         self.config = config or RetrievalConfig()
+        self.lexical_similarity = lexical_similarity
+
+    # ------------------------------------------------------------------ índice
+    def index(self) -> int:
+        """Calcula y cachea ``Node.embedding`` de los nodos con texto que no lo tengan.
+
+        Si la memoria fue indexada con otro modelo, se invalidan todos los vectores
+        (no son comparables entre modelos). Devuelve cuántos nodos se embebieron.
+        """
+        mg = self.memory
+        if mg.embedding_model != self.embedder.name:
+            for node in mg.nodes():
+                node.embedding = None
+            mg.embedding_model = self.embedder.name
+        pending = [n for n in mg.nodes() if n.type in INDEXED_TYPES and n.embedding is None]
+        if pending:
+            for node, vec in zip(pending, self.embedder.embed([n.label for n in pending])):
+                node.embedding = vec
+        return len(pending)
 
     # ---------------------------------------------------------------- siembra
+    def hybrid_similarity(self, query: str, query_vec: list[float], node: Node) -> float:
+        a = self.config.alpha
+        semantic = cosine(query_vec, node.embedding) if node.embedding else 0.0
+        return a * max(semantic, 0.0) + (1 - a) * self.lexical_similarity(query, node.label)
+
     def seed(self, query: str) -> dict[str, float]:
+        """Siembra híbrida sobre todos los nodos con texto + coincidencia exacta de topics."""
         mg = self.memory
-        seeds: dict[str, float] = {}
-        for goal in mg.nodes_of_type(NodeType.GOAL):
-            sim = self.similarity(query, mg.node(goal).label)
-            if sim >= self.config.min_goal_similarity:
-                seeds[goal] = sim
+        self.index()
+        query_vec = self.embedder.embed([query])[0]
+        scored = [
+            (node.id, self.hybrid_similarity(query, query_vec, node))
+            for node in mg.nodes()
+            if node.type in INDEXED_TYPES
+        ]
+        scored = [(n, s) for n, s in scored if s >= self.config.min_seed_similarity]
+        scored.sort(key=lambda kv: -kv[1])
+        seeds = dict(scored[: self.config.seed_top_k])
         for token in set(tokenize(query)):
             topic = topic_id(token)
             if mg.has_node(topic):
-                seeds[topic] = max(seeds.get(topic, 0.0), 1.0)
+                seeds[topic] = 1.0
         return seeds
 
     # ----------------------------------------------------------- propagación

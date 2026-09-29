@@ -9,8 +9,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable
 
-from ..memory.associative import RetrievalResult, Retriever
+from ..memory.associative import RetrievalConfig, RetrievalResult, Retriever
 from ..memory.consolidation import Consolidator
+from ..memory.embeddings import Embedder
 from ..memory.graph import MemoryGraph
 from .tools import Tool, ToolResult
 
@@ -69,6 +70,8 @@ class Agent:
         max_attempts: int = 3,
         evaluator: Evaluator = default_evaluator,
         prune_every: int = 10,
+        embedder: Embedder | None = None,
+        retrieval_config: RetrievalConfig | None = None,
     ) -> None:
         self.tools = {t.name: t for t in tools}
         self.memory = memory if memory is not None else MemoryGraph()
@@ -76,7 +79,7 @@ class Agent:
         self.max_attempts = max_attempts
         self.evaluator = evaluator
         self.prune_every = prune_every
-        self.retriever = Retriever(self.memory)
+        self.retriever = Retriever(self.memory, embedder=embedder, config=retrieval_config)
         self.consolidator = Consolidator(self.memory)
         self.episodes: list[Episode] = []
 
