@@ -9,6 +9,9 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 - Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.
 - Documentación del modelo de construcción (qué modelo de Claude construye cada issue, cómo se aplica y con qué fuerza), sin cambio de comportamiento: README § 3.2 y `docs/entorno/enrutamiento.md`.
 
+### Corregido
+- Documentación (sin cambio de comportamiento ni de evidencia): el README separa la campaña histórica (6 tareas), la referencia v2 (9 tareas, 6 permutaciones) y el resultado negativo de H4; sustituye limitaciones y hoja de ruta obsoletas y distingue los hashes v1 (`checkout-bytes/v0`) de los v2 (`lf/v1`). `specs/loop_protocol.md` cita las rutas actuales de `core.py`, `models.py` y `test_learning.py` (#56).
+
 ## [0.2.0] - 2026-09-29
 
 ### Añadido

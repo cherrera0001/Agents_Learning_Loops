@@ -4,7 +4,7 @@ Esta especificación describe el **agente de biblioteca** ([glosario](../docs/en
 objeto de estudio del Experimento 0. No describe al solver acotado del Experimento 1 ni el trabajo de
 quien edita el repositorio: el harness de entorno está en [`docs/entorno/harness.md`](../docs/entorno/harness.md).
 
-Especificación de los estados y transiciones del agente (`src/agent/core.py`).
+Especificación de los estados y transiciones del agente (`src/associative_agent_loop/agent/core.py`).
 
 ## 1. Máquina de estados
 
@@ -21,7 +21,7 @@ stateDiagram-v2
     DONE --> [*]
 ```
 
-Las transiciones válidas están en `TRANSITIONS` (`src/agent/core.py`); cualquier otra lanza `IllegalTransition`.
+Las transiciones válidas están en `TRANSITIONS` (`src/associative_agent_loop/agent/core.py`); cualquier otra lanza `IllegalTransition`.
 
 | Estado | Entrada | Efecto sobre la memoria | Salida |
 |---|---|---|---|
@@ -39,7 +39,7 @@ Las transiciones válidas están en `TRANSITIONS` (`src/agent/core.py`); cualqui
 3. **Recuperar antes de escribir**: la recuperación ocurre *antes* de insertar el `Goal` actual, para que la meta no se active a sí misma.
 4. **Orden estable**: ante empate de `score`, se conserva el orden de las candidatas del PLAN. Con memoria vacía el agente se comporta igual que el agente sin memoria.
 5. **Pesos acotados**: `weight ∈ [0, 1]` siempre. Lo garantizan las reglas EMA y hebbiana y, además, `Edge` (Pydantic, `validate_assignment`) rechaza cualquier asignación fuera de rango.
-6. **Integridad referencial**: toda arista une dos nodos existentes; nodos y aristas se validan contra `src/memory/models.py` (ids `goal:|action:|outcome:|concept:`, `relation` del enum `Relation`).
+6. **Integridad referencial**: toda arista une dos nodos existentes; nodos y aristas se validan contra `src/associative_agent_loop/memory/models.py` (ids `goal:|action:|outcome:|concept:`, `relation` del enum `Relation`).
 7. **Contrato generado**: `specs/memory_schema.json` se genera desde los modelos (`python -m scripts.export_schema`); un test falla si no está sincronizado.
 
 ## 3. Recuperación (RETRIEVE)
@@ -141,5 +141,5 @@ Cada `prune_every` episodios:
 ## 6. Criterio de aceptación (benchmark)
 
 - Sin memoria: el agente repite el fallo en cada episodio.
-- Con memoria: el error inicial ocurre **una sola vez**; los episodios siguientes con metas semánticamente cercanas tienen éxito al primer intento (`tests/test_learning.py`).
+- Con memoria: el error inicial ocurre **una sola vez**; los episodios siguientes con metas semánticamente cercanas tienen éxito al primer intento (`tests/integration/test_learning.py`).
 - Con errores intermitentes: la memoria reduce el número total de llamadas frente al agente sin memoria.

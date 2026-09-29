@@ -1,0 +1,20 @@
+{
+  "seq": 19,
+  "id": "issue-56",
+  "goal": "docs: alinear el README con H4, hashes v2 y rutas reales",
+  "ref": "#56",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recall léxico antes de editar; fastembed no está instalado en el intérprete compartido, así que no se usó el canal semántico ni se descargaron modelos"},
+    {"action": "update_docs", "success": true, "note": "README § 7.2: campaña histórica (6 tareas), referencia v2 (9 tareas, 6 permutaciones, 2 réplicas) y H4 negativo con sus denominadores; § 12 y § 13 sin limitaciones ni hoja de ruta obsoletas; hashes v1 checkout-bytes/v0 frente a v2 lf/v1 con el run de CI 36629907320 sobre 93693fe comprobado en modo lectura"},
+    {"action": "update_spec", "success": true, "note": "specs/loop_protocol.md: solo las tres rutas inexistentes sustituidas por las actuales; fórmulas, invariantes y diseño intactos"},
+    {"action": "run_tests", "success": false, "error": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto"},
+    {"action": "add_dependency", "success": true, "note": "PYTHONPATH con separador ';' y rutas de Windows; se comprobó con associative_agent_loop.__file__ que el import apunta al worktree antes de repetir ruff, mypy, pytest --cov (98.52 %, 158 tests), export_schema, export_experiment_schema y mutation_check"},
+    {"action": "update_docs", "success": true, "note": "CHANGELOG Unreleased, sección Corregido, sin versión ni milestone nuevos"},
+    {"action": "rebuild_memory", "success": true, "note": "devlog rebuild tras este episodio; dev_memory.json solo cambia por reconstrucción"}
+  ],
+  "lessons": [
+    "Al fijar PYTHONPATH para un Python de Windows desde Git Bash, usar ';' y rutas de Windows, y comprobar con __file__ que el import resuelve al worktree antes de fiar el resultado de las pruebas",
+    "En un README, dar cada resultado con su campaña, sus denominadores y su esquema de hash evita mezclar la campaña histórica con la de referencia v2",
+    "Afirmar el estado de CI solo con el run y el commit comprobados; no extenderlo a otros commits ni a un PR futuro"
+  ]
+}

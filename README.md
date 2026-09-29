@@ -578,7 +578,9 @@ SHA-256 canónico) con fuentes, parches, salidas de tests, decisiones, recuperac
 actualizaciones de memoria son recibos separados. Los agregados se **generan** a partir de los recibos
 ([`results/`](results/README.md)) y nunca se editan a mano.
 
-**Resultados** (partición de transferencia, 18 ejecuciones por condición):
+**Resultados de la campaña histórica** (6 tareas: 3 de entrenamiento y 3 de transferencia; partición de
+transferencia, 18 ejecuciones por condición). Es la campaña de [`results/`](results/README.md) y
+[`evidence/runs/`](evidence/runs/), con recibos v1 (`checkout-bytes/v0`):
 
 | Métrica | A · Sin memoria | B · Historial | C · Asociativa |
 |---|---|---|---|
@@ -599,10 +601,56 @@ verificó los 144 recibos y replicó la campaña (54/54 comportamientos idéntic
   llegan a 1.0 intentos. La asociativa es más **precisa**. Durante el entrenamiento, una lección de otra
   causa puede desviar la primera estrategia (transferencia negativa).
 
+**Campaña de referencia v2** (9 tareas: las 6 históricas más 3 tareas engañosas, EXP-07..09; las 6
+permutaciones del orden sin memoria y 2 réplicas; recibos v2 con hashes `lf/v1`). Evidencia en
+[`evidence/reference-v2/`](evidence/reference-v2/) y agregados en [`results/reference-v2/`](results/reference-v2/README.md).
+Los desgloses [por familia](results/reference-v2/family_breakdown.md) y
+[por tarea](results/reference-v2/task_breakdown.md) separan las tareas de transferencia originales de las
+engañosas, que se interpretan al revés y nunca se agrupan. Son conteos descriptivos con 12 ejecuciones por
+tarea y condición:
+
+| Tareas de transferencia | Intentos · A · Sin memoria | Intentos · B · Historial | Intentos · C · Asociativa |
+|---|---|---|---|
+| Originales (EXP-04..06) | 2.0 | 1.0 | 1.0 |
+| Engañosas (EXP-07..09) | 2.0 | 2.5 | 2.5 |
+
+En las tareas engañosas el texto del issue apunta a otra familia de causa; ninguna de las dos memorias
+mejora a la ausencia de memoria y ambas necesitan más intentos. Una lectura consistente con los datos es que
+el beneficio de las tareas originales depende de las pistas léxicas del texto del issue, pero el diseño no
+aísla esa causa, así que no se trata como demostrada.
+
+**H4: memoria asociativa frente a historial textual (negativo).** El [pre-registro](docs/preregistration/h4-associative-vs-history.md)
+preguntó si aparece una diferencia de resultado entre C y B cuando la tarea ofrece un señuelo plausible.
+El [informe](docs/results/h4-associative-vs-history.md) (una réplica por semilla, como fija el pre-registro)
+concluye que **H4 no se sostiene en este diseño**: H4a sin diferencia entre C y B (0 ejecuciones de
+diferencia) y H4b no apoyada:
+
+| Métrica pre-registrada | A · Sin memoria | B · Historial | C · Asociativa |
+|---|---|---|---|
+| Éxito al primer intento en tareas engañosas | 6/18 | **0/18** | **0/18** |
+| Transferencia negativa en entrenamiento (tasa) | — | 4/12 (1/3) | 2/6 (1/3) |
+
+La diferencia en el conteo bruto de transferencia negativa (4 frente a 2) no es diferencia de tasa: los
+denominadores son distintos y las tasas son iguales. Ninguna regla pre-registrada apoya una ventaja de C.
+
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
-> superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. El solver acotado
-> tiene tres operadores de reparación escritos a mano y las réplicas con la misma semilla verifican
-> determinismo, no observaciones independientes.
+> superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. Tampoco se
+> demuestra que una pista léxica sea la causa de la ganancia observada. El solver acotado tiene tres
+> operadores de reparación escritos a mano; las réplicas con la misma semilla verifican determinismo, no
+> observaciones independientes; y ningún test del harness exige una ganancia positiva agregada.
+> El objetivo operativo general (no repetir un error cuya causa ya se observó) sigue **parcial**: H4 se
+> resolvió negativamente en este diseño, y la pregunta general sigue abierta. El informe no evaluó
+> recuperación semántica ni causal.
+
+**Dos esquemas de hash.** Los recibos históricos de `evidence/runs/` son v1 (`checkout-bytes/v0`): el hash
+de las fuentes depende de los bytes del checkout, incluidos los saltos de línea CRLF/LF. Los recibos v2
+(`evidence/reference-v2/`, `evidence/reference-lf-v1/`) normalizan a LF (`lf/v1`); no son comparables por
+hash con los v1. La referencia portable [`evidence/reference-lf-v1/`](evidence/reference-lf-v1/) se generó en
+Windows y CI la compara en Ubuntu (`python -m experiments compare`). En la ejecución
+[36629907320](https://github.com/cherrera0001/Agents_Learning_Loops/actions/runs/36629907320/job/109616197349)
+sobre el commit `93693fe`, el job *Experiment 1 A/B/C reproducibility* terminó en `success`, con los pasos de
+portabilidad entre plataformas y de comparación en `success`. Es el resultado de ese commit; no es una
+garantía general de CI.
 
 ```bash
 python -m experiments reproduce EXP-04          # el defecto falla antes de reparar
@@ -769,8 +817,9 @@ implementador abre el PR y no hace merge: el merge lo hace el orquestador, despu
 |---|---|---|
 | Búsqueda vectorial por fuerza bruta en Python | Coste O(N) por consulta; adecuado hasta miles de nodos | Índice ANN (FAISS, hnswlib) detrás de `Embedder`/`Retriever` |
 | Episodios de un solo nivel | El agente de biblioteca ordena herramientas; no descompone metas en subobjetivos | `Planner` basado en LLM |
-| Experimento 1 acotado: 6 tareas, un proyecto, 3 operadores escritos a mano | No sustenta generalización ni significancia estadística | Tareas adicionales y benchmark con distractores (§ 13) |
-| Hashes de recibos sobre bytes del checkout | Réplicas en otra configuración CRLF/LF difieren en hash aunque el comportamiento coincida | Normalización antes de hashear (#42) |
+| Experimento 1 acotado: un proyecto, 3 operadores escritos a mano; 6 tareas en la campaña histórica y 9 en la referencia v2 | No sustenta generalización ni significancia estadística | Sin línea de trabajo abierta en este issue |
+| H4 no se sostiene en este diseño: con tareas engañosas, C y B aciertan 0/18 al primer intento frente a 6/18 sin memoria | La pregunta general (si alguna memoria asociativa aporta más que el historial) sigue abierta; solo se evaluó recuperación léxica | [`docs/results/h4-associative-vs-history.md`](docs/results/h4-associative-vs-history.md) (*Alcance*) |
+| Los recibos históricos de `evidence/runs/` usan hashes v1 (`checkout-bytes/v0`) | No son comparables por hash con los v2; la dependencia CRLF/LF quedó resuelta en los recibos v2 (`lf/v1`, #42) | Se conservan como evidencia histórica; véase [§ 7.2](#72-experimento-1-transferencia-entre-tareas-de-software) |
 | El solver acotado es código local auditado y el harness de experimento no es un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
 | Un Markdown no cambia el modelo de la sesión ya abierta | La política de `docs/estimation.md` no se aplica sola; el ID solo viaja al crear el subagente | La regla de `AGENTS.md` obliga a leer la política antes de delegar; el frontmatter `model:` de `.claude/agents/<rol>.md` sería la fijación futura, y este cambio no lo crea ([§ 3.2](#32-modelo-de-construcción)) |
 | No existía un contrato explícito para quien edita el repositorio | Reglas de trabajo repartidas entre `CONTRIBUTING.md`, `learning/README.md` y el protocolo | Cubierto por la base documental de [`docs/entorno/`](docs/entorno/README.md); es documentación, no cambia el algoritmo |
@@ -781,8 +830,9 @@ implementador abre el PR y no hace merge: el merge lo hace el orquestador, despu
 ## 13. Hoja de ruta
 
 La versión 0.2.0 estableció el mecanismo y el Experimento 1 lo llevó a tareas reales de software con
-evidencia auditable (#24–#36). La fase actual endurece esa evidencia y aborda la pregunta que sigue
-abierta: si la memoria asociativa aporta algo que el historial textual no aporta.
+evidencia auditable (#24–#36). La fase posterior endureció esa evidencia (#42–#45) y evaluó H4 (#46): en
+este diseño, la memoria asociativa no supera al historial textual. La pregunta general sigue abierta; esta
+sección no propone trabajo nuevo.
 
 ```mermaid
 flowchart TB
@@ -831,14 +881,14 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 ├── benchmark/
 │   ├── public/                # tareas y tests de aceptación visibles para el solver
 │   └── private/               # etiquetas causales, pares e inyecciones (solo el evaluador)
-├── evidence/                  # recibos inmutables: baseline, runs, validation, pilot
-├── results/                   # agregados generados desde los recibos
+├── evidence/                  # recibos inmutables: baseline, runs (v1), reference-v2 y reference-lf-v1 (v2), validation, pilot
+├── results/                   # agregados generados desde los recibos (raíz: histórica; reference-v2/)
 ├── specs/
 │   ├── memory_schema.json     # JSON Schema generado desde los modelos (Experimento 0)
 │   ├── loop_protocol.md       # estados, fórmulas e invariantes
 │   ├── software_learning_protocol.md  # protocolo del Experimento 1
 │   └── software_memory_schema_v1.json, reflection_schema_v1.json
-├── docs/                      # verificación, estimación, referencia histórica del Experimento 0
+├── docs/                      # verificación, estimación, pre-registro y resultados de H4, referencia histórica del Experimento 0
 │   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills, enrutamiento.md
 ├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
 ├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
