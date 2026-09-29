@@ -1,0 +1,10 @@
+{
+  "id": "EXP-07",
+  "title": "Task listing fails right after startup",
+  "context": "Immediately after Application.start, some calls to /tasks raise TypeError and cannot be served, even though the database connection is up and other calls to /tasks are served.",
+  "expected": "After Application.start every call to /tasks is answered. A call carrying an unrecognised header value receives the same rejection status as a call carrying no header; the recognised header value still receives the task list.",
+  "observed": "Immediately after Application.start, some calls to /tasks raise TypeError and cannot be served, even though the database connection is up and other calls to /tasks are served.",
+  "acceptance_criteria": "After Application.start every call to /tasks is answered. A call carrying an unrecognised header value receives the same rejection status as a call carrying no header; the recognised header value still receives the task list.",
+  "reproduction": "python -m experiments reproduce EXP-07",
+  "test_file": "EXP-07_test.py"
+}

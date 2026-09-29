@@ -1,5 +1,10 @@
 # ruff: noqa: E501 -- authoring fixtures contain verbatim prose and test source
-"""Build six public task contracts and evaluator-only defect metadata.
+"""Build the public task contracts and evaluator-only defect metadata.
+
+EXP-01..06 are the fixed software-learning-v1 campaign (``tasks.json``; never
+edit: published receipts pin its hash). EXP-07..09 are misleading transfer
+tasks without lexical cues for their true family (#45); their annotations live
+in ``tasks_misleading.json`` so the published campaign stays verifiable.
 
 Authoring tool only. Never imported by the solver.
 """
@@ -9,8 +14,140 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Misleading transfer tasks (#45). The public title/context deliberately reuse
+# vocabulary from the *decoy* family's training issue and avoid the vocabulary
+# of the true family; only the source code reveals the cause. Every statement
+# stays true of the injected defect. tests/test_experiment_misleading.py
+# enforces the lexical property with the retrieval similarity itself.
+MISLEADING = [
+    {
+        "id": "EXP-07",
+        "title": "Task listing fails right after startup",
+        "context": "Immediately after Application.start, some calls to /tasks raise TypeError and cannot be served, even though the database connection is up and other calls to /tasks are served.",
+        "expected": "After Application.start every call to /tasks is answered. A call carrying an unrecognised header value receives the same rejection status as a call carrying no header; the recognised header value still receives the task list.",
+        "contract": """
+from app.api import Application
 
-def build():
+
+class Contract(unittest.TestCase):
+    def test_contract(self):
+        app = Application()
+        app.start()
+        try:
+            rejected = app.handle("/tasks")[0]
+            self.assertEqual(rejected, 401)
+            self.assertEqual(app.handle("/tasks", "guest")[0], rejected)
+            self.assertEqual(app.handle("/tasks", "demo-token"), (200, []))
+        finally:
+            app.database.close()
+""",
+        "family": "authentication",
+        "cause": "AUTH-01",
+        "distance": "L3",
+        "relevant": "EXP-01",
+        "decoy_family": "readiness",
+        "decoy": "EXP-03",
+        "decoy_reason": "Startup/database/served vocabulary of EXP-03; the guard checks the raw header instead of the looked-up principal.",
+        "path": "app/middleware.py",
+        "before": "    if principal is None:\n",
+        "after": "    if token is None:\n",
+    },
+    {
+        "id": "EXP-08",
+        "title": "Summary request returns a blank label",
+        "context": "A summary request without arguments returns count 0 with a blank label instead of Open tasks; no error is raised and the count is correct.",
+        "expected": "A summary produced without arguments reports the label Open tasks together with the correct count.",
+        "contract": """from unittest.mock import patch
+
+from app.worker import summarize
+
+
+class Contract(unittest.TestCase):
+    def test_contract(self):
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(summarize(), {"label": "Open tasks", "count": 0})
+""",
+        "family": "configuration",
+        "cause": "CONFIG-01",
+        "distance": "L5",
+        "relevant": "EXP-02",
+        "decoy_family": "authentication",
+        "decoy": "EXP-01",
+        "decoy_reason": "Request/returns/without/error vocabulary of EXP-01; the report label falls back to an empty string instead of its declared default.",
+        "path": "app/services/reporting.py",
+        "before": 'os.getenv("LEDGER_REPORT_LABEL") or DEFAULT_LABEL',
+        "after": 'os.getenv("LEDGER_REPORT_LABEL", "")',
+    },
+    {
+        "id": "EXP-09",
+        "title": "Summary fails to load in a clean environment",
+        "context": "Running the summary in a clean environment raises an exception instead of returning the Open tasks label and a count. No explicit configuration is set.",
+        "expected": "In a clean environment a summary returns the label Open tasks and count 0.",
+        "contract": """from unittest.mock import patch
+
+from app.worker import summarize
+
+
+class Contract(unittest.TestCase):
+    def test_contract(self):
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(summarize(), {"label": "Open tasks", "count": 0})
+""",
+        "family": "readiness",
+        "cause": "READY-01",
+        "distance": "L4",
+        "relevant": "EXP-03",
+        "decoy_family": "configuration",
+        "decoy": "EXP-02",
+        "decoy_reason": "Clean-environment/load/explicit-configuration vocabulary of EXP-02; the worker references initialize without calling it.",
+        "path": "app/worker.py",
+        "before": "    database.initialize()\n",
+        "after": "    database.initialize\n",
+    },
+]
+
+
+def build_misleading(public):
+    metadata = {}
+    for case in MISLEADING:
+        key = case["id"]
+        task = {
+            "id": key,
+            "title": case["title"],
+            "context": case["context"],
+            "expected": case["expected"],
+            "observed": case["context"],
+            "acceptance_criteria": case["expected"],
+            "reproduction": f"python -m experiments reproduce {key}",
+            "test_file": f"{key}_test.py",
+        }
+        (public / f"{key}.json").write_text(json.dumps(task, indent=2) + "\n", encoding="utf-8")
+        (public / f"{key}_test.py").write_text("import unittest\n" + case["contract"], encoding="utf-8")
+        metadata[key] = {
+            "experiment": "software-learning-v1",
+            "task_set": "misleading-v1",
+            "family": case["family"],
+            "difficulty": "L3",
+            "hidden_cause_id": case["cause"],
+            "split": "transfer",
+            "distance": case["distance"],
+            "relevant_training_tasks": [case["relevant"]],
+            "decoy_family": case["decoy_family"],
+            "decoy_training_tasks": [case["decoy"]],
+            "decoy_reason": case["decoy_reason"],
+            "lexical_cue_for_true_family": False,
+            "tracking_issue": 45,
+            "mutation": {"path": case["path"], "before": case["before"], "after": case["after"]},
+        }
+    return metadata
+
+
+def build(rewrite_v1=False):
+    """Write EXP-07..09 and pairs.json; EXP-01..06 only with ``rewrite_v1``.
+
+    The checked-in EXP-01..06 test files were formatted after generation, so
+    rewriting them changes the acceptance hashes pinned by published receipts.
+    """
     public = ROOT / "benchmark/public"
     private = ROOT / "benchmark/private"
     public.mkdir(parents=True, exist_ok=True)
@@ -164,8 +301,9 @@ class Contract(unittest.TestCase):
             "reproduction": f"python -m experiments reproduce {key}",
             "test_file": f"{key}_test.py",
         }
-        (public / f"{key}.json").write_text(json.dumps(task, indent=2) + "\n", encoding="utf-8")
-        (public / f"{key}_test.py").write_text("import unittest\n" + contract, encoding="utf-8")
+        if rewrite_v1:
+            (public / f"{key}.json").write_text(json.dumps(task, indent=2) + "\n", encoding="utf-8")
+            (public / f"{key}_test.py").write_text("import unittest\n" + contract, encoding="utf-8")
         metadata[key] = {
             "experiment": "software-learning-v1",
             "family": family,
@@ -176,7 +314,10 @@ class Contract(unittest.TestCase):
             "relevant_training_tasks": [] if n < 4 else [f"EXP-{n - 3:02d}"],
             "mutation": {"path": path, "before": before, "after": after},
         }
-    (private / "tasks.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    if rewrite_v1:
+        (private / "tasks.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    misleading = build_misleading(public)
+    (private / "tasks_misleading.json").write_text(json.dumps(misleading, indent=2) + "\n", encoding="utf-8")
     (private / "pairs.json").write_text(
         json.dumps(
             {
@@ -187,6 +328,14 @@ class Contract(unittest.TestCase):
                         "distance": d,
                     }
                     for i, d in enumerate(["L3", "L5", "L4"], 1)
+                ]
+                + [
+                    {
+                        "train": item["relevant_training_tasks"][0],
+                        "transfer": key,
+                        "distance": item["distance"],
+                    }
+                    for key, item in misleading.items()
                 ],
                 "negative": [
                     {
@@ -194,6 +343,17 @@ class Contract(unittest.TestCase):
                         "transfer": "EXP-05",
                         "reason": "Similar None/AttributeError symptoms; identity and environment causes differ.",
                     }
+                ]
+                + [
+                    {
+                        "train": item["decoy_training_tasks"][0],
+                        "transfer": key,
+                        "kind": "misleading-no-lexical-cue",
+                        "decoy_family": item["decoy_family"],
+                        "true_family": item["family"],
+                        "reason": item["decoy_reason"],
+                    }
+                    for key, item in misleading.items()
                 ],
                 "taxonomy": {
                     "L0": "EXACT",
@@ -212,4 +372,6 @@ class Contract(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    build()
+    import sys
+
+    build(rewrite_v1="--rewrite-v1" in sys.argv[1:])
