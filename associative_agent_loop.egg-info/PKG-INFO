@@ -1,3 +1,24 @@
+Metadata-Version: 2.4
+Name: associative-agent-loop
+Version: 0.1.0
+Summary: Memoria asociativa en grafo para bucles de aprendizaje de agentes
+License-Expression: MIT
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: networkx>=3.0
+Requires-Dist: pydantic>=2.0
+Provides-Extra: embeddings
+Requires-Dist: fastembed>=0.4; extra == "embeddings"
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-cov>=5.0; extra == "dev"
+Requires-Dist: hypothesis>=6.0; extra == "dev"
+Requires-Dist: jsonschema>=4.0; extra == "dev"
+Requires-Dist: ruff>=0.5; extra == "dev"
+Requires-Dist: mypy>=1.10; extra == "dev"
+Dynamic: license-file
+
 # associative-agent-loop
 
 Implementación mínima y didáctica de una **memoria asociativa en grafo** para
@@ -11,24 +32,14 @@ extrae lecciones, las enlaza en un grafo semántico y las recupera por
 
 ## Inicio rápido
 
-Requiere Python ≥ 3.11.
-
 ```bash
 python -m venv .venv
 .venv/Scripts/activate        # Windows  (Linux/macOS: source .venv/bin/activate)
-
-pip install -e .[dev]               # núcleo (networkx, pydantic) + herramientas de desarrollo
-pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, sin PyTorch)
+pip install -r requirements.txt
 
 python -m src.main            # demo: escribe memory_graph.json
-pytest                        # los tests marcados `embeddings` se omiten si falta el extra
+pytest                        # 16 pruebas
 ```
-
-| Instalación | Incluye |
-|---|---|
-| `pip install -e .` | Núcleo: `networkx`, `pydantic`. Similitud léxica, sin descarga de modelos |
-| `.[embeddings]` | `fastembed` para búsqueda semántica (#3) |
-| `.[dev]` | `pytest`, `pytest-cov`, `hypothesis`, `jsonschema`, `ruff`, `mypy` |
 
 Salida de la demo:
 

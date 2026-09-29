@@ -1,10 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "associative-agent-loop"
 version = "0.1.0"
 description = "Memoria asociativa en grafo para bucles de aprendizaje de agentes"
-requires-python = ">=3.10"
-dependencies = ["networkx>=3.0"]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "networkx>=3.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+# Embeddings locales (ONNX, sin PyTorch). Alternativa: sentence-transformers.
+embeddings = ["fastembed>=0.4"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.0",
+    "jsonschema>=4.0",
+    "ruff>=0.5",
+    "mypy>=1.10",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+markers = [
+    "embeddings: requiere el extra [embeddings]; se omite si fastembed no está instalado",
+]
