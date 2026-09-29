@@ -83,7 +83,14 @@ is created for EXP-07..09. They are published in the repository only
 
 Run: `python -m experiments run --task-set misleading-v1 --seeds 1 4 5 6 7 9
 --replicates 1 --evidence-dir evidence/pilot/misleading-v1`. The six seeds
-cover the six permutations of the no-memory prior exactly once.
+cover the six permutations of the no-memory prior exactly once. `run`
+defaults to `--task-set v1`, and CI pins `--task-set v1` explicitly so its
+portability campaign keeps matching `evidence/reference-lf-v1` (six tasks).
+
+The evaluator keeps the `tasks.json` hash check for every receipt and checks
+`tasks_misleading.json` for every receipt that lists it or runs one of its
+tasks, so a changed causal label of an evaluated task still fails closed while
+the published v1 campaign, which never used the new file, still reproduces.
 
 ## Conditions
 
