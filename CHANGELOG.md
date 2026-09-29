@@ -14,6 +14,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 - Fase RETRIEVE, `Planner`, máquina de estados verificada y benchmark `--json` (#6).
 - Valencia contextual basada en evidencia episódica y escenario `cross_domain` (#8).
 - Paquete `associative_agent_loop`, CLI `aal-benchmark`, `AppConfig` (TOML + `AAL_*`), `GraphStore` con escritura atómica, logging (#9).
+- Suite `tests/unit` + `tests/integration`, propiedades con `hypothesis`, verificación por mutación (`scripts/mutation_check.py`) y cobertura del 98 % (#7).
 
 ### Cambiado
 - Dependencias: `pydantic` en el núcleo; extras `embeddings` y `dev`; Python ≥ 3.11 (#1).
