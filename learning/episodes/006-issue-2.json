@@ -1,0 +1,25 @@
+{
+  "seq": 6,
+  "id": "issue-2",
+  "goal": "Modelos Pydantic para Node/Edge y JSON Schema generado; validar serialización",
+  "ref": "#2",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recomendó review_code (val +1.00) y advirtió riesgos en git_push y write_tests"},
+    {"action": "write_code", "success": true, "note": "models.py (Node, Edge, GraphDocument) y MemoryGraph sobre modelos; migración v1"},
+    {"action": "edit_module", "success": true, "note": "call sites de dict a atributos en associative, consolidation y devlog"},
+    {"action": "write_tests", "success": false, "error": "tests v0.1 usaban ids sin prefijo ('a', 'e'), rechazados por la validación nueva"},
+    {"action": "edit_module", "success": true, "note": "tests con ids válidos: la regla se mantiene, se corrigen los datos"},
+    {"action": "write_tests", "success": true, "note": "test_models.py: validación, decay por arista, esquema, round-trip, migración v1"},
+    {"action": "validate_schema", "success": true, "note": "specs/memory_schema.json generado desde GraphDocument y validado con jsonschema"},
+    {"action": "review_code", "success": true, "note": "git status limpio; docs aún describían λ global, corregidas"},
+    {"action": "update_spec", "success": true, "note": "loop_protocol: invariantes 4-6 y λ por arista"},
+    {"action": "run_tests", "success": true, "note": "32 passed; demo con resultados idénticos"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json ahora en schema_version 2"}
+  ],
+  "lessons": [
+    "Cuando la validación nueva rechaza datos de tests antiguos, corregir los datos y no relajar la regla",
+    "Generar el JSON Schema desde los modelos y testear la sincronización elimina la deriva entre código y spec",
+    "Con Pydantic validate_assignment, un peso fuera de rango falla en el momento de asignarse y no al serializar",
+    "Mantener un alias retrocompatible (EdgeType = Relation) permite migrar la API sin romper a los consumidores"
+  ]
+}

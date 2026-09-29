@@ -113,7 +113,7 @@ class Retriever:
         mg = self.memory
         seeds: dict[str, float] = {}
         for goal in mg.nodes_of_type(NodeType.GOAL):
-            sim = self.similarity(query, mg.node(goal)["label"])
+            sim = self.similarity(query, mg.node(goal).label)
             if sim >= self.min_goal_similarity:
                 seeds[goal] = sim
         for token in set(tokenize(query)):
@@ -133,7 +133,7 @@ class Retriever:
                 for _, dst, data in mg.out_edges(node):
                     incoming[dst] += a * self.decay * mg.effective_weight(data)
                 for src, _, data in mg.in_edges(node):
-                    rev = REVERSE_FACTOR[data["type"]]
+                    rev = REVERSE_FACTOR[data.relation.value]
                     incoming[src] += a * self.decay * rev * mg.effective_weight(data)
             frontier = {n: a for n, a in incoming.items() if a >= self.threshold}
             if not frontier:
@@ -168,11 +168,11 @@ class Retriever:
         ranked = sorted(scored, key=lambda s: -s.score)  # sorted() es estable
 
         lessons = [
-            self.memory.node(n)["label"]
+            self.memory.node(n).label
             for n, a in sorted(activation.items(), key=lambda kv: -kv[1])
             if self.memory.has_node(n)
-            and self.memory.node(n)["type"] == NodeType.CONCEPT.value
-            and self.memory.node(n).get("kind") == "lesson"
+            and self.memory.node(n).type == NodeType.CONCEPT
+            and self.memory.node(n).metadata.get("kind") == "lesson"
         ]
         return RetrievalResult(activation, ranked, lessons)
 

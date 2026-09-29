@@ -1,89 +1,202 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/associative-agent-loop/specs/memory_schema.json",
-  "title": "AssociativeMemoryGraph",
-  "description": "Serialización del grafo de memoria asociativa (MemoryGraph.to_dict).",
-  "type": "object",
-  "required": ["clock", "decay_rate", "nodes", "edges"],
-  "properties": {
-    "clock": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Reloj lógico: +1 por episodio."
-    },
-    "decay_rate": {
-      "type": "number",
-      "minimum": 0,
-      "description": "λ en recency_factor = exp(-λ · (clock - last_updated))."
-    },
-    "nodes": { "type": "array", "items": { "$ref": "#/$defs/Node" } },
-    "edges": { "type": "array", "items": { "$ref": "#/$defs/Edge" } }
-  },
+  "$id": "https://github.com/cherrera0001/Agents_Learning_Loops/specs/memory_schema.json",
+  "$comment": "GENERADO por scripts/export_schema.py desde src/memory/models.py. No editar a mano.",
   "$defs": {
-    "NodeType": { "enum": ["Goal", "Action", "Outcome", "Concept"] },
-    "EdgeType": { "enum": ["LEADS_TO", "RESOLVED_BY", "FAILED_DUE_TO", "ASSOCIATED_WITH"] },
     "Node": {
-      "type": "object",
-      "required": ["id", "type", "label", "created_at", "last_seen"],
+      "additionalProperties": false,
       "properties": {
         "id": {
-          "type": "string",
           "pattern": "^(goal|action|outcome|concept):.+$",
-          "description": "goal:<episodio> | action:<herramienta> | outcome:<episodio>:<paso> | concept:<kind>:<slug>"
+          "title": "Id",
+          "type": "string"
         },
-        "type": { "$ref": "#/$defs/NodeType" },
-        "label": { "type": "string" },
-        "created_at": { "type": "integer", "minimum": 0 },
-        "last_seen": { "type": "integer", "minimum": 0 }
-      },
-      "allOf": [
-        {
-          "if": { "properties": { "type": { "const": "Goal" } } },
-          "then": { "required": ["episode"], "properties": { "episode": { "type": "integer" } } }
+        "type": {
+          "$ref": "#/$defs/NodeType"
         },
-        {
-          "if": { "properties": { "type": { "const": "Outcome" } } },
-          "then": {
-            "required": ["success", "latency_ms", "episode", "step"],
-            "properties": {
-              "success": { "type": "boolean" },
-              "latency_ms": { "type": "number", "minimum": 0 },
-              "error": { "type": ["string", "null"] },
-              "episode": { "type": "integer" },
-              "step": { "type": "integer", "minimum": 0 }
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "embedding": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
             }
-          }
+          ],
+          "default": null,
+          "description": "Vector semántico del label (#3); None si no se ha calculado.",
+          "title": "Embedding"
         },
-        {
-          "if": { "properties": { "type": { "const": "Concept" } } },
-          "then": {
-            "required": ["kind"],
-            "properties": { "kind": { "enum": ["topic", "error", "lesson"] } }
-          }
-        }
-      ]
-    },
-    "Edge": {
-      "type": "object",
-      "required": ["source", "target", "type", "weight", "last_updated", "count"],
-      "properties": {
-        "source": { "type": "string" },
-        "target": { "type": "string" },
-        "type": { "$ref": "#/$defs/EdgeType" },
-        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
-        "last_updated": { "type": "integer", "minimum": 0 },
-        "count": {
-          "type": "integer",
+        "metadata": {
+          "additionalProperties": true,
+          "description": "Atributos de dominio: kind (Concept), success/latency_ms/error (Outcome), episode...",
+          "title": "Metadata",
+          "type": "object"
+        },
+        "created_at": {
+          "description": "Tick del reloj lógico en que se creó.",
           "minimum": 0,
-          "description": "Número de actualizaciones por refuerzo/penalización."
+          "title": "Created At",
+          "type": "integer"
+        },
+        "last_accessed_at": {
+          "description": "Último tick en que se escribió o activó.",
+          "minimum": 0,
+          "title": "Last Accessed At",
+          "type": "integer"
+        },
+        "activation_level": {
+          "default": 0.0,
+          "description": "Última activación propagada recibida.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Activation Level",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label",
+        "created_at",
+        "last_accessed_at"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "NodeType": {
+      "enum": [
+        "Goal",
+        "Action",
+        "Outcome",
+        "Concept"
+      ],
+      "title": "NodeType",
+      "type": "string"
+    },
+    "Relation": {
+      "enum": [
+        "LEADS_TO",
+        "RESOLVED_BY",
+        "FAILED_DUE_TO",
+        "ASSOCIATED_WITH"
+      ],
+      "title": "Relation",
+      "type": "string"
+    },
+    "SerializedEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "relation": {
+          "$ref": "#/$defs/Relation"
+        },
+        "weight": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Weight",
+          "type": "number"
+        },
+        "decay_factor": {
+          "description": "λ de la arista: recency_factor = exp(-λ · (clock − last_updated)).",
+          "minimum": 0.0,
+          "title": "Decay Factor",
+          "type": "number"
+        },
+        "last_updated": {
+          "minimum": 0,
+          "title": "Last Updated",
+          "type": "integer"
+        },
+        "count": {
+          "default": 0,
+          "description": "Número de actualizaciones por refuerzo.",
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
         },
         "recency_factor": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 1,
-          "description": "Derivado al serializar; se ignora al cargar."
+          "description": "Derivado al serializar; se ignora al cargar.",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Recency Factor",
+          "type": "number"
         }
-      }
+      },
+      "required": [
+        "source",
+        "target",
+        "relation",
+        "weight",
+        "decay_factor",
+        "last_updated",
+        "recency_factor"
+      ],
+      "title": "SerializedEdge",
+      "type": "object"
     }
-  }
+  },
+  "additionalProperties": false,
+  "description": "Documento JSON completo que produce ``MemoryGraph.to_dict()``.",
+  "properties": {
+    "schema_version": {
+      "const": 2,
+      "default": 2,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "clock": {
+      "description": "Reloj lógico: +1 por episodio.",
+      "minimum": 0,
+      "title": "Clock",
+      "type": "integer"
+    },
+    "default_decay_factor": {
+      "description": "decay_factor de las aristas nuevas.",
+      "minimum": 0.0,
+      "title": "Default Decay Factor",
+      "type": "number"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/SerializedEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    }
+  },
+  "required": [
+    "clock",
+    "default_decay_factor",
+    "nodes",
+    "edges"
+  ],
+  "title": "GraphDocument",
+  "type": "object"
 }
