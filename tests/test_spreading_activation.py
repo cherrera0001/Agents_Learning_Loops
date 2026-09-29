@@ -7,11 +7,11 @@ indique, así que cada salto multiplica exactamente por δ = 0.7 / norm(grado).
 import pytest
 from pydantic import ValidationError
 
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.memory.associative import RetrievalConfig, Retriever
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType, Relation
 from scripts.devlog import load_episodes, rebuild
-from src.agent.core import Agent
-from src.agent.tools import weather_scenario
-from src.memory.associative import RetrievalConfig, Retriever
-from src.memory.graph import MemoryGraph, NodeType, Relation
 
 
 def graph(*edges, weight=1.0):
@@ -46,9 +46,7 @@ def test_max_hops_limits_propagation(hops, expected):
 
 def test_firing_threshold_drops_weak_nodes():
     mg = graph(("a", "b"), ("b", "c"), ("c", "d"))
-    assert spread(mg, {"a": 1.0}, firing_threshold=0.4) == pytest.approx(
-        {"a": 1.0, "b": 0.7, "c": 0.49}
-    )
+    assert spread(mg, {"a": 1.0}, firing_threshold=0.4) == pytest.approx({"a": 1.0, "b": 0.7, "c": 0.49})
 
 
 def test_threshold_applies_to_accumulated_activation_not_to_each_increment():

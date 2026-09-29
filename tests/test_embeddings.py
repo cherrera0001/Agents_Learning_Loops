@@ -4,13 +4,13 @@ import math
 
 import pytest
 
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.memory.associative import Retriever
+from associative_agent_loop.memory.consolidation import Consolidator
+from associative_agent_loop.memory.embeddings import LexicalEmbedder, cosine
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType
 from scripts.devlog import load_episodes, rebuild
-from src.agent.core import Agent
-from src.agent.tools import weather_scenario
-from src.memory.associative import Retriever
-from src.memory.consolidation import Consolidator
-from src.memory.embeddings import LexicalEmbedder, cosine
-from src.memory.graph import MemoryGraph, NodeType
 
 
 class CountingEmbedder(LexicalEmbedder):
@@ -94,7 +94,7 @@ def test_lexical_channel_cannot_bridge_a_paraphrase():
 
 @pytest.mark.embeddings
 def test_semantic_embeddings_recover_the_route_for_a_paraphrase():
-    from src.memory.embeddings import FastEmbedEmbedder
+    from associative_agent_loop.memory.embeddings import FastEmbedEmbedder
 
     embedder = FastEmbedEmbedder()
     agent = Agent(weather_scenario(), embedder=embedder)

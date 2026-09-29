@@ -6,9 +6,9 @@ import sys
 
 import pytest
 
-from src.agent.core import Agent, Episode, IllegalTransition, State
-from src.agent.tools import weather_scenario
-from src.main import benchmark
+from associative_agent_loop.agent.core import Agent, Episode, IllegalTransition, State
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.main import benchmark
 
 
 def test_illegal_transitions_are_rejected():
@@ -67,7 +67,7 @@ def test_benchmark_report_is_deterministic_and_shows_learning():
 
 
 def test_cli_json_output_is_valid_and_reproducible():
-    cmd = [sys.executable, "-m", "src.main", "--json", "--episodes", "5"]
+    cmd = [sys.executable, "-m", "associative_agent_loop.main", "--json", "--episodes", "5"]
     runs = [subprocess.run(cmd, capture_output=True, check=True).stdout for _ in range(2)]
     assert runs[0] == runs[1]
     assert json.loads(runs[0].decode("utf-8"))["seed"] == 7

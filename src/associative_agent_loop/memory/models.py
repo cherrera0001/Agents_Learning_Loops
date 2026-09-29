@@ -10,22 +10,22 @@ se necesita la hora real, puede guardarse en ``metadata["wall_time"]``.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION: Literal[2] = 2
 
 
-class NodeType(str, Enum):
+class NodeType(StrEnum):
     GOAL = "Goal"
     ACTION = "Action"
     OUTCOME = "Outcome"
     CONCEPT = "Concept"
 
 
-class Relation(str, Enum):
+class Relation(StrEnum):
     LEADS_TO = "LEADS_TO"
     RESOLVED_BY = "RESOLVED_BY"
     FAILED_DUE_TO = "FAILED_DUE_TO"
@@ -70,9 +70,7 @@ class Edge(_Model):
 
 
 class SerializedEdge(Edge):
-    recency_factor: float = Field(
-        ge=0.0, le=1.0, description="Derivado al serializar; se ignora al cargar."
-    )
+    recency_factor: float = Field(ge=0.0, le=1.0, description="Derivado al serializar; se ignora al cargar.")
 
 
 class GraphDocument(_Model):

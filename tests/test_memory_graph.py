@@ -2,9 +2,15 @@ import math
 
 import pytest
 
-from src.memory.associative import Retriever, action_id, cosine_similarity, tokenize, topic_id
-from src.memory.consolidation import Consolidator
-from src.memory.graph import EdgeType, MemoryGraph, NodeType
+from associative_agent_loop.memory.associative import (
+    Retriever,
+    action_id,
+    cosine_similarity,
+    tokenize,
+    topic_id,
+)
+from associative_agent_loop.memory.consolidation import Consolidator
+from associative_agent_loop.memory.graph import EdgeType, MemoryGraph, NodeType
 
 
 @pytest.fixture

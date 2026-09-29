@@ -6,17 +6,23 @@ import jsonschema
 import pytest
 from pydantic import ValidationError
 
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.memory.graph import MemoryGraph, migrate_v1
+from associative_agent_loop.memory.models import Edge, Node, NodeType, Relation
 from scripts.export_schema import SCHEMA_PATH, build_schema
-from src.agent.core import Agent
-from src.agent.tools import weather_scenario
-from src.memory.graph import MemoryGraph, migrate_v1
-from src.memory.models import Edge, Node, NodeType, Relation
 
 
 def test_edge_weight_is_bounded_on_creation_and_assignment():
     with pytest.raises(ValidationError):
-        Edge(source="goal:1", target="action:x", relation=Relation.LEADS_TO,
-             weight=1.5, decay_factor=0.05, last_updated=0)
+        Edge(
+            source="goal:1",
+            target="action:x",
+            relation=Relation.LEADS_TO,
+            weight=1.5,
+            decay_factor=0.05,
+            last_updated=0,
+        )
     mg = MemoryGraph()
     mg.add_node("goal:1", NodeType.GOAL, "g")
     mg.add_node("action:x", NodeType.ACTION, "x")
@@ -35,8 +41,9 @@ def test_invalid_relation_and_node_id_are_rejected():
     with pytest.raises(ValidationError):
         Node(id="sin-prefijo", type=NodeType.GOAL, label="x", created_at=0, last_accessed_at=0)
     with pytest.raises(ValidationError):
-        Node(id="goal:1", type=NodeType.GOAL, label="x", created_at=0, last_accessed_at=0,
-             activation_level=2.0)
+        Node(
+            id="goal:1", type=NodeType.GOAL, label="x", created_at=0, last_accessed_at=0, activation_level=2.0
+        )
 
 
 def test_per_edge_decay_factor():
@@ -80,14 +87,39 @@ V1_DOC = {
     "nodes": [
         {"id": "goal:1", "type": "Goal", "label": "clima", "created_at": 1, "last_seen": 1, "episode": 1},
         {"id": "action:api", "type": "Action", "label": "api", "created_at": 1, "last_seen": 2},
-        {"id": "outcome:1:0", "type": "Outcome", "label": "failure: 410", "created_at": 1,
-         "last_seen": 1, "success": False, "latency_ms": 40, "error": "410", "episode": 1, "step": 0},
+        {
+            "id": "outcome:1:0",
+            "type": "Outcome",
+            "label": "failure: 410",
+            "created_at": 1,
+            "last_seen": 1,
+            "success": False,
+            "latency_ms": 40,
+            "error": "410",
+            "episode": 1,
+            "step": 0,
+        },
     ],
     "edges": [
-        {"source": "goal:1", "target": "action:api", "type": "LEADS_TO", "weight": 0.5,
-         "last_updated": 1, "count": 0, "step": 0, "recency_factor": 0.82},
-        {"source": "action:api", "target": "outcome:1:0", "type": "LEADS_TO", "weight": 1.0,
-         "last_updated": 1, "count": 0, "recency_factor": 0.82},
+        {
+            "source": "goal:1",
+            "target": "action:api",
+            "type": "LEADS_TO",
+            "weight": 0.5,
+            "last_updated": 1,
+            "count": 0,
+            "step": 0,
+            "recency_factor": 0.82,
+        },
+        {
+            "source": "action:api",
+            "target": "outcome:1:0",
+            "type": "LEADS_TO",
+            "weight": 1.0,
+            "last_updated": 1,
+            "count": 0,
+            "recency_factor": 0.82,
+        },
     ],
 }
 

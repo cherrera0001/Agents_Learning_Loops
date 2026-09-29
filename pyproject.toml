@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "associative-agent-loop"
-version = "0.1.0"
+version = "0.2.0"
 description = "Memoria asociativa en grafo para bucles de aprendizaje de agentes"
 readme = "README.md"
 license = "MIT"
@@ -26,12 +26,54 @@ dev = [
     "mypy>=1.10",
 ]
 
+[project.scripts]
+aal-benchmark = "associative_agent_loop.main:main"
+
 [tool.setuptools.packages.find]
-include = ["src*"]
+where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src", "."]
 testpaths = ["tests"]
 markers = [
     "embeddings: requiere el extra [embeddings]; se omite si fastembed no está instalado",
 ]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+extend-exclude = ["learning"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # caracteres Unicode ambiguos: el texto es en español (·, →, ≥, ...)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/associative_agent_loop"]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["networkx", "networkx.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Extra opcional: no se sigue (arrastra stubs de numpy con sintaxis 3.12).
+module = ["fastembed", "fastembed.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["associative_agent_loop"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true

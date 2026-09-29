@@ -1,0 +1,27 @@
+{
+  "seq": 12,
+  "id": "issue-9",
+  "goal": "Endurecimiento para producción: empaquetado, renombrar paquete, CI, tipado y logging",
+  "ref": "#9",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "canal léxico sin resultados: empaquetado, CI y tipado no aparecen en la memoria"},
+    {"action": "recall_memory", "success": true, "note": "--embedder fastembed recuperó: separar lo hecho de la brecha, import circular, riesgo en git_push"},
+    {"action": "review_code", "success": true, "note": "brecha real: cobertura ya en 94 %; logging parcial en core"},
+    {"action": "write_code", "success": true, "note": "paquete src/associative_agent_loop, AppConfig (TOML + AAL_*), GraphStore/JsonGraphStore, from_config"},
+    {"action": "edit_module", "success": false, "error": "parche por heredoc convirtió \\n en salto de línea real dentro de un string (SyntaxError en graph.py)"},
+    {"action": "edit_module", "success": true, "note": "corregido con la herramienta de edición; atomic_write_text movido a fsutil.py (módulo hoja) para evitar el ciclo graph ↔ store"},
+    {"action": "write_tests", "success": true, "note": "test_packaging: API pública, entry point, precedencia TOML/env, from_config, escritura atómica con fallo simulado"},
+    {"action": "add_dependency", "success": false, "error": "mypy seguía fastembed hasta los stubs de numpy con sintaxis 3.12"},
+    {"action": "add_dependency", "success": true, "note": "override follow_imports=skip para el extra opcional"},
+    {"action": "edit_module", "success": true, "note": "ruff (29 → 0) y mypy --strict (8 → 0): StrEnum, zip(strict=True), retornos tipados desde networkx"},
+    {"action": "run_tests", "success": true, "note": "78 passed; cobertura 93 % (umbral 90 %)"},
+    {"action": "write_code", "success": true, "note": "CI: lint/tipos/spec, matriz Linux/Windows × py3.11-3.14, job de embeddings con caché del modelo"}
+  ],
+  "lessons": [
+    "Tercera repetición del problema de heredocs con secuencias de escape: para modificar código, usar siempre la herramienta de edición",
+    "Cuando el canal léxico no encuentra nada, el semántico puede recuperar lecciones transferibles: consultar ambos al empezar un issue",
+    "mypy --strict sobre un código ya tipado costó 8 correcciones: tipar desde el inicio abarata la adopción",
+    "Para extras opcionales pesados, mypy follow_imports=skip evita chequear dependencias transitivas ajenas",
+    "Probar la escritura atómica simulando el fallo de os.replace: el archivo previo debe quedar intacto y sin temporales"
+  ]
+}

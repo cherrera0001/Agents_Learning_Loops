@@ -1,4 +1,5 @@
-"""Benchmark ejecutable: ``python -m src.main [--json] [--episodes N]``.
+"""Benchmark ejecutable: ``aal-benchmark [--json] [--episodes N] [-v]``
+(equivalente: ``python -m associative_agent_loop.main``).
 
 Escenarios
 ----------
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from typing import Any
 
@@ -73,8 +75,12 @@ def benchmark(flaky_episodes: int = 20, seed: int = 7) -> dict[str, Any]:
         for label, use_memory in (("without_memory", False), ("with_memory", True))
     }
     domain_goals = [
-        "noticias de Santiago", "clima en Santiago", "clima en Valparaíso",
-        "clima en Temuco", "noticias de Santiago", "clima en Concepción",
+        "noticias de Santiago",
+        "clima en Santiago",
+        "clima en Valparaíso",
+        "clima en Temuco",
+        "noticias de Santiago",
+        "clima en Concepción",
     ]
     cross_domain = {
         label: run_goals(
@@ -134,15 +140,24 @@ def print_report(report: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--json", action="store_true", help="imprime el reporte como JSON")
     parser.add_argument("--episodes", type=int, default=20, help="episodios del escenario flaky")
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="-v: INFO, -vv: DEBUG (a stderr)")
     args = parser.parse_args()
     # En Windows, stdout redirigido usa la codificación ANSI (cp1252): el JSON y
     # los símbolos ✓/✗ dejarían de ser UTF-8 al hacer `--json > reporte.json`.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if args.verbose:
+        logging.basicConfig(
+            level=logging.DEBUG if args.verbose > 1 else logging.INFO,
+            format="%(levelname)s %(name)s: %(message)s",
+            stream=sys.stderr,
+        )
 
     report = benchmark(args.episodes, args.seed)
     if args.json:

@@ -4,9 +4,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.agent.tools import ToolResult
-from src.memory.consolidation import Consolidator
-from src.memory.graph import MemoryGraph, NodeType, Relation
+from associative_agent_loop.agent.tools import ToolResult
+from associative_agent_loop.memory.consolidation import Consolidator
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType, Relation
 
 OK = ToolResult(True, output="ok")
 FAIL = ToolResult(False, error="HTTP 500")
@@ -38,8 +38,8 @@ def test_success_potentiates_routes_in_proportion_to_coactivation():
     delta_b = w(mg, "goal:old_b") - 0.5
     assert delta_a == pytest.approx(0.3 * 0.8 * (1 - 0.5))  # 0.12
     assert delta_b == pytest.approx(0.3 * 0.2 * (1 - 0.5))  # 0.03
-    assert delta_a / delta_b == pytest.approx(0.8 / 0.2)     # ∝ a_i · a_j
-    assert w(mg, "goal:old_c") == 0.5                        # sin co-activación, sin cambio
+    assert delta_a / delta_b == pytest.approx(0.8 / 0.2)  # ∝ a_i · a_j
+    assert w(mg, "goal:old_c") == 0.5  # sin co-activación, sin cambio
     # Ruta de la meta actual: LEADS_TO (0.5 al registrarse) potenciada con a = 1.
     assert w(mg, goal, Relation.LEADS_TO) == pytest.approx(0.5 + 0.3 * 0.5)
 

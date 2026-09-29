@@ -26,14 +26,19 @@ respetar ``max_edges``.
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import TYPE_CHECKING
 
-from .associative import action_id, tokenize, topic_id
+from .associative import action_id, topic_id
 from .graph import EdgeType, MemoryGraph, NodeType
+from .text import tokenize
 
 if TYPE_CHECKING:  # evita import circular en tiempo de ejecución
     from ..agent.tools import ToolResult
+
+
+logger = logging.getLogger(__name__)
 
 
 def _slug(text: str, max_len: int = 40) -> str:
@@ -82,9 +87,7 @@ class Consolidator:
         edge.count += 1
         return edge.weight
 
-    def _hebbian_step(
-        self, goal: str, action: str, activation: dict[str, float], reward: int
-    ) -> None:
+    def _hebbian_step(self, goal: str, action: str, activation: dict[str, float], reward: int) -> None:
         """Co-activación de la meta, la acción ejecutada y el contexto recuperado."""
         mg = self.memory
         # La meta actual y la acción dispararon juntas (a = 1).
@@ -117,9 +120,7 @@ class Consolidator:
             mg.add_edge(goal, topic, EdgeType.ASSOCIATED_WITH, weight=0.5)
         return goal
 
-    def record_step(
-        self, goal: str, tool: str, result: "ToolResult", episode_id: int, step: int
-    ) -> str:
+    def record_step(self, goal: str, tool: str, result: ToolResult, episode_id: int, step: int) -> str:
         """Goal -LEADS_TO-> Action -LEADS_TO-> Outcome [-FAILED_DUE_TO-> Concept(error)]."""
         mg = self.memory
         action = mg.add_node(action_id(tool), NodeType.ACTION, tool)
@@ -143,15 +144,13 @@ class Consolidator:
         return outcome
 
     def error_concept(self, error: str) -> str:
-        return self.memory.add_node(
-            f"concept:error:{_slug(error)}", NodeType.CONCEPT, error, kind="error"
-        )
+        return self.memory.add_node(f"concept:error:{_slug(error)}", NodeType.CONCEPT, error, kind="error")
 
     # ------------------------------------------------------------- refuerzo
     def consolidate_episode(
         self,
         goal: str,
-        steps: list[tuple[str, "ToolResult"]],
+        steps: list[tuple[str, ToolResult]],
         activation: dict[str, float] | None = None,
     ) -> list[str]:
         """Aplica refuerzo hebbiano y dirigido a partir de la trayectoria del episodio.
@@ -254,9 +253,8 @@ class Consolidator:
             weak += survivors[: max(excess, 0)]
         for e in weak:
             mg.remove_edge(e.source, e.target, e.relation)
-        orphans = [
-            n.id for n in mg.nodes() if mg.g.degree(n.id) == 0 and n.type != NodeType.GOAL
-        ]
+        orphans = [n.id for n in mg.nodes() if mg.g.degree(n.id) == 0 and n.type != NodeType.GOAL]
         for n in orphans:
             mg.remove_node(n)
+        logger.debug("poda: %d aristas y %d nodos eliminados", len(weak), len(orphans))
         return len(weak), len(orphans)
