@@ -1,0 +1,29 @@
+{
+  "seq": 16,
+  "id": "verify-experiment1",
+  "goal": "Verificación independiente del Experimento 1: integridad, fugas, métricas, réplica y sensibilidad",
+  "ref": "#24-#36, #41, PR #40",
+  "steps": [
+    {"action": "review_code", "success": true, "note": "EXP-01..06 son tareas del benchmark, no bugs: repararlas a mano contaminaría el experimento"},
+    {"action": "review_code", "success": true, "note": "otro agente estaba integrando el PR #40 en su worktree; se detuvo el trabajo sobre esa rama y se consultó al usuario"},
+    {"action": "write_code", "success": true, "note": "verificador independiente (sin importar experiments): integridad, fugas, métricas, tareas, par engañoso"},
+    {"action": "write_code", "success": false, "error": "dos métricas implementadas con una lectura del protocolo distinta a la del PR (recuperadas vs citadas; uso)"},
+    {"action": "review_code", "success": true, "note": "el texto del protocolo respaldaba al PR: el error era del verificador; 27/27 métricas coinciden"},
+    {"action": "run_tests", "success": false, "error": "verificación por mutación inválida: el control sin mutación también fallaba (entorno de subproceso restringido)"},
+    {"action": "edit_module", "success": true, "note": "control previo obligatorio y entorno completo: 5/8 mutaciones detectadas (antes, «8/8» falso)"},
+    {"action": "run_demo", "success": false, "error": "réplica: 54/54 grupos distintos en la proyección"},
+    {"action": "review_code", "success": true, "note": "causa: hashes sobre bytes del checkout (CRLF vs LF); comportamiento 54/54 idéntico"},
+    {"action": "run_demo", "success": true, "note": "sensibilidad pre-registrada con 6 permutaciones: predicción 2.0 confirmada; ganancia robusta"},
+    {"action": "write_tests", "success": false, "error": "el test del verificador encontró que mean() fallaba con condiciones sin corridas (el protocolo exige null)"},
+    {"action": "edit_module", "success": true, "note": "mean_or_null"},
+    {"action": "gh_create_issues", "success": true, "note": "#42-#46 con los hallazgos"}
+  ],
+  "lessons": [
+    "Un resultado de mutación sin control verde no vale nada: el control reveló que «8/8» era un artefacto del entorno",
+    "Antes de declarar un error en el trabajo ajeno, verificar la propia lectura de la especificación",
+    "Los hashes sobre bytes del checkout no son portables: normalizar el fin de línea antes de hashear",
+    "Pre-registrar la predicción de un análisis de sensibilidad antes de ejecutarlo evita ajustarla al resultado",
+    "Separar comportamiento de identidad de las fuentes al comparar réplicas",
+    "Cuando otro agente trabaja en la misma rama, no escribir en ella: verificar en paralelo en un worktree propio"
+  ]
+}
