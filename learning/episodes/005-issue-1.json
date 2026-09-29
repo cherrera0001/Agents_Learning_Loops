@@ -52,7 +52,7 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "git status antes del PR lo detectó; se añadió *.egg-info/ a .gitignore"
+      "note": "las advertencias de git commit lo revelaron antes del PR; se añadió *.egg-info/ a .gitignore"
     }
   ],
   "lessons": [
