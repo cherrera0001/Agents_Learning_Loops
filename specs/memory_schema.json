@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/associative-agent-loop/specs/memory_schema.json",
+  "title": "AssociativeMemoryGraph",
+  "description": "Serialización del grafo de memoria asociativa (MemoryGraph.to_dict).",
+  "type": "object",
+  "required": ["clock", "decay_rate", "nodes", "edges"],
+  "properties": {
+    "clock": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Reloj lógico: +1 por episodio."
+    },
+    "decay_rate": {
+      "type": "number",
+      "minimum": 0,
+      "description": "λ en recency_factor = exp(-λ · (clock - last_updated))."
+    },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/Node" } },
+    "edges": { "type": "array", "items": { "$ref": "#/$defs/Edge" } }
+  },
+  "$defs": {
+    "NodeType": { "enum": ["Goal", "Action", "Outcome", "Concept"] },
+    "EdgeType": { "enum": ["LEADS_TO", "RESOLVED_BY", "FAILED_DUE_TO", "ASSOCIATED_WITH"] },
+    "Node": {
+      "type": "object",
+      "required": ["id", "type", "label", "created_at", "last_seen"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(goal|action|outcome|concept):.+$",
+          "description": "goal:<episodio> | action:<herramienta> | outcome:<episodio>:<paso> | concept:<kind>:<slug>"
+        },
+        "type": { "$ref": "#/$defs/NodeType" },
+        "label": { "type": "string" },
+        "created_at": { "type": "integer", "minimum": 0 },
+        "last_seen": { "type": "integer", "minimum": 0 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "Goal" } } },
+          "then": { "required": ["episode"], "properties": { "episode": { "type": "integer" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "Outcome" } } },
+          "then": {
+            "required": ["success", "latency_ms", "episode", "step"],
+            "properties": {
+              "success": { "type": "boolean" },
+              "latency_ms": { "type": "number", "minimum": 0 },
+              "error": { "type": ["string", "null"] },
+              "episode": { "type": "integer" },
+              "step": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "Concept" } } },
+          "then": {
+            "required": ["kind"],
+            "properties": { "kind": { "enum": ["topic", "error", "lesson"] } }
+          }
+        }
+      ]
+    },
+    "Edge": {
+      "type": "object",
+      "required": ["source", "target", "type", "weight", "last_updated", "count"],
+      "properties": {
+        "source": { "type": "string" },
+        "target": { "type": "string" },
+        "type": { "$ref": "#/$defs/EdgeType" },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "last_updated": { "type": "integer", "minimum": 0 },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Número de actualizaciones por refuerzo/penalización."
+        },
+        "recency_factor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Derivado al serializar; se ignora al cargar."
+        }
+      }
+    }
+  }
+}

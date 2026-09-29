@@ -1,0 +1,10 @@
+[project]
+name = "associative-agent-loop"
+version = "0.1.0"
+description = "Memoria asociativa en grafo para bucles de aprendizaje de agentes"
+requires-python = ">=3.10"
+dependencies = ["networkx>=3.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
