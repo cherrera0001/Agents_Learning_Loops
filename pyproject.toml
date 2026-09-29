@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "associative-agent-loop"
-version = "0.1.0"
+version = "0.2.0"
 description = "Memoria asociativa en grafo para bucles de aprendizaje de agentes"
 readme = "README.md"
 license = "MIT"
@@ -26,11 +26,14 @@ dev = [
     "mypy>=1.10",
 ]
 
+[project.scripts]
+aal-benchmark = "associative_agent_loop.main:main"
+
 [tool.setuptools.packages.find]
-include = ["src*"]
+where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src", "."]
 testpaths = ["tests"]
 markers = [
     "embeddings: requiere el extra [embeddings]; se omite si fastembed no está instalado",

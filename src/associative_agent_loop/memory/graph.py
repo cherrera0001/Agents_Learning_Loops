@@ -17,6 +17,7 @@ from typing import Any, Iterator
 
 import networkx as nx
 
+from .fsutil import atomic_write_text
 from .models import (
     SCHEMA_VERSION,
     Edge,
@@ -190,7 +191,8 @@ class MemoryGraph:
         return mg
 
     def save(self, path: str | Path) -> None:
-        Path(path).write_text(json.dumps(self.to_dict(), indent=2, ensure_ascii=False), "utf-8")
+        """Guarda el grafo como JSON con escritura atómica."""
+        atomic_write_text(path, json.dumps(self.to_dict(), indent=2, ensure_ascii=False) + "\n")
 
     @classmethod
     def load(cls, path: str | Path) -> "MemoryGraph":

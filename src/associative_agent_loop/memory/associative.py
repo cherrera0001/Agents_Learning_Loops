@@ -24,6 +24,7 @@ paráfrasis sin palabras en común.
 
 from __future__ import annotations
 
+import logging
 import math
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -43,6 +44,9 @@ REVERSE_FACTOR = {
     EdgeType.RESOLVED_BY.value: 0.5,
     EdgeType.FAILED_DUE_TO.value: 0.5,
 }
+
+
+logger = logging.getLogger(__name__)
 
 
 class RetrievalConfig(BaseModel):
@@ -299,6 +303,7 @@ class Retriever:
         trace = self.spread_trace(self.seed(query))
         activation = trace.activation
         self._persist_activation(activation)
+        logger.debug("retrieve %r: %d semillas, %d nodos activados", query, len(trace.seeds), len(activation))
 
         scored = []
         for name in candidates:

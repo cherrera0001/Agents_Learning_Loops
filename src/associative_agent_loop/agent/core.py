@@ -10,13 +10,16 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Protocol, Sequence
+from typing import TYPE_CHECKING, Callable, Protocol, Sequence
 
 from ..memory.associative import RetrievalConfig, RetrievalResult, Retriever
 from ..memory.consolidation import Consolidator
 from ..memory.embeddings import Embedder
 from ..memory.graph import MemoryGraph
 from .tools import Tool, ToolResult
+
+if TYPE_CHECKING:
+    from ..config import AppConfig
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +127,7 @@ class Agent:
         embedder: Embedder | None = None,
         retrieval_config: RetrievalConfig | None = None,
         planner: Planner | None = None,
+        consolidator: Consolidator | None = None,
     ) -> None:
         self.tools = {t.name: t for t in tools}
         self.memory = memory if memory is not None else MemoryGraph()
@@ -133,8 +137,31 @@ class Agent:
         self.prune_every = prune_every
         self.planner = planner or RuleBasedPlanner()
         self.retriever = Retriever(self.memory, embedder=embedder, config=retrieval_config)
-        self.consolidator = Consolidator(self.memory)
+        self.consolidator = consolidator or Consolidator(self.memory)
         self.episodes: list[Episode] = []
+
+    @classmethod
+    def from_config(
+        cls,
+        tools: list[Tool],
+        config: "AppConfig",
+        memory: MemoryGraph | None = None,
+        embedder: Embedder | None = None,
+        planner: Planner | None = None,
+    ) -> "Agent":
+        """Construye el agente a partir de una ``AppConfig`` (TOML/entorno)."""
+        memory = memory if memory is not None else MemoryGraph(decay_rate=config.agent.decay_rate)
+        return cls(
+            tools,
+            memory=memory,
+            use_memory=config.agent.use_memory,
+            max_attempts=config.agent.max_attempts,
+            prune_every=config.agent.prune_every,
+            embedder=embedder,
+            retrieval_config=config.retrieval,
+            planner=planner,
+            consolidator=Consolidator(memory, **config.consolidation.model_dump()),
+        )
 
     # ------------------------------------------------------------------ fases
     def plan(self, goal: str) -> list[str]:

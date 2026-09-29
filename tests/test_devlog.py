@@ -3,7 +3,7 @@
 import json
 
 from scripts.devlog import EPISODES_DIR, load_episodes, rebuild, recall
-from src.memory.graph import EdgeType, NodeType
+from associative_agent_loop.memory.graph import EdgeType, NodeType
 
 EPISODES = [
     {

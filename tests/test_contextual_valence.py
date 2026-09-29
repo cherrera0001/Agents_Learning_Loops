@@ -2,9 +2,9 @@
 
 import pytest
 
-from src.agent.core import Agent
-from src.agent.tools import domain_scenario, weather_scenario
-from src.memory.associative import RetrievalConfig, Retriever
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import domain_scenario, weather_scenario
+from associative_agent_loop.memory.associative import RetrievalConfig, Retriever
 
 HISTORY = ["noticias de Santiago", "clima en Santiago", "clima en Valparaíso", "clima en Temuco"]
 

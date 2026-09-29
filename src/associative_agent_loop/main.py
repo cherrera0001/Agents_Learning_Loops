@@ -1,4 +1,5 @@
-"""Benchmark ejecutable: ``python -m src.main [--json] [--episodes N]``.
+"""Benchmark ejecutable: ``aal-benchmark [--json] [--episodes N] [-v]``
+(equivalente: ``python -m associative_agent_loop.main``).
 
 Escenarios
 ----------
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from typing import Any
 
@@ -138,11 +140,18 @@ def main() -> None:
     parser.add_argument("--json", action="store_true", help="imprime el reporte como JSON")
     parser.add_argument("--episodes", type=int, default=20, help="episodios del escenario flaky")
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("-v", "--verbose", action="count", default=0, help="-v: INFO, -vv: DEBUG (a stderr)")
     args = parser.parse_args()
     # En Windows, stdout redirigido usa la codificación ANSI (cp1252): el JSON y
     # los símbolos ✓/✗ dejarían de ser UTF-8 al hacer `--json > reporte.json`.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if args.verbose:
+        logging.basicConfig(
+            level=logging.DEBUG if args.verbose > 1 else logging.INFO,
+            format="%(levelname)s %(name)s: %(message)s",
+            stream=sys.stderr,
+        )
 
     report = benchmark(args.episodes, args.seed)
     if args.json:

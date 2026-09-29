@@ -4,9 +4,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from src.agent.tools import ToolResult
-from src.memory.consolidation import Consolidator
-from src.memory.graph import MemoryGraph, NodeType, Relation
+from associative_agent_loop.agent.tools import ToolResult
+from associative_agent_loop.memory.consolidation import Consolidator
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType, Relation
 
 OK = ToolResult(True, output="ok")
 FAIL = ToolResult(False, error="HTTP 500")

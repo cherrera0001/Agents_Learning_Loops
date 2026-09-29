@@ -17,8 +17,8 @@ def test_core_dependencies_are_minimal():
 
 
 def test_core_imports_without_embeddings_extra():
-    import src.agent.core  # noqa: F401
-    import src.memory.associative  # noqa: F401
+    import associative_agent_loop.agent.core  # noqa: F401
+    import associative_agent_loop.memory.associative  # noqa: F401
 
     assert "fastembed" not in sys.modules
 

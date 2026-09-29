@@ -26,6 +26,7 @@ respetar ``max_edges``.
 
 from __future__ import annotations
 
+import logging
 import re
 from typing import TYPE_CHECKING
 
@@ -34,6 +35,9 @@ from .graph import EdgeType, MemoryGraph, NodeType
 
 if TYPE_CHECKING:  # evita import circular en tiempo de ejecución
     from ..agent.tools import ToolResult
+
+
+logger = logging.getLogger(__name__)
 
 
 def _slug(text: str, max_len: int = 40) -> str:
@@ -259,4 +263,5 @@ class Consolidator:
         ]
         for n in orphans:
             mg.remove_node(n)
+        logger.debug("poda: %d aristas y %d nodos eliminados", len(weak), len(orphans))
         return len(weak), len(orphans)

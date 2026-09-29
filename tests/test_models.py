@@ -7,10 +7,10 @@ import pytest
 from pydantic import ValidationError
 
 from scripts.export_schema import SCHEMA_PATH, build_schema
-from src.agent.core import Agent
-from src.agent.tools import weather_scenario
-from src.memory.graph import MemoryGraph, migrate_v1
-from src.memory.models import Edge, Node, NodeType, Relation
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.memory.graph import MemoryGraph, migrate_v1
+from associative_agent_loop.memory.models import Edge, Node, NodeType, Relation
 
 
 def test_edge_weight_is_bounded_on_creation_and_assignment():

@@ -1,8 +1,8 @@
 """Pruebas de comportamiento: el agente no comete el mismo error dos veces."""
 
-from src.agent.core import Agent, State
-from src.agent.tools import flaky_scenario, weather_scenario
-from src.memory.graph import EdgeType, MemoryGraph
+from associative_agent_loop.agent.core import Agent, State
+from associative_agent_loop.agent.tools import flaky_scenario, weather_scenario
+from associative_agent_loop.memory.graph import EdgeType, MemoryGraph
 
 WEATHER_GOALS = [
     "clima en Santiago",
@@ -59,8 +59,8 @@ def test_error_concept_is_resolved_by_fallback_action():
 
 def test_only_first_success_resolves_pending_failures():
     """Regresión #13: en trayectorias largas, los éxitos posteriores no son alternativas."""
-    from src.agent.tools import ToolResult
-    from src.memory.consolidation import Consolidator
+    from associative_agent_loop.agent.tools import ToolResult
+    from associative_agent_loop.memory.consolidation import Consolidator
 
     mg = MemoryGraph()
     c = Consolidator(mg)

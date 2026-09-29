@@ -8,10 +8,10 @@ import pytest
 from pydantic import ValidationError
 
 from scripts.devlog import load_episodes, rebuild
-from src.agent.core import Agent
-from src.agent.tools import weather_scenario
-from src.memory.associative import RetrievalConfig, Retriever
-from src.memory.graph import MemoryGraph, NodeType, Relation
+from associative_agent_loop.agent.core import Agent
+from associative_agent_loop.agent.tools import weather_scenario
+from associative_agent_loop.memory.associative import RetrievalConfig, Retriever
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType, Relation
 
 
 def graph(*edges, weight=1.0):

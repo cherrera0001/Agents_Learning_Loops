@@ -59,7 +59,7 @@ Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismo
 | `write_code` / `edit_module` | Código nuevo / modificación de un módulo existente |
 | `write_tests` / `run_tests` | Escribir / ejecutar pruebas |
 | `review_code` | Autorrevisión antes del PR (un fallo = defecto encontrado) |
-| `run_demo` | Ejecutar `python -m src.main` |
+| `run_demo` | Ejecutar el benchmark (`aal-benchmark`) |
 | `add_dependency` | Cambios en `pyproject.toml` / entorno |
 | `update_spec` / `update_docs` / `validate_schema` | Especificaciones, documentación, validación del JSON Schema |
 | `rebuild_memory` / `recall_memory` | Operaciones de esta bitácora |

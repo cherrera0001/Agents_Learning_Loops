@@ -5,7 +5,7 @@ el bucle de aprendizaje de un agente: el agente registra sus trayectorias,
 extrae lecciones, las enlaza en un grafo semántico y las recupera por
 **activación propagada** para no repetir errores.
 
-- Sin dependencias pesadas: solo `networkx`.
+- Núcleo liviano: `networkx` + `pydantic`; embeddings semánticos locales opcionales (`fastembed`, ONNX).
 - Determinista: reloj lógico y semillas fijas, así las pruebas son reproducibles.
 - Guiado por especificación: [`specs/memory_schema.json`](specs/memory_schema.json) y [`specs/loop_protocol.md`](specs/loop_protocol.md).
 
@@ -20,8 +20,9 @@ python -m venv .venv
 pip install -e .[dev]               # núcleo (networkx, pydantic) + herramientas de desarrollo
 pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, sin PyTorch)
 
-python -m src.main            # benchmark legible
-python -m src.main --json     # reporte determinista (misma semilla ⇒ mismo JSON)
+aal-benchmark                 # benchmark legible (= python -m associative_agent_loop.main)
+aal-benchmark --json          # reporte determinista (misma semilla ⇒ mismo JSON)
+aal-benchmark -vv             # con logging DEBUG de cada transición (stderr)
 pytest                        # los tests marcados `embeddings` se omiten si falta el extra
 ```
 
@@ -116,33 +117,53 @@ usadas decaen con el tiempo y la poda las elimina. Tabla completa en
 ├── specs/
 │   ├── memory_schema.json   # JSON Schema GENERADO desde los modelos (scripts/export_schema.py)
 │   └── loop_protocol.md     # estados, transiciones, fórmulas, invariantes
-├── src/
+├── src/associative_agent_loop/
 │   ├── agent/
-│   │   ├── core.py          # Agent: Plan → Retrieve → Act → Observe → Consolidate
-│   │   └── tools.py         # herramientas simuladas + escenarios
+│   │   ├── core.py          # Agent: Plan → Retrieve → Act → Observe → Consolidate (máquina de estados)
+│   │   └── tools.py         # herramientas simuladas + escenarios (weather, flaky, domain)
 │   ├── memory/
 │   │   ├── models.py        # Node, Edge, GraphDocument (Pydantic v2)
 │   │   ├── graph.py         # MemoryGraph (NetworkX MultiDiGraph, JSON v2 + migración v1)
-│   │   ├── associative.py   # siembra, activación propagada, ranking, lecciones
-│   │   └── consolidation.py # refuerzo, penalización, lecciones, poda
-│   └── main.py              # demo
-└── tests/
-    ├── test_learning.py     # «no comete el mismo error dos veces»
-    └── test_memory_graph.py
+│   │   ├── associative.py   # siembra híbrida, activación propagada, valencia contextual
+│   │   ├── embeddings.py    # LexicalEmbedder (hashing) y FastEmbedEmbedder (ONNX)
+│   │   ├── consolidation.py # aprendizaje hebbiano + EMA, lecciones, decaimiento, poda
+│   │   ├── store.py         # GraphStore / JsonGraphStore (escritura atómica)
+│   │   └── text.py, fsutil.py
+│   ├── config.py            # AppConfig desde TOML + variables AAL_*
+│   └── main.py              # benchmark (aal-benchmark)
+├── scripts/                 # devlog (memoria del propio repo), export_schema
+├── learning/                # episodios de desarrollo y dev_memory.json
+└── tests/                   # unitarios, de propiedades (hypothesis) y del benchmark
 ```
 
 ## Uso como librería
 
 ```python
-from src.agent.core import Agent
-from src.agent.tools import Tool, ToolResult
-from src.memory.graph import MemoryGraph
+from associative_agent_loop import Agent, JsonGraphStore, Tool, ToolResult, load_config
 
+store = JsonGraphStore("memory_graph.json")
 tools = [Tool("mi_api", "descripción", lambda q: ToolResult(True, output="..."))]
-agent = Agent(tools, memory=MemoryGraph.load("memory_graph.json"))
+agent = Agent.from_config(tools, load_config("aal.toml"), memory=store.load_or_new())
+
 episode = agent.run("mi tarea")
+episode.plan                   # candidatas re-rankeadas por la memoria
 episode.retrieval.lessons      # lecciones para inyectar en el prompt de un LLM
-agent.memory.save("memory_graph.json")
+episode.retrieval.ranked_actions[0].path   # por qué: camino semilla → acción
+store.save(agent.memory)       # escritura atómica
+```
+
+Configuración (`aal.toml`, o variables de entorno `AAL_<SECCIÓN>__<CAMPO>`, que tienen prioridad):
+
+```toml
+[agent]
+max_attempts = 3
+
+[retrieval]
+damping = 0.7
+fan_out = "sqrt"
+
+[consolidation]
+max_edges = 5000
 ```
 
 ## La vida del proyecto: el repo aprende de sí mismo
@@ -163,7 +184,7 @@ Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md)
 
 - **Otros modelos de embeddings**: cualquier objeto con `name`, `dim` y `embed(texts)` sirve como `Retriever(memory, embedder=...)` o `Agent(tools, embedder=...)` (p. ej. `sentence-transformers`).
 - **LLM planner**: usar `retrieval.lessons` y `ranked_actions` como contexto del prompt en lugar de ejecutar el ranking tal cual.
-- **Backend persistente**: `MemoryGraph` encapsula NetworkX; su interfaz se puede portar a Neo4j o SQLite.
+- **Backend persistente**: implementar el protocolo `GraphStore` (`load`/`save`) para SQLite o Neo4j.
 
 ## Licencia
 

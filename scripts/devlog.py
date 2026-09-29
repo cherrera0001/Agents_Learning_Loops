@@ -18,11 +18,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from src.agent.tools import ToolResult
-from src.memory.associative import Retriever
-from src.memory.consolidation import Consolidator
-from src.memory.embeddings import Embedder, FastEmbedEmbedder
-from src.memory.graph import MemoryGraph, NodeType
+from associative_agent_loop.agent.tools import ToolResult
+from associative_agent_loop.memory.associative import Retriever
+from associative_agent_loop.memory.consolidation import Consolidator
+from associative_agent_loop.memory.embeddings import Embedder, FastEmbedEmbedder
+from associative_agent_loop.memory.graph import MemoryGraph, NodeType
 
 ROOT = Path(__file__).resolve().parent.parent
 EPISODES_DIR = ROOT / "learning" / "episodes"
