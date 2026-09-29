@@ -142,6 +142,11 @@ class Consolidator:
                 )
         return lessons
 
+    def add_lesson(self, goal: str, text: str) -> str:
+        """Lección explícita (redactada por una persona o un LLM), anclada a la meta y sus topics."""
+        topics = [dst for _, dst, _ in self.memory.out_edges(goal, EdgeType.ASSOCIATED_WITH)]
+        return self._lesson(f"lesson:note:{_slug(text, 60)}", text, [goal, *topics])
+
     def _lesson(self, key: str, label: str, links: list[str]) -> str:
         mg = self.memory
         lesson = mg.add_node(f"concept:{key}", NodeType.CONCEPT, label, kind="lesson")

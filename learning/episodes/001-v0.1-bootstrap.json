@@ -1,0 +1,20 @@
+{
+  "seq": 1,
+  "id": "v0.1",
+  "goal": "Implementar memoria asociativa en grafo para el bucle de aprendizaje del agente",
+  "ref": "commit f2eac2a",
+  "steps": [
+    {"action": "write_code", "success": true, "note": "graph, associative, consolidation, core, tools, main"},
+    {"action": "run_demo", "success": true, "note": "intento 1 falla con weather_api_v1, intento 2 va directo a v2"},
+    {"action": "run_tests", "success": false, "error": "KeyError 'type' en stats(): add_edge creó un nodo sin atributos"},
+    {"action": "edit_module", "success": true, "note": "add_edge valida que ambos extremos existan"},
+    {"action": "run_tests", "success": true, "note": "16 passed"},
+    {"action": "validate_schema", "success": true, "note": "grafos serializados validan contra specs/memory_schema.json"},
+    {"action": "git_push", "success": true}
+  ],
+  "lessons": [
+    "NetworkX crea nodos sin atributos al añadir una arista hacia un nodo inexistente: validar extremos en add_edge",
+    "Validar la serialización del grafo contra specs/memory_schema.json con jsonschema, no solo con tests de round-trip",
+    "Un reloj lógico por episodio hace que el decaimiento temporal sea determinista y testeable"
+  ]
+}
