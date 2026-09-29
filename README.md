@@ -51,7 +51,18 @@ Salida del benchmark:
 === Escenario 3: errores intermitentes, 20 episodios ===
   sin memoria  éxito al 1er intento=2/20  llamadas totales=38  latencia total=5100 ms
   con memoria  éxito al 1er intento=19/20  llamadas totales=21  latencia total=5030 ms
+
+=== Escenario 4: fallo en un dominio (clima) vs otro (noticias) ===
+  valencia global      llamadas totales=7  latencia total=1540 ms
+  valencia contextual  llamadas totales=7  latencia total=1260 ms
 ```
+
+| Escenario | Qué demuestra | Resultado |
+|---|---|---|
+| Misma meta repetida | El intento 1 falla, se consolida, el intento 2 va a la ruta alternativa | 0 fallos repetidos |
+| Metas parafraseadas | La experiencia generaliza por asociación | 0 fallos repetidos |
+| Errores intermitentes | La valencia converge a la fiabilidad observada | 19/20 al primer intento; 38 → 21 llamadas |
+| Fallo en otro dominio | La valencia contextual evita contaminar dominios | −18 % de latencia |
 
 ## Modelo
 
