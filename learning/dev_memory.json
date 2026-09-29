@@ -187,7 +187,7 @@
       "type": "Action",
       "label": "git_push",
       "created_at": 1,
-      "last_seen": 1
+      "last_seen": 5
     },
     {
       "id": "outcome:1:6",
@@ -1128,9 +1128,57 @@
       "step": 7
     },
     {
+      "id": "outcome:5:8",
+      "type": "Outcome",
+      "label": "failure: egg-info de pip install -e commiteado por git add -A",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": false,
+      "latency_ms": 0.0,
+      "error": "egg-info de pip install -e commiteado por git add -A",
+      "episode": 5,
+      "step": 8
+    },
+    {
+      "id": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "Concept",
+      "label": "egg-info de pip install -e commiteado por git add -A",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "error"
+    },
+    {
+      "id": "outcome:5:9",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 9
+    },
+    {
       "id": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
       "type": "Concept",
       "label": "'write_tests' falló con 'tomllib requiere Python 3.11 y requires-python declaraba >=3.10'",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "type": "Concept",
+      "label": "'git_push' falló con 'egg-info de pip install -e commiteado por git add -A'",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:fallback:git_push:review_code",
+      "type": "Concept",
+      "label": "Si 'git_push' falla con 'egg-info de pip install -e commiteado por git add -A', usar 'review_code'",
       "created_at": 5,
       "last_seen": 5,
       "kind": "lesson"
@@ -1163,6 +1211,14 @@
       "id": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
       "type": "Concept",
       "label": "Corregir los defectos que contaminan la memoria antes de seguir acumulando episodios",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "type": "Concept",
+      "label": "Tras introducir un build-system, actualizar .gitignore (egg-info, build, dist) antes del primer git add -A",
       "created_at": 5,
       "last_seen": 5,
       "kind": "lesson"
@@ -1341,10 +1397,10 @@
       "source": "goal:1",
       "target": "action:git_push",
       "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.818731
+      "weight": 0.32,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
     },
     {
       "source": "action:write_code",
@@ -1489,6 +1545,24 @@
       "last_updated": 1,
       "count": 0,
       "recency_factor": 0.818731
+    },
+    {
+      "source": "action:git_push",
+      "target": "outcome:5:8",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:git_push",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -3122,6 +3196,15 @@
       "recency_factor": 1.0
     },
     {
+      "source": "action:review_code",
+      "target": "outcome:5:9",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
       "source": "action:rebuild_memory",
       "target": "outcome:3:6",
       "type": "LEADS_TO",
@@ -4612,16 +4695,16 @@
       "weight": 0.5,
       "last_updated": 5,
       "count": 0,
-      "step": 4,
+      "step": 9,
       "recency_factor": 1.0
     },
     {
       "source": "goal:5",
       "target": "action:review_code",
       "type": "RESOLVED_BY",
-      "weight": 0.64,
+      "weight": 0.784,
       "last_updated": 5,
-      "count": 2,
+      "count": 3,
       "recency_factor": 1.0
     },
     {
@@ -4692,6 +4775,16 @@
       "recency_factor": 1.0
     },
     {
+      "source": "goal:5",
+      "target": "action:git_push",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 8,
+      "recency_factor": 1.0
+    },
+    {
       "source": "outcome:5:0",
       "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
       "type": "FAILED_DUE_TO",
@@ -4729,6 +4822,24 @@
     },
     {
       "source": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:5:8",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:egg_info_de_pip_install_e_commiteado_por",
       "target": "action:review_code",
       "type": "RESOLVED_BY",
       "weight": 0.4,
@@ -4836,6 +4947,195 @@
       "recency_factor": 1.0
     },
     {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "action:git_push",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "action:review_code",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
       "target": "goal:5",
       "type": "ASSOCIATED_WITH",
@@ -5188,6 +5488,96 @@
     },
     {
       "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
       "target": "concept:topic:dependencia",
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
