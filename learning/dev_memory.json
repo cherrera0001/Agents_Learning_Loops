@@ -2056,6 +2056,76 @@
       "activation_level": 0.0
     },
     {
+      "id": "action:merge_pr",
+      "type": "Action",
+      "label": "merge_pr",
+      "embedding": null,
+      "metadata": {},
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:6:11",
+      "type": "Outcome",
+      "label": "failure: timeout de red contra api.github.com durante gh pr merge; el script siguió y marcó Done",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "timeout de red contra api.github.com durante gh pr merge; el script siguió y marcó Done",
+        "episode": 6,
+        "step": 11
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:timeout_de_red_contra_api_github_com_dur",
+      "type": "Concept",
+      "label": "timeout de red contra api.github.com durante gh pr merge; el script siguió y marcó Done",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:6:12",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 6,
+        "step": 12
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:6:13",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 6,
+        "step": 13
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
       "id": "concept:lesson:avoid:write_tests:tests_v0_1_usaban_ids_sin_prefijo_a_e_re",
       "type": "Concept",
       "label": "'write_tests' falló con 'tests v0.1 usaban ids sin prefijo ('a', 'e'), rechazados por la validación nueva'",
@@ -2071,6 +2141,30 @@
       "id": "concept:lesson:fallback:write_tests:edit_module",
       "type": "Concept",
       "label": "Si 'write_tests' falla con 'tests v0.1 usaban ids sin prefijo ('a', 'e'), rechazados por la validación nueva', usar 'edit_module'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "type": "Concept",
+      "label": "'merge_pr' falló con 'timeout de red contra api.github.com durante gh pr merge; el script siguió y marcó Done'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:merge_pr:review_code",
+      "type": "Concept",
+      "label": "Si 'merge_pr' falla con 'timeout de red contra api.github.com durante gh pr merge; el script siguió y marcó Done', usar 'review_code'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -2119,6 +2213,30 @@
       "id": "concept:lesson:note:mantener_un_alias_retrocompatible_edgetype_relation_permite_",
       "type": "Concept",
       "label": "Mantener un alias retrocompatible (EdgeType = Relation) permite migrar la API sin romper a los consumidores",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "type": "Concept",
+      "label": "Verificar mergedAt del PR antes de mover la tarjeta a Done: en Project #5 el estado Done cierra el issue automáticamente",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 6,
+      "last_accessed_at": 6,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "type": "Concept",
+      "label": "No encadenar pasos dependientes de la red sin comprobar su resultado: gh pr merge puede fallar por timeout sin detener el script",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -4663,6 +4781,17 @@
     {
       "source": "action:review_code",
       "target": "outcome:6:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:6:12",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -7831,7 +7960,7 @@
       "last_updated": 6,
       "count": 0,
       "metadata": {
-        "step": 7
+        "step": 12
       },
       "recency_factor": 1.0
     },
@@ -7839,10 +7968,10 @@
       "source": "goal:6",
       "target": "action:review_code",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 6,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -7919,6 +8048,30 @@
       "recency_factor": 1.0
     },
     {
+      "source": "goal:6",
+      "target": "action:merge_pr",
+      "relation": "LEADS_TO",
+      "weight": 0.5,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 0,
+      "metadata": {
+        "step": 13
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:6",
+      "target": "action:merge_pr",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "outcome:6:3",
       "target": "concept:error:tests_v0_1_usaban_ids_sin_prefijo_a_e_re",
       "relation": "FAILED_DUE_TO",
@@ -7948,6 +8101,61 @@
       "decay_factor": 0.05,
       "last_updated": 6,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "outcome:6:11",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "outcome:6:13",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "concept:error:timeout_de_red_contra_api_github_com_dur",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:6:11",
+      "target": "concept:error:timeout_de_red_contra_api_github_com_dur",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:timeout_de_red_contra_api_github_com_dur",
+      "target": "action:review_code",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -8183,6 +8391,237 @@
       "recency_factor": 1.0
     },
     {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "action:merge_pr",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:error:timeout_de_red_contra_api_github_com_dur",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:modelos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:pydantic",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:node",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:edge",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:json",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:schema",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:generado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:validar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
+      "target": "concept:topic:serializacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "action:review_code",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:modelos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:pydantic",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:node",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:edge",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:json",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:schema",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:generado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:validar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:review_code",
+      "target": "concept:topic:serializacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:note:cuando_la_validaci_n_nueva_rechaza_datos_de_tests_antiguos_c",
       "target": "goal:6",
       "relation": "ASSOCIATED_WITH",
@@ -8613,6 +9052,226 @@
     },
     {
       "source": "concept:lesson:note:mantener_un_alias_retrocompatible_edgetype_relation_permite_",
+      "target": "concept:topic:serializacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "goal:6",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:modelos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:pydantic",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:node",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:edge",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:json",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:schema",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:generado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:validar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_mergedat_del_pr_antes_de_mover_la_tarjeta_a_done_e",
+      "target": "concept:topic:serializacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "goal:6",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:modelos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:pydantic",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:node",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:edge",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:json",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:schema",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:generado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
+      "target": "concept:topic:validar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 6,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_encadenar_pasos_dependientes_de_la_red_sin_comprobar_su_r",
       "target": "concept:topic:serializacion",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
