@@ -1,2 +1,2 @@
-networkx>=3.0
-pytest>=8.0
+# Entorno de desarrollo. Para embeddings locales: pip install -e .[dev,embeddings]
+-e .[dev]

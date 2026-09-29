@@ -1,0 +1,65 @@
+{
+  "seq": 5,
+  "id": "issue-1",
+  "goal": "Pydantic y embeddings locales (fastembed) como extra opcional; agregar dependencia",
+  "ref": "#1",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "lecciones fallback espurias hacia acciones posteriores al primer éxito"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "se abrió y corrigió #13 antes de continuar"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "fastembed 0.8.1 instala en Python 3.14 (onnxruntime 1.30)"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "tomllib requiere Python 3.11 y requires-python declaraba >=3.10"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "detectado antes de CI"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "requires-python >=3.11 (3.10 llega a EOL en 2026-10)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "sin extra: 24 passed, 1 skipped; con extra: 25 passed"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "README: rutas de instalación"
+    },
+    {
+      "action": "git_push",
+      "success": false,
+      "error": "egg-info de pip install -e commiteado por git add -A"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "las advertencias de git commit lo revelaron antes del PR; se añadió *.egg-info/ a .gitignore"
+    }
+  ],
+  "lessons": [
+    "Al usar un módulo de la stdlib, verificar su versión mínima contra requires-python",
+    "Probar la suite con y sin los extras opcionales: el skip condicional es parte del contrato",
+    "Verificar con pip install --dry-run la disponibilidad de wheels (p. ej. onnxruntime) para la versión de Python antes de fijar un extra",
+    "Corregir los defectos que contaminan la memoria antes de seguir acumulando episodios",
+    "Tras introducir un build-system, actualizar .gitignore (egg-info, build, dist) antes del primer git add -A"
+  ]
+}

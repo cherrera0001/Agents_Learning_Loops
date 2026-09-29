@@ -11,14 +11,24 @@ extrae lecciones, las enlaza en un grafo semántico y las recupera por
 
 ## Inicio rápido
 
+Requiere Python ≥ 3.11.
+
 ```bash
 python -m venv .venv
 .venv/Scripts/activate        # Windows  (Linux/macOS: source .venv/bin/activate)
-pip install -r requirements.txt
+
+pip install -e .[dev]               # núcleo (networkx, pydantic) + herramientas de desarrollo
+pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, sin PyTorch)
 
 python -m src.main            # demo: escribe memory_graph.json
-pytest                        # 16 pruebas
+pytest                        # los tests marcados `embeddings` se omiten si falta el extra
 ```
+
+| Instalación | Incluye |
+|---|---|
+| `pip install -e .` | Núcleo: `networkx`, `pydantic`. Similitud léxica, sin descarga de modelos |
+| `.[embeddings]` | `fastembed` para búsqueda semántica (#3) |
+| `.[dev]` | `pytest`, `pytest-cov`, `hypothesis`, `jsonschema`, `ruff`, `mypy` |
 
 Salida de la demo:
 

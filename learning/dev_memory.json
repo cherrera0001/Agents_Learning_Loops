@@ -1,5 +1,5 @@
 {
-  "clock": 4,
+  "clock": 5,
   "decay_rate": 0.05,
   "nodes": [
     {
@@ -110,7 +110,7 @@
       "type": "Action",
       "label": "run_tests",
       "created_at": 1,
-      "last_seen": 4
+      "last_seen": 5
     },
     {
       "id": "outcome:1:2",
@@ -187,7 +187,7 @@
       "type": "Action",
       "label": "git_push",
       "created_at": 1,
-      "last_seen": 1
+      "last_seen": 5
     },
     {
       "id": "outcome:1:6",
@@ -532,7 +532,7 @@
       "type": "Concept",
       "label": "como",
       "created_at": 3,
-      "last_seen": 4,
+      "last_seen": 5,
       "kind": "topic"
     },
     {
@@ -548,7 +548,7 @@
       "type": "Action",
       "label": "recall_memory",
       "created_at": 3,
-      "last_seen": 4
+      "last_seen": 5
     },
     {
       "id": "outcome:3:0",
@@ -579,7 +579,7 @@
       "type": "Action",
       "label": "write_tests",
       "created_at": 3,
-      "last_seen": 4
+      "last_seen": 5
     },
     {
       "id": "outcome:3:2",
@@ -606,7 +606,7 @@
       "type": "Action",
       "label": "review_code",
       "created_at": 3,
-      "last_seen": 4
+      "last_seen": 5
     },
     {
       "id": "outcome:3:3",
@@ -696,7 +696,7 @@
       "type": "Concept",
       "label": "Si 'write_tests' falla con 'test de determinismo tautológico: siempre pasaba', usar 'review_code'",
       "created_at": 3,
-      "last_seen": 3,
+      "last_seen": 5,
       "kind": "lesson"
     },
     {
@@ -821,7 +821,7 @@
       "type": "Concept",
       "label": "lecciones fallback espurias hacia acciones posteriores al primer éxito",
       "created_at": 4,
-      "last_seen": 4,
+      "last_seen": 5,
       "kind": "error"
     },
     {
@@ -865,7 +865,7 @@
       "type": "Action",
       "label": "update_docs",
       "created_at": 4,
-      "last_seen": 4
+      "last_seen": 5
     },
     {
       "id": "outcome:4:4",
@@ -908,7 +908,7 @@
       "type": "Concept",
       "label": "'recall_memory' falló con 'lecciones fallback espurias hacia acciones posteriores al primer éxito'",
       "created_at": 4,
-      "last_seen": 4,
+      "last_seen": 5,
       "kind": "lesson"
     },
     {
@@ -916,7 +916,7 @@
       "type": "Concept",
       "label": "Si 'recall_memory' falla con 'lecciones fallback espurias hacia acciones posteriores al primer éxito', usar 'review_code'",
       "created_at": 4,
-      "last_seen": 4,
+      "last_seen": 5,
       "kind": "lesson"
     },
     {
@@ -942,6 +942,286 @@
       "created_at": 4,
       "last_seen": 4,
       "kind": "lesson"
+    },
+    {
+      "id": "goal:5",
+      "type": "Goal",
+      "label": "Pydantic y embeddings locales (fastembed) como extra opcional; agregar dependencia",
+      "created_at": 5,
+      "last_seen": 5,
+      "episode": 5,
+      "ref": "issue-1"
+    },
+    {
+      "id": "concept:topic:pydantic",
+      "type": "Concept",
+      "label": "pydantic",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:embeddings",
+      "type": "Concept",
+      "label": "embeddings",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:locales",
+      "type": "Concept",
+      "label": "locales",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:fastembed",
+      "type": "Concept",
+      "label": "fastembed",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:extra",
+      "type": "Concept",
+      "label": "extra",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:opcional",
+      "type": "Concept",
+      "label": "opcional",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:agregar",
+      "type": "Concept",
+      "label": "agregar",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "concept:topic:dependencia",
+      "type": "Concept",
+      "label": "dependencia",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "topic"
+    },
+    {
+      "id": "outcome:5:0",
+      "type": "Outcome",
+      "label": "failure: lecciones fallback espurias hacia acciones posteriores al primer éxito",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": false,
+      "latency_ms": 0.0,
+      "error": "lecciones fallback espurias hacia acciones posteriores al primer éxito",
+      "episode": 5,
+      "step": 0
+    },
+    {
+      "id": "outcome:5:1",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 1
+    },
+    {
+      "id": "action:add_dependency",
+      "type": "Action",
+      "label": "add_dependency",
+      "created_at": 5,
+      "last_seen": 5
+    },
+    {
+      "id": "outcome:5:2",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 2
+    },
+    {
+      "id": "outcome:5:3",
+      "type": "Outcome",
+      "label": "failure: tomllib requiere Python 3.11 y requires-python declaraba >=3.10",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": false,
+      "latency_ms": 0.0,
+      "error": "tomllib requiere Python 3.11 y requires-python declaraba >=3.10",
+      "episode": 5,
+      "step": 3
+    },
+    {
+      "id": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "type": "Concept",
+      "label": "tomllib requiere Python 3.11 y requires-python declaraba >=3.10",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "error"
+    },
+    {
+      "id": "outcome:5:4",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 4
+    },
+    {
+      "id": "outcome:5:5",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 5
+    },
+    {
+      "id": "outcome:5:6",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 6
+    },
+    {
+      "id": "outcome:5:7",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 7
+    },
+    {
+      "id": "outcome:5:8",
+      "type": "Outcome",
+      "label": "failure: egg-info de pip install -e commiteado por git add -A",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": false,
+      "latency_ms": 0.0,
+      "error": "egg-info de pip install -e commiteado por git add -A",
+      "episode": 5,
+      "step": 8
+    },
+    {
+      "id": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "Concept",
+      "label": "egg-info de pip install -e commiteado por git add -A",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "error"
+    },
+    {
+      "id": "outcome:5:9",
+      "type": "Outcome",
+      "label": "success",
+      "created_at": 5,
+      "last_seen": 5,
+      "success": true,
+      "latency_ms": 0.0,
+      "error": null,
+      "episode": 5,
+      "step": 9
+    },
+    {
+      "id": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "type": "Concept",
+      "label": "'write_tests' falló con 'tomllib requiere Python 3.11 y requires-python declaraba >=3.10'",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "type": "Concept",
+      "label": "'git_push' falló con 'egg-info de pip install -e commiteado por git add -A'",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:fallback:git_push:review_code",
+      "type": "Concept",
+      "label": "Si 'git_push' falla con 'egg-info de pip install -e commiteado por git add -A', usar 'review_code'",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "type": "Concept",
+      "label": "Al usar un módulo de la stdlib, verificar su versión mínima contra requires-python",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "type": "Concept",
+      "label": "Probar la suite con y sin los extras opcionales: el skip condicional es parte del contrato",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "type": "Concept",
+      "label": "Verificar con pip install --dry-run la disponibilidad de wheels (p. ej. onnxruntime) para la versión de Python antes de fijar un extra",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "type": "Concept",
+      "label": "Corregir los defectos que contaminan la memoria antes de seguir acumulando episodios",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
+    },
+    {
+      "id": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "type": "Concept",
+      "label": "Tras introducir un build-system, actualizar .gitignore (egg-info, build, dist) antes del primer git add -A",
+      "created_at": 5,
+      "last_seen": 5,
+      "kind": "lesson"
     }
   ],
   "edges": [
@@ -952,7 +1232,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -961,7 +1241,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -970,7 +1250,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -979,7 +1259,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -988,7 +1268,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -997,7 +1277,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1006,7 +1286,7 @@
       "weight": 0.5,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1016,7 +1296,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1025,7 +1305,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1035,7 +1315,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1044,7 +1324,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1054,7 +1334,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 4,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1063,7 +1343,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1073,7 +1353,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 3,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1082,7 +1362,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1092,7 +1372,7 @@
       "last_updated": 1,
       "count": 0,
       "step": 5,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1101,7 +1381,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
@@ -1111,16 +1391,16 @@
       "last_updated": 1,
       "count": 0,
       "step": 6,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:1",
       "target": "action:git_push",
       "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 1,
-      "count": 1,
-      "recency_factor": 0.860708
+      "weight": 0.32,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
     },
     {
       "source": "action:write_code",
@@ -1129,7 +1409,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:write_code",
@@ -1138,7 +1418,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:run_demo",
@@ -1147,7 +1427,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:run_tests",
@@ -1156,7 +1436,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:run_tests",
@@ -1165,15 +1445,15 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "type": "FAILED_DUE_TO",
-      "weight": 0.2048,
-      "last_updated": 4,
-      "count": 4,
+      "weight": 0.16384,
+      "last_updated": 5,
+      "count": 5,
       "recency_factor": 1.0
     },
     {
@@ -1183,7 +1463,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:run_tests",
@@ -1191,6 +1471,15 @@
       "type": "LEADS_TO",
       "weight": 1.0,
       "last_updated": 4,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:5:6",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
       "count": 0,
       "recency_factor": 1.0
     },
@@ -1201,7 +1490,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1210,7 +1499,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:edit_module",
@@ -1219,7 +1508,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:edit_module",
@@ -1228,7 +1517,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:edit_module",
@@ -1237,7 +1526,7 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:validate_schema",
@@ -1246,7 +1535,7 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "action:git_push",
@@ -1255,7 +1544,25 @@
       "weight": 1.0,
       "last_updated": 1,
       "count": 0,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
+    },
+    {
+      "source": "action:git_push",
+      "target": "outcome:5:8",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:git_push",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1264,7 +1571,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1273,7 +1580,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1282,7 +1589,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1291,7 +1598,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1300,7 +1607,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1309,7 +1616,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1318,7 +1625,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1327,7 +1634,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -1336,7 +1643,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1345,7 +1652,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1354,7 +1661,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1363,7 +1670,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1372,7 +1679,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1381,7 +1688,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1390,7 +1697,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1399,7 +1706,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -1408,7 +1715,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1417,7 +1724,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1426,7 +1733,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1435,7 +1742,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1444,7 +1751,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1453,7 +1760,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1462,7 +1769,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1471,7 +1778,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -1480,7 +1787,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1489,7 +1796,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1498,7 +1805,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1507,7 +1814,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1516,7 +1823,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1525,7 +1832,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1534,7 +1841,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1543,7 +1850,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:validar_la_serializaci_n_del_grafo_contra_specs_memory_schem",
@@ -1552,7 +1859,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1561,7 +1868,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1570,7 +1877,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1579,7 +1886,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1588,7 +1895,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1597,7 +1904,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1606,7 +1913,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1615,7 +1922,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "concept:lesson:note:un_reloj_l_gico_por_episodio_hace_que_el_decaimiento_tempora",
@@ -1624,7 +1931,7 @@
       "weight": 0.4,
       "last_updated": 1,
       "count": 1,
-      "recency_factor": 0.860708
+      "recency_factor": 0.818731
     },
     {
       "source": "goal:2",
@@ -1633,7 +1940,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1642,7 +1949,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1651,7 +1958,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1660,7 +1967,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1669,7 +1976,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1678,7 +1985,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1687,7 +1994,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1696,7 +2003,7 @@
       "weight": 0.5,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1706,7 +2013,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1715,7 +2022,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1725,7 +2032,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 2,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1734,7 +2041,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1744,7 +2051,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 4,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1753,7 +2060,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1763,7 +2070,7 @@
       "last_updated": 2,
       "count": 0,
       "step": 5,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:2",
@@ -1772,7 +2079,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:write_issue_bodies",
@@ -1781,7 +2088,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:write_issue_bodies",
@@ -1790,7 +2097,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:write_issue_bodies",
@@ -1799,7 +2106,7 @@
       "weight": 0.32,
       "last_updated": 2,
       "count": 2,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "outcome:2:0",
@@ -1808,7 +2115,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1817,7 +2124,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:gh_create_issues",
@@ -1826,7 +2133,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:gh_project_add",
@@ -1835,7 +2142,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:gh_project_add",
@@ -1844,7 +2151,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:gh_project_add",
@@ -1853,7 +2160,7 @@
       "weight": 0.32,
       "last_updated": 2,
       "count": 2,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "outcome:2:3",
@@ -1862,7 +2169,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:error:item_de_la_pica_no_visible_en_gh_project",
@@ -1871,7 +2178,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "action:gh_link_subissues",
@@ -1880,7 +2187,7 @@
       "weight": 1.0,
       "last_updated": 2,
       "count": 0,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1889,7 +2196,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1898,7 +2205,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1907,7 +2214,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1916,7 +2223,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1925,7 +2232,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1934,7 +2241,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1943,7 +2250,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1952,7 +2259,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1961,7 +2268,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:write_issue_bodies:heredoc_largo_en_git_bash_unexpected_eof",
@@ -1970,7 +2277,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -1979,7 +2286,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -1988,7 +2295,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -1997,7 +2304,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2006,7 +2313,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2015,7 +2322,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2024,7 +2331,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2033,7 +2340,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2042,7 +2349,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:write_issue_bodies:write_issue_bodies",
@@ -2051,7 +2358,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2060,7 +2367,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2069,7 +2376,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2078,7 +2385,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2087,7 +2394,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2096,7 +2403,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2105,7 +2412,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2114,7 +2421,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2123,7 +2430,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2132,7 +2439,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:avoid:gh_project_add:item_de_la_pica_no_visible_en_gh_project",
@@ -2141,7 +2448,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2150,7 +2457,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2159,7 +2466,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2168,7 +2475,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2177,7 +2484,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2186,7 +2493,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2195,7 +2502,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2204,7 +2511,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2213,7 +2520,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:gh_project_add:gh_project_add",
@@ -2222,7 +2529,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2231,7 +2538,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2240,7 +2547,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2249,7 +2556,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2258,7 +2565,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2267,7 +2574,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2276,7 +2583,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2285,7 +2592,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2294,7 +2601,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:escribir_cuerpos_largos_de_issues_en_archivos_y_usar_body_fi",
@@ -2303,7 +2610,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2312,7 +2619,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2321,7 +2628,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2330,7 +2637,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2339,7 +2646,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2348,7 +2655,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2357,7 +2664,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2366,7 +2673,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2375,7 +2682,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:tras_gh_project_item_add_verificar_con_item_list_item_add_es",
@@ -2384,7 +2691,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2393,7 +2700,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2402,7 +2709,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2411,7 +2718,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2420,7 +2727,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2429,7 +2736,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2438,7 +2745,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2447,7 +2754,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2456,7 +2763,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:sub_issues_summary_de_la_api_de_github_puede_estar_desfasado",
@@ -2465,7 +2772,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2474,7 +2781,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2483,7 +2790,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2492,7 +2799,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2501,7 +2808,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2510,7 +2817,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2519,7 +2826,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2528,7 +2835,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2537,7 +2844,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:note:separar_en_cada_issue_lo_ya_implementado_de_la_brecha_real_e",
@@ -2546,7 +2853,7 @@
       "weight": 0.4,
       "last_updated": 2,
       "count": 1,
-      "recency_factor": 0.904837
+      "recency_factor": 0.860708
     },
     {
       "source": "goal:3",
@@ -2555,7 +2862,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2564,7 +2871,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2573,7 +2880,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2582,7 +2889,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2591,7 +2898,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2600,7 +2907,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2609,7 +2916,7 @@
       "weight": 0.5,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2619,15 +2926,15 @@
       "last_updated": 3,
       "count": 0,
       "step": 7,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
       "target": "action:recall_memory",
       "type": "RESOLVED_BY",
-      "weight": 0.256,
-      "last_updated": 4,
-      "count": 3,
+      "weight": 0.2048,
+      "last_updated": 5,
+      "count": 4,
       "recency_factor": 1.0
     },
     {
@@ -2638,7 +2945,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2647,7 +2954,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2657,7 +2964,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 2,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2667,7 +2974,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 3,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2676,7 +2983,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2686,7 +2993,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 4,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2695,7 +3002,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2705,7 +3012,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 5,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2714,7 +3021,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2724,7 +3031,7 @@
       "last_updated": 3,
       "count": 0,
       "step": 6,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:3",
@@ -2733,7 +3040,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:recall_memory",
@@ -2742,7 +3049,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:recall_memory",
@@ -2751,7 +3058,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:recall_memory",
@@ -2760,7 +3067,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:recall_memory",
@@ -2769,15 +3076,24 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:recall_memory",
       "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
       "type": "FAILED_DUE_TO",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:recall_memory",
+      "target": "outcome:5:0",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
       "recency_factor": 1.0
     },
     {
@@ -2787,7 +3103,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:write_tests",
@@ -2796,7 +3112,7 @@
       "weight": 0.32,
       "last_updated": 4,
       "count": 2,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "action:write_tests",
@@ -2805,6 +3121,24 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:write_tests",
+      "target": "outcome:5:3",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:write_tests",
+      "target": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "type": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
       "recency_factor": 1.0
     },
     {
@@ -2814,7 +3148,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:error:test_de_determinismo_tautol_gico_siempre",
@@ -2823,7 +3157,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:review_code",
@@ -2832,7 +3166,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:review_code",
@@ -2840,6 +3174,33 @@
       "type": "LEADS_TO",
       "weight": 1.0,
       "last_updated": 4,
+      "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:5:1",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:5:4",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:5:9",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
       "count": 0,
       "recency_factor": 1.0
     },
@@ -2850,7 +3211,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "action:rebuild_memory",
@@ -2859,7 +3220,7 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "outcome:3:7",
@@ -2868,7 +3229,7 @@
       "weight": 1.0,
       "last_updated": 3,
       "count": 0,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2877,7 +3238,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2886,7 +3247,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2895,7 +3256,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2904,7 +3265,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2913,7 +3274,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2922,7 +3283,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2931,7 +3292,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2940,7 +3301,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:write_tests:test_de_determinismo_tautol_gico_siempre",
@@ -2949,16 +3310,16 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "action:review_code",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 0.951229
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -2967,7 +3328,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -2976,7 +3337,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -2985,16 +3346,16 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
       "target": "concept:topic:como",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 3,
-      "count": 1,
-      "recency_factor": 0.951229
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -3003,7 +3364,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -3012,7 +3373,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:fallback:write_tests:review_code",
@@ -3021,7 +3382,79 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:review_code",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3030,7 +3463,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3039,7 +3472,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3048,7 +3481,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3057,7 +3490,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3066,7 +3499,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3075,7 +3508,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3084,7 +3517,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3093,7 +3526,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:avoid:recall_memory:relevancia_saturada_en_1_00_para_todas_l",
@@ -3102,7 +3535,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3111,7 +3544,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3120,7 +3553,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3129,7 +3562,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3138,7 +3571,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3147,7 +3580,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3156,7 +3589,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3165,7 +3598,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:mantener_los_episodios_como_fuente_de_verdad_y_el_grafo_como",
@@ -3174,7 +3607,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3183,7 +3616,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3192,7 +3625,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3201,7 +3634,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3210,7 +3643,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3219,7 +3652,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3228,7 +3661,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3237,7 +3670,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:revisar_que_cada_test_pueda_fallar_un_test_con_or_entre_cond",
@@ -3246,7 +3679,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3255,7 +3688,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3264,7 +3697,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3273,7 +3706,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3282,7 +3715,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3291,7 +3724,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3300,7 +3733,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3309,7 +3742,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "concept:lesson:note:la_activaci_n_acumulada_con_saturaci_n_en_1_0_no_discrimina_",
@@ -3318,7 +3751,7 @@
       "weight": 0.4,
       "last_updated": 3,
       "count": 1,
-      "recency_factor": 0.951229
+      "recency_factor": 0.904837
     },
     {
       "source": "goal:4",
@@ -3327,7 +3760,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3336,7 +3769,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3345,7 +3778,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3354,7 +3787,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3363,7 +3796,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3372,7 +3805,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3381,7 +3814,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3390,7 +3823,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3399,7 +3832,7 @@
       "weight": 0.5,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3409,7 +3842,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3419,7 +3852,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3428,7 +3861,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3438,7 +3871,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 2,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3447,7 +3880,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3457,15 +3890,15 @@
       "last_updated": 4,
       "count": 0,
       "step": 3,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
       "target": "action:write_tests",
       "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.32,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3476,7 +3909,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 4,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3485,7 +3918,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3495,7 +3928,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 5,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3504,7 +3937,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3514,7 +3947,7 @@
       "last_updated": 4,
       "count": 0,
       "step": 6,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "goal:4",
@@ -3523,7 +3956,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "outcome:4:0",
@@ -3532,15 +3965,15 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:error:lecciones_fallback_espurias_hacia_accion",
       "target": "action:review_code",
       "type": "RESOLVED_BY",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3550,24 +3983,33 @@
       "weight": 1.0,
       "last_updated": 4,
       "count": 0,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:5:7",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
       "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
       "target": "action:recall_memory",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
       "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3577,7 +4019,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3586,7 +4028,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3595,15 +4037,15 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
       "target": "concept:topic:como",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3613,7 +4055,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3622,7 +4064,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3631,7 +4073,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3640,7 +4082,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
@@ -3648,6 +4090,78 @@
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 4,
+      "count": 1,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:lecciones_fallback_espurias_hacia_accion",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
       "count": 1,
       "recency_factor": 1.0
     },
@@ -3655,9 +4169,9 @@
       "source": "concept:lesson:fallback:recall_memory:review_code",
       "target": "action:review_code",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3667,7 +4181,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3676,7 +4190,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3685,15 +4199,15 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
       "target": "concept:topic:como",
       "type": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "last_updated": 4,
-      "count": 1,
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
       "recency_factor": 1.0
     },
     {
@@ -3703,7 +4217,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3712,7 +4226,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3721,7 +4235,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3730,7 +4244,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:fallback:recall_memory:review_code",
@@ -3738,6 +4252,78 @@
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 4,
+      "count": 1,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:recall_memory:review_code",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
       "count": 1,
       "recency_factor": 1.0
     },
@@ -3748,7 +4334,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3757,7 +4343,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3766,7 +4352,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3775,7 +4361,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3784,7 +4370,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3793,7 +4379,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3802,7 +4388,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3811,7 +4397,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3820,7 +4406,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:registrar_el_fallo_en_la_acci_n_que_lo_caus_no_en_la_que_lo_",
@@ -3829,7 +4415,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3838,7 +4424,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3847,7 +4433,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3856,7 +4442,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3865,7 +4451,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3874,7 +4460,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3883,7 +4469,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3892,7 +4478,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3901,7 +4487,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3910,7 +4496,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:solo_el_primer_xito_tras_un_fallo_es_su_resoluci_n_el_agente",
@@ -3919,7 +4505,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3928,7 +4514,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3937,7 +4523,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3946,7 +4532,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3955,7 +4541,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3964,7 +4550,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3973,7 +4559,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3982,7 +4568,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -3991,7 +4577,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -4000,7 +4586,7 @@
       "weight": 0.4,
       "last_updated": 4,
       "count": 1,
-      "recency_factor": 1.0
+      "recency_factor": 0.951229
     },
     {
       "source": "concept:lesson:note:consultar_la_memoria_sobre_datos_reales_dogfooding_expone_de",
@@ -4008,6 +4594,994 @@
       "type": "ASSOCIATED_WITH",
       "weight": 0.4,
       "last_updated": 4,
+      "count": 1,
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:recall_memory",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:review_code",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 9,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.784,
+      "last_updated": 5,
+      "count": 3,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:add_dependency",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 5,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:add_dependency",
+      "type": "RESOLVED_BY",
+      "weight": 0.64,
+      "last_updated": 5,
+      "count": 2,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:write_tests",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 3,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:run_tests",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 6,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:run_tests",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:update_docs",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 7,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:update_docs",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:5",
+      "target": "action:git_push",
+      "type": "LEADS_TO",
+      "weight": 0.5,
+      "last_updated": 5,
+      "count": 0,
+      "step": 8,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:5:0",
+      "target": "concept:error:lecciones_fallback_espurias_hacia_accion",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:add_dependency",
+      "target": "outcome:5:2",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:add_dependency",
+      "target": "outcome:5:5",
+      "type": "LEADS_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:5:3",
+      "target": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:5:8",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "last_updated": 5,
+      "count": 0,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "target": "action:review_code",
+      "type": "RESOLVED_BY",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "action:write_tests",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:error:tomllib_requiere_python_3_11_y_requires_",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:tomllib_requiere_python_3_11_y_requires_",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "action:git_push",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:error:egg_info_de_pip_install_e_commiteado_por",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:egg_info_de_pip_install_e_commiteado_por",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "action:review_code",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:review_code",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_usar_un_m_dulo_de_la_stdlib_verificar_su_versi_n_m_nima_c",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:probar_la_suite_con_y_sin_los_extras_opcionales_el_skip_cond",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_con_pip_install_dry_run_la_disponibilidad_de_wheel",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:corregir_los_defectos_que_contaminan_la_memoria_antes_de_seg",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "goal:5",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:pydantic",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:embeddings",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:locales",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:fastembed",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:como",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:extra",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:opcional",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:agregar",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
+      "count": 1,
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:tras_introducir_un_build_system_actualizar_gitignore_egg_inf",
+      "target": "concept:topic:dependencia",
+      "type": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "last_updated": 5,
       "count": 1,
       "recency_factor": 1.0
     }
