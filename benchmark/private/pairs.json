@@ -1,0 +1,34 @@
+{
+  "positive": [
+    {
+      "train": "EXP-01",
+      "transfer": "EXP-04",
+      "distance": "L3"
+    },
+    {
+      "train": "EXP-02",
+      "transfer": "EXP-05",
+      "distance": "L5"
+    },
+    {
+      "train": "EXP-03",
+      "transfer": "EXP-06",
+      "distance": "L4"
+    }
+  ],
+  "negative": [
+    {
+      "train": "EXP-01",
+      "transfer": "EXP-05",
+      "reason": "Similar None/AttributeError symptoms; identity and environment causes differ."
+    }
+  ],
+  "taxonomy": {
+    "L0": "EXACT",
+    "L1": "PARAPHRASE",
+    "L2": "SEMANTIC",
+    "L3": "CAUSAL",
+    "L4": "MULTI-HOP",
+    "L5": "TRANSFER"
+  }
+}

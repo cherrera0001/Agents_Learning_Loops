@@ -1,0 +1,10 @@
+{
+  "id": "EXP-06",
+  "title": "Background summary fails before producing a report",
+  "context": "The background worker cannot produce its report: the report service fails when querying SQLite. Running the report on an already available database succeeds.",
+  "expected": "A fresh background summary returns label Open tasks and count 0 without manual setup.",
+  "observed": "The background worker cannot produce its report: the report service fails when querying SQLite. Running the report on an already available database succeeds.",
+  "acceptance_criteria": "A fresh background summary returns label Open tasks and count 0 without manual setup.",
+  "reproduction": "python -m experiments reproduce EXP-06",
+  "test_file": "EXP-06_test.py"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "EXP-01",
+  "title": "API returns 500 instead of 401",
+  "context": "A request to /profile without a token returns an internal error. The identity API works with demo-token.",
+  "expected": "Requests without a token or with an unknown token return 401; valid identities return 200.",
+  "observed": "A request to /profile without a token returns an internal error. The identity API works with demo-token.",
+  "acceptance_criteria": "Requests without a token or with an unknown token return 401; valid identities return 200.",
+  "reproduction": "python -m experiments reproduce EXP-01",
+  "test_file": "EXP-01_test.py"
+}

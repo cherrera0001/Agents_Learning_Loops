@@ -1,0 +1,10 @@
+{
+  "id": "EXP-03",
+  "title": "Health endpoint fails immediately after startup",
+  "context": "Application startup raises ConnectionError: database connection refused. The health endpoint cannot be served.",
+  "expected": "Application.start completes and /health returns 200 with status ready.",
+  "observed": "Application startup raises ConnectionError: database connection refused. The health endpoint cannot be served.",
+  "acceptance_criteria": "Application.start completes and /health returns 200 with status ready.",
+  "reproduction": "python -m experiments reproduce EXP-03",
+  "test_file": "EXP-03_test.py"
+}

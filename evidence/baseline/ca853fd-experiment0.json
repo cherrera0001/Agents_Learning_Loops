@@ -1,0 +1,202 @@
+{
+  "benchmark": "associative-agent-loop",
+  "seed": 7,
+  "scenarios": {
+    "same_goal": {
+      "episodes": [
+        {
+          "episode": 1,
+          "goal": "clima en Santiago",
+          "path": [
+            {
+              "tool": "weather_api_v1",
+              "success": false
+            },
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 2,
+          "success": true,
+          "first_try_success": false,
+          "scores": {
+            "weather_api_v1": 0.0,
+            "weather_api_v2": 0.0
+          },
+          "lessons_recalled": []
+        },
+        {
+          "episode": 2,
+          "goal": "clima en Santiago",
+          "path": [
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 1,
+          "success": true,
+          "first_try_success": true,
+          "scores": {
+            "weather_api_v2": 0.2932,
+            "weather_api_v1": -0.0927
+          },
+          "lessons_recalled": [
+            "'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'",
+            "Si 'weather_api_v1' falla con 'HTTP 410 Gone: endpoint deprecated', usar 'weather_api_v2'"
+          ]
+        },
+        {
+          "episode": 3,
+          "goal": "clima en Santiago",
+          "path": [
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 1,
+          "success": true,
+          "first_try_success": true,
+          "scores": {
+            "weather_api_v2": 0.7375,
+            "weather_api_v1": -0.0874
+          },
+          "lessons_recalled": [
+            "'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'",
+            "Si 'weather_api_v1' falla con 'HTTP 410 Gone: endpoint deprecated', usar 'weather_api_v2'"
+          ]
+        }
+      ],
+      "metrics": {
+        "episodes": 3,
+        "first_try_success": 2,
+        "total_calls": 4,
+        "total_latency_ms": 400,
+        "repeated_failures": 0
+      },
+      "graph": {
+        "Goal": 3,
+        "Action": 2,
+        "Outcome": 4,
+        "Concept": 5,
+        "edges": 27
+      }
+    },
+    "paraphrase": {
+      "episodes": [
+        {
+          "episode": 1,
+          "goal": "clima en Santiago",
+          "path": [
+            {
+              "tool": "weather_api_v1",
+              "success": false
+            },
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 2,
+          "success": true,
+          "first_try_success": false,
+          "scores": {
+            "weather_api_v1": 0.0,
+            "weather_api_v2": 0.0
+          },
+          "lessons_recalled": []
+        },
+        {
+          "episode": 2,
+          "goal": "pronóstico del clima en Madrid",
+          "path": [
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 1,
+          "success": true,
+          "first_try_success": true,
+          "scores": {
+            "weather_api_v2": 0.1121,
+            "weather_api_v1": -0.0333
+          },
+          "lessons_recalled": [
+            "'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'",
+            "Si 'weather_api_v1' falla con 'HTTP 410 Gone: endpoint deprecated', usar 'weather_api_v2'"
+          ]
+        },
+        {
+          "episode": 3,
+          "goal": "clima para mañana en Lima",
+          "path": [
+            {
+              "tool": "weather_api_v2",
+              "success": true
+            }
+          ],
+          "attempts": 1,
+          "success": true,
+          "first_try_success": true,
+          "scores": {
+            "weather_api_v2": 0.235,
+            "weather_api_v1": -0.0312
+          },
+          "lessons_recalled": [
+            "'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'",
+            "Si 'weather_api_v1' falla con 'HTTP 410 Gone: endpoint deprecated', usar 'weather_api_v2'"
+          ]
+        }
+      ],
+      "metrics": {
+        "episodes": 3,
+        "first_try_success": 2,
+        "total_calls": 4,
+        "total_latency_ms": 400,
+        "repeated_failures": 0
+      },
+      "graph": {
+        "Goal": 3,
+        "Action": 2,
+        "Outcome": 4,
+        "Concept": 9,
+        "edges": 29
+      }
+    },
+    "flaky": {
+      "without_memory": {
+        "episodes": 20,
+        "first_try_success": 2,
+        "total_calls": 38,
+        "total_latency_ms": 5100,
+        "repeated_failures": 17
+      },
+      "with_memory": {
+        "episodes": 20,
+        "first_try_success": 19,
+        "total_calls": 21,
+        "total_latency_ms": 5030,
+        "repeated_failures": 0
+      }
+    },
+    "cross_domain": {
+      "global_valence": {
+        "episodes": 6,
+        "first_try_success": 5,
+        "total_calls": 7,
+        "total_latency_ms": 1540,
+        "repeated_failures": 1
+      },
+      "contextual_valence": {
+        "episodes": 6,
+        "first_try_success": 5,
+        "total_calls": 7,
+        "total_latency_ms": 1260,
+        "repeated_failures": 1
+      }
+    }
+  }
+}

@@ -1,195 +1,202 @@
-# associative-agent-loop
+# Agents Learning Loops
 
-[![CI](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml/badge.svg)](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml)
+An evidence-first laboratory for memory and cross-task software repair.
+**We are testing whether prior experience changes decisions and improves outcomes
+on new related tasks.** We do not yet claim autonomous software-engineering learning.
 
-Implementación mínima y didáctica de una **memoria asociativa en grafo** para
-el bucle de aprendizaje de un agente: el agente registra sus trayectorias,
-extrae lecciones, las enlaza en un grafo semántico y las recupera por
-**activación propagada** para no repetir errores.
+## What we are testing
 
-- Núcleo liviano: `networkx` + `pydantic`; embeddings semánticos locales opcionales (`fastembed`, ONNX).
-- Determinista: reloj lógico y semillas fijas, así las pruebas son reproducibles.
-- Guiado por especificación: [`specs/memory_schema.json`](specs/memory_schema.json) y [`specs/loop_protocol.md`](specs/loop_protocol.md).
+Can a software agent use evidence from previous tasks to change its strategy on
+a different task with a related cause? Storage is not retrieval; retrieval is not
+learning. The required chain is:
 
-## Inicio rápido
+```text
+Experience -> Evidence -> Reflection -> Memory
+    -> Retrieve(new task) -> Decision change -> Action change -> Outcome change
+```
 
-Requiere Python ≥ 3.11.
+GitHub Issues are tasks. Test outputs, source snapshots and patches are evidence.
+The memory graph is internal knowledge derived from evidence. Reflection is an
+interpretation that must cite evidence, never a substitute for it.
 
-```bash
+## What is already demonstrated
+
+Experiment 0 demonstrates **associative action reuse under controlled simulated
+conditions**. Its original deterministic scenarios and graph mechanisms remain
+intact. Original commits, environments, tests and JSON outputs are preserved in
+[evidence/baseline](evidence/baseline/).
+
+Experiment 1 supplies real Python/SQLite execution, six reproducible defects,
+isolated task copies, three memory conditions, explicit reflection, append-only
+receipts and generated comparisons. Read the [results](results/README.md) before
+interpreting gain.
+
+## What is not demonstrated yet
+
+Autonomous software-engineering learning; discovery of new repair algorithms;
+statistically significant improvement across independent repositories; superiority
+of associative memory over text history; calibrated causal diagnosis; LLM-agent
+transfer. The initial agent has three handwritten generic repair operators and
+a seeded ordering prior. These constraints limit the interpretation.
+
+## Experiment 0  Synthetic
+
+**Synthetic Associative Retrieval**, preserved as the **Synthetic Associative
+Memory Baseline**. `weather_scenario`, `flaky_scenario`, `MemoryGraph`, spreading
+activation, reinforcement, decay and pruning retain their APIs. The logical
+clock, optional embeddings, serialization migration and tests remain.
+
+```sh
+python -m associative_agent_loop.main --json
+aal-benchmark --json
+```
+
+The prior packaging change moved `src.agent` to `associative_agent_loop.agent`;
+this layer introduces no further break. See the [historical technical reference](docs/experiment0-reference.md)
+and [original loop protocol](specs/loop_protocol.md). Coverage is mainly L0 exact
+reuse, L1 paraphrase and L2 semantic retrieval.
+
+## Experiment 1  Software engineering transfer
+
+[Task Ledger](experiments/software_project/) is a small WSGI application with
+authentication, middleware, configuration, SQLite storage, business services and
+a worker. It uses standard-library dependencies and actual subprocess tests.
+The healthy project is copied and exactly one defect is injected per task.
+
+- Train: [AUTH #24](https://github.com/cherrera0001/Agents_Learning_Loops/issues/24),
+  [CONFIG #25](https://github.com/cherrera0001/Agents_Learning_Loops/issues/25),
+  [READINESS #26](https://github.com/cherrera0001/Agents_Learning_Loops/issues/26).
+- Transfer: [AUTH #27](https://github.com/cherrera0001/Agents_Learning_Loops/issues/27),
+  [CONFIG #28](https://github.com/cherrera0001/Agents_Learning_Loops/issues/28),
+  [READINESS #29](https://github.com/cherrera0001/Agents_Learning_Loops/issues/29).
+
+Intended pair distances are L3 causal, L5 transfer to another component and L4
+multi-hop respectively. These are author annotations, not demonstrated levels
+of intelligence. AUTH training and CONFIG transfer share misleading symptoms
+but different causes, providing a false-retrieval control within six tasks.
+
+Public issues contain observations and acceptance criteria. Causal labels and
+injections live in `benchmark/private/`, outside `AgentView`. The solver receives
+only its task, current source and condition-eligible lessons. The controller,
+solver and evaluator are separate. See the [complete protocol](specs/software_learning_protocol.md).
+
+## Hypotheses
+
+- Prior relevant evidence reduces repeated failures on related tasks.
+- Recall can change the first strategy and inspected file.
+- Some recalled lessons are irrelevant, unused or do not improve the outcome.
+- Associative memory may or may not outperform textual history.
+
+Equal outcomes and negative transfer are valid findings. Scientific proposals:
+[hypothesis #30](https://github.com/cherrera0001/Agents_Learning_Loops/issues/30),
+[Experiment 0 #31](https://github.com/cherrera0001/Agents_Learning_Loops/issues/31),
+[Experiment 1 #32](https://github.com/cherrera0001/Agents_Learning_Loops/issues/32),
+[benchmark #33](https://github.com/cherrera0001/Agents_Learning_Loops/issues/33),
+[schema #34](https://github.com/cherrera0001/Agents_Learning_Loops/issues/34),
+[receipts #35](https://github.com/cherrera0001/Agents_Learning_Loops/issues/35),
+[evaluation #36](https://github.com/cherrera0001/Agents_Learning_Loops/issues/36).
+
+## Experimental conditions
+
+- A `NO_MEMORY`: fresh agent with a seeded strategy order.
+- B `TEXT_HISTORY`: the same agent with all verified training lessons as text.
+- C `ASSOCIATIVE_MEMORY`: the same agent with top-1 graph recall and paths.
+
+Training starts empty per condition/seed; evaluation freezes the resulting memory.
+Source, tests, operators and attempt budgets are identical across paired modes.
+Seeds 7, 11 and 23 each run twice. Vector/hybrid conditions are not implemented.
+Experiment 1 requires no API key or model download. The bounded agent is named
+explicitly in receipts; its strategy vocabulary is not itself learned.
+
+## Metrics
+
+TaskSuccessRate, FirstAttemptSuccessRate, IterationsPerTask, RepeatedFailureRate,
+MemoryRetrievalRecall, MemoryRetrievalPrecision, MemoryUseRate, MemoryUtilityRate
+and FalseRetrievalRate are generated from receipts. LearningGain is
+`metric(memory) - metric(no_memory)`; lower iterations are better.
+
+Utility requires recall to change strategy and action and improve the paired
+outcome. Retrieval alone is insufficient. Undefined denominators are `null`.
+Paired reports include hypotheses, file inspection order, iterations, failed
+attempts, tests, wall time and memories. See [metric definitions and limits](specs/software_learning_protocol.md#metrics-and-falsification).
+
+## Reproduce
+
+From a repository checkout (Python >=3.11; recorded environment 3.14):
+
+```sh
 python -m venv .venv
-.venv/Scripts/activate        # Windows  (Linux/macOS: source .venv/bin/activate)
-
-pip install -e .[dev]               # núcleo (networkx, pydantic) + herramientas de desarrollo
-pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, sin PyTorch)
-
-aal-benchmark                 # benchmark legible (= python -m associative_agent_loop.main)
-aal-benchmark --json          # reporte determinista (misma semilla ⇒ mismo JSON)
-aal-benchmark -vv             # con logging DEBUG de cada transición (stderr)
-pytest                        # unit + integration; los marcados `embeddings` se omiten sin el extra
+# Windows: .venv\Scripts\activate
+# POSIX: source .venv/bin/activate
+pip install -e ".[dev]"
+# Optional exact reference dependencies, where compatible with your interpreter:
+pip install -r requirements-experiment.lock
+python -m pytest
+python -m scripts.export_schema --check
+python -m scripts.export_experiment_schema --check
+python -m associative_agent_loop.main --json
 ```
 
-| Instalación | Incluye |
-|---|---|
-| `pip install -e .` | Núcleo: `networkx`, `pydantic`. Similitud léxica, sin descarga de modelos |
-| `.[embeddings]` | `fastembed` para búsqueda semántica (#3) |
-| `.[dev]` | `pytest`, `pytest-cov`, `hypothesis`, `jsonschema`, `ruff`, `mypy` |
+Reproduce a defect (a nonzero exit is expected before repair):
 
-Salida del benchmark:
-
-```text
-=== Escenario 1: misma meta repetida (API deprecada) ===
-  [OK ] #1 'clima en Santiago'  intentos=2  weather_api_v1✗ → weather_api_v2✓
-  [OK ] #2 'clima en Santiago'  intentos=1  weather_api_v2✓
-         memoria: weather_api_v2=+0.201, weather_api_v1=-0.038
-         lección recordada: 'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'
-  ...
-  fallos repetidos tras el primer episodio: 0
-
-=== Escenario 2: metas parafraseadas ===
-  [OK ] #2 'pronóstico del clima en Madrid'  intentos=1  weather_api_v2✓
-  ...
-=== Escenario 3: errores intermitentes, 20 episodios ===
-  sin memoria  éxito al 1er intento=2/20  llamadas totales=38  latencia total=5100 ms
-  con memoria  éxito al 1er intento=19/20  llamadas totales=21  latencia total=5030 ms
+```sh
+python -m experiments reproduce EXP-04
 ```
 
-## Modelo
+Execute A/B/C and reconstruct all aggregates:
 
-### Entidades
-
-```mermaid
-graph LR
-    G1["Goal<br/>clima en Santiago"] -- ASSOCIATED_WITH --> T["Concept(topic)<br/>clima"]
-    G1 -- LEADS_TO --> A1["Action<br/>weather_api_v1"]
-    G1 -- LEADS_TO --> A2["Action<br/>weather_api_v2"]
-    G1 == RESOLVED_BY ==> A2
-    A1 -- LEADS_TO --> O1["Outcome ✗"]
-    A2 -- LEADS_TO --> O2["Outcome ✓"]
-    O1 -- FAILED_DUE_TO --> E["Concept(error)<br/>HTTP 410 Gone"]
-    A1 -. FAILED_DUE_TO .-> E
-    E == RESOLVED_BY ==> A2
-    L["Concept(lesson)<br/>Si v1 falla con 410, usar v2"] -- ASSOCIATED_WITH --> T
-    L -- ASSOCIATED_WITH --> A2
+```sh
+python -m experiments run --seeds 7 11 23 --replicates 2 --evidence-dir evidence/replication
+python -m experiments evaluate --evidence-dir evidence/replication --output results/replication
+# Reconstruct published results from the original receipts:
+python -m experiments evaluate --evidence-dir evidence/runs --output results
 ```
 
-| Nodo | Significado |
-|---|---|
-| `Goal` | Meta de un episodio (texto de la tarea) |
-| `Action` | Herramienta; **compartida** entre episodios, por lo que concentra la experiencia |
-| `Outcome` | Resultado de una ejecución concreta (`success`, `latency_ms`, `error`) |
-| `Concept` | `topic` (término de la meta), `error` (causa de fallo) o `lesson` (lección extraída) |
+New runs get new IDs and never replace receipts. Wall times differ; replication
+compares a declared semantic projection. Tests validate the harness, while
+experiments evaluate the hypothesis. Original semantic embedding tests skip
+without the optional `.[embeddings]` extra.
 
-Nodos y aristas son modelos Pydantic ([`src/memory/models.py`](src/memory/models.py)), validados al crear y al asignar.
-Cada arista tiene `weight ∈ [0,1]`, su propio `decay_factor` (λ) y `last_updated`; su peso efectivo es
-`weight · recency_factor`, con `recency_factor = exp(-λ · Δt)`. Los nodos guardan `embedding`,
-`metadata`, `last_accessed_at` y `activation_level`.
+## Current results
 
-### El ciclo
+Aggregates are generated, never edited by hand: [summary](results/README.md),
+[paired comparisons and metrics](results/experiment1.json), [receipts](evidence/runs/).
+[Pilot receipts](evidence/pilot/) remain separate from the fixed campaign.
 
-```mermaid
-flowchart LR
-    P["PLAN<br/>herramientas candidatas<br/>(Planner)"] --> R["RETRIEVE<br/>siembra híbrida +<br/>activación propagada<br/>→ ranking y lecciones"]
-    R --> A["ACT<br/>ejecutar herramienta"]
-    A --> O["OBSERVE & EVALUATE<br/>¿cumple la meta?<br/>registrar Outcome"]
-    O -- "fallo y quedan intentos" --> A
-    O -- "éxito / sin intentos" --> C["CONSOLIDATE<br/>reforzar · penalizar<br/>lecciones · poda"]
-    C -. "memoria actualizada" .-> R
-```
+These are descriptive results for a bounded agent. Reduced attempts here do not
+establish significant learning or autonomous engineering competence. Equal and
+negative pairs remain in the generated report.
 
-### Recuperación asociativa
+## Limitations
 
-1. **Siembra híbrida**: todo nodo con texto (metas, acciones, errores, lecciones) cuya similitud `α·coseno(embeddings) + (1−α)·léxica` supere el umbral, más los `Concept(topic)` presentes literalmente en la consulta. Por defecto los embeddings son léxicos (hashing, sin dependencias); con `pip install -e .[embeddings]` y `FastEmbedEmbedder` se recuperan paráfrasis sin palabras en común («temperatura prevista para Lima» → experiencia de «clima en Santiago»).
-2. **Propagación**: 3 saltos; cada salto transmite `a · 0.7 · peso_efectivo` (hacia atrás, atenuado).
-3. **Score**: `relevancia(a) · tanh(Σ RESOLVED_BY − Σ FAILED_DUE_TO)`.
-   - Acción exitosa → score > 0; nunca probada → 0; con fallos previos → < 0.
-   - La **valencia es contextual**: se calcula con los episodios cuyas metas se parecen a la consulta (núcleo sobre su activación), de modo que un fallo en el dominio «clima» no penaliza la misma herramienta en «noticias». Sin evidencia contextual, se usa la valencia global.
-   - Por eso la ruta que falló pasa al final del plan y se descarta en la práctica.
+Three transfer tasks, one authored application, fixed operators, templated
+reflections and uncalibrated confidence. The seeded baseline may be weaker than
+static analysis, and shared vocabulary can help retrieval. Same-seed repetitions
+are determinism checks, not independent scientific observations.
 
-### Consolidación
+The graph stores claims with evidence but does not prove causes. Memory v1
+implements ADD/IGNORE; unsupported actions fail explicitly. Skill promotion is
+future work. Existing Experiment 0 version-2 memories are never silently rewritten.
+The audited solver interface is not an OS sandbox for an untrusted agent: future
+adapters must not receive the whole repository. Receipt hashes detect alteration,
+not malicious forgery by a privileged author.
 
-`w ← w + η · (objetivo − w)`: los caminos exitosos se refuerzan hacia 1 y las
-asociaciones contradichas se debilitan hacia 0. Con errores intermitentes, la
-valencia de cada herramienta converge a su fiabilidad observada. Las aristas no
-usadas decaen con el tiempo y la poda las elimina. Tabla completa en
-[`specs/loop_protocol.md`](specs/loop_protocol.md#4-consolidación-consolidate).
+## Roadmap
 
-## Estructura
+Independently replicate and challenge the six-task result; strengthen the
+no-memory baseline; add independently authored held-out tasks and blinded causal
+annotations; introduce an isolated LLM adapter; test negative transfer. Only then
+expand to vector/hybrid conditions, contradiction handling, merge/deprecation
+and promotion to skills.
 
-```text
-├── specs/
-│   ├── memory_schema.json   # JSON Schema GENERADO desde los modelos (scripts/export_schema.py)
-│   └── loop_protocol.md     # estados, transiciones, fórmulas, invariantes
-├── src/associative_agent_loop/
-│   ├── agent/
-│   │   ├── core.py          # Agent: Plan → Retrieve → Act → Observe → Consolidate (máquina de estados)
-│   │   └── tools.py         # herramientas simuladas + escenarios (weather, flaky, domain)
-│   ├── memory/
-│   │   ├── models.py        # Node, Edge, GraphDocument (Pydantic v2)
-│   │   ├── graph.py         # MemoryGraph (NetworkX MultiDiGraph, JSON v2 + migración v1)
-│   │   ├── associative.py   # siembra híbrida, activación propagada, valencia contextual
-│   │   ├── embeddings.py    # LexicalEmbedder (hashing) y FastEmbedEmbedder (ONNX)
-│   │   ├── consolidation.py # aprendizaje hebbiano + EMA, lecciones, decaimiento, poda
-│   │   ├── store.py         # GraphStore / JsonGraphStore (escritura atómica)
-│   │   └── text.py, fsutil.py
-│   ├── config.py            # AppConfig desde TOML + variables AAL_*
-│   └── main.py              # benchmark (aal-benchmark)
-├── scripts/                 # devlog (memoria del propio repo), export_schema, mutation_check
-├── learning/                # episodios de desarrollo y dev_memory.json
-└── tests/
-    ├── unit/                # componentes, valores calculados a mano, propiedades (hypothesis)
-    └── integration/         # agente completo, benchmark, CLI, bitácora
-```
+## Related work
 
-## Uso como librería
+[Reflexion](https://arxiv.org/abs/2303.11366) studies verbal feedback for agents;
+[SWE-bench](https://arxiv.org/abs/2310.06770) evaluates code changes against real
+GitHub issues; [Voyager](https://arxiv.org/abs/2305.16291) studies an open-ended
+agent with a skill library. These motivate reflection, task-grounded evaluation
+and reusable knowledge. This small bounded harness is not a replication of those
+systems or a comparable benchmark score.
 
-```python
-from associative_agent_loop import Agent, JsonGraphStore, Tool, ToolResult, load_config
-
-store = JsonGraphStore("memory_graph.json")
-tools = [Tool("mi_api", "descripción", lambda q: ToolResult(True, output="..."))]
-agent = Agent.from_config(tools, load_config("aal.toml"), memory=store.load_or_new())
-
-episode = agent.run("mi tarea")
-episode.plan  # candidatas re-rankeadas por la memoria
-episode.retrieval.lessons  # lecciones para inyectar en el prompt de un LLM
-episode.retrieval.ranked_actions[0].path  # por qué: camino semilla → acción
-store.save(agent.memory)  # escritura atómica
-```
-
-Configuración (`aal.toml`, o variables de entorno `AAL_<SECCIÓN>__<CAMPO>`, que tienen prioridad):
-
-```toml
-[agent]
-max_attempts = 3
-
-[retrieval]
-damping = 0.7
-fan_out = "sqrt"
-
-[consolidation]
-max_edges = 5000
-```
-
-## La vida del proyecto: el repo aprende de sí mismo
-
-El desarrollo de este repositorio usa su propio bucle de aprendizaje. Cada issue
-es un episodio en [`learning/episodes/`](learning/episodes/) (meta, pasos con sus
-fallos reales, lecciones), y [`learning/dev_memory.json`](learning/dev_memory.json)
-es la memoria asociativa derivada. Antes de empezar un issue se consulta:
-
-```bash
-python -m scripts.devlog recall "Spreading Activation: umbral de disparo y fan-out"
-python -m scripts.devlog rebuild
-```
-
-Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md).
-
-## Extensiones naturales
-
-- **Otros modelos de embeddings**: cualquier objeto con `name`, `dim` y `embed(texts)` sirve como `Retriever(memory, embedder=...)` o `Agent(tools, embedder=...)` (p. ej. `sentence-transformers`).
-- **LLM planner**: usar `retrieval.lessons` y `ranked_actions` como contexto del prompt en lugar de ejecutar el ranking tal cual.
-- **Backend persistente**: implementar el protocolo `GraphStore` (`load`/`save`) para SQLite o Neo4j.
-
-## Licencia
-
-MIT, ver [LICENSE](LICENSE).
+MIT licensed. Existing development memory remains in [learning/](learning/).
+Experimental dogfooding candidates are assessed separately before admission.

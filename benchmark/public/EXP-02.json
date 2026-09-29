@@ -1,0 +1,10 @@
+{
+  "id": "EXP-02",
+  "title": "Clean environment fails to load application title",
+  "context": "Starting the application health check in a clean environment raises AttributeError instead of returning a title. Explicit environment configuration works.",
+  "expected": "Missing or empty LEDGER_TITLE uses Task Ledger. An explicit title is preserved.",
+  "observed": "Starting the application health check in a clean environment raises AttributeError instead of returning a title. Explicit environment configuration works.",
+  "acceptance_criteria": "Missing or empty LEDGER_TITLE uses Task Ledger. An explicit title is preserved.",
+  "reproduction": "python -m experiments reproduce EXP-02",
+  "test_file": "EXP-02_test.py"
+}
