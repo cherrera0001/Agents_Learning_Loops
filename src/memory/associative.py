@@ -65,6 +65,15 @@ class RetrievalConfig(BaseModel):
         0.25, ge=0.0, le=1.0, description="Similitud híbrida mínima para sembrar un nodo."
     )
     seed_top_k: int = Field(20, ge=1, description="Máximo de nodos sembrados por similitud.")
+    contextual_valence: bool = Field(
+        True, description="Valencia a partir de episodios del contexto activado (#8); False = global."
+    )
+    context_temperature: float = Field(
+        0.1, gt=0.0, description="T del núcleo: cuánto se privilegian los episodios más activados."
+    )
+    context_prior: float = Field(
+        0.2, gt=0.0, description="κ: evidencia contextual necesaria para confiar más en ella que en la global."
+    )
 
 
 # Tipos de nodo con texto que participan en la siembra. Los Outcome se excluyen:
@@ -225,11 +234,55 @@ class Retriever:
         return self.spread_trace(seeds).activation
 
     # ------------------------------------------------------------- valencia
-    def valence(self, action_node: str) -> float:
+    def global_valence(self, action_node: str) -> float:
+        """``tanh(Σ RESOLVED_BY − Σ FAILED_DUE_TO)``: historia completa, sin contexto."""
         mg = self.memory
         pos = sum(mg.effective_weight(d) for *_, d in mg.in_edges(action_node, EdgeType.RESOLVED_BY))
         neg = sum(mg.effective_weight(d) for *_, d in mg.out_edges(action_node, EdgeType.FAILED_DUE_TO))
         return math.tanh(pos - neg)
+
+    def valence(self, action_node: str, activation: dict[str, float] | None = None) -> float:
+        """Valencia condicionada al contexto activado (#8).
+
+        Evidencia episódica: cada ``Outcome`` de la acción cuenta +1 (éxito) o −1
+        (fallo), ponderado por la recencia de la arista y por un núcleo sobre la
+        activación de la meta de ese episodio::
+
+            k(g)  = A(g) · exp(−(A_max − A(g)) / T)
+            ctx   = Σ k·s·w̃ / Σ k·w̃                  ∈ [−1, 1]
+            conf  = masa / (masa + κ),   masa = Σ k·w̃
+            val   = conf · ctx + (1 − conf) · valencia_global
+
+        El núcleo privilegia los episodios más parecidos a la consulta, así que
+        un fallo en otro dominio pesa poco aunque compartan algún término. Sin
+        evidencia contextual se usa la valencia global.
+        """
+        global_val = self.global_valence(action_node)
+        cfg = self.config
+        mg = self.memory
+        goals = {
+            n: a for n, a in (activation or {}).items()
+            if a > 0 and mg.has_node(n) and mg.node(n).type == NodeType.GOAL
+        }
+        if not cfg.contextual_valence or not goals:
+            return global_val
+        a_max = max(goals.values())
+        signed = mass = 0.0
+        for _, out_id, edge in mg.out_edges(action_node, EdgeType.LEADS_TO):
+            outcome = mg.node(out_id)
+            if outcome.type != NodeType.OUTCOME:
+                continue
+            a_g = goals.get(goal_id(outcome.metadata.get("episode")), 0.0)
+            if a_g <= 0:
+                continue
+            k = a_g * math.exp(-(a_max - a_g) / cfg.context_temperature)
+            w = k * mg.effective_weight(edge)
+            signed += w if outcome.metadata.get("success") else -w
+            mass += w
+        if mass == 0:
+            return global_val
+        conf = mass / (mass + cfg.context_prior)
+        return conf * (signed / mass) + (1 - conf) * global_val
 
     # ------------------------------------------------------------ recuperar
     def retrieve(self, query: str, candidate_actions: Iterable[str]) -> RetrievalResult:
@@ -251,7 +304,7 @@ class Retriever:
         for name in candidates:
             node = action_id(name)
             relevance = activation.get(node, 0.0)
-            val = self.valence(node) if self.memory.has_node(node) else 0.0
+            val = self.valence(node, activation) if self.memory.has_node(node) else 0.0
             path = trace.path_to(node) if relevance > 0 else []
             scored.append(ActionScore(name, relevance * val, relevance, val, path))
         ranked = sorted(scored, key=lambda s: -s.score)  # sorted() es estable
@@ -281,3 +334,7 @@ def action_id(tool: str) -> str:
 
 def topic_id(token: str) -> str:
     return f"concept:topic:{token}"
+
+
+def goal_id(episode: object) -> str:
+    return f"goal:{episode}"

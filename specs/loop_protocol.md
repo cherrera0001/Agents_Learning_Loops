@@ -64,11 +64,18 @@ resultado = { v | A(v) ≥ θ }
 norm(d) = 1 | √d | d                según fan_out = none | sqrt | linear
 
 w̃(e)     = weight(e) · exp(-λₑ · (clock − last_updated(e)))      λₑ = decay_factor de la arista
-valencia(a) = tanh( Σ w̃(· -RESOLVED_BY-> a)  −  Σ w̃(a -FAILED_DUE_TO-> ·) )
+v_global(a) = tanh( Σ w̃(· -RESOLVED_BY-> a)  −  Σ w̃(a -FAILED_DUE_TO-> ·) )
+
+# Valencia contextual (#8): evidencia episódica ponderada por la activación de su meta
+para cada Outcome o de a (a -LEADS_TO-> o), con meta g = goal:{o.episode} y s = ±1 (éxito/fallo):
+    k(g) = A(g) · exp(−(A_max − A(g)) / T)          A_max = máx. activación entre Goals
+ctx(a)  = Σ k·s·w̃(a→o) / Σ k·w̃(a→o)              ∈ [−1, 1]
+conf(a) = masa / (masa + κ),  masa = Σ k·w̃(a→o)
+valencia(a) = conf · ctx(a) + (1 − conf) · v_global(a)      (= v_global si no hay evidencia)
 score(a)  = A(a) · valencia(a)
 ```
 
-Parámetros (`RetrievalConfig`): `α = 0.7`, `τ_seed = 0.25`, `top_k = 20`, `δ = 0.7`, `θ = 0.01`, `max_hops = 3`, `fan_out = sqrt`;
+Parámetros (`RetrievalConfig`): `α = 0.7`, `τ_seed = 0.25`, `top_k = 20`, `δ = 0.7`, `θ = 0.01`, `max_hops = 3`, `fan_out = sqrt`, `T = 0.1`, `κ = 0.2`, `contextual_valence = True`;
 `ρ(ASSOCIATED_WITH) = 1.0`, `ρ(resto) = 0.5`.
 
 - **Refracción**: un nodo que ya disparó no vuelve a disparar ni acumula, así que los ciclos A→B→A no inflan la activación.
