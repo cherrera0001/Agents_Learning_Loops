@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 
 from .agent import BoundedRepairAgent
+from .benchmark import TASK_SETS
 from .evaluate import evaluate
 from .evidence import read_receipt
 from .memory import EvidenceMemory
@@ -20,7 +21,7 @@ from .runner import (
 )
 
 
-def campaign(seeds, replicates, evidence_dir):
+def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"]):
     if replicates < 1 or len(set(seeds)) != len(seeds):
         raise ValueError("positive replication count and unique seeds required")
     for _ in range(replicates):
@@ -30,7 +31,7 @@ def campaign(seeds, replicates, evidence_dir):
             random.Random(seed).shuffle(modes)
             for mode in modes:
                 memory = EvidenceMemory()
-                for task_id in [f"EXP-{i:02d}" for i in range(1, 7)]:
+                for task_id in tasks:
                     path = run_experiment(
                         task_id,
                         BoundedRepairAgent(),
@@ -59,6 +60,12 @@ def main():
     run.add_argument("--seeds", nargs="+", type=int, default=[7, 11, 23])
     run.add_argument("--replicates", type=int, default=2)
     run.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
+    run.add_argument(
+        "--task-set",
+        choices=sorted(TASK_SETS),
+        default="v1",
+        help="v1: published EXP-01..06 campaign; misleading-v1: adds EXP-07..09 (#45)",
+    )
     ev = sub.add_parser("evaluate")
     ev.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
     ev.add_argument("--output", type=Path, default=ROOT / "results")
@@ -66,7 +73,7 @@ def main():
     repro.add_argument("task")
     args = parser.parse_args()
     if args.command == "run":
-        campaign(args.seeds, args.replicates, args.evidence_dir)
+        campaign(args.seeds, args.replicates, args.evidence_dir, TASK_SETS[args.task_set])
     elif args.command == "evaluate":
         report = evaluate(args.evidence_dir, args.output)
         print(

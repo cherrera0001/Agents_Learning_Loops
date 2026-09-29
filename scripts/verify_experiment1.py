@@ -37,7 +37,16 @@ from typing import Any
 
 Receipt = dict[str, Any]
 MODES = ("NO_MEMORY", "TEXT_HISTORY", "ASSOCIATIVE_MEMORY")
-PRIVATE_KEYS = {"hidden_cause_id", "relevant_training_tasks", "mutation", "difficulty", "distance", "family"}
+PRIVATE_KEYS = {
+    "hidden_cause_id",
+    "relevant_training_tasks",
+    "mutation",
+    "difficulty",
+    "distance",
+    "family",
+    "decoy_family",
+    "decoy_training_tasks",
+}
 
 
 # --------------------------------------------------------------------- carga
@@ -202,7 +211,8 @@ def check_tasks(receipts: dict[str, Receipt]) -> dict[str, dict[str, Any]]:
     for task in sorted({r["task"]["id"] for r in runs}):
         rs = [r for r in runs if r["task"]["id"] == task]
         report[task] = {
-            "issue": rs[0]["issue"]["number"],
+            # EXP-07..09 (#45) have no dedicated GitHub issue: ``issue`` is null.
+            "issue": (rs[0]["issue"] or {}).get("number"),
             "split": rs[0]["split"],
             "runs": len(rs),
             "reproduced_before_repair": all(r["tests"][0]["returncode"] != 0 for r in rs),
@@ -306,6 +316,11 @@ def main() -> None:
     root = args.root
     receipts = load(root / args.evidence)
     private = json.loads((root / "benchmark/private/tasks.json").read_text("utf-8"))
+    # Misleading tasks without lexical cues (#45) are annotated separately so
+    # the hash of tasks.json pinned by the published receipts does not change.
+    extra = root / "benchmark/private/tasks_misleading.json"
+    misleading = json.loads(extra.read_text("utf-8")) if extra.exists() else {}
+    private.update(misleading)
     results_path = root / args.results
     results = json.loads(results_path.read_text("utf-8")) if results_path.exists() else None
 
@@ -315,6 +330,9 @@ def main() -> None:
         "V7_tasks": check_tasks(receipts),
         "V8_misleading_EXP05": check_misleading(receipts),
     }
+    executed = {r["task"]["id"] for r in receipts.values() if r["kind"] == "task_run"}
+    for task in sorted(set(misleading) & executed):
+        report[f"V8_misleading_{task.replace('-', '')}"] = check_misleading(receipts, task)
     mine = recompute_metrics(receipts, private)
     report["V4_metrics_independent"] = mine
     if results is not None and args.reference is None:

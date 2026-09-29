@@ -16,6 +16,7 @@ from itertools import pairwise
 from pathlib import Path
 
 from .agent import RULES, AgentView, BoundedRepairAgent
+from .benchmark import ALL_TASKS, private_metadata
 from .evidence import digest, publish
 from .memory import EvidenceMemory
 from .models import MemoryMode, PublicTask, Reflection
@@ -63,14 +64,14 @@ def source_manifest(root=ROOT):
 
 
 def load_task(task, root=ROOT):
-    if not isinstance(task, str) or task not in {f"EXP-{i:02d}" for i in range(1, 7)}:
+    if not isinstance(task, str) or task not in ALL_TASKS:
         raise ValueError("unknown benchmark task")
     return PublicTask.model_validate_json((root / "benchmark/public" / f"{task}.json").read_text("utf-8"))
 
 
 def prepare(task: PublicTask, workspace: Path, root=ROOT):
     """Private controller state never enters the workspace or AgentView."""
-    metadata = json.loads((root / "benchmark/private/tasks.json").read_text("utf-8"))[task.id]
+    metadata = private_metadata(root)[task.id]
     project = root / "experiments/software_project"
     shutil.copytree(
         project / "app",

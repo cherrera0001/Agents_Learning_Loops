@@ -6,8 +6,9 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from .benchmark import check_extra_annotations, private_metadata, write_breakdown
 from .evidence import digest, read_receipt
-from .runner import ROOT
+from .runner import ROOT, source_manifest
 
 
 def ratio(numerator, denominator):
@@ -57,7 +58,7 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
     paths = sorted(evidence_dir.glob("RUN-*.json"))
     receipts = [read_receipt(p) for p in paths]
     runs = [r for r in receipts if r["kind"] == "task_run"]
-    metadata = json.loads((root / "benchmark/private/tasks.json").read_text("utf-8"))
+    metadata = private_metadata(root)
     # Fail closed. Excluding errors from denominator would bias the report.
     errors = [r["run_id"] for r in runs if r["result"] == "ERROR"]
     if errors:
@@ -86,6 +87,7 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
             refs = {prior["run_id"] + "#" + t["id"] for t in prior["tests"]}
             if not lesson["evidence"] or not set(lesson["evidence"]) <= refs:
                 raise ValueError("unresolvable memory evidence")
+    check_extra_annotations(runs, root, source_manifest(root))
     index = {}
     for r in runs:
         key = (r["batch_id"], r["seed"], r["task"]["id"], r["memory_mode"])
@@ -277,4 +279,6 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
             ]
         )
         (output / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        # Separate files so experiment1.json of the published campaign is unchanged (#45).
+        write_breakdown(output, runs, metadata)
     return report
