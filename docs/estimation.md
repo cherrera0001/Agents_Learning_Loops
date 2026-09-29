@@ -39,7 +39,7 @@ Reglas:
 1. **Piso por riesgo**: si R = 3 (integridad de evidencia o conclusiones), el modelo nunca es inferior a Sonnet 5.5, sea cual sea la talla.
 2. **Escalamiento**: si la entrega no supera su verificación (tests, mutaciones, réplica), se repite **un escalón más arriba**. No se baja de modelo para reintentar.
 3. **Antes de sumar modelos, bajar el esfuerzo**: en tareas pequeñas, Opus 5.5 con esfuerzo bajo suele rendir igual que un modelo menor; la cascada solo se justifica si se mide un ahorro por tarea completada, no por solicitud.
-4. **Orquestación**: el orquestador (Opus 5.5) define las especificaciones, revisa cada entrega y es el único que hace merge. Los agentes trabajan en worktrees aislados y abren PR, sin hacer merge.
+4. **Orquestación**: el orquestador (Opus 5.5) define las especificaciones, revisa cada entrega y es el único que hace merge. Los agentes ([agentes de entorno](entorno/glosario.md)) trabajan en worktrees aislados y abren PR, sin hacer merge.
 
 ## 3. Estimación de los issues abiertos (2026-09-29)
 

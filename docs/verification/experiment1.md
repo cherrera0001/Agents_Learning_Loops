@@ -119,6 +119,6 @@ python -m scripts.verify_experiment1 --root . --evidence evidence/sensitivity --
 
 ## Alcance
 
-Los resultados describen un agente acotado con tres operadores escritos a mano, seis tareas de un único
+Los resultados describen un [solver acotado](../entorno/glosario.md) con tres operadores escritos a mano, seis tareas de un único
 proyecto y réplicas deterministas. No sustentan significancia estadística, aprendizaje autónomo de
 ingeniería de software ni superioridad de la memoria asociativa sobre el historial textual (#41, #46).

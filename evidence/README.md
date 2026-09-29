@@ -1,5 +1,7 @@
 # Evidence, not conclusions
 
+«Harness» aquí es el harness de experimento, definido en [`docs/entorno/harness.md`](../docs/entorno/harness.md).
+
 - `baseline/`: original ca853fd source hashes and benchmark; packaged/main
   baseline tests and repeated synthetic benchmark output.
 - `pilot/`: exploratory pre-freeze runs retained for audit; excluded from final
