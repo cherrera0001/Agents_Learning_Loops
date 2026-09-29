@@ -8,3 +8,5 @@ build/
 dist/
 .coverage
 .fastembed_cache/
+.scratch/
+scratch/

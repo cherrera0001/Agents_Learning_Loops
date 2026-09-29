@@ -28,6 +28,8 @@ jobs:
       - run: mypy
       - name: specs/memory_schema.json sincronizado con los modelos
         run: python -m scripts.export_schema --check
+      - name: esquemas experimentales sincronizados
+        run: python -m scripts.export_experiment_schema --check
 
   test:
     name: tests · ${{ matrix.os }} · py${{ matrix.python }}
@@ -78,3 +80,28 @@ jobs:
           key: fastembed-paraphrase-multilingual-MiniLM-L12-v2
       - run: pip install -e ".[dev,embeddings]"
       - run: pytest -m embeddings -v
+
+  experiment:
+    name: Experiment 1 A/B/C reproducibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -e ".[dev]"
+      - run: python -m experiments run --seeds 7 --replicates 2 --evidence-dir evidence/ci
+      - run: python -m experiments evaluate --evidence-dir evidence/ci --output results/ci
+      - name: assert semantic reproducibility (not scientific improvement)
+        run: >-
+          python -c "import json;
+          r=json.load(open('results/ci/experiment1.json'));
+          assert r['replication']['replicated_groups'] == 18;
+          assert r['replication']['all_semantic_projections_equal']"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: experiment1-ci-evidence
+          path: |
+            evidence/ci/
+            results/ci/

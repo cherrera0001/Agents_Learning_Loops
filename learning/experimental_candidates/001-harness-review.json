@@ -1,0 +1,16 @@
+{
+  "kind": "development_reflection_candidate",
+  "admitted_to_experiment_memory": false,
+  "observed": "The initial evaluation implementation treated fewer iterations with equally failed outcomes as improvement; self-review removed that rule before the fixed campaign.",
+  "diagnosis": "Comparing effort alone can reward early failure when success remains false.",
+  "lesson": "Compare success first; credit fewer iterations only when both paired runs succeeded.",
+  "evidence": [],
+  "assessment": {
+    "novelty": "New to this experimental evaluator, not a new general principle.",
+    "utility": "Prevents a misleading utility metric.",
+    "reusability": "Potentially relevant to other bounded optimization experiments.",
+    "confidence": 0.5
+  },
+  "memory_action": "IGNORE",
+  "reason": "A review observation without a sealed before-fix execution receipt is not experimental evidence. Preserve as a candidate, not a learned causal fact. Development memory must not leak into the benchmark training conditions."
+}

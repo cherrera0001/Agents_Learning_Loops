@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "KnowledgeEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "caused_by",
+            "solved_by",
+            "contradicts",
+            "evidence_for",
+            "related_to",
+            "applies_to",
+            "promoted_to_skill"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "relation"
+      ],
+      "title": "KnowledgeEdge",
+      "type": "object"
+    },
+    "KnowledgeNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "Task",
+            "Experience",
+            "Symptom",
+            "Cause",
+            "Strategy",
+            "Evidence",
+            "Lesson",
+            "Component",
+            "Skill"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "label"
+      ],
+      "title": "KnowledgeNode",
+      "type": "object"
+    },
+    "LessonRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "task": {
+          "title": "Task",
+          "type": "string"
+        },
+        "symptom": {
+          "title": "Symptom",
+          "type": "string"
+        },
+        "strategy": {
+          "title": "Strategy",
+          "type": "string"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "receipt_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Receipt Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "run_id",
+        "task",
+        "symptom",
+        "strategy",
+        "rule",
+        "evidence",
+        "receipt_sha256"
+      ],
+      "title": "LessonRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_id": {
+      "const": "software-learning-memory/v1",
+      "default": "software-learning-memory/v1",
+      "title": "Schema Id",
+      "type": "string"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/KnowledgeNode"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/KnowledgeEdge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "lessons": {
+      "items": {
+        "$ref": "#/$defs/LessonRecord"
+      },
+      "title": "Lessons",
+      "type": "array"
+    }
+  },
+  "title": "MemoryDocument",
+  "type": "object"
+}

@@ -1,0 +1,67 @@
+{
+  "EXP-01": {
+    "number": 24,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/24",
+    "title": "[EXP-01] API returns 500 instead of 401"
+  },
+  "EXP-02": {
+    "number": 25,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/25",
+    "title": "[EXP-02] Clean environment fails to load application title"
+  },
+  "EXP-03": {
+    "number": 26,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/26",
+    "title": "[EXP-03] Health endpoint fails immediately after startup"
+  },
+  "EXP-04": {
+    "number": 27,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/27",
+    "title": "[EXP-04] Middleware crashes before returning 401"
+  },
+  "EXP-05": {
+    "number": 28,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/28",
+    "title": "[EXP-05] Report request raises AttributeError on None"
+  },
+  "EXP-06": {
+    "number": 29,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/29",
+    "title": "[EXP-06] Background summary fails before producing a report"
+  },
+  "hypothesis": {
+    "number": 30,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/30",
+    "title": "[HYPOTHESIS] Does prior evidence reduce repeated failures across related tasks?"
+  },
+  "experiment0": {
+    "number": 31,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/31",
+    "title": "[EXPERIMENT] Establish synthetic associative-memory baseline"
+  },
+  "experiment1": {
+    "number": 32,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/32",
+    "title": "[EXPERIMENT] Cross-task learning in a real software project"
+  },
+  "benchmark": {
+    "number": 33,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/33",
+    "title": "[BENCHMARK] Build causal task families for transfer evaluation"
+  },
+  "schema": {
+    "number": 34,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/34",
+    "title": "[DESIGN] Extend MemoryGraph from action ranking to evidence-grounded learning"
+  },
+  "receipts": {
+    "number": 35,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/35",
+    "title": "[EVIDENCE] Introduce immutable run receipts"
+  },
+  "evaluation": {
+    "number": 36,
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/36",
+    "title": "[EVALUATION] Define learning and retrieval metrics"
+  }
+}

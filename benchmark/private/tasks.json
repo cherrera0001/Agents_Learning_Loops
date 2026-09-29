@@ -1,0 +1,92 @@
+{
+  "EXP-01": {
+    "experiment": "software-learning-v1",
+    "family": "authentication",
+    "difficulty": "L2",
+    "hidden_cause_id": "AUTH-01",
+    "split": "train",
+    "distance": "L1",
+    "relevant_training_tasks": [],
+    "mutation": {
+      "path": "app/auth.py",
+      "before": "    if user is None:\n        raise Unauthorized(\"authentication required\")\n",
+      "after": ""
+    }
+  },
+  "EXP-02": {
+    "experiment": "software-learning-v1",
+    "family": "configuration",
+    "difficulty": "L2",
+    "hidden_cause_id": "CONFIG-01",
+    "split": "train",
+    "distance": "L1",
+    "relevant_training_tasks": [],
+    "mutation": {
+      "path": "app/config.py",
+      "before": "os.getenv(\"LEDGER_TITLE\") or DEFAULT_TITLE",
+      "after": "os.getenv(\"LEDGER_TITLE\")"
+    }
+  },
+  "EXP-03": {
+    "experiment": "software-learning-v1",
+    "family": "readiness",
+    "difficulty": "L2",
+    "hidden_cause_id": "READY-01",
+    "split": "train",
+    "distance": "L1",
+    "relevant_training_tasks": [],
+    "mutation": {
+      "path": "app/api.py",
+      "before": "        self.database.initialize()\n",
+      "after": ""
+    }
+  },
+  "EXP-04": {
+    "experiment": "software-learning-v1",
+    "family": "authentication",
+    "difficulty": "L3",
+    "hidden_cause_id": "AUTH-01",
+    "split": "transfer",
+    "distance": "L3",
+    "relevant_training_tasks": [
+      "EXP-01"
+    ],
+    "mutation": {
+      "path": "app/middleware.py",
+      "before": "    if principal is None:\n        raise Unauthorized(\"authentication required\")\n",
+      "after": ""
+    }
+  },
+  "EXP-05": {
+    "experiment": "software-learning-v1",
+    "family": "configuration",
+    "difficulty": "L3",
+    "hidden_cause_id": "CONFIG-01",
+    "split": "transfer",
+    "distance": "L5",
+    "relevant_training_tasks": [
+      "EXP-02"
+    ],
+    "mutation": {
+      "path": "app/services/reporting.py",
+      "before": "os.getenv(\"LEDGER_REPORT_LABEL\") or DEFAULT_LABEL",
+      "after": "os.getenv(\"LEDGER_REPORT_LABEL\")"
+    }
+  },
+  "EXP-06": {
+    "experiment": "software-learning-v1",
+    "family": "readiness",
+    "difficulty": "L3",
+    "hidden_cause_id": "READY-01",
+    "split": "transfer",
+    "distance": "L4",
+    "relevant_training_tasks": [
+      "EXP-03"
+    ],
+    "mutation": {
+      "path": "app/worker.py",
+      "before": "    database.initialize()\n",
+      "after": ""
+    }
+  }
+}

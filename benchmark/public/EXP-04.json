@@ -1,0 +1,10 @@
+{
+  "id": "EXP-04",
+  "title": "Middleware crashes before returning 401",
+  "context": "Requests to /tasks with an unknown identity fail with TypeError before the middleware can return 401. A valid token succeeds.",
+  "expected": "Missing and unknown identities receive 401. A valid editor receives a task list.",
+  "observed": "Requests to /tasks with an unknown identity fail with TypeError before the middleware can return 401. A valid token succeeds.",
+  "acceptance_criteria": "Missing and unknown identities receive 401. A valid editor receives a task list.",
+  "reproduction": "python -m experiments reproduce EXP-04",
+  "test_file": "EXP-04_test.py"
+}

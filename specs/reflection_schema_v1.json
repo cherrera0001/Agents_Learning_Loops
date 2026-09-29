@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "goal": {
+      "title": "Goal",
+      "type": "string"
+    },
+    "expected": {
+      "title": "Expected",
+      "type": "string"
+    },
+    "observed": {
+      "title": "Observed",
+      "type": "string"
+    },
+    "root_cause": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Root Cause"
+    },
+    "evidence": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "failed_strategy": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Failed Strategy",
+      "type": "array"
+    },
+    "successful_strategy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Successful Strategy"
+    },
+    "generalizable_rule": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Generalizable Rule"
+    },
+    "confidence": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "memory_action": {
+      "enum": [
+        "ADD",
+        "UPDATE",
+        "MERGE",
+        "IGNORE",
+        "DEPRECATE"
+      ],
+      "title": "Memory Action",
+      "type": "string"
+    }
+  },
+  "required": [
+    "goal",
+    "expected",
+    "observed",
+    "root_cause",
+    "evidence",
+    "failed_strategy",
+    "successful_strategy",
+    "generalizable_rule",
+    "confidence",
+    "memory_action"
+  ],
+  "title": "Reflection",
+  "type": "object"
+}

@@ -1,0 +1,74 @@
+{
+  "commit": "1c0a9c1b94feed3f00f5dedf8c86a732075a90d0",
+  "checks": [
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "--cov",
+        "--cov-report=term"
+      ],
+      "returncode": 0,
+      "stdout": "============================= test session starts =============================\r\nplatform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0\r\nrootdir: F:\\Code\\Agents_Learning_Loops_v02\r\nconfigfile: pyproject.toml\r\ntestpaths: tests\r\nplugins: hypothesis-6.168.3, cov-7.1.0\r\ncollected 105 items\r\n\r\ntests\\integration\\test_agent_loop.py ......                              [  5%]\r\ntests\\integration\\test_cli.py ....                                       [  9%]\r\ntests\\integration\\test_contextual_valence.py .......                     [ 16%]\r\ntests\\integration\\test_devlog.py ....                                    [ 20%]\r\ntests\\integration\\test_learning.py .........                             [ 28%]\r\ntests\\test_experiment_harness.py ..................                      [ 45%]\r\ntests\\unit\\test_consolidation.py ......                                  [ 51%]\r\ntests\\unit\\test_dependencies.py ...s                                     [ 55%]\r\ntests\\unit\\test_embeddings.py ......s                                    [ 61%]\r\ntests\\unit\\test_memory_graph.py ........                                 [ 69%]\r\ntests\\unit\\test_models.py .......                                        [ 76%]\r\ntests\\unit\\test_packaging.py .......                                     [ 82%]\r\ntests\\unit\\test_properties.py .....                                      [ 87%]\r\ntests\\unit\\test_spreading_activation.py .............                    [100%]\r\n\r\n=============================== tests coverage ================================\r\n_______________ coverage: platform win32, python 3.14.7-final-0 _______________\r\n\r\nName                                               Stmts   Miss Branch BrPart  Cover   Missing\r\n----------------------------------------------------------------------------------------------\r\nsrc\\associative_agent_loop\\__init__.py                13      2      0      0    85%   7-8\r\nsrc\\associative_agent_loop\\agent\\core.py             121      2     16      1    98%   80, 187\r\nsrc\\associative_agent_loop\\main.py                    70      1     22      2    97%   153->155, 170\r\nsrc\\associative_agent_loop\\memory\\associative.py     182      2     48      2    98%   108, 280\r\nsrc\\associative_agent_loop\\memory\\embeddings.py       49     11      8      0    74%   71-73, 76-80, 83-86\r\nsrc\\associative_agent_loop\\memory\\text.py             17      1      2      1    89%   62\r\n----------------------------------------------------------------------------------------------\r\nTOTAL                                                846     19    170      6    97%\r\n\r\n9 files skipped due to complete coverage.\r\nRequired test coverage of 90.0% reached. Total coverage: 97.15%\r\n======================= 103 passed, 2 skipped in 17.65s =======================\r\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "format",
+        "--check",
+        "."
+      ],
+      "returncode": 0,
+      "stdout": "85 files already formatted\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "mypy"
+      ],
+      "returncode": 0,
+      "stdout": "Success: no issues found in 15 source files\r\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "scripts.export_schema",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "memory_schema.json sincronizado\r\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "F:\\Code\\Agents_Learning_Loops_v02\\.venv\\Scripts\\python.exe",
+        "-m",
+        "scripts.export_experiment_schema",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

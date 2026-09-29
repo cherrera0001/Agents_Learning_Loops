@@ -435,8 +435,15 @@ La lectura perezosa y `decay()` son equivalentes (verificado por test). La poda 
 
 ## 7. Resultados experimentales
 
+El proyecto separa dos experimentos. El **Experimento 0** evalúa el mecanismo de memoria con herramientas
+simuladas. El **Experimento 1** evalúa si la experiencia previa cambia decisiones y mejora resultados en
+tareas reales de software relacionadas.
+
+### 7.1 Experimento 0: reutilización asociativa en escenarios sintéticos
+
 Todos los escenarios usan herramientas simuladas y deterministas; `aal-benchmark --json` reproduce
-exactamente los valores siguientes.
+exactamente los valores siguientes. La salida es idéntica a la línea base registrada en
+[`evidence/baseline/`](evidence/baseline/) (commit `ca853fd`).
 
 | Escenario | Hipótesis evaluada | Condición de control | Resultado |
 |---|---|---|---|
@@ -467,9 +474,84 @@ Salida de referencia:
   valencia contextual  llamadas totales=7  latencia total=1260 ms
 ```
 
-> **Alcance de la evidencia.** Estos resultados demuestran el comportamiento del mecanismo bajo
-> condiciones simuladas y controladas. La transferencia entre tareas reales de software es objeto
-> de la fase de investigación descrita en la [§ 13](#13-hoja-de-ruta).
+> **Alcance de la evidencia.** Estos resultados demuestran reutilización asociativa de acciones bajo
+> condiciones simuladas y controladas. No demuestran aprendizaje en tareas reales de software; esa
+> pregunta la aborda el Experimento 1.
+
+### 7.2 Experimento 1: transferencia entre tareas de software
+
+**Pregunta**: ¿un agente de software puede usar evidencia de tareas previas para cambiar su estrategia
+en una tarea distinta con una causa relacionada? Almacenar no es recuperar, y recuperar no es aprender.
+La cadena que se exige demostrar es:
+
+```mermaid
+flowchart LR
+    X["Experiencia"] --> EV["Evidencia<br/>tests · parches · fuentes"]
+    EV --> RF["Reflexión<br/>cita evidencia"]
+    RF --> MEM["Memoria"]
+    MEM --> RT["Recuperación<br/>en tarea nueva"]
+    RT --> D["Cambio de decisión"]
+    D --> AC["Cambio de acción"]
+    AC --> OUT["Cambio de resultado"]
+```
+
+**Laboratorio.** [Task Ledger](experiments/software_project/) es una aplicación WSGI real (autenticación,
+middleware, configuración, SQLite, servicios, worker) con tests por subproceso. Se copia sana y se le
+inyecta exactamente un defecto por tarea. El solver solo recibe la tarea pública, el código fuente
+actual y las lecciones elegibles; las etiquetas causales viven en `benchmark/private/`, fuera de su
+alcance. Protocolo completo: [`specs/software_learning_protocol.md`](specs/software_learning_protocol.md).
+
+| Familia | Entrenamiento | Transferencia | Distancia declarada |
+|---|---|---|---|
+| Autenticación | EXP-01 (#24) | EXP-04 (#27) | L3 causal |
+| Configuración | EXP-02 (#25) | EXP-05 (#28) | L5 otro componente |
+| Disponibilidad | EXP-03 (#26) | EXP-06 (#29) | L4 multi-salto |
+
+**Condiciones** (mismo agente acotado, operadores, presupuesto, fuentes y tests):
+
+| Condición | Memoria disponible |
+|---|---|
+| A · `NO_MEMORY` | Ninguna; orden de estrategias sembrado |
+| B · `TEXT_HISTORY` | Todas las lecciones verificadas, como texto |
+| C · `ASSOCIATIVE_MEMORY` | Top-1 por activación propagada sobre el grafo tipado, con caminos |
+
+**Evidencia.** Cada ejecución publica un recibo inmutable (publicación atómica sin sobrescritura,
+SHA-256 canónico) con fuentes, parches, salidas de tests, decisiones, recuperación y reflexión. Las
+actualizaciones de memoria son recibos separados. Los agregados se **generan** a partir de los recibos
+([`results/`](results/README.md)) y nunca se editan a mano.
+
+**Resultados** (partición de transferencia, 18 ejecuciones por condición):
+
+| Métrica | A · Sin memoria | B · Historial | C · Asociativa |
+|---|---|---|---|
+| Éxito final | 100 % | 100 % | 100 % |
+| Éxito al primer intento | 33 % | 100 % | 100 % |
+| Intentos por tarea | 2.0 | 1.0 | 1.0 |
+| Precisión de recuperación | — | 33 % | **100 %** |
+| Recuperaciones falsas | — | 67 % | **0 %** |
+
+Una [verificación independiente](docs/verification/experiment1.md) reconstruyó las 27 métricas,
+verificó los 144 recibos y replicó la campaña (54/54 comportamientos idénticos). Hallazgos:
+
+- La memoria corrigió **todas** las decisiones iniciales equivocadas. Las que no cambió eran casos en que
+  el orden sin memoria ya era correcto.
+- La ganancia se mantiene al usar las 6 permutaciones posibles del orden sin memoria, no solo las 2 que
+  cubren las semillas originales.
+- **No se observa ventaja de resultado** de la memoria asociativa sobre el historial textual: ambas
+  llegan a 1.0 intentos. La asociativa es más **precisa**. Durante el entrenamiento, una lección de otra
+  causa puede desviar la primera estrategia (transferencia negativa).
+
+> **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
+> superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. El agente
+> tiene tres operadores de reparación escritos a mano y las réplicas con la misma semilla verifican
+> determinismo, no observaciones independientes.
+
+```bash
+python -m experiments reproduce EXP-04          # el defecto falla antes de reparar
+python -m experiments run --seeds 7 11 23 --replicates 2 --evidence-dir evidence/replication
+python -m experiments evaluate --evidence-dir evidence/runs --output results
+python -m scripts.verify_experiment1 --root .   # verificación independiente
+```
 
 ## 8. Aseguramiento de calidad
 
@@ -619,38 +701,39 @@ del esquema. Formato y vocabulario de acciones: [`learning/README.md`](learning/
 |---|---|---|
 | Búsqueda vectorial por fuerza bruta en Python | Coste O(N) por consulta; adecuado hasta miles de nodos | Índice ANN (FAISS, hnswlib) detrás de `Embedder`/`Retriever` |
 | Episodios de un solo nivel | El agente ordena herramientas; no descompone metas en subobjetivos | `Planner` basado en LLM |
-| Evaluación con herramientas simuladas | No demuestra transferencia en tareas reales | Fase de investigación (§ 13) |
+| Experimento 1 acotado: 6 tareas, un proyecto, 3 operadores escritos a mano | No sustenta generalización ni significancia estadística | Tareas adicionales y benchmark con distractores (§ 13) |
+| Hashes de recibos sobre bytes del checkout | Réplicas en otra configuración CRLF/LF difieren en hash aunque el comportamiento coincida | Normalización antes de hashear (#42) |
+| El solver es código local auditado, no un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
 | Valencia global saturable (`tanh`) | Varias acciones pueden empatar en +1.00 en historiales largos | La valencia contextual domina cuando hay evidencia |
 | Asociación `Outcome` → `Goal` por convención de identificadores (`goal:{episode}`) | Acopla la valencia contextual al esquema de ids | Relación explícita en el grafo tipado (#34) |
 | Sin control de concurrencia | Un único escritor por archivo de memoria | Backend transaccional vía `GraphStore` |
 
 ## 13. Hoja de ruta
 
-La versión 0.2.0 establece el mecanismo. La siguiente fase, abierta como investigación, evalúa si
-la memoria **cambia decisiones de forma útil en tareas de software reales**, con evidencia auditable.
+La versión 0.2.0 estableció el mecanismo y el Experimento 1 lo llevó a tareas reales de software con
+evidencia auditable (#24–#36). La fase actual endurece esa evidencia y aborda la pregunta que sigue
+abierta: si la memoria asociativa aporta algo que el historial textual no aporta.
 
 ```mermaid
 flowchart TB
-    H["#30 Hipótesis<br/>la evidencia previa reduce fallos repetidos<br/>entre tareas relacionadas"]
-    E0["#31 Experimento 0<br/>línea base sintética (v0.2.0)"]
-    B["#33 Benchmark causal<br/>familias AUTH · CONFIG · READINESS<br/>+ par engañoso"]
-    X["#24 – #29 EXP-01 … EXP-06<br/>defectos reales de software"]
-    E1["#32 Experimento 1<br/>transferencia entre tareas<br/>proyecto WSGI/SQLite real"]
-    G["#34 Grafo tipado<br/>software-learning-memory/v1<br/>afirmaciones con evidencia"]
-    RC["#35 Recibos inmutables<br/>cadena auditable con SHA-256"]
-    M["#36 Métricas<br/>memoria disponible / usada / útil<br/>LearningGain"]
+    E0["Experimento 0<br/>mecanismo sintético · #31"]
+    E1["Experimento 1<br/>transferencia en software real<br/>#24–#36"]
+    V["Verificación independiente<br/>réplica · sensibilidad · mutación"]
+    H42["#42 Hashes portables"]
+    H43["#43 Tests de salvaguardas"]
+    H44["#44 Baseline de 6 permutaciones"]
+    H45["#45 Par engañoso sin pistas léxicas"]
+    H46["#46 Asociativa vs historial<br/>con distractores"]
 
-    H --> E0
-    H --> E1
-    B --> X
-    X --> E1
-    G --> E1
-    RC --> E1
-    RC --> M
-    E1 --> M
+    E0 --> E1 --> V
+    V --> H42 --> H44
+    V --> H43
+    V --> H45
+    H44 --> H46
+    H45 --> H46
 ```
 
-Consulte los issues enlazados para el diseño experimental detallado.
+La estimación por tallas y el modelo asignado a cada issue están en [`docs/estimation.md`](docs/estimation.md).
 
 ## 14. Estructura del repositorio
 
@@ -671,15 +754,26 @@ Consulte los issues enlazados para el diseño experimental detallado.
 │   │   └── fsutil.py          # escritura atómica
 │   ├── config.py              # AppConfig (TOML + variables AAL_*)
 │   └── main.py                # CLI aal-benchmark
+├── src/experiments/           # Experimento 1: agente acotado, runner A/B/C, recibos, evaluación
+├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana
+├── benchmark/
+│   ├── public/                # tareas y tests de aceptación visibles para el solver
+│   └── private/               # etiquetas causales, pares e inyecciones (solo el evaluador)
+├── evidence/                  # recibos inmutables: baseline, runs, validation, pilot
+├── results/                   # agregados generados desde los recibos
 ├── specs/
-│   ├── memory_schema.json     # JSON Schema generado desde los modelos
-│   └── loop_protocol.md       # estados, fórmulas e invariantes
+│   ├── memory_schema.json     # JSON Schema generado desde los modelos (Experimento 0)
+│   ├── loop_protocol.md       # estados, fórmulas e invariantes
+│   ├── software_learning_protocol.md  # protocolo del Experimento 1
+│   └── software_memory_schema_v1.json, reflection_schema_v1.json
+├── docs/                      # verificación, estimación, referencia histórica del Experimento 0
 ├── learning/                  # episodios de desarrollo y memoria derivada
-├── scripts/                   # devlog, export_schema, mutation_check
+├── scripts/                   # devlog, export_schema, mutation_check, verify_experiment1
 ├── tests/
 │   ├── unit/                  # componentes y propiedades
-│   └── integration/           # agente, benchmark, CLI, bitácora
-└── .github/workflows/ci.yml   # 11 jobs
+│   ├── integration/           # agente, benchmark, CLI, bitácora
+│   └── test_experiment_harness.py  # Experimento 1
+└── .github/workflows/ci.yml   # 12 jobs (incluye la reproducibilidad A/B/C)
 ```
 
 ## 15. Contribuir y licencia
