@@ -1,0 +1,23 @@
+{
+  "seq": 17,
+  "id": "issue-46",
+  "goal": "Responder H4: memoria asociativa vs historial textual con distractores y transferencia negativa",
+  "ref": "#46",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "lecciones de pre-registro y de verificación con control recuperadas"},
+    {"action": "update_docs", "success": true, "note": "pre-registro 6c9a1a3 antes de ver resultados de #44 y #45"},
+    {"action": "write_code", "success": true, "note": "analyze_h4.py con las métricas y reglas pre-registradas, commit 4c337e2 antes de los datos"},
+    {"action": "write_tests", "success": true, "note": "el análisis puede llegar a apoyada, refutada y sin diferencia; detecta réplicas inconsistentes"},
+    {"action": "review_code", "success": true, "note": "PR #51: el manifiesto de fuentes coincide 76/76 con 62d6ff7; merge con merge commit para preservar la proveniencia"},
+    {"action": "run_demo", "success": true, "note": "confirmatorio sobre reference-v2: H4a sin diferencia (0/18 y 0/18), H4b no apoyada (tasas 1/3 y 1/3)"},
+    {"action": "update_spec", "success": false, "error": "el pre-registro no precisaba si 'recuperadas' significa expuestas o citadas en MisleadingRetrievalRate"},
+    {"action": "update_docs", "success": true, "note": "desviación declarada; se reportan ambas lecturas; ninguna regla de decisión dependía de esa métrica"}
+  ],
+  "lessons": [
+    "Pre-registrar y comprometer el código de análisis antes de los datos deja una cadena verificable con git",
+    "Al pre-registrar una métrica de recuperación, precisar si cuenta lecciones expuestas o citadas",
+    "Mayor precisión de recuperación no implica mejor resultado si el orden final lo decide la misma señal léxica",
+    "Comparar tasas y no conteos brutos cuando los denominadores difieren entre condiciones",
+    "Con squash merge se pierde el commit que citan los recibos: usar merge commit cuando la evidencia registra la proveniencia"
+  ]
+}

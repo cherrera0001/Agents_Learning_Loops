@@ -10,3 +10,4 @@ dist/
 .fastembed_cache/
 .scratch/
 scratch/
+.claude/
