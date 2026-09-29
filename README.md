@@ -88,7 +88,7 @@ flowchart LR
 
 ### Recuperación asociativa
 
-1. **Siembra**: metas pasadas similares a la consulta (coseno sobre bolsa de palabras) y `Concept(topic)` presentes en ella.
+1. **Siembra híbrida**: todo nodo con texto (metas, acciones, errores, lecciones) cuya similitud `α·coseno(embeddings) + (1−α)·léxica` supere el umbral, más los `Concept(topic)` presentes literalmente en la consulta. Por defecto los embeddings son léxicos (hashing, sin dependencias); con `pip install -e .[embeddings]` y `FastEmbedEmbedder` se recuperan paráfrasis sin palabras en común («temperatura prevista para Lima» → experiencia de «clima en Santiago»).
 2. **Propagación**: 3 saltos; cada salto transmite `a · 0.7 · peso_efectivo` (hacia atrás, atenuado).
 3. **Score**: `relevancia(a) · tanh(Σ RESOLVED_BY − Σ FAILED_DUE_TO)`.
    - Acción exitosa → score > 0; nunca probada → 0; con fallos previos → < 0.
@@ -153,7 +153,7 @@ Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md)
 
 ## Extensiones naturales
 
-- **Embeddings**: `Retriever(memory, similarity=mi_funcion)` acepta cualquier `similarity(a, b) -> float`.
+- **Otros modelos de embeddings**: cualquier objeto con `name`, `dim` y `embed(texts)` sirve como `Retriever(memory, embedder=...)` o `Agent(tools, embedder=...)` (p. ej. `sentence-transformers`).
 - **LLM planner**: usar `retrieval.lessons` y `ranked_actions` como contexto del prompt en lugar de ejecutar el ranking tal cual.
 - **Valencia contextual**: hoy la valencia de una acción es global (acotada por la relevancia); se puede condicionar a las metas activadas.
 - **Backend persistente**: `MemoryGraph` encapsula NetworkX; su interfaz se puede portar a Neo4j o SQLite.

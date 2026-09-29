@@ -69,7 +69,7 @@ Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismo
 ## Flujo por issue
 
 ```bash
-python -m scripts.devlog recall "título del issue"   # 1. RETRIEVE
+python -m scripts.devlog recall "título del issue"   # 1. RETRIEVE (--embedder fastembed: búsqueda semántica)
 # 2. implementar en la rama issue-<n>-...
 # 3. escribir learning/episodes/NNN-issue-<n>.json
 python -m scripts.devlog rebuild                     # 4. CONSOLIDATE

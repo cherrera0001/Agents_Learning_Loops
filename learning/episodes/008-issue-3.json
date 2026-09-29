@@ -1,0 +1,23 @@
+{
+  "seq": 8,
+  "id": "issue-3",
+  "goal": "Embeddings y búsqueda híbrida para la siembra de activación; fastembed",
+  "ref": "#3",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recuperó 'probar con y sin extras' y la baja valencia de write_tests"},
+    {"action": "add_dependency", "success": true, "note": "modelo paraphrase-multilingual-MiniLM-L12-v2 (384d, 0.22 GB): el contenido es en español"},
+    {"action": "write_code", "success": false, "error": "import circular: embeddings necesitaba tokenize de associative, que importa embeddings"},
+    {"action": "edit_module", "success": true, "note": "tokenize y similitud léxica movidos a text.py; associative los reexporta"},
+    {"action": "write_code", "success": true, "note": "Embedder, LexicalEmbedder (blake2b), FastEmbedEmbedder, index() con caché e invalidación, siembra híbrida sobre Goal/Action/Concept"},
+    {"action": "recall_memory", "success": true, "note": "consulta no idéntica a una meta recupera la lección de saturación del episodio 003 (antes: nada)"},
+    {"action": "run_tests", "success": true, "note": "con extra: 52 passed (paráfrasis 'temperatura prevista para Lima' elige v2 al primer intento); sin extra: 50 passed, 2 skipped"},
+    {"action": "update_docs", "success": true, "note": "README, loop_protocol §3, devlog recall --embedder fastembed"}
+  ],
+  "lessons": [
+    "Usar hashlib (blake2b) y no hash() para feature hashing: hash() cambia entre procesos por PYTHONHASHSEED",
+    "Con contenido en español elegir un modelo multilingüe: clima~temperatura 0.63, clima~weather 0.49, clima~bolsa 0.00",
+    "Sembrar sobre el texto de lecciones y errores, no solo metas, hace que la experiencia sea recuperable por su contenido",
+    "Mover utilidades compartidas a un módulo hoja (text.py) evita imports circulares entre capas",
+    "Cachear embeddings por nodo junto al nombre del modelo e invalidarlos si el modelo cambia: los vectores de modelos distintos no son comparables"
+  ]
+}

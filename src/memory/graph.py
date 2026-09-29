@@ -40,6 +40,7 @@ class MemoryGraph:
         self.g = nx.MultiDiGraph()
         self.decay_rate = decay_rate  # decay_factor por defecto de las aristas nuevas
         self.clock = 0
+        self.embedding_model: str | None = None  # modelo de los Node.embedding
 
     # ------------------------------------------------------------------ reloj
     def tick(self) -> int:
@@ -161,6 +162,7 @@ class MemoryGraph:
         return GraphDocument(
             clock=self.clock,
             default_decay_factor=self.decay_rate,
+            embedding_model=self.embedding_model,
             nodes=list(self.nodes()),
             edges=[
                 SerializedEdge(**e.model_dump(), recency_factor=round(self.recency_factor(e), 6))
@@ -179,6 +181,7 @@ class MemoryGraph:
         doc = GraphDocument.model_validate(data)
         mg = cls(decay_rate=doc.default_decay_factor)
         mg.clock = doc.clock
+        mg.embedding_model = doc.embedding_model
         for node in doc.nodes:
             mg.g.add_node(node.id, model=node)
         for sedge in doc.edges:

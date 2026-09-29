@@ -81,5 +81,8 @@ class GraphDocument(_Model):
     schema_version: Literal[2] = SCHEMA_VERSION
     clock: int = Field(ge=0, description="Reloj lógico: +1 por episodio.")
     default_decay_factor: float = Field(ge=0.0, description="decay_factor de las aristas nuevas.")
+    embedding_model: str | None = Field(
+        default=None, description="Modelo con que se calcularon los Node.embedding (#3)."
+    )
     nodes: list[Node]
     edges: list[SerializedEdge]

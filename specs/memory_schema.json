@@ -176,6 +176,19 @@
       "title": "Default Decay Factor",
       "type": "number"
     },
+    "embedding_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Modelo con que se calcularon los Node.embedding (#3).",
+      "title": "Embedding Model"
+    },
     "nodes": {
       "items": {
         "$ref": "#/$defs/Node"

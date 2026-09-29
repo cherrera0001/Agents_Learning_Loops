@@ -35,8 +35,12 @@ stateDiagram-v2
 ## 3. Recuperación (PLAN)
 
 ```
-seeds(q)  = { g ↦ sim(q, g.label)  | g ∈ Goal, sim ≥ 0.2 }
+sim(q, n) = α · max(0, cos(emb(q), emb(n))) + (1 − α) · léxica(q, n.label)
+seeds(q)  = top_k { n ↦ sim(q, n) | n ∈ Goal ∪ Action ∪ Concept, sim ≥ τ_seed }
           ∪ { topic(t) ↦ 1.0       | t ∈ tokens(q), topic(t) ∈ G }
+
+emb: LexicalEmbedder (hashing) por defecto | FastEmbedEmbedder (extra [embeddings]).
+Los vectores se cachean en Node.embedding; si cambia el modelo, se invalidan.
 
 A ← seeds;  F ← ∅ (disparados);  frontera₀ = { u | A(u) ≥ θ }
 
@@ -58,7 +62,7 @@ valencia(a) = tanh( Σ w̃(· -RESOLVED_BY-> a)  −  Σ w̃(a -FAILED_DUE_TO-> 
 score(a)  = A(a) · valencia(a)
 ```
 
-Parámetros (`RetrievalConfig`): `δ = 0.7`, `θ = 0.01`, `max_hops = 3`, `fan_out = sqrt`;
+Parámetros (`RetrievalConfig`): `α = 0.7`, `τ_seed = 0.25`, `top_k = 20`, `δ = 0.7`, `θ = 0.01`, `max_hops = 3`, `fan_out = sqrt`;
 `ρ(ASSOCIATED_WITH) = 1.0`, `ρ(resto) = 0.5`.
 
 - **Refracción**: un nodo que ya disparó no vuelve a disparar ni acumula, así que los ciclos A→B→A no inflan la activación.

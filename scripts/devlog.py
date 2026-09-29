@@ -20,6 +20,7 @@ from typing import Any
 from src.agent.tools import ToolResult
 from src.memory.associative import Retriever
 from src.memory.consolidation import Consolidator
+from src.memory.embeddings import Embedder, FastEmbedEmbedder
 from src.memory.graph import MemoryGraph, NodeType
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -51,9 +52,9 @@ def rebuild(episodes: list[dict[str, Any]]) -> MemoryGraph:
     return mg
 
 
-def recall(mg: MemoryGraph, query: str, top_lessons: int = 5) -> str:
+def recall(mg: MemoryGraph, query: str, top_lessons: int = 5, embedder: Embedder | None = None) -> str:
     actions = [mg.node(n).label for n in mg.nodes_of_type(NodeType.ACTION)]
-    result = Retriever(mg).retrieve(query, actions)
+    result = Retriever(mg, embedder=embedder).retrieve(query, actions)
     lines = [f"RETRIEVE: {query!r}", "", "Acciones (score = relevancia · valencia):"]
     lines += [
         f"  {s.score:+.3f}  {s.action}  (rel={s.relevance:.2f}, val={s.valence:+.2f})"
@@ -71,6 +72,10 @@ def main() -> None:
     p_recall = sub.add_parser("recall", help="consulta la memoria antes de empezar un issue")
     p_recall.add_argument("query")
     p_recall.add_argument("-n", type=int, default=5, help="máximo de lecciones")
+    p_recall.add_argument(
+        "--embedder", choices=["lexical", "fastembed"], default="lexical",
+        help="fastembed requiere el extra [embeddings]",
+    )
     sub.add_parser("rebuild", help="reconstruye learning/dev_memory.json")
     args = parser.parse_args()
 
@@ -80,7 +85,8 @@ def main() -> None:
         print(f"{MEMORY_PATH.relative_to(ROOT)}: {mg.stats()}")
     else:
         mg = MemoryGraph.load(MEMORY_PATH) if MEMORY_PATH.exists() else rebuild(load_episodes())
-        print(recall(mg, args.query, args.n))
+        embedder = FastEmbedEmbedder() if args.embedder == "fastembed" else None
+        print(recall(mg, args.query, args.n, embedder))
 
 
 if __name__ == "__main__":
