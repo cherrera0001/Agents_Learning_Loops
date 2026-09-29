@@ -20,6 +20,10 @@ L5 (configuration experience transferred to a reporting component). They are
 not independent evidence of depth or generality. The complete taxonomy is
 L0 exact, L1 paraphrase, L2 semantic, L3 causal, L4 multi-hop, L5 transfer.
 
+The fixed six-task campaign (task set `v1`, the CLI default) is unchanged by
+later extensions; its annotations in `benchmark/private/tasks.json` are pinned
+by the published receipts.
+
 Reference campaign: seeds 7, 11, 23; two exact replications each; three strategy
 attempts per task; 20-second timeout per test invocation; all three conditions.
 Mode order is shuffled per seed. Each task gets a fresh agent and defective
@@ -29,6 +33,57 @@ Transfer uses frozen training snapshots. A successful run requires acceptance
 and business regression tests to exit 0; reproducing the original failure is
 mandatory. Baseline reproduction tests are logged but excluded from repair
 iterations and failure-rate denominators. Tests execute in separate processes.
+
+## Misleading tasks without lexical cues (task set `misleading-v1`, #45)
+
+The original negative pair (EXP-01 AUTH training vs EXP-05 CONFIG transfer)
+did not mislead: EXP-05's text ("without explicit environment configuration",
+"AttributeError") is lexically closest to its *correct* lesson EXP-02, so it
+cannot distinguish causal transfer from lexical disambiguation. It is kept
+unchanged as the lexical-disambiguation control.
+
+`misleading-v1` = `v1` + three transfer tasks, one per true family. Their public
+title and context reuse the vocabulary of a **decoy** family's training issue
+and avoid the vocabulary of the true family; only the source code reveals the
+cause. Every public statement remains true of the injected defect.
+
+| Task | Public symptom | Decoy (training issue) | True family | Injected defect | Repairing operator |
+|---|---|---|---|---|---|
+| EXP-07 | some `/tasks` calls raise TypeError right after startup | READINESS (EXP-03) | AUTH | `authorize` guards `token is None`, not the looked-up principal | `validate_optional_identity` |
+| EXP-08 | summary request returns a blank label | AUTH (EXP-01) | CONFIG | report label falls back to `""`, not `DEFAULT_LABEL` | `normalize_environment` |
+| EXP-09 | summary fails to load in a clean environment | CONFIG (EXP-02) | READINESS | worker references `database.initialize` without calling it | `initialize_storage` |
+
+Each family is the true family once and the decoy once. The application code
+is untouched (adding components would change every v1 workspace); defects are
+new mutations of existing components through the same injection mechanism, and
+each is repaired by exactly one existing operator. Annotations live in
+`benchmark/private/tasks_misleading.json` (`family`, `hidden_cause_id`,
+`split: transfer`, `relevant_training_tasks`, `distance`, `decoy_family`,
+`decoy_training_tasks`); `pairs.json` lists the correct pair as `positive` and
+the decoy pair as `negative` with `kind: misleading-no-lexical-cue`.
+
+The absence of lexical cues is enforced by `tests/test_experiment_misleading.py`,
+not by intent: (1) no public text field contains a token that only the true
+family's training lesson carries, nor a listed mechanism word of that family;
+(2) under the TEXT_HISTORY ranking `cosine(title + context, symptom + rule)` the
+decoy training lesson scores highest and more than twice the correct one;
+(3) the only ASSOCIATIVE_MEMORY lexical seeds (>= 0.12) belong to the decoy
+lesson; (4) with real training receipts both memory conditions rank the decoy
+lesson first. The public text deliberately does not quote the exception
+message where it would name the true mechanism (EXP-09 says "raises an
+exception"). The bounded agent never reads test output, so this affects
+retrieval only.
+
+Task publication: the protocol treats GitHub issues as tasks, but no new issue
+is created for EXP-07..09. They are published in the repository only
+(`benchmark/public/`, `benchmark/issue-proposals/EXP-0x.md`), tracked by #45;
+`benchmark/issues.json` has no entry for them and their receipts carry
+`issue: null` (the runner already treats the link as optional).
+`scripts/publish_experiment_issues.py` skips them.
+
+Run: `python -m experiments run --task-set misleading-v1 --seeds 1 4 5 6 7 9
+--replicates 1 --evidence-dir evidence/pilot/misleading-v1`. The six seeds
+cover the six permutations of the no-memory prior exactly once.
 
 ## Conditions
 
@@ -132,6 +187,23 @@ mismatched no-memory pairs and changed causal annotations.
 - FalseRetrievalRate: irrelevant retrieved lessons / all retrieved lessons.
 - LearningGain: metric(memory) minus metric(no_memory), preserving direction:
   negative iterations are favorable, positive failure rates are unfavorable.
+
+Per-task breakdown (`task_breakdown.json` / `.md`, written next to
+`experiment1.json`, which keeps its published shape): for each task and
+condition, runs, success, first-attempt success, iterations, mean iteration
+delta against the paired NO_MEMORY run, first strategy, and lessons exposed
+and cited by source task and family. "Cited" lessons are those named by the
+selection (`decision.memory_ids`: the top-ranked lesson, ranked by the agent in
+TEXT_HISTORY and by propagation in ASSOCIATIVE_MEMORY); "exposed" lessons are
+all handed to the solver (`retrieval.memories`).
+
+- MisleadingRetrievalRate: cited lessons from the task's `decoy_family` / all
+  cited lessons, over tasks annotated with `decoy_family`. Null if nothing was
+  cited (always for NO_MEMORY). Counts are reported with the rate.
+- CorrectFamilyRetrievalRate: cited lessons from the true family / all cited
+  lessons on those tasks.
+- MisleadingExposureRate: exposed decoy lessons / exposed lessons on those
+  tasks; TEXT_HISTORY exposes every lesson, so it is 1/3 there by construction.
 
 Undefined denominators are null, not zero. The negative AUTH->CONFIG pair is
 included in private pairs.json; history necessarily exposes irrelevant lessons,
