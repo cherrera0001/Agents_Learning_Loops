@@ -1,0 +1,22 @@
+{
+  "seq": 15,
+  "id": "issue-38",
+  "goal": "Actualizar README con diagramas de arquitectura y documentación técnica",
+  "ref": "#38",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "--embedder fastembed recuperó los 4 defectos del dogfooding y el eslabón débil write_tests"},
+    {"action": "review_code", "success": true, "note": "parámetros por defecto y métricas de la memoria de desarrollo extraídos del código, no de memoria"},
+    {"action": "update_docs", "success": true, "note": "README reescrito: 15 secciones, 10 diagramas Mermaid (flowchart, ER, estados, secuencia)"},
+    {"action": "validate_schema", "success": false, "error": "mermaid-cli no encontraba Chrome; primer intento de configurarlo con printf rompió los escapes del JSON"},
+    {"action": "validate_schema", "success": true, "note": "Chrome local vía archivo de configuración escrito con la herramienta de escritura; 10/10 diagramas renderizan"},
+    {"action": "update_docs", "success": false, "error": "salida de referencia desactualizada: scores de weather cambiaron tras la valencia contextual (#8)"},
+    {"action": "review_code", "success": true, "note": "detectado comparando con aal-benchmark antes del PR"},
+    {"action": "write_tests", "success": true, "note": "test_readme: salida de referencia y parámetros deben coincidir con el código; control con el valor antiguo falla"},
+    {"action": "run_tests", "success": true, "note": "89 passed"}
+  ],
+  "lessons": [
+    "Los números citados en la documentación divergen del código tras cada cambio de algoritmo: verificarlos con un test, no con una revisión",
+    "Validar los diagramas Mermaid renderizándolos (mermaid-cli con el navegador local) antes de publicar",
+    "Distinguir en la documentación qué afirma el benchmark y qué se verifica en tests; declarar el alcance de la evidencia"
+  ]
+}
