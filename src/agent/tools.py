@@ -47,6 +47,26 @@ def weather_scenario() -> list[Tool]:
     ]
 
 
+def domain_scenario() -> list[Tool]:
+    """Una API genérica rápida que falla solo en el dominio *clima* y un respaldo lento.
+
+    Sirve para verificar que un fallo en un dominio no contamina otro (#8).
+    """
+
+    def generic(query: str) -> ToolResult:
+        if "clima" in query.lower():
+            return ToolResult(False, error="HTTP 422 dominio no soportado", latency_ms=20)
+        return ToolResult(True, output=f"resultado genérico para '{query}'", latency_ms=20)
+
+    def fallback(query: str) -> ToolResult:
+        return ToolResult(True, output=f"resultado de respaldo para '{query}'", latency_ms=300)
+
+    return [
+        Tool("generic_api", "API genérica (rápida)", generic),
+        Tool("fallback_api", "API de respaldo (lenta)", fallback),
+    ]
+
+
 def flaky_scenario(failure_rate: float = 0.7, seed: int = 7) -> list[Tool]:
     rng = random.Random(seed)
 

@@ -1,0 +1,24 @@
+{
+  "seq": 11,
+  "id": "issue-8",
+  "goal": "Valencia contextual de acciones: un fallo en un dominio no debe contaminar otro",
+  "ref": "#8",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recuperó la exclusión de ASSOCIATED_WITH/FAILED_DUE_TO del aprendizaje hebbiano"},
+    {"action": "review_code", "success": true, "note": "descartada la fórmula del issue (ponderar FAILED_DUE_TO por A(error)): el error se activa a través de la propia acción en cualquier contexto"},
+    {"action": "write_code", "success": true, "note": "domain_scenario y reproducción del problema ANTES de corregirlo (TDD)"},
+    {"action": "run_demo", "success": true, "note": "fuga confirmada: en 'noticias de Santiago' la valencia global elegía fallback_api (15x más lenta)"},
+    {"action": "write_code", "success": true, "note": "valencia contextual: evidencia episódica (Outcomes) con núcleo exp(−(A_max−A)/T) y mezcla por confianza con la global"},
+    {"action": "write_tests", "success": true, "note": "incluye control: con valencia global el escenario sí contamina (el test puede fallar)"},
+    {"action": "edit_module", "success": false, "error": "parche por heredoc convirtió \\n en un salto de línea real dentro de un string (SyntaxError)"},
+    {"action": "edit_module", "success": true, "note": "corregido con la herramienta de edición"},
+    {"action": "run_tests", "success": true, "note": "71 passed; benchmark cross_domain: latencia 1540 → 1260 ms"},
+    {"action": "update_spec", "success": true, "note": "loop_protocol §3: fórmula de valencia contextual y parámetros T, κ"}
+  ],
+  "lessons": [
+    "Reproducir el defecto con un escenario antes de corregirlo; el mismo escenario se vuelve el test de control",
+    "La evidencia contextual debe venir de nodos que solo se activan por contexto (metas de episodios), no de nodos alcanzables desde la propia acción",
+    "Un núcleo relativo al máximo (exp(−(A_max−A)/T)) hace que dominen los episodios más parecidos aunque otros compartan términos",
+    "Evitar heredocs para parchear código con secuencias de escape: usar la herramienta de edición"
+  ]
+}

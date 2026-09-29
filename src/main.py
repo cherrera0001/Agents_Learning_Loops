@@ -8,6 +8,8 @@ Escenarios
 2. ``paraphrase``: metas distintas pero relacionadas; la experiencia se
    generaliza por asociación (topics compartidos, similitud híbrida).
 3. ``flaky``: errores intermitentes; se compara con un agente sin memoria.
+4. ``cross_domain``: una API falla solo en un dominio; se compara la valencia
+   contextual con la global (que contamina al otro dominio).
 
 Con ``--json`` se imprime un reporte determinista (misma semilla ⇒ mismo JSON),
 útil para comparar corridas entre versiones.
@@ -21,7 +23,8 @@ import sys
 from typing import Any
 
 from .agent.core import Agent, Episode
-from .agent.tools import flaky_scenario, weather_scenario
+from .agent.tools import domain_scenario, flaky_scenario, weather_scenario
+from .memory.associative import RetrievalConfig
 
 
 def episode_record(ep: Episode) -> dict[str, Any]:
@@ -69,10 +72,26 @@ def benchmark(flaky_episodes: int = 20, seed: int = 7) -> dict[str, Any]:
         label: run_goals(Agent(flaky_scenario(seed=seed), use_memory=use_memory), flaky_goals)["metrics"]
         for label, use_memory in (("without_memory", False), ("with_memory", True))
     }
+    domain_goals = [
+        "noticias de Santiago", "clima en Santiago", "clima en Valparaíso",
+        "clima en Temuco", "noticias de Santiago", "clima en Concepción",
+    ]
+    cross_domain = {
+        label: run_goals(
+            Agent(domain_scenario(), retrieval_config=RetrievalConfig(contextual_valence=ctx)),
+            domain_goals,
+        )["metrics"]
+        for label, ctx in (("global_valence", False), ("contextual_valence", True))
+    }
     return {
         "benchmark": "associative-agent-loop",
         "seed": seed,
-        "scenarios": {"same_goal": same, "paraphrase": paraphrase, "flaky": flaky},
+        "scenarios": {
+            "same_goal": same,
+            "paraphrase": paraphrase,
+            "flaky": flaky,
+            "cross_domain": cross_domain,
+        },
     }
 
 
@@ -102,6 +121,15 @@ def print_report(report: dict[str, Any]) -> None:
         print(
             f"  {label:12s} éxito al 1er intento={m['first_try_success']}/{m['episodes']}  "
             f"llamadas totales={m['total_calls']}  latencia total={m['total_latency_ms']:.0f} ms"
+        )
+
+    cross = report["scenarios"]["cross_domain"]
+    print("\n=== Escenario 4: fallo en un dominio (clima) vs otro (noticias) ===")
+    for label, key in (("valencia global", "global_valence"), ("valencia contextual", "contextual_valence")):
+        m = cross[key]
+        print(
+            f"  {label:20s} llamadas totales={m['total_calls']}  "
+            f"latencia total={m['total_latency_ms']:.0f} ms"
         )
 
 

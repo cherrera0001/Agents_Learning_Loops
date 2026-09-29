@@ -99,6 +99,7 @@ flowchart LR
 2. **Propagación**: 3 saltos; cada salto transmite `a · 0.7 · peso_efectivo` (hacia atrás, atenuado).
 3. **Score**: `relevancia(a) · tanh(Σ RESOLVED_BY − Σ FAILED_DUE_TO)`.
    - Acción exitosa → score > 0; nunca probada → 0; con fallos previos → < 0.
+   - La **valencia es contextual**: se calcula con los episodios cuyas metas se parecen a la consulta (núcleo sobre su activación), de modo que un fallo en el dominio «clima» no penaliza la misma herramienta en «noticias». Sin evidencia contextual, se usa la valencia global.
    - Por eso la ruta que falló pasa al final del plan y se descarta en la práctica.
 
 ### Consolidación
@@ -162,7 +163,6 @@ Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md)
 
 - **Otros modelos de embeddings**: cualquier objeto con `name`, `dim` y `embed(texts)` sirve como `Retriever(memory, embedder=...)` o `Agent(tools, embedder=...)` (p. ej. `sentence-transformers`).
 - **LLM planner**: usar `retrieval.lessons` y `ranked_actions` como contexto del prompt en lugar de ejecutar el ranking tal cual.
-- **Valencia contextual**: hoy la valencia de una acción es global (acotada por la relevancia); se puede condicionar a las metas activadas.
 - **Backend persistente**: `MemoryGraph` encapsula NetworkX; su interfaz se puede portar a Neo4j o SQLite.
 
 ## Licencia
