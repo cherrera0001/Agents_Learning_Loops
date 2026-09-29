@@ -10,6 +10,11 @@
   misleading tasks without lexical cues, #45); seeds 1 4 5 6 7 9, one
   replicate. Evaluated in `results/pilot/misleading-v1/`. Not part of
   `results/experiment1.json`.
+- `reference-v2/`: reference campaign v2 (#44): seeds 1 4 5 6 7 9 (all 6
+  permutations of the no-memory prior), task set `misleading-v1`, two replicates,
+  receipt schema v2. Run with `python -m experiments run --campaign reference-v2`;
+  evaluated in `results/reference-v2/`. The historical `runs/` (seeds 7 11 23) is
+  unchanged.
 - `runs/`: fixed-protocol immutable task and memory-update receipts. Raw failures
   stay in these files. `python -m experiments evaluate` regenerates results.
 - `validation/`: captured development/check outputs, separate from task evidence.

@@ -31,8 +31,34 @@ The fixed six-task campaign (task set `v1`, the CLI default) is unchanged by
 later extensions; its annotations in `benchmark/private/tasks.json` are pinned
 by the published receipts.
 
-Reference campaign: seeds 7, 11, 23; two exact replications each; three strategy
+Historical campaign (published, `evidence/runs/`, kept unchanged): seeds 7, 11,
+23; two exact replications each; six tasks; three strategy
 attempts per task; 20-second timeout per test invocation; all three conditions.
+Its seeds cover only 2 of the 6 orders of the no-memory prior (7 and 23 give the
+same order and `normalize_environment` is never first), so the CONFIG family
+always needed three attempts without memory (#44). The result is not rewritten.
+
+Reference campaign v2 (#44), declared in `experiments.benchmark.REFERENCE_CAMPAIGN`
+and run with `python -m experiments run --campaign reference-v2 --evidence-dir
+evidence/reference-v2`: seeds 1 4 5 6 7 9, task set `misleading-v1` (nine tasks),
+two same-seed replicates per seed (determinism check), the three conditions and
+receipt schema v2 (`lf/v1` hashes). Same budgets and timeout as above. Reason for
+the seeds: the prior depends only on the seed (`experiments.agent.prior_order`),
+three operators give 3! = 6 orders, and these six seeds give each order exactly
+once. `tests/test_experiment_reference_campaign.py` computes the orders with
+`prior_order` (the function the agent uses) and fails if the declared seeds or
+the operator list stop covering all permutations; its control shows that
+`[7, 11, 23]` covers only two. Evaluate with `python -m experiments evaluate
+--evidence-dir evidence/reference-v2 --output results/reference-v2`; besides
+`experiment1.json` this writes `family_breakdown.json` / `.md`.
+
+Family breakdown (`family_breakdown.json` / `.md`, next to `experiment1.json`,
+whose shape is unchanged): on the transfer partition, per family and condition,
+FirstAttemptSuccessRate and IterationsPerTask with explicit numerators and run
+counts, and LearningGain (metric minus paired-cell NO_MEMORY; negative
+iterations are favourable). Original transfer tasks (EXP-04..06, no
+`decoy_family`) and misleading ones (EXP-07..09) are reported separately and
+never pooled, because their interpretation is opposite.
 Mode order is shuffled per seed. Each task gets a fresh agent and defective
 workspace. Each strategy starts from the same defective source. Only memory
 carries across tasks; patches, tests, interpreter state and filesystem do not.

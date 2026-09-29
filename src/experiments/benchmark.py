@@ -19,6 +19,18 @@ TASK_SETS = {
     "misleading-v1": tuple(f"EXP-{i:02d}" for i in range(1, 10)),
 }
 ALL_TASKS = frozenset(TASK_SETS["misleading-v1"])
+# Historical campaign of Experiment 1 (evidence/runs): seeds 7, 11, 23 cover only 2 of the
+# 6 orders of the no-memory prior (7 and 23 give the same one). Kept as published.
+HISTORICAL_CAMPAIGN = {"seeds": (7, 11, 23), "replicates": 2, "task_set": "v1"}
+# Reference campaign v2 (#44): seeds 1 4 5 6 7 9 cover all 6 permutations of the three
+# operators exactly once (enforced by tests/test_experiment_reference_campaign.py), all
+# nine tasks, two same-seed replicates, the three conditions, receipt schema v2.
+REFERENCE_CAMPAIGN = {
+    "name": "reference-v2",
+    "seeds": (1, 4, 5, 6, 7, 9),
+    "replicates": 2,
+    "task_set": "misleading-v1",
+}
 
 
 def private_metadata(root):
@@ -199,4 +211,113 @@ def write_breakdown(output, runs, metadata):
         json.dumps(breakdown, indent=2) + "\n", encoding="utf-8", newline="\n"
     )
     (output / "task_breakdown.md").write_text(breakdown_markdown(breakdown), encoding="utf-8", newline="\n")
+    return breakdown
+
+
+def family_breakdown(runs, metadata):
+    """Transfer results per family, condition and transfer kind (#44).
+
+    ``original`` transfer tasks (no ``decoy_family``, EXP-04..06) reward following the
+    lexical cue; ``misleading`` ones (EXP-07..09) have a decoy family and their
+    interpretation is the opposite, so they are never pooled. Every cell carries its
+    explicit numerators and denominators. LearningGain is metric(condition) minus
+    metric(NO_MEMORY) in the same cell; negative iterations are favourable.
+    """
+    cells = defaultdict(list)
+    for r in runs:
+        if r["split"] != "transfer":
+            continue
+        meta = metadata[r["task"]["id"]]
+        kind = "misleading" if meta.get("decoy_family") else "original"
+        cells[(kind, meta["family"], r["memory_mode"])].append(r)
+    report = {}
+    for (kind, family, mode), items in sorted(cells.items()):
+        n = len(items)
+        first = sum(r["outcome"]["first_attempt_success"] for r in items)
+        iterations = sum(r["iterations"] for r in items)
+        report.setdefault(kind, {}).setdefault(family, {})[mode] = {
+            "tasks": sorted({r["task"]["id"] for r in items}),
+            "runs": n,
+            "first_attempt_successes": first,
+            "iterations_total": iterations,
+            "FirstAttemptSuccessRate": ratio(first, n),
+            "IterationsPerTask": ratio(iterations, n),
+        }
+    for families in report.values():
+        for modes in families.values():
+            base = modes.get("NO_MEMORY")
+            for mode, cell in modes.items():
+                if mode == "NO_MEMORY" or base is None:
+                    continue
+                cell["LearningGain"] = {
+                    "IterationsPerTask": cell["IterationsPerTask"] - base["IterationsPerTask"],
+                    "FirstAttemptSuccessRate": cell["FirstAttemptSuccessRate"]
+                    - base["FirstAttemptSuccessRate"],
+                }
+    return {
+        "schema_id": "software-learning-family-breakdown/v1",
+        "partition": "transfer",
+        "kinds": report,
+        "definitions": {
+            "original": (
+                "transfer tasks without decoy_family (EXP-04..06): the public text is lexically "
+                "closest to the correct family, so success does not show causal transfer over lexical cues"
+            ),
+            "misleading": (
+                "transfer tasks with decoy_family (EXP-07..09): the public text imitates a decoy "
+                "family; opposite interpretation, never pooled with original"
+            ),
+            "cell": (
+                "runs = transfer runs of that family and condition over all seeds and replicates; "
+                "rates = numerator / runs"
+            ),
+            "LearningGain": (
+                "metric(condition) - metric(NO_MEMORY) in the same cell; negative IterationsPerTask "
+                "is favourable, positive FirstAttemptSuccessRate is favourable"
+            ),
+        },
+    }
+
+
+def _signed(value):
+    return "" if value is None else f"{value:+.3f}"
+
+
+def family_markdown(breakdown):
+    lines = [
+        "# Transfer results per family",
+        "",
+        "Generated with `python -m experiments evaluate`. Do not edit by hand.",
+        "Descriptive; original and misleading transfer tasks are interpreted oppositely and never pooled.",
+    ]
+    for kind, families in breakdown["kinds"].items():
+        lines += [
+            "",
+            f"## {kind} transfer tasks",
+            "",
+            "| Family | Tasks | Condition | Runs | First attempt (n/runs) | Iterations (total/runs) "
+            "| Gain first attempt | Gain iterations |",
+            "|---|---|---|---|---|---|---|---|",
+        ]
+        for family, modes in families.items():
+            for mode, c in modes.items():
+                gain = c.get("LearningGain", {})
+                lines.append(
+                    f"| {family} | {', '.join(c['tasks'])} | {mode} | {c['runs']} "
+                    f"| {c['FirstAttemptSuccessRate']:.3f} ({c['first_attempt_successes']}/{c['runs']}) "
+                    f"| {c['IterationsPerTask']:.3f} ({c['iterations_total']}/{c['runs']}) "
+                    f"| {_signed(gain.get('FirstAttemptSuccessRate'))} "
+                    f"| {_signed(gain.get('IterationsPerTask'))} |"
+                )
+    return "\n".join(lines) + "\n"
+
+
+def write_family_breakdown(output, runs, metadata):
+    breakdown = family_breakdown(runs, metadata)
+    output = Path(output)
+    output.mkdir(parents=True, exist_ok=True)
+    (output / "family_breakdown.json").write_text(
+        json.dumps(breakdown, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+    (output / "family_breakdown.md").write_text(family_markdown(breakdown), encoding="utf-8", newline="\n")
     return breakdown
