@@ -29,7 +29,7 @@ def test_config_defaults_toml_and_env_precedence(tmp_path):
 
     toml = tmp_path / "aal.toml"
     toml.write_text(
-        "[agent]\nmax_attempts = 2\n\n[retrieval]\ndamping = 0.5\nfan_out = \"linear\"\n"
+        '[agent]\nmax_attempts = 2\n\n[retrieval]\ndamping = 0.5\nfan_out = "linear"\n'
         "\n[consolidation]\nmax_edges = 100\n",
         "utf-8",
     )

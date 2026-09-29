@@ -14,7 +14,8 @@ from __future__ import annotations
 import hashlib
 import math
 from collections import Counter
-from typing import Protocol, Sequence
+from collections.abc import Sequence
+from typing import Any, Protocol
 
 from .text import tokenize
 
@@ -29,7 +30,7 @@ class Embedder(Protocol):
 
 
 def cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
     return dot / (na * nb) if na and nb else 0.0
@@ -68,10 +69,10 @@ class FastEmbedEmbedder:
 
     def __init__(self, model_name: str = DEFAULT_MODEL) -> None:
         self.name = model_name
-        self._model = None
+        self._model: Any = None  # fastembed.TextEmbedding (import perezoso)
         self.dim = 0
 
-    def _load(self):
+    def _load(self) -> Any:
         if self._model is None:
             from fastembed import TextEmbedding  # import perezoso: extra opcional
 

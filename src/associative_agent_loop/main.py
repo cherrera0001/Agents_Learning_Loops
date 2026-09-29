@@ -75,8 +75,12 @@ def benchmark(flaky_episodes: int = 20, seed: int = 7) -> dict[str, Any]:
         for label, use_memory in (("without_memory", False), ("with_memory", True))
     }
     domain_goals = [
-        "noticias de Santiago", "clima en Santiago", "clima en Valparaíso",
-        "clima en Temuco", "noticias de Santiago", "clima en Concepción",
+        "noticias de Santiago",
+        "clima en Santiago",
+        "clima en Valparaíso",
+        "clima en Temuco",
+        "noticias de Santiago",
+        "clima en Concepción",
     ]
     cross_domain = {
         label: run_goals(
@@ -136,7 +140,9 @@ def print_report(report: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--json", action="store_true", help="imprime el reporte como JSON")
     parser.add_argument("--episodes", type=int, default=20, help="episodios del escenario flaky")
     parser.add_argument("--seed", type=int, default=7)

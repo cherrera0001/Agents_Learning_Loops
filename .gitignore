@@ -7,3 +7,4 @@ memory_graph.json
 build/
 dist/
 .coverage
+.fastembed_cache/

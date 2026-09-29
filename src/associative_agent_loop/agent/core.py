@@ -8,9 +8,10 @@ transiciones se validan contra ``TRANSITIONS``: una transición ilegal lanza
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from enum import Enum
-from typing import TYPE_CHECKING, Callable, Protocol, Sequence
+from enum import StrEnum
+from typing import TYPE_CHECKING, Protocol
 
 from ..memory.associative import RetrievalConfig, RetrievalResult, Retriever
 from ..memory.consolidation import Consolidator
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class State(str, Enum):
+class State(StrEnum):
     PLAN = "PLAN"
     RETRIEVE = "RETRIEVE"
     ACT = "ACT"
@@ -144,11 +145,11 @@ class Agent:
     def from_config(
         cls,
         tools: list[Tool],
-        config: "AppConfig",
+        config: AppConfig,
         memory: MemoryGraph | None = None,
         embedder: Embedder | None = None,
         planner: Planner | None = None,
-    ) -> "Agent":
+    ) -> Agent:
         """Construye el agente a partir de una ``AppConfig`` (TOML/entorno)."""
         memory = memory if memory is not None else MemoryGraph(decay_rate=config.agent.decay_rate)
         return cls(
@@ -226,7 +227,10 @@ class Agent:
         ep.transition(State.DONE)
         logger.info(
             "episodio %s '%s': %s en %d intento(s)",
-            episode_id, goal, "éxito" if ep.success else "fallo", ep.attempts,
+            episode_id,
+            goal,
+            "éxito" if ep.success else "fallo",
+            ep.attempts,
         )
         self.episodes.append(ep)
         return ep

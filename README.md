@@ -1,5 +1,7 @@
 # associative-agent-loop
 
+[![CI](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml/badge.svg)](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml)
+
 Implementación mínima y didáctica de una **memoria asociativa en grafo** para
 el bucle de aprendizaje de un agente: el agente registra sus trayectorias,
 extrae lecciones, las enlaza en un grafo semántico y las recupera por
@@ -146,10 +148,10 @@ tools = [Tool("mi_api", "descripción", lambda q: ToolResult(True, output="...")
 agent = Agent.from_config(tools, load_config("aal.toml"), memory=store.load_or_new())
 
 episode = agent.run("mi tarea")
-episode.plan                   # candidatas re-rankeadas por la memoria
-episode.retrieval.lessons      # lecciones para inyectar en el prompt de un LLM
-episode.retrieval.ranked_actions[0].path   # por qué: camino semilla → acción
-store.save(agent.memory)       # escritura atómica
+episode.plan  # candidatas re-rankeadas por la memoria
+episode.retrieval.lessons  # lecciones para inyectar en el prompt de un LLM
+episode.retrieval.ranked_actions[0].path  # por qué: camino semilla → acción
+store.save(agent.memory)  # escritura atómica
 ```
 
 Configuración (`aal.toml`, o variables de entorno `AAL_<SECCIÓN>__<CAMPO>`, que tienen prioridad):

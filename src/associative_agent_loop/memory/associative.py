@@ -27,8 +27,9 @@ from __future__ import annotations
 import logging
 import math
 from collections import defaultdict
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Callable, Iterable, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -62,9 +63,7 @@ class RetrievalConfig(BaseModel):
     fan_out: Literal["none", "sqrt", "linear"] = Field(
         "sqrt", description="Normalización de la salida por el grado del nodo que dispara."
     )
-    alpha: float = Field(
-        0.7, ge=0.0, le=1.0, description="Peso del canal semántico en la similitud híbrida."
-    )
+    alpha: float = Field(0.7, ge=0.0, le=1.0, description="Peso del canal semántico en la similitud híbrida.")
     min_seed_similarity: float = Field(
         0.25, ge=0.0, le=1.0, description="Similitud híbrida mínima para sembrar un nodo."
     )
@@ -76,7 +75,9 @@ class RetrievalConfig(BaseModel):
         0.1, gt=0.0, description="T del núcleo: cuánto se privilegian los episodios más activados."
     )
     context_prior: float = Field(
-        0.2, gt=0.0, description="κ: evidencia contextual necesaria para confiar más en ella que en la global."
+        0.2,
+        gt=0.0,
+        description="κ: evidencia contextual necesaria para confiar más en ella que en la global.",
     )
 
 
@@ -155,7 +156,7 @@ class Retriever:
             mg.embedding_model = self.embedder.name
         pending = [n for n in mg.nodes() if n.type in INDEXED_TYPES and n.embedding is None]
         if pending:
-            for node, vec in zip(pending, self.embedder.embed([n.label for n in pending])):
+            for node, vec in zip(pending, self.embedder.embed([n.label for n in pending]), strict=True):
                 node.embedding = vec
         return len(pending)
 
@@ -265,7 +266,8 @@ class Retriever:
         cfg = self.config
         mg = self.memory
         goals = {
-            n: a for n, a in (activation or {}).items()
+            n: a
+            for n, a in (activation or {}).items()
             if a > 0 and mg.has_node(n) and mg.node(n).type == NodeType.GOAL
         }
         if not cfg.contextual_valence or not goals:

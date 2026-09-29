@@ -63,18 +63,22 @@ def recall(mg: MemoryGraph, query: str, top_lessons: int = 5, embedder: Embedder
         if s.relevance > 0
     ] or ["  (sin experiencia relacionada)"]
     lines += ["", "Lecciones:"]
-    lines += [f"  - {l}" for l in result.lessons[:top_lessons]] or ["  (ninguna)"]
+    lines += [f"  - {lesson}" for lesson in result.lessons[:top_lessons]] or ["  (ninguna)"]
     return "\n".join(lines)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
     p_recall = sub.add_parser("recall", help="consulta la memoria antes de empezar un issue")
     p_recall.add_argument("query")
     p_recall.add_argument("-n", type=int, default=5, help="máximo de lecciones")
     p_recall.add_argument(
-        "--embedder", choices=["lexical", "fastembed"], default="lexical",
+        "--embedder",
+        choices=["lexical", "fastembed"],
+        default="lexical",
         help="fastembed requiere el extra [embeddings]",
     )
     sub.add_parser("rebuild", help="reconstruye learning/dev_memory.json")

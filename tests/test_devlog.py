@@ -2,8 +2,8 @@
 
 import json
 
-from scripts.devlog import EPISODES_DIR, load_episodes, rebuild, recall
 from associative_agent_loop.memory.graph import EdgeType, NodeType
+from scripts.devlog import EPISODES_DIR, load_episodes, rebuild, recall
 
 EPISODES = [
     {
@@ -39,9 +39,7 @@ def test_rebuild_maps_episode_to_graph():
     assert mg.stats()[NodeType.GOAL.value] == 2
     assert mg.has_edge("action:run_tests", "concept:error:importerror_pydantic", EdgeType.FAILED_DUE_TO)
     assert mg.node("goal:1").metadata["ref"] == "a"
-    lessons = [
-        n.label for n in mg.nodes() if n.metadata.get("kind") == "lesson"
-    ]
+    lessons = [n.label for n in mg.nodes() if n.metadata.get("kind") == "lesson"]
     assert "Instalar el extra dev antes de correr los tests" in lessons
 
 

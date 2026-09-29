@@ -4,13 +4,13 @@ import math
 
 import pytest
 
-from scripts.devlog import load_episodes, rebuild
 from associative_agent_loop.agent.core import Agent
 from associative_agent_loop.agent.tools import weather_scenario
 from associative_agent_loop.memory.associative import Retriever
 from associative_agent_loop.memory.consolidation import Consolidator
 from associative_agent_loop.memory.embeddings import LexicalEmbedder, cosine
 from associative_agent_loop.memory.graph import MemoryGraph, NodeType
+from scripts.devlog import load_episodes, rebuild
 
 
 class CountingEmbedder(LexicalEmbedder):

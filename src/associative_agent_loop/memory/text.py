@@ -9,17 +9,45 @@ from collections import Counter
 
 STOPWORDS = {
     # español
-    "el", "la", "los", "las", "de", "del", "en", "para", "por", "con", "un", "una",
-    "y", "o", "a", "al", "que", "es", "hoy", "mi", "su",
+    "el",
+    "la",
+    "los",
+    "las",
+    "de",
+    "del",
+    "en",
+    "para",
+    "por",
+    "con",
+    "un",
+    "una",
+    "y",
+    "o",
+    "a",
+    "al",
+    "que",
+    "es",
+    "hoy",
+    "mi",
+    "su",
     # inglés
-    "the", "of", "for", "in", "on", "to", "and", "or", "an", "is", "my", "get",
+    "the",
+    "of",
+    "for",
+    "in",
+    "on",
+    "to",
+    "and",
+    "or",
+    "an",
+    "is",
+    "my",
+    "get",
 }
 
 
 def _strip_accents(text: str) -> str:
-    return "".join(
-        c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c)
-    )
+    return "".join(c for c in unicodedata.normalize("NFKD", text) if not unicodedata.combining(c))
 
 
 def tokenize(text: str) -> list[str]:

@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import networkx as nx
 
@@ -31,7 +32,7 @@ from .models import (
 # Alias retrocompatible: el código y los tests v0.1 usan ``EdgeType``.
 EdgeType = Relation
 
-__all__ = ["MemoryGraph", "Node", "Edge", "NodeType", "Relation", "EdgeType"]
+__all__ = ["Edge", "EdgeType", "MemoryGraph", "Node", "NodeType", "Relation"]
 
 
 class MemoryGraph:
@@ -72,7 +73,8 @@ class MemoryGraph:
         return node_id
 
     def node(self, node_id: str) -> Node:
-        return self.g.nodes[node_id]["model"]
+        node: Node = self.g.nodes[node_id]["model"]
+        return node
 
     def nodes(self) -> Iterator[Node]:
         for _, data in self.g.nodes(data=True):
@@ -120,10 +122,11 @@ class MemoryGraph:
         return edge
 
     def has_edge(self, src: str, dst: str, relation: Relation) -> bool:
-        return self.g.has_edge(src, dst, key=Relation(relation).value)
+        return bool(self.g.has_edge(src, dst, key=Relation(relation).value))
 
     def edge(self, src: str, dst: str, relation: Relation) -> Edge:
-        return self.g.edges[src, dst, Relation(relation).value]["model"]
+        edge: Edge = self.g.edges[src, dst, Relation(relation).value]["model"]
+        return edge
 
     def edges(self) -> Iterator[Edge]:
         for *_, data in self.g.edges(data=True):
@@ -138,16 +141,12 @@ class MemoryGraph:
         """Peso efectivo = ``weight × recency_factor``."""
         return edge.weight * self.recency_factor(edge)
 
-    def out_edges(
-        self, node_id: str, relation: Relation | None = None
-    ) -> Iterator[tuple[str, str, Edge]]:
+    def out_edges(self, node_id: str, relation: Relation | None = None) -> Iterator[tuple[str, str, Edge]]:
         for src, dst, key, data in self.g.out_edges(node_id, keys=True, data=True):
             if relation is None or key == Relation(relation).value:
                 yield src, dst, data["model"]
 
-    def in_edges(
-        self, node_id: str, relation: Relation | None = None
-    ) -> Iterator[tuple[str, str, Edge]]:
+    def in_edges(self, node_id: str, relation: Relation | None = None) -> Iterator[tuple[str, str, Edge]]:
         for src, dst, key, data in self.g.in_edges(node_id, keys=True, data=True):
             if relation is None or key == Relation(relation).value:
                 yield src, dst, data["model"]
@@ -176,7 +175,7 @@ class MemoryGraph:
         return self.to_document().model_dump(mode="json")
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "MemoryGraph":
+    def from_dict(cls, data: dict[str, Any]) -> MemoryGraph:
         if data.get("schema_version", 1) < SCHEMA_VERSION:
             data = migrate_v1(data)
         doc = GraphDocument.model_validate(data)
@@ -195,11 +194,11 @@ class MemoryGraph:
         atomic_write_text(path, json.dumps(self.to_dict(), indent=2, ensure_ascii=False) + "\n")
 
     @classmethod
-    def load(cls, path: str | Path) -> "MemoryGraph":
+    def load(cls, path: str | Path) -> MemoryGraph:
         return cls.from_dict(json.loads(Path(path).read_text("utf-8")))
 
     def __len__(self) -> int:
-        return self.g.number_of_nodes()
+        return int(self.g.number_of_nodes())
 
     def stats(self) -> dict[str, int]:
         counts = {t.value: 0 for t in NodeType}

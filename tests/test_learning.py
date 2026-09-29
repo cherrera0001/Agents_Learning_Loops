@@ -77,7 +77,7 @@ def test_only_first_success_resolves_pending_failures():
     err = "concept:error:test_tautologico"
     assert mg.has_edge(err, "action:edit_module", EdgeType.RESOLVED_BY)
     assert not mg.has_edge(err, "action:run_tests", EdgeType.RESOLVED_BY)
-    assert [l for l in lessons if "fallback" in l] == ["concept:lesson:fallback:write_tests:edit_module"]
+    assert [x for x in lessons if "fallback" in x] == ["concept:lesson:fallback:write_tests:edit_module"]
 
 
 def test_memory_persists_across_agent_instances(tmp_path):
@@ -105,8 +105,10 @@ def test_loop_follows_protocol_transitions():
     assert ep.transitions == [
         State.PLAN,
         State.RETRIEVE,
-        State.ACT, State.OBSERVE,  # weather_api_v1 ✗
-        State.ACT, State.OBSERVE,  # weather_api_v2 ✓
+        State.ACT,
+        State.OBSERVE,  # weather_api_v1 ✗
+        State.ACT,
+        State.OBSERVE,  # weather_api_v2 ✓
         State.CONSOLIDATE,
         State.DONE,
     ]

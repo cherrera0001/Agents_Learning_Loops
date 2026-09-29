@@ -64,7 +64,7 @@ def _env_overrides(environ: dict[str, str]) -> dict[str, dict[str, Any]]:
     for key, value in environ.items():
         if not key.startswith(ENV_PREFIX) or "__" not in key:
             continue
-        section, _, field = key[len(ENV_PREFIX):].lower().partition("__")
+        section, _, field = key[len(ENV_PREFIX) :].lower().partition("__")
         overrides.setdefault(section, {})[field] = value  # Pydantic convierte los tipos
     return overrides
 
