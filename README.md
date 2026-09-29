@@ -20,7 +20,8 @@ python -m venv .venv
 pip install -e .[dev]               # núcleo (networkx, pydantic) + herramientas de desarrollo
 pip install -e .[dev,embeddings]    # + embeddings locales con fastembed (ONNX, sin PyTorch)
 
-python -m src.main            # demo: escribe memory_graph.json
+python -m src.main            # benchmark legible
+python -m src.main --json     # reporte determinista (misma semilla ⇒ mismo JSON)
 pytest                        # los tests marcados `embeddings` se omiten si falta el extra
 ```
 
@@ -30,16 +31,21 @@ pytest                        # los tests marcados `embeddings` se omiten si fal
 | `.[embeddings]` | `fastembed` para búsqueda semántica (#3) |
 | `.[dev]` | `pytest`, `pytest-cov`, `hypothesis`, `jsonschema`, `ruff`, `mypy` |
 
-Salida de la demo:
+Salida del benchmark:
 
 ```text
-=== Escenario 1: API deprecada (weather) ===
+=== Escenario 1: misma meta repetida (API deprecada) ===
   [OK ] #1 'clima en Santiago'  intentos=2  weather_api_v1✗ → weather_api_v2✓
-  [OK ] #2 'pronóstico del clima en Madrid'  intentos=1  weather_api_v2✓
-         memoria: weather_api_v2=+0.484, weather_api_v1=-0.166
-         lección recordada: Si 'weather_api_v1' falla con 'HTTP 410 Gone: endpoint deprecated', usar 'weather_api_v2'
+  [OK ] #2 'clima en Santiago'  intentos=1  weather_api_v2✓
+         memoria: weather_api_v2=+0.201, weather_api_v1=-0.038
+         lección recordada: 'weather_api_v1' falló con 'HTTP 410 Gone: endpoint deprecated'
   ...
-=== Escenario 2: errores intermitentes (flaky), 20 episodios ===
+  fallos repetidos tras el primer episodio: 0
+
+=== Escenario 2: metas parafraseadas ===
+  [OK ] #2 'pronóstico del clima en Madrid'  intentos=1  weather_api_v2✓
+  ...
+=== Escenario 3: errores intermitentes, 20 episodios ===
   sin memoria  éxito al 1er intento=2/20  llamadas totales=38  latencia total=5100 ms
   con memoria  éxito al 1er intento=19/20  llamadas totales=21  latencia total=5030 ms
 ```
@@ -79,11 +85,12 @@ Cada arista tiene `weight ∈ [0,1]`, su propio `decay_factor` (λ) y `last_upda
 
 ```mermaid
 flowchart LR
-    P["PLAN / QUERY<br/>activación propagada<br/>→ ranking de acciones"] --> A["ACT<br/>ejecutar herramienta"]
+    P["PLAN<br/>herramientas candidatas<br/>(Planner)"] --> R["RETRIEVE<br/>siembra híbrida +<br/>activación propagada<br/>→ ranking y lecciones"]
+    R --> A["ACT<br/>ejecutar herramienta"]
     A --> O["OBSERVE & EVALUATE<br/>¿cumple la meta?<br/>registrar Outcome"]
     O -- "fallo y quedan intentos" --> A
     O -- "éxito / sin intentos" --> C["CONSOLIDATE<br/>reforzar · penalizar<br/>lecciones · poda"]
-    C -. "memoria actualizada" .-> P
+    C -. "memoria actualizada" .-> R
 ```
 
 ### Recuperación asociativa
@@ -110,7 +117,7 @@ usadas decaen con el tiempo y la poda las elimina. Tabla completa en
 │   └── loop_protocol.md     # estados, transiciones, fórmulas, invariantes
 ├── src/
 │   ├── agent/
-│   │   ├── core.py          # Agent: Plan → Act → Observe → Consolidate
+│   │   ├── core.py          # Agent: Plan → Retrieve → Act → Observe → Consolidate
 │   │   └── tools.py         # herramientas simuladas + escenarios
 │   ├── memory/
 │   │   ├── models.py        # Node, Edge, GraphDocument (Pydantic v2)

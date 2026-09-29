@@ -1,0 +1,24 @@
+{
+  "seq": 10,
+  "id": "issue-6",
+  "goal": "Fase RETRIEVE explícita en el ciclo del agente y benchmark con la misma meta",
+  "ref": "#6",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "relevancia baja (≤0.02): la memoria indica correctamente que no hay experiencia cercana"},
+    {"action": "write_code", "success": true, "note": "State.RETRIEVE, TRANSITIONS + IllegalTransition, Planner/RuleBasedPlanner, logging"},
+    {"action": "write_code", "success": true, "note": "main.py como benchmark: same_goal, paraphrase, flaky; --json determinista"},
+    {"action": "run_tests", "success": false, "error": "test de protocolo esperaba PLAN → ACT (esperado: faltaba RETRIEVE)"},
+    {"action": "edit_module", "success": true, "note": "test de protocolo actualizado"},
+    {"action": "write_code", "success": false, "error": "stdout redirigido en Windows usa cp1252: --json producía un archivo que no es UTF-8"},
+    {"action": "edit_module", "success": true, "note": "sys.stdout.reconfigure(encoding='utf-8') en los CLI (main y devlog)"},
+    {"action": "run_tests", "success": true, "note": "64 passed; la demo ya no necesita PYTHONIOENCODING"},
+    {"action": "update_spec", "success": true, "note": "loop_protocol §1 (diagrama y tabla con RETRIEVE) e invariantes renumerados"},
+    {"action": "update_docs", "success": true, "note": "README: diagrama del ciclo, benchmark y --json"}
+  ],
+  "lessons": [
+    "Validar las transiciones con una tabla explícita convierte los episodios inconsistentes en errores inmediatos",
+    "Separar PLAN (candidatas) de RETRIEVE (re-ranking) deja ver en cada episodio qué aportó la memoria: candidates vs plan",
+    "En Windows, reconfigurar stdout a UTF-8 en todo CLI que imprima texto no ASCII; un test por subprocess lo detecta",
+    "Un síntoma recurrente (usar PYTHONIOENCODING en cada comando) es un defecto del producto, no del entorno: corregirlo en el código"
+  ]
+}

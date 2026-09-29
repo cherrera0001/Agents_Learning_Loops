@@ -1,13 +1,16 @@
-"""Orquestador del ciclo Plan → Act → Observe → Consolidate.
+"""Orquestador del ciclo Plan → Retrieve → Act → Observe → Consolidate.
 
-Ver ``specs/loop_protocol.md`` para la máquina de estados formal.
+Ver ``specs/loop_protocol.md`` §1 para la máquina de estados formal. Las
+transiciones se validan contra ``TRANSITIONS``: una transición ilegal lanza
+``IllegalTransition`` en lugar de producir un episodio inconsistente.
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Callable, Protocol, Sequence
 
 from ..memory.associative import RetrievalConfig, RetrievalResult, Retriever
 from ..memory.consolidation import Consolidator
@@ -15,13 +18,32 @@ from ..memory.embeddings import Embedder
 from ..memory.graph import MemoryGraph
 from .tools import Tool, ToolResult
 
+logger = logging.getLogger(__name__)
+
 
 class State(str, Enum):
     PLAN = "PLAN"
+    RETRIEVE = "RETRIEVE"
     ACT = "ACT"
     OBSERVE = "OBSERVE"
     CONSOLIDATE = "CONSOLIDATE"
     DONE = "DONE"
+
+
+# Transiciones válidas. None es el estado inicial (antes de PLAN).
+TRANSITIONS: dict[State | None, set[State]] = {
+    None: {State.PLAN},
+    State.PLAN: {State.RETRIEVE},
+    State.RETRIEVE: {State.ACT, State.CONSOLIDATE},  # CONSOLIDATE si no hay candidatas
+    State.ACT: {State.OBSERVE},
+    State.OBSERVE: {State.ACT, State.CONSOLIDATE},
+    State.CONSOLIDATE: {State.DONE},
+    State.DONE: set(),
+}
+
+
+class IllegalTransition(RuntimeError):
+    pass
 
 
 @dataclass
@@ -34,12 +56,24 @@ class Step:
 class Episode:
     id: int
     goal: str
-    plan: list[str]
-    retrieval: RetrievalResult | None
+    candidates: list[str] = field(default_factory=list)  # salida de PLAN
+    plan: list[str] = field(default_factory=list)  # candidatas re-rankeadas por RETRIEVE
+    retrieval: RetrievalResult | None = None
     steps: list[Step] = field(default_factory=list)
     success: bool = False
     lessons: list[str] = field(default_factory=list)
     transitions: list[State] = field(default_factory=list)
+
+    def transition(self, to: State) -> None:
+        current = self.transitions[-1] if self.transitions else None
+        if to not in TRANSITIONS[current]:
+            raise IllegalTransition(f"{current} → {to} no está permitido")
+        logger.debug("episodio %s: %s → %s", self.id, current, to.value)
+        self.transitions.append(to)
+
+    @property
+    def state(self) -> State | None:
+        return self.transitions[-1] if self.transitions else None
 
     @property
     def attempts(self) -> int:
@@ -61,6 +95,23 @@ def default_evaluator(goal: str, result: ToolResult) -> bool:
     return result.success and bool(result.output)
 
 
+class Planner(Protocol):
+    """PLAN: decide qué herramientas son candidatas para la meta.
+
+    Punto de extensión: un planner basado en LLM puede recibir aquí las
+    lecciones de episodios previos y proponer subobjetivos o un orden propio.
+    """
+
+    def plan(self, goal: str, tools: Sequence[Tool]) -> list[str]: ...
+
+
+class RuleBasedPlanner:
+    """Todas las herramientas registradas, en orden de registro."""
+
+    def plan(self, goal: str, tools: Sequence[Tool]) -> list[str]:
+        return [t.name for t in tools]
+
+
 class Agent:
     def __init__(
         self,
@@ -72,6 +123,7 @@ class Agent:
         prune_every: int = 10,
         embedder: Embedder | None = None,
         retrieval_config: RetrievalConfig | None = None,
+        planner: Planner | None = None,
     ) -> None:
         self.tools = {t.name: t for t in tools}
         self.memory = memory if memory is not None else MemoryGraph()
@@ -79,17 +131,21 @@ class Agent:
         self.max_attempts = max_attempts
         self.evaluator = evaluator
         self.prune_every = prune_every
+        self.planner = planner or RuleBasedPlanner()
         self.retriever = Retriever(self.memory, embedder=embedder, config=retrieval_config)
         self.consolidator = Consolidator(self.memory)
         self.episodes: list[Episode] = []
 
     # ------------------------------------------------------------------ fases
-    def plan(self, goal: str) -> tuple[list[str], RetrievalResult | None]:
-        """PLAN/QUERY: ordena las herramientas según la memoria asociativa."""
-        names = list(self.tools)
+    def plan(self, goal: str) -> list[str]:
+        """PLAN: herramientas candidatas para la meta (sin consultar la memoria)."""
+        return self.planner.plan(goal, list(self.tools.values()))
+
+    def retrieve(self, goal: str, candidates: list[str]) -> tuple[list[str], RetrievalResult | None]:
+        """RETRIEVE: contexto asociado; re-rankea las candidatas por score."""
         if not self.use_memory:
-            return names, None
-        retrieval = self.retriever.retrieve(goal, names)
+            return candidates, None
+        retrieval = self.retriever.retrieve(goal, candidates)
         return [s.action for s in retrieval.ranked_actions], retrieval
 
     def act(self, tool: str, goal: str) -> ToolResult:
@@ -106,26 +162,31 @@ class Agent:
     # ------------------------------------------------------------------ ciclo
     def run(self, goal: str) -> Episode:
         episode_id = self.memory.tick()
-        ep = Episode(episode_id, goal, plan=[], retrieval=None)
+        ep = Episode(episode_id, goal)
 
-        ep.transitions.append(State.PLAN)
-        ep.plan, ep.retrieval = self.plan(goal)
+        ep.transition(State.PLAN)
+        ep.candidates = self.plan(goal)
+
+        ep.transition(State.RETRIEVE)
+        ep.plan, ep.retrieval = self.retrieve(goal, ep.candidates)
+        # La meta se escribe DESPUÉS de recuperar, para que no se active a sí misma.
         goal_node = self.consolidator.record_goal(goal, episode_id) if self.use_memory else None
 
         for step_idx, tool in enumerate(ep.plan[: self.max_attempts]):
-            ep.transitions.append(State.ACT)
+            ep.transition(State.ACT)
             raw = self.act(tool, goal)
 
-            ep.transitions.append(State.OBSERVE)
+            ep.transition(State.OBSERVE)
             result = self.observe(goal, raw)
             ep.steps.append(Step(tool, result))
+            logger.debug("episodio %s: %s → %s", episode_id, tool, "ok" if result.success else result.error)
             if goal_node:
                 self.consolidator.record_step(goal_node, tool, result, episode_id, step_idx)
             if result.success:
                 ep.success = True
                 break
 
-        ep.transitions.append(State.CONSOLIDATE)
+        ep.transition(State.CONSOLIDATE)
         if goal_node:
             ep.lessons = self.consolidator.consolidate_episode(
                 goal_node,
@@ -135,6 +196,10 @@ class Agent:
             if self.prune_every and episode_id % self.prune_every == 0:
                 self.consolidator.prune()
 
-        ep.transitions.append(State.DONE)
+        ep.transition(State.DONE)
+        logger.info(
+            "episodio %s '%s': %s en %d intento(s)",
+            episode_id, goal, "éxito" if ep.success else "fallo", ep.attempts,
+        )
         self.episodes.append(ep)
         return ep
