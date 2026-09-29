@@ -1,0 +1,19 @@
+{
+  "seq": 14,
+  "id": "epic-10",
+  "goal": "Retrospectiva de la épica Madurez v0.2: implementación rigurosa según evaluación técnica",
+  "ref": "#10, release v0.2.0",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "13 episodios, 122 pasos, 26 fallos registrados, 56 lecciones"},
+    {"action": "review_code", "success": true, "note": "11/11 sub-issues cerrados; CI verde en 11 jobs; cobertura 98.5 %; 5/5 mutaciones detectadas"},
+    {"action": "update_docs", "success": true, "note": "README con tabla de resultados de los 4 escenarios; CHANGELOG 0.2.0"},
+    {"action": "merge_pr", "success": true, "note": "release v0.2.0"}
+  ],
+  "lessons": [
+    "El dogfooding descubrió 4 defectos que los escenarios sintéticos no mostraban: saturación (#4), siembra solo sobre metas (#3), resoluciones espurias (#13) y fuga entre dominios (#8)",
+    "write_tests es el eslabón débil del proceso (valencia +0.39): exigir un control o una mutación para cada test nuevo",
+    "review_code es la salvaguarda más fuerte (valencia +1.00): hacer una autorrevisión explícita antes de cada commit",
+    "Las lecciones solo sirven si se consultan antes de actuar: el error del heredoc se repitió 3 veces con la lección ya en memoria",
+    "Automatizar las lecciones críticas (verificar mergedAt en el script de merge, verificación por mutación en CI) funciona mejor que recordarlas"
+  ]
+}

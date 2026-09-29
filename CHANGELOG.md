@@ -3,7 +3,7 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); versionado [SemVer](https://semver.org/lang/es/).
 Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes/`.
 
-## [0.2.0] - sin publicar
+## [0.2.0] - 2026-09-29
 
 ### Añadido
 - Bitácora de desarrollo como memoria asociativa: `learning/` y `scripts/devlog.py` (#11).
