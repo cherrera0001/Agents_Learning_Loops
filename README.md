@@ -21,6 +21,7 @@ aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-
 > **Terminología.** «Agente», «skill» y «harness» tienen significados distintos según la capa (agente de
 > biblioteca, solver acotado, agente de entorno…). Todos los textos usan los nombres del
 > [glosario](docs/entorno/glosario.md); el contrato para quien edita el repositorio está en [`docs/entorno/`](docs/entorno/README.md).
+> «Modelo» también tiene tres usos (de datos, de embedding y de construcción): ver [§ 3.2](#32-modelo-de-construcción).
 
 ---
 
@@ -28,7 +29,7 @@ aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-
 
 1. [Características](#1-características)
 2. [Inicio rápido](#2-inicio-rápido)
-3. [Arquitectura](#3-arquitectura) · [3.1 Entorno de desarrollo](#31-entorno-de-desarrollo)
+3. [Arquitectura](#3-arquitectura) · [3.1 Entorno de desarrollo](#31-entorno-de-desarrollo) · [3.2 Modelo de construcción](#32-modelo-de-construcción)
 4. [Modelo de datos](#4-modelo-de-datos)
 5. [Ciclo del agente de biblioteca](#5-ciclo-del-agente-de-biblioteca)
 6. [Algoritmos](#6-algoritmos)
@@ -153,12 +154,48 @@ Claude, es un **agente de entorno** y trabaja bajo un contrato documental, sin c
 |---|---|
 | Entrada para cualquier agente de entorno | [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` y `.cursor/rules/entorno.mdc` remiten a él) |
 | Glosario de los siete términos | [`docs/entorno/glosario.md`](docs/entorno/glosario.md) |
-| Roles: implementador, revisor, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
+| Roles: orquestador, implementador, revisor, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
 | Harness de entorno (permisos, parada, evidencia) y resumen del harness de experimento | [`docs/entorno/harness.md`](docs/entorno/harness.md) |
 | Skills de entorno: procedimientos ya fijados, en Markdown | [`skills/`](skills/README.md) · regla de admisión en [`docs/entorno/skills.md`](docs/entorno/skills.md) |
 
 Las skills de entorno no son la **skill de memoria** del esquema `software-learning-memory/v1`, que sigue
 sin implementarse.
+
+### 3.2 Modelo de construcción
+
+En este repositorio «modelo» tiene tres significados distintos, que no se mezclan:
+
+| Uso | Qué es | Dónde se describe |
+|---|---|---|
+| **Modelo de datos** | El grafo Pydantic: `Node`, `Edge`, `GraphDocument` | § 4 |
+| **Modelo de embedding** | `LexicalEmbedder` o `FastEmbedEmbedder`; `GraphDocument.embedding_model` nombra este, no un modelo de Claude | § 6 |
+| **Modelo de construcción** | El modelo de Claude que construye un issue | [`docs/estimation.md`](docs/estimation.md) |
+
+La política del modelo de construcción está **solo** en [`docs/estimation.md`](docs/estimation.md). Allí se
+calcula la talla XS–XL con cuatro factores (alcance, incertidumbre, riesgo y verificación), la tabla de su
+§ 2 asigna modelo, ID y esfuerzo a cada talla, y cuatro reglas completan la política:
+
+1. piso por riesgo;
+2. si la verificación falla, se sube un solo escalón;
+3. antes de sumar modelos, bajar el esfuerzo;
+4. el orquestador (Opus 5.5) especifica, revisa y es el único que hace merge.
+
+El registro por issue son los campos *Talla*, *Modelo* y *Puntos* del Project #5. Task Ledger
+(`experiments/software_project/`) es la aplicación del Experimento 1 y no es ese registro.
+
+**Cuánta fuerza tiene la elección.** No existe un interruptor automático. La elección opera en tres niveles:
+
+- **Política**: `docs/estimation.md` fija la talla y el modelo, pero no se carga sola.
+- **Reglas inyectadas**: `AGENTS.md`, `CLAUDE.md` y `.cursor/rules/entorno.mdc` las carga el entorno y
+  ordenan leer la política antes de delegar. **No cambian el modelo de la sesión ya abierta.**
+- **Aplicación del ID**: el modelo cambia cuando el orquestador crea el subagente o el worktree y le pasa el
+  ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
+  fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
+  `.claude/agents/<rol>.md`; **esos archivos aún no existen**. En Cursor, la persona elige el modelo del chat
+  en el selector, y un subagente usa el ID de la tabla solo si quien lo lanza lo copia desde
+  `docs/estimation.md`.
+
+Contrato completo: [`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md).
 
 ## 4. Modelo de datos
 
@@ -722,6 +759,10 @@ proyección legible: los episodios de `learning/episodes/` siguen siendo la fuen
 `learning/dev_memory.json` sigue siendo derivado. El rol que ejecuta `recall` y `rebuild` es la
 **bitácora** ([`docs/entorno/agentes.md`](docs/entorno/agentes.md)).
 
+Antes de abrir el worktree del implementador, el **orquestador** lee [`docs/estimation.md`](docs/estimation.md),
+asigna la talla y delega con el ID y el esfuerzo de esa fila ([§ 3.2](#32-modelo-de-construcción)). El
+implementador abre el PR y no hace merge: el merge lo hace el orquestador, después de verificar `mergedAt`.
+
 ## 12. Limitaciones conocidas
 
 | Limitación | Impacto | Mitigación / línea de trabajo |
@@ -731,6 +772,7 @@ proyección legible: los episodios de `learning/episodes/` siguen siendo la fuen
 | Experimento 1 acotado: 6 tareas, un proyecto, 3 operadores escritos a mano | No sustenta generalización ni significancia estadística | Tareas adicionales y benchmark con distractores (§ 13) |
 | Hashes de recibos sobre bytes del checkout | Réplicas en otra configuración CRLF/LF difieren en hash aunque el comportamiento coincida | Normalización antes de hashear (#42) |
 | El solver acotado es código local auditado y el harness de experimento no es un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
+| Un Markdown no cambia el modelo de la sesión ya abierta | La política de `docs/estimation.md` no se aplica sola; el ID solo viaja al crear el subagente | La regla de `AGENTS.md` obliga a leer la política antes de delegar; el frontmatter `model:` de `.claude/agents/<rol>.md` sería la fijación futura, y este cambio no lo crea ([§ 3.2](#32-modelo-de-construcción)) |
 | No existía un contrato explícito para quien edita el repositorio | Reglas de trabajo repartidas entre `CONTRIBUTING.md`, `learning/README.md` y el protocolo | Cubierto por la base documental de [`docs/entorno/`](docs/entorno/README.md); es documentación, no cambia el algoritmo |
 | Valencia global saturable (`tanh`) | Varias acciones pueden empatar en +1.00 en historiales largos | La valencia contextual domina cuando hay evidencia |
 | Asociación `Outcome` → `Goal` por convención de identificadores (`goal:{episode}`) | Acopla la valencia contextual al esquema de ids | Relación explícita en el grafo tipado (#34) |
@@ -761,7 +803,8 @@ flowchart TB
     H45 --> H46
 ```
 
-La estimación por tallas y el modelo asignado a cada issue están en [`docs/estimation.md`](docs/estimation.md).
+La estimación por tallas y el modelo asignado a cada issue están en [`docs/estimation.md`](docs/estimation.md); cómo
+se aplica esa elección, en [§ 3.2](#32-modelo-de-construcción).
 El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentación de proceso y no forma parte de esta hoja de ruta.
 
 ## 14. Estructura del repositorio
@@ -784,7 +827,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   ├── config.py              # AppConfig (TOML + variables AAL_*)
 │   └── main.py                # CLI aal-benchmark
 ├── src/experiments/           # Experimento 1: solver acotado, harness de experimento, recibos, evaluación
-├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana
+├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana (no es el registro de modelos)
 ├── benchmark/
 │   ├── public/                # tareas y tests de aceptación visibles para el solver
 │   └── private/               # etiquetas causales, pares e inyecciones (solo el evaluador)
@@ -796,7 +839,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   ├── software_learning_protocol.md  # protocolo del Experimento 1
 │   └── software_memory_schema_v1.json, reflection_schema_v1.json
 ├── docs/                      # verificación, estimación, referencia histórica del Experimento 0
-│   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills
+│   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills, enrutamiento.md
 ├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
 ├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
 ├── learning/                  # episodios de desarrollo y memoria derivada

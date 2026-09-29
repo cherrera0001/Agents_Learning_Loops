@@ -48,7 +48,7 @@ flowchart LR
     I --> E["episodio<br/>learning/episodes/"]
     E --> RB["rebuild<br/>devlog rebuild"]
     RB --> PR["PR con<br/>Closes #&lt;n&gt;"]
-    PR --> M["merge verificado<br/>por mergedAt"]
+    PR --> M["merge del orquestador<br/>verificado por mergedAt"]
 ```
 
 1. `python -m scripts.devlog recall "<título del issue>"`.
@@ -56,7 +56,8 @@ flowchart LR
 3. Implementar con tests.
 4. Registrar el episodio `learning/episodes/NNN-issue-<n>.json`.
 5. `python -m scripts.devlog rebuild`.
-6. PR con `Closes #<n>`, y merge **verificado** por `mergedAt` antes de mover la tarjeta a *Done*.
+6. El implementador abre el PR con `Closes #<n>`; el orquestador hace el merge **verificado** por `mergedAt`
+   antes de mover la tarjeta a *Done*.
 
 ## 2. Harness de experimento
 

@@ -8,6 +8,16 @@ y respeta sus límites.
 No se confunden con el **agente de biblioteca** (Experimento 0) ni con el **solver acotado**
 (Experimento 1).
 
+## Orquestador
+
+Coordina el trabajo sobre los issues. Es la regla 4 de [`docs/estimation.md`](../estimation.md) convertida en rol.
+
+1. **Estima** la talla de cada issue con la política de `docs/estimation.md`.
+2. **Delega** pasando el ID del modelo y el esfuerzo de esa fila al crear el subagente o el worktree
+   ([`enrutamiento.md`](enrutamiento.md)).
+3. **Revisa** cada entrega con medios propios, independientes del agente que la produjo.
+4. Es el **único que hace merge**, después de verificar `mergedAt`.
+
 ## Implementador
 
 Resuelve un issue.
@@ -16,6 +26,7 @@ Resuelve un issue.
 2. Edita en una rama `issue-<n>-<tema>`, dentro de los permisos del [harness de entorno](harness.md).
 3. Registra el episodio con los fallos tal como ocurrieron: skill [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md).
 4. Reconstruye la bitácora con `python -m scripts.devlog rebuild`.
+5. Abre el PR con `Closes #<n>` y **no hace merge**: el merge corresponde al orquestador.
 
 No lee `benchmark/private/` y no agrega recibos: eso corresponde al evaluador del experimento.
 

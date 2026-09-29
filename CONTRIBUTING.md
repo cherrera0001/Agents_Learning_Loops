@@ -11,16 +11,19 @@ pip install -e .[dev]            # añade ,embeddings para los tests semánticos
 
 Cada issue es un episodio del bucle de aprendizaje del propio repo ([`learning/README.md`](learning/README.md)).
 Quien lo ejecuta es un agente de entorno: empieza por [`AGENTS.md`](AGENTS.md), que remite al
-[glosario](docs/entorno/glosario.md) y al [harness de entorno](docs/entorno/harness.md). Los pasos 1, 4 y el
+[glosario](docs/entorno/glosario.md) y al [harness de entorno](docs/entorno/harness.md). Los pasos 1, 5 y el
 manejo de evidencia tienen skills de entorno: [`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md),
 [`registrar-episodio`](skills/registrar-episodio/SKILL.md) y [`proteger-evidencia`](skills/proteger-evidencia/SKILL.md).
 
 1. **RETRIEVE**: `python -m scripts.devlog recall "<título del issue>"` (`--embedder fastembed` para búsqueda semántica). Lee las lecciones antes de elegir herramientas.
-2. **Rama** `issue-<n>-<tema>`; la tarjeta del Project pasa a *In Progress*.
-3. **Implementar** con tests. Cada test debe poder fallar: añade un control cuando el efecto pueda quedar oculto.
-4. **Registrar** `learning/episodes/NNN-issue-<n>.json` con los fallos **tal como ocurrieron** (en la acción que los causó).
-5. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
-6. **PR** con `Closes #<n>`; merge squash **verificado** (`mergedAt`) antes de mover la tarjeta a *Done*.
+2. **Talla y modelo**: el orquestador asigna la talla y el modelo de construcción según
+   [`docs/estimation.md`](docs/estimation.md), antes de la rama ([`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md)).
+3. **Rama** `issue-<n>-<tema>`; la tarjeta del Project pasa a *In Progress*.
+4. **Implementar** con tests. Cada test debe poder fallar: añade un control cuando el efecto pueda quedar oculto.
+5. **Registrar** `learning/episodes/NNN-issue-<n>.json` con los fallos **tal como ocurrieron** (en la acción que los causó).
+6. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
+7. **PR** con `Closes #<n>`, abierto por el implementador; el orquestador hace el merge squash **verificado**
+   (`mergedAt`) antes de mover la tarjeta a *Done*.
 
 ## Comprobaciones (las mismas que CI)
 

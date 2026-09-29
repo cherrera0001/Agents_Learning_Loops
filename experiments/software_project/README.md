@@ -9,7 +9,8 @@ From this directory: `python -m app.api` serves on localhost:8000;
 `Authorization: demo-token` is a deliberately local experimental identity.
 
 El controlador que copia la aplicación es el harness de experimento ([glosario](../../docs/entorno/glosario.md));
-la aplicación sana no es el agente.
+la aplicación sana no es el agente. Esta aplicación tampoco asigna modelos de Claude: el modelo de
+construcción de cada issue está en [`docs/estimation.md`](../../docs/estimation.md).
 
 The checked-in application is healthy. The experiment controller copies it to a
 fresh temporary workspace and injects exactly one defect. It copies only the

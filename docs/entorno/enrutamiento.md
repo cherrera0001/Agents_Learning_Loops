@@ -1,0 +1,62 @@
+# Enrutamiento: el modelo de construcción
+
+Contrato para elegir **qué modelo de Claude construye cada issue**. La política con sus cifras está en un
+solo lugar, [`docs/estimation.md`](../estimation.md); este documento explica cómo se aplica y **cuánta fuerza
+tiene** esa elección. Terminología: [glosario](glosario.md), tabla «Tres usos de modelo».
+
+## 1. Tres usos de «modelo»
+
+| Uso | Qué es | Dónde vive |
+|---|---|---|
+| **Modelo de datos** | El grafo Pydantic: `Node`, `Edge`, `GraphDocument` | [`src/associative_agent_loop/memory/models.py`](../../src/associative_agent_loop/memory/models.py); README § 4 |
+| **Modelo de embedding** | `LexicalEmbedder` o `FastEmbedEmbedder`. El campo `GraphDocument.embedding_model` nombra **este** modelo, no un modelo de Claude | [`src/associative_agent_loop/memory/embeddings.py`](../../src/associative_agent_loop/memory/embeddings.py); README § 6 |
+| **Modelo de construcción** | El modelo de Claude que construye un issue | Política: [`docs/estimation.md`](../estimation.md). Registro por issue: campos *Talla*, *Modelo* y *Puntos* del Project #5 |
+
+Este documento trata solo del **modelo de construcción**.
+
+## 2. Política
+
+Fuente única: [`docs/estimation.md`](../estimation.md). Aquí solo se resume, sin copiar tablas:
+
+- **Talla** XS–XL, calculada con cuatro factores: alcance, incertidumbre, riesgo y verificación (§ 1).
+- **Modelo, ID y esfuerzo por talla**: la tabla de § 2.
+- **Reglas** de § 2:
+  1. piso por riesgo;
+  2. si la verificación falla, se sube **un solo escalón**;
+  3. antes de sumar modelos, bajar el esfuerzo;
+  4. el orquestador (Opus 5.5) especifica, revisa y es el único que hace merge.
+
+## 3. Registro
+
+El registro por issue son los campos *Talla*, *Modelo* y *Puntos* del Project #5, y la sección 5 de
+`docs/estimation.md` cuando se cierra un ciclo.
+
+**[`experiments/software_project/`](../../experiments/software_project/README.md) no es este registro.** Es
+Task Ledger, la aplicación bajo reparación del Experimento 1, y no asigna modelos de Claude.
+
+## 4. Cuánta fuerza tiene la elección
+
+La elección del modelo **no es un interruptor automático**. Opera en tres niveles, de menor a mayor fuerza:
+
+| Nivel | Qué es | Qué hace | Qué no hace |
+|---|---|---|---|
+| **Política** | [`docs/estimation.md`](../estimation.md) | Fija talla, modelo, ID y esfuerzo | No se carga sola: alguien tiene que leerla |
+| **Reglas inyectadas** | [`AGENTS.md`](../../AGENTS.md), [`CLAUDE.md`](../../CLAUDE.md), [`.cursor/rules/entorno.mdc`](../../.cursor/rules/entorno.mdc) | El entorno las carga y ordenan leer la política antes de delegar | **No cambian el modelo de la sesión ya abierta** |
+| **Aplicación del ID** | El momento en que el orquestador crea el subagente o el worktree | Le pasa el ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) y el esfuerzo de esa fila | Solo afecta al subagente que se crea |
+
+Por herramienta:
+
+- **Claude Code**: el lugar que fija el modelo de un rol es el frontmatter `model:` de
+  `.claude/agents/<rol>.md`. **Esos archivos aún no existen** en este repositorio. Mientras no existan, el
+  ID se pasa al lanzar cada subagente.
+- **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
+  si quien lo lanza lo copia desde `docs/estimation.md`.
+
+## 5. Rol del orquestador
+
+El orquestador es un agente de entorno ([`agentes.md`](agentes.md)):
+
+1. Estima la talla con la política antes de abrir la rama o el worktree.
+2. Delega pasando el **ID y el esfuerzo** de la fila correspondiente.
+3. Revisa cada entrega con **medios propios**, independientes del agente que la produjo.
+4. Es el **único que hace merge**, después de verificar `mergedAt`. El implementador abre el PR y no hace merge.

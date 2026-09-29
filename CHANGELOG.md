@@ -7,6 +7,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 
 ### Añadido
 - Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.
+- Documentación del modelo de construcción (qué modelo de Claude construye cada issue, cómo se aplica y con qué fuerza), sin cambio de comportamiento: README § 3.2 y `docs/entorno/enrutamiento.md`.
 
 ## [0.2.0] - 2026-09-29
 
