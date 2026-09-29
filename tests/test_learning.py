@@ -57,6 +57,29 @@ def test_error_concept_is_resolved_by_fallback_action():
     assert mg.has_edge(err, "action:weather_api_v2", EdgeType.RESOLVED_BY)
 
 
+def test_only_first_success_resolves_pending_failures():
+    """Regresión #13: en trayectorias largas, los éxitos posteriores no son alternativas."""
+    from src.agent.tools import ToolResult
+    from src.memory.consolidation import Consolidator
+
+    mg = MemoryGraph()
+    c = Consolidator(mg)
+    goal = c.record_goal("tarea larga", mg.tick())
+    steps = [
+        ("write_tests", ToolResult(False, error="test tautologico")),
+        ("edit_module", ToolResult(True, output="ok")),
+        ("run_tests", ToolResult(True, output="ok")),
+    ]
+    for i, (tool, result) in enumerate(steps):
+        c.record_step(goal, tool, result, 1, i)
+    lessons = c.consolidate_episode(goal, steps)
+
+    err = "concept:error:test_tautologico"
+    assert mg.has_edge(err, "action:edit_module", EdgeType.RESOLVED_BY)
+    assert not mg.has_edge(err, "action:run_tests", EdgeType.RESOLVED_BY)
+    assert [l for l in lessons if "fallback" in l] == ["concept:lesson:fallback:write_tests:edit_module"]
+
+
 def test_memory_persists_across_agent_instances(tmp_path):
     first = Agent(weather_scenario())
     first.run("clima en Santiago")

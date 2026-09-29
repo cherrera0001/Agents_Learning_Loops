@@ -6,8 +6,8 @@
   "steps": [
     {"action": "recall_memory", "success": true, "note": "sin memoria previa: se partió de los episodios retroactivos"},
     {"action": "write_code", "success": true, "note": "scripts/devlog.py (recall, rebuild) y Consolidator.add_lesson"},
-    {"action": "write_tests", "success": true, "note": "tests/test_devlog.py"},
-    {"action": "review_code", "success": false, "error": "test de determinismo tautológico: siempre pasaba"},
+    {"action": "write_tests", "success": false, "error": "test de determinismo tautológico: siempre pasaba"},
+    {"action": "review_code", "success": true, "note": "la autorrevisión detectó el test tautológico"},
     {"action": "edit_module", "success": true, "note": "rebuild ordena por seq; test compara orden directo vs inverso"},
     {"action": "run_tests", "success": true, "note": "20 passed"},
     {"action": "rebuild_memory", "success": true},

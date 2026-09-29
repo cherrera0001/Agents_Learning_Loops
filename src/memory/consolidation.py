@@ -115,7 +115,8 @@ class Consolidator:
                 # errores intermitentes: la valencia converge a la fiabilidad real).
                 for _, err, _ in list(mg.out_edges(action, EdgeType.FAILED_DUE_TO)):
                     self.reinforce(action, err, EdgeType.FAILED_DUE_TO, 0.0, self.penalty_rate)
-                # Cada error observado antes en este episodio quedó resuelto por esta acción.
+                # Los errores pendientes quedan resueltos por el *primer* éxito posterior;
+                # los éxitos siguientes no son alternativas a esos fallos.
                 for failed_tool, err in failures:
                     self.reinforce(err, action, EdgeType.RESOLVED_BY, 1.0)
                     lessons.append(
@@ -125,6 +126,7 @@ class Consolidator:
                             [action, *topics],
                         )
                     )
+                failures.clear()
             else:
                 err = self.error_concept(result.error or "unknown error")
                 failures.append((tool, err))

@@ -40,6 +40,16 @@ flowchart LR
 `seq` define el orden cronológico (y por tanto el reloj lógico de la memoria).
 Registra los fallos **tal como ocurrieron**: son la señal de aprendizaje.
 
+Reglas de registro:
+
+1. **El fallo va en la acción que lo causó, no en la que lo detectó.** Si una
+   autorrevisión encuentra un test defectuoso, falla `write_tests` y
+   `review_code` es un éxito (es la acción que lo resolvió). De lo contrario, la
+   memoria aprende a evitar las revisiones (#13).
+2. **El primer éxito tras un fallo es su resolución.** La consolidación crea
+   `error -RESOLVED_BY-> acción` y una lección *fallback* solo para ese paso;
+   ordena los pasos para que eso sea cierto.
+
 ## Vocabulario de acciones
 
 Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismos nodos `Action`:
