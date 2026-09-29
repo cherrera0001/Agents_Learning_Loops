@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 
 from .agent import BoundedRepairAgent
-from .benchmark import TASK_SETS
+from .benchmark import HISTORICAL_CAMPAIGN, REFERENCE_CAMPAIGN, TASK_SETS
 from .evaluate import compare, evaluate
 from .evidence import read_receipt
 from .memory import EvidenceMemory
@@ -57,14 +57,18 @@ def main():
     parser = argparse.ArgumentParser(description="Reproducible software-learning laboratory")
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run")
-    run.add_argument("--seeds", nargs="+", type=int, default=[7, 11, 23])
-    run.add_argument("--replicates", type=int, default=2)
+    run.add_argument(
+        "--campaign",
+        choices=[REFERENCE_CAMPAIGN["name"]],
+        help="declared reference campaign (#44): fixes seeds, replicates and task set",
+    )
+    run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
+    run.add_argument("--replicates", type=int, help="default: 2")
     run.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
     run.add_argument(
         "--task-set",
         choices=sorted(TASK_SETS),
-        default="v1",
-        help="v1: published EXP-01..06 campaign; misleading-v1: adds EXP-07..09 (#45)",
+        help="default v1: published EXP-01..06 campaign; misleading-v1: adds EXP-07..09 (#45)",
     )
     ev = sub.add_parser("evaluate")
     ev.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
@@ -79,7 +83,17 @@ def main():
     repro.add_argument("task")
     args = parser.parse_args()
     if args.command == "run":
-        campaign(args.seeds, args.replicates, args.evidence_dir, TASK_SETS[args.task_set])
+        declared = REFERENCE_CAMPAIGN if args.campaign else HISTORICAL_CAMPAIGN
+        seeds = list(declared["seeds"]) if args.seeds is None else args.seeds
+        replicates = declared["replicates"] if args.replicates is None else args.replicates
+        task_set = declared["task_set"] if args.task_set is None else args.task_set
+        if args.campaign and (
+            seeds != list(REFERENCE_CAMPAIGN["seeds"])
+            or replicates != REFERENCE_CAMPAIGN["replicates"]
+            or task_set != REFERENCE_CAMPAIGN["task_set"]
+        ):
+            parser.error(f"--campaign {args.campaign} fixes seeds, replicates and task set")
+        campaign(seeds, replicates, args.evidence_dir, TASK_SETS[task_set])
     elif args.command == "compare":
         try:
             result = compare(args.reference, args.candidate)

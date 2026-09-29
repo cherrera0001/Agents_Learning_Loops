@@ -31,6 +31,16 @@ RULES = {
 }
 
 
+def prior_order(seed: int) -> tuple[str, ...]:
+    """The no-memory strategy prior: a seeded permutation of STRATEGIES.
+
+    Single source of truth for the agent and for the campaign-coverage test (#44).
+    """
+    prior = list(STRATEGIES)
+    random.Random(seed).shuffle(prior)
+    return tuple(prior)
+
+
 @dataclass(frozen=True)
 class AgentView:
     task: dict
@@ -44,8 +54,7 @@ class BoundedRepairAgent:
     name = "bounded-ast-repair-v1"
 
     def plan(self, view: AgentView):
-        prior = list(STRATEGIES)
-        random.Random(view.seed).shuffle(prior)
+        prior = list(prior_order(view.seed))
         memories = list(view.memories)
         if view.memory_mode == "TEXT_HISTORY":
             query = view.task["title"] + " " + view.task["context"]

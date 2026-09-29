@@ -5,7 +5,12 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from .benchmark import check_extra_annotations, private_metadata, write_breakdown
+from .benchmark import (
+    check_extra_annotations,
+    private_metadata,
+    write_breakdown,
+    write_family_breakdown,
+)
 from .evidence import (
     SOURCE_HASH_NORMALIZATION,
     digest,
@@ -317,6 +322,7 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
         (output / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
         # Separate files so experiment1.json of the published campaign is unchanged (#45).
         write_breakdown(output, runs, metadata)
+        write_family_breakdown(output, runs, metadata)
     return report
 
 
