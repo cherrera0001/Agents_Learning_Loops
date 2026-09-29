@@ -870,7 +870,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 3,
-      "last_accessed_at": 18,
+      "last_accessed_at": 19,
       "activation_level": 0.0
     },
     {
@@ -4305,7 +4305,7 @@
         "kind": "lesson"
       },
       "created_at": 12,
-      "last_accessed_at": 12,
+      "last_accessed_at": 19,
       "activation_level": 0.0
     },
     {
@@ -6738,12 +6738,12 @@
     {
       "id": "outcome:19:2",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: el entorno importaba associative_agent_loop y experiments del checkout principal y no del worktree",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
-        "error": null,
+        "error": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: el entorno importaba associative_agent_loop y experiments del checkout principal y no del worktree",
         "episode": 19,
         "step": 2
       },
@@ -6752,28 +6752,28 @@
       "activation_level": 0.0
     },
     {
-      "id": "outcome:19:3",
-      "type": "Outcome",
-      "label": "failure: PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto",
+      "id": "concept:error:pythonpath_con_como_separador_en_git_bas",
+      "type": "Concept",
+      "label": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: el entorno importaba associative_agent_loop y experiments del checkout principal y no del worktree",
       "embedding": null,
       "metadata": {
-        "success": false,
-        "latency_ms": 0.0,
-        "error": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto",
-        "episode": 19,
-        "step": 3
+        "kind": "error"
       },
       "created_at": 19,
       "last_accessed_at": 19,
       "activation_level": 0.0
     },
     {
-      "id": "concept:error:pythonpath_con_como_separador_en_git_bas",
-      "type": "Concept",
-      "label": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto",
+      "id": "outcome:19:3",
+      "type": "Outcome",
+      "label": "success",
       "embedding": null,
       "metadata": {
-        "kind": "error"
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 3
       },
       "created_at": 19,
       "last_accessed_at": 19,
@@ -6814,12 +6814,12 @@
     {
       "id": "outcome:19:6",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
-        "error": null,
+        "error": "README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos",
         "episode": 19,
         "step": 6
       },
@@ -6828,9 +6828,69 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
+      "id": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
       "type": "Concept",
-      "label": "'run_tests' falló con 'PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto'",
+      "label": "README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:7",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 7
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:8",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 8
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:9",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 9
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
+      "type": "Concept",
+      "label": "'add_dependency' falló con 'PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: el entorno importaba associative_agent_loop y experiments del checkout principal y no del worktree'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -6840,9 +6900,21 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:lesson:fallback:run_tests:add_dependency",
+      "id": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
       "type": "Concept",
-      "label": "Si 'run_tests' falla con 'PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto', usar 'add_dependency'",
+      "label": "'update_docs' falló con 'README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:update_docs:update_docs",
+      "type": "Concept",
+      "label": "Si 'update_docs' falla con 'README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos', usar 'update_docs'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -6867,6 +6939,30 @@
       "id": "concept:lesson:note:en_un_readme_dar_cada_resultado_con_su_campa_a_sus_denominad",
       "type": "Concept",
       "label": "En un README, dar cada resultado con su campaña, sus denominadores y su esquema de hash evita mezclar la campaña histórica con la de referencia v2",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "type": "Concept",
+      "label": "Al describir un esquema de hash, citar de la especificación qué campo cambia (aquí acceptance_sha256) en vez de generalizar a todas las fuentes",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "type": "Concept",
+      "label": "Contar los jobs de CI desde ci.yml, matriz incluida, y usar la misma cifra en todo el README",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -7455,12 +7551,12 @@
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.017592186044416,
+      "weight": 0.014073748835532801,
       "decay_factor": 0.05,
-      "last_updated": 18,
-      "count": 15,
+      "last_updated": 19,
+      "count": 16,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "action:run_tests",
@@ -7565,12 +7661,12 @@
       "source": "action:run_tests",
       "target": "concept:error:test_de_protocolo_esperaba_plan_act_espe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
-      "last_updated": 18,
-      "count": 7,
+      "last_updated": 19,
+      "count": 8,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "action:run_tests",
@@ -7631,12 +7727,12 @@
       "source": "action:run_tests",
       "target": "concept:error:verificaci_n_por_mutaci_n_inv_lida_el_co",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
-      "last_updated": 18,
-      "count": 2,
+      "last_updated": 19,
+      "count": 3,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "action:run_tests",
@@ -7651,23 +7747,12 @@
     },
     {
       "source": "action:run_tests",
-      "target": "outcome:19:3",
+      "target": "outcome:19:4",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "action:run_tests",
-      "target": "concept:error:pythonpath_con_como_separador_en_git_bas",
-      "relation": "FAILED_DUE_TO",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -10917,6 +11002,17 @@
       "recency_factor": 0.951229
     },
     {
+      "source": "action:review_code",
+      "target": "outcome:19:8",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "action:rebuild_memory",
       "target": "outcome:3:6",
       "relation": "LEADS_TO",
@@ -10951,7 +11047,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:19:6",
+      "target": "outcome:19:9",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -12285,7 +12381,7 @@
     },
     {
       "source": "action:update_docs",
-      "target": "outcome:19:1",
+      "target": "outcome:19:5",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -12296,12 +12392,34 @@
     },
     {
       "source": "action:update_docs",
-      "target": "outcome:19:5",
+      "target": "outcome:19:6",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:19:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -13454,12 +13572,34 @@
     },
     {
       "source": "action:add_dependency",
-      "target": "outcome:19:4",
+      "target": "outcome:19:2",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:add_dependency",
+      "target": "outcome:19:3",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:add_dependency",
+      "target": "concept:error:pythonpath_con_como_separador_en_git_bas",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14849,7 +14989,7 @@
     },
     {
       "source": "action:update_spec",
-      "target": "outcome:19:2",
+      "target": "outcome:19:1",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -22118,12 +22258,12 @@
       "source": "concept:lesson:fallback:add_dependency:add_dependency",
       "target": "action:add_dependency",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 12,
-      "count": 1,
+      "last_updated": 19,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.704688
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:add_dependency:add_dependency",
@@ -22212,6 +22352,94 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.704688
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:alinear",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:readme",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:h4",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:hashes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:v2",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:rutas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:add_dependency:add_dependency",
+      "target": "concept:topic:reales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:note:tercera_repetici_n_del_problema_de_heredocs_con_secuencias_d",
@@ -29846,14 +30074,86 @@
     },
     {
       "source": "goal:19",
-      "target": "action:update_docs",
+      "target": "action:update_spec",
       "relation": "LEADS_TO",
-      "weight": 0.755,
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {
+        "step": 1
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:update_spec",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:add_dependency",
+      "relation": "LEADS_TO",
+      "weight": 0.5449999999999999,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 2,
       "metadata": {
-        "step": 5
+        "step": 3
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:add_dependency",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:run_tests",
+      "relation": "LEADS_TO",
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {
+        "step": 4
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:run_tests",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:update_docs",
+      "relation": "LEADS_TO",
+      "weight": 0.6185,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 3,
+      "metadata": {
+        "step": 7
       },
       "recency_factor": 1.0
     },
@@ -29870,57 +30170,20 @@
     },
     {
       "source": "goal:19",
-      "target": "action:update_spec",
+      "target": "action:review_code",
       "relation": "LEADS_TO",
       "weight": 0.65,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 2
+        "step": 8
       },
       "recency_factor": 1.0
     },
     {
       "source": "goal:19",
-      "target": "action:update_spec",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "goal:19",
-      "target": "action:run_tests",
-      "relation": "LEADS_TO",
-      "weight": 0.35,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {
-        "step": 3
-      },
-      "recency_factor": 1.0
-    },
-    {
-      "source": "goal:19",
-      "target": "action:add_dependency",
-      "relation": "LEADS_TO",
-      "weight": 0.65,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {
-        "step": 4
-      },
-      "recency_factor": 1.0
-    },
-    {
-      "source": "goal:19",
-      "target": "action:add_dependency",
+      "target": "action:review_code",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -29938,7 +30201,7 @@
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 6
+        "step": 9
       },
       "recency_factor": 1.0
     },
@@ -29954,7 +30217,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "outcome:19:3",
+      "source": "outcome:19:2",
       "target": "concept:error:pythonpath_con_como_separador_en_git_bas",
       "relation": "FAILED_DUE_TO",
       "weight": 1.0,
@@ -29976,9 +30239,20 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "action:run_tests",
-      "relation": "ASSOCIATED_WITH",
+      "source": "outcome:19:6",
+      "target": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
       "weight": 0.4,
       "decay_factor": 0.05,
       "last_updated": 19,
@@ -29987,106 +30261,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:error:pythonpath_con_como_separador_en_git_bas",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:docs",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:alinear",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:readme",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:h4",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:hashes",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:v2",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:rutas",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:run_tests:pythonpath_con_como_separador_en_git_bas",
-      "target": "concept:topic:reales",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "action:add_dependency",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30097,7 +30272,18 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
+      "target": "concept:error:pythonpath_con_como_separador_en_git_bas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:docs",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30108,7 +30294,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:alinear",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30119,7 +30305,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:readme",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30130,7 +30316,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:h4",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30141,7 +30327,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:hashes",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30152,7 +30338,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:v2",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30163,7 +30349,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
       "target": "concept:topic:rutas",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30174,7 +30360,216 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:fallback:run_tests:add_dependency",
+      "source": "concept:lesson:avoid:add_dependency:pythonpath_con_como_separador_en_git_bas",
+      "target": "concept:topic:reales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:alinear",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:readme",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:h4",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:hashes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:v2",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:rutas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:readme_escrito_con_claude_sonnet_5_5_esf",
+      "target": "concept:topic:reales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:alinear",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:readme",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:h4",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:hashes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:v2",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:rutas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:reales",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -30373,6 +30768,204 @@
     },
     {
       "source": "concept:lesson:note:en_un_readme_dar_cada_resultado_con_su_campa_a_sus_denominad",
+      "target": "concept:topic:reales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "goal:19",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:alinear",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:readme",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:h4",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:hashes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:v2",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:rutas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:al_describir_un_esquema_de_hash_citar_de_la_especificaci_n_q",
+      "target": "concept:topic:reales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "goal:19",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:alinear",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:readme",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:h4",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:hashes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:v2",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
+      "target": "concept:topic:rutas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:contar_los_jobs_de_ci_desde_ci_yml_matriz_incluida_y_usar_la",
       "target": "concept:topic:reales",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,

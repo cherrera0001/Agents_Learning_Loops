@@ -5,16 +5,21 @@
   "ref": "#56",
   "steps": [
     {"action": "recall_memory", "success": true, "note": "recall léxico antes de editar; fastembed no está instalado en el intérprete compartido, así que no se usó el canal semántico ni se descargaron modelos"},
-    {"action": "update_docs", "success": true, "note": "README § 7.2: campaña histórica (6 tareas), referencia v2 (9 tareas, 6 permutaciones, 2 réplicas) y H4 negativo con sus denominadores; § 12 y § 13 sin limitaciones ni hoja de ruta obsoletas; hashes v1 checkout-bytes/v0 frente a v2 lf/v1 con el run de CI 36629907320 sobre 93693fe comprobado en modo lectura"},
     {"action": "update_spec", "success": true, "note": "specs/loop_protocol.md: solo las tres rutas inexistentes sustituidas por las actuales; fórmulas, invariantes y diseño intactos"},
-    {"action": "run_tests", "success": false, "error": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: las comprobaciones importaron associative_agent_loop y experiments del checkout principal y no del worktree, y la primera pasada no probaba el árbol correcto"},
-    {"action": "add_dependency", "success": true, "note": "PYTHONPATH con separador ';' y rutas de Windows; se comprobó con associative_agent_loop.__file__ que el import apunta al worktree antes de repetir ruff, mypy, pytest --cov (98.52 %, 158 tests), export_schema, export_experiment_schema y mutation_check"},
+    {"action": "add_dependency", "success": false, "error": "PYTHONPATH con ':' como separador en Git Bash no se traduce a ';' para un Python de Windows: el entorno importaba associative_agent_loop y experiments del checkout principal y no del worktree"},
+    {"action": "add_dependency", "success": true, "note": "PYTHONPATH con separador ';' y rutas de Windows; associative_agent_loop.__file__ comprobado en el worktree antes de repetir las comprobaciones"},
+    {"action": "run_tests", "success": true, "note": "ruff, mypy, pytest --cov (158 tests, 98.52 %), export_schema, export_experiment_schema y mutation_check (13 mutaciones, 2 controles) contra el worktree"},
     {"action": "update_docs", "success": true, "note": "CHANGELOG Unreleased, sección Corregido, sin versión ni milestone nuevos"},
+    {"action": "update_docs", "success": false, "error": "README escrito con claude-sonnet-5-5 (esfuerzo high) con tres defectos: § 7.2 atribuía a las fuentes v1 la dependencia CRLF/LF, que solo afecta a acceptance_sha256; § 8 declaraba 11 jobs de CI en vez de 12; y el objetivo operativo del bloque de § 7.2 omitía no contaminar decisiones en otros contextos"},
+    {"action": "update_docs", "success": true, "note": "corrección escalada a claude-opus-5-5 (esfuerzo high) por la regla 2 de docs/estimation.md: § 7.2 limita la no coincidencia LF/CRLF al hash de los tests de aceptación y declara que el texto de la aplicación ya se leía con saltos de línea universales; § 8 dice 12 jobs (lint 1, tests 8, mutaciones 1, embeddings 1, experimento 1); el objetivo operativo incluye sus dos partes y sigue parcial con H4 negativo. Se conservan la separación campaña histórica / referencia v2 / H4, § 12, § 13 y el run de CI 36629907320 sobre 93693fe"},
+    {"action": "review_code", "success": true, "note": "la revisión supervisada detectó los tres defectos del README antes del merge; tras la corrección pasan tests/integration/test_readme.py y test_devlog.py, los enlaces y anclas del README resuelven y git diff --check no reporta nada"},
     {"action": "rebuild_memory", "success": true, "note": "devlog rebuild tras este episodio; dev_memory.json solo cambia por reconstrucción"}
   ],
   "lessons": [
     "Al fijar PYTHONPATH para un Python de Windows desde Git Bash, usar ';' y rutas de Windows, y comprobar con __file__ que el import resuelve al worktree antes de fiar el resultado de las pruebas",
     "En un README, dar cada resultado con su campaña, sus denominadores y su esquema de hash evita mezclar la campaña histórica con la de referencia v2",
+    "Al describir un esquema de hash, citar de la especificación qué campo cambia (aquí acceptance_sha256) en vez de generalizar a todas las fuentes",
+    "Contar los jobs de CI desde ci.yml, matriz incluida, y usar la misma cifra en todo el README",
     "Afirmar el estado de CI solo con el run y el commit comprobados; no extenderlo a otros commits ni a un PR futuro"
   ]
 }

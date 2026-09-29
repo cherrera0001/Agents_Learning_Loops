@@ -638,12 +638,14 @@ denominadores son distintos y las tasas son iguales. Ninguna regla pre-registrad
 > demuestra que una pista léxica sea la causa de la ganancia observada. El solver acotado tiene tres
 > operadores de reparación escritos a mano; las réplicas con la misma semilla verifican determinismo, no
 > observaciones independientes; y ningún test del harness exige una ganancia positiva agregada.
-> El objetivo operativo general (no repetir un error cuya causa ya se observó) sigue **parcial**: H4 se
+> El objetivo operativo general (no repetir un error cuya causa ya se observó y no contaminar decisiones
+> en contextos no relacionados) sigue **parcial**: H4 se
 > resolvió negativamente en este diseño, y la pregunta general sigue abierta. El informe no evaluó
 > recuperación semántica ni causal.
 
-**Dos esquemas de hash.** Los recibos históricos de `evidence/runs/` son v1 (`checkout-bytes/v0`): el hash
-de las fuentes depende de los bytes del checkout, incluidos los saltos de línea CRLF/LF. Los recibos v2
+**Dos esquemas de hash.** Los recibos históricos de `evidence/runs/` son v1 (`checkout-bytes/v0`): el texto
+de la aplicación ya se leía con saltos de línea universales, pero `acceptance_sha256` hasheaba los bytes crudos
+de los tests de aceptación, así que ese hash v1 no coincide entre un checkout LF y uno CRLF. Los recibos v2
 (`evidence/reference-v2/`, `evidence/reference-lf-v1/`) normalizan a LF (`lf/v1`); no son comparables por
 hash con los v1. La referencia portable [`evidence/reference-lf-v1/`](evidence/reference-lf-v1/) se generó en
 Windows y CI la compara en Ubuntu (`python -m experiments compare`). En la ejecución
@@ -669,7 +671,7 @@ flowchart LR
     PR --> EMBJ["embeddings<br/>fastembed + caché del modelo"]
     TEST --> COV["cobertura ≥ 90 %<br/>(actual 98.5 %)"]
     TEST --> BENCH["benchmark --json"]
-    LINT --> OK{"11 jobs en verde"}
+    LINT --> OK{"12 jobs en verde"}
     COV --> OK
     BENCH --> OK
     MUT --> OK
