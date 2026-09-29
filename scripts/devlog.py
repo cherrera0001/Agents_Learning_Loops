@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -78,6 +79,8 @@ def main() -> None:
     )
     sub.add_parser("rebuild", help="reconstruye learning/dev_memory.json")
     args = parser.parse_args()
+    if hasattr(sys.stdout, "reconfigure"):  # UTF-8 también al redirigir en Windows
+        sys.stdout.reconfigure(encoding="utf-8")
 
     if args.cmd == "rebuild":
         mg = rebuild(load_episodes())

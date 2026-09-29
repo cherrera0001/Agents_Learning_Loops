@@ -104,6 +104,7 @@ def test_loop_follows_protocol_transitions():
     ep = agent.run("clima en Santiago")
     assert ep.transitions == [
         State.PLAN,
+        State.RETRIEVE,
         State.ACT, State.OBSERVE,  # weather_api_v1 ✗
         State.ACT, State.OBSERVE,  # weather_api_v2 ✓
         State.CONSOLIDATE,

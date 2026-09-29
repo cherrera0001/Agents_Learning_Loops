@@ -7,7 +7,9 @@ Especificación de los estados y transiciones del agente (`src/agent/core.py`).
 ```mermaid
 stateDiagram-v2
     [*] --> PLAN: run(goal) / clock += 1
-    PLAN --> ACT: plan = retrieve(goal).ranked_actions
+    PLAN --> RETRIEVE: candidates = planner.plan(goal, tools)
+    RETRIEVE --> ACT: plan = candidatas re-rankeadas por score
+    RETRIEVE --> CONSOLIDATE: sin candidatas
     ACT --> OBSERVE: result = tool(goal)
     OBSERVE --> ACT: fallo ∧ intentos < max_attempts ∧ quedan herramientas
     OBSERVE --> CONSOLIDATE: éxito ∨ sin intentos ∨ sin herramientas
@@ -15,9 +17,12 @@ stateDiagram-v2
     DONE --> [*]
 ```
 
+Las transiciones válidas están en `TRANSITIONS` (`src/agent/core.py`); cualquier otra lanza `IllegalTransition`.
+
 | Estado | Entrada | Efecto sobre la memoria | Salida |
 |---|---|---|---|
-| **PLAN** | texto de la meta, herramientas disponibles | Lectura: siembra + activación propagada. Escritura: nodo `Goal` y aristas `ASSOCIATED_WITH` hacia `Concept(topic)` | `plan`: herramientas ordenadas por `score`; `lessons` recordadas |
+| **PLAN** | texto de la meta, herramientas disponibles | — (no consulta la memoria) | `candidates`: herramientas candidatas según el `Planner` (por defecto `RuleBasedPlanner`: todas, en orden de registro; punto de extensión para un planner LLM) |
+| **RETRIEVE** | meta y candidatas | Lectura: siembra híbrida + activación propagada; escribe `activation_level`/`last_accessed_at`. Luego escribe el nodo `Goal` y sus `ASSOCIATED_WITH` hacia `Concept(topic)` | `plan`: candidatas ordenadas por `score`; `lessons` y caminos explicativos |
 | **ACT** | siguiente herramienta del plan | — | `ToolResult` crudo |
 | **OBSERVE** | `ToolResult` | `Goal -LEADS_TO-> Action -LEADS_TO-> Outcome [-FAILED_DUE_TO-> Concept(error)]` | `ToolResult` evaluado (el evaluador puede degradar un éxito que no satisface la meta) |
 | **CONSOLIDATE** | trayectoria del episodio | Refuerzo / penalización / lecciones; poda cada `prune_every` episodios | lista de lecciones |
@@ -26,13 +31,14 @@ stateDiagram-v2
 ## 2. Invariantes
 
 1. **Tiempo lógico**: `clock` se incrementa exactamente una vez por episodio, al entrar en PLAN.
-2. **Planificar antes de escribir**: la recuperación ocurre *antes* de insertar el `Goal` actual, para que la meta no se active a sí misma.
-3. **Orden estable**: ante empate de `score`, se conserva el orden de registro de herramientas. Con memoria vacía el agente se comporta igual que el agente sin memoria.
-4. **Pesos acotados**: `weight ∈ [0, 1]` siempre. Lo garantiza la regla EMA con objetivo en {0, 1} y, además, `Edge` (Pydantic, `validate_assignment`) rechaza cualquier asignación fuera de rango.
-5. **Integridad referencial**: toda arista une dos nodos existentes; nodos y aristas se validan contra `src/memory/models.py` (ids `goal:|action:|outcome:|concept:`, `relation` del enum `Relation`).
-6. **Contrato generado**: `specs/memory_schema.json` se genera desde los modelos (`python -m scripts.export_schema`); un test falla si no está sincronizado.
+2. **Transiciones verificadas**: el episodio solo avanza por `TRANSITIONS`; RETRIEVE siempre precede a ACT.
+3. **Recuperar antes de escribir**: la recuperación ocurre *antes* de insertar el `Goal` actual, para que la meta no se active a sí misma.
+4. **Orden estable**: ante empate de `score`, se conserva el orden de las candidatas del PLAN. Con memoria vacía el agente se comporta igual que el agente sin memoria.
+5. **Pesos acotados**: `weight ∈ [0, 1]` siempre. Lo garantizan las reglas EMA y hebbiana y, además, `Edge` (Pydantic, `validate_assignment`) rechaza cualquier asignación fuera de rango.
+6. **Integridad referencial**: toda arista une dos nodos existentes; nodos y aristas se validan contra `src/memory/models.py` (ids `goal:|action:|outcome:|concept:`, `relation` del enum `Relation`).
+7. **Contrato generado**: `specs/memory_schema.json` se genera desde los modelos (`python -m scripts.export_schema`); un test falla si no está sincronizado.
 
-## 3. Recuperación (PLAN)
+## 3. Recuperación (RETRIEVE)
 
 ```
 sim(q, n) = α · max(0, cos(emb(q), emb(n))) + (1 − α) · léxica(q, n.label)
