@@ -47,13 +47,12 @@ class Consolidator:
     ) -> float:
         """Mueve el peso de la arista hacia ``target``; la crea con peso 0 si no existe."""
         mg = self.memory
-        mg.add_edge(src, dst, edge_type, weight=0.0)
-        data = mg.edge(src, dst, edge_type)
+        edge = mg.add_edge(src, dst, edge_type, weight=0.0)
         eta = self.lr if rate is None else rate
-        data["weight"] = data["weight"] + eta * (target - data["weight"])
-        data["last_updated"] = mg.clock
-        data["count"] += 1
-        return data["weight"]
+        edge.weight = edge.weight + eta * (target - edge.weight)  # validado en [0, 1]
+        edge.last_updated = mg.clock
+        edge.count += 1
+        return edge.weight
 
     # ------------------------------------------------------------- escritura
     def record_goal(self, goal_text: str, episode_id: int) -> str:
@@ -122,7 +121,7 @@ class Consolidator:
                     lessons.append(
                         self._lesson(
                             f"lesson:fallback:{_slug(failed_tool)}:{_slug(tool)}",
-                            f"Si '{failed_tool}' falla con '{mg.node(err)['label']}', usar '{tool}'",
+                            f"Si '{failed_tool}' falla con '{mg.node(err).label}', usar '{tool}'",
                             [action, *topics],
                         )
                     )
@@ -137,8 +136,8 @@ class Consolidator:
                     self.reinforce(src, action, EdgeType.RESOLVED_BY, 0.0, self.penalty_rate)
                 lessons.append(
                     self._lesson(
-                        f"lesson:avoid:{_slug(tool)}:{_slug(mg.node(err)['label'])}",
-                        f"'{tool}' falló con '{mg.node(err)['label']}'",
+                        f"lesson:avoid:{_slug(tool)}:{_slug(mg.node(err).label)}",
+                        f"'{tool}' falló con '{mg.node(err).label}'",
                         [action, err, *topics],
                     )
                 )
@@ -164,16 +163,11 @@ class Consolidator:
         episódico. Devuelve ``(aristas_eliminadas, nodos_eliminados)``.
         """
         mg = self.memory
-        weak = [
-            (s, t, d["type"])
-            for s, t, d in mg.g.edges(data=True)
-            if mg.effective_weight(d) < self.prune_threshold
-        ]
-        for s, t, k in weak:
-            mg.remove_edge(s, t, EdgeType(k))
+        weak = [e for e in mg.edges() if mg.effective_weight(e) < self.prune_threshold]
+        for e in weak:
+            mg.remove_edge(e.source, e.target, e.relation)
         orphans = [
-            n for n, d in mg.g.nodes(data=True)
-            if mg.g.degree(n) == 0 and d["type"] != NodeType.GOAL.value
+            n.id for n in mg.nodes() if mg.g.degree(n.id) == 0 and n.type != NodeType.GOAL
         ]
         for n in orphans:
             mg.remove_node(n)

@@ -70,8 +70,10 @@ graph LR
 | `Outcome` | Resultado de una ejecución concreta (`success`, `latency_ms`, `error`) |
 | `Concept` | `topic` (término de la meta), `error` (causa de fallo) o `lesson` (lección extraída) |
 
-Cada arista tiene `weight ∈ [0,1]` y `last_updated`; su peso efectivo es
-`weight · recency_factor`, con `recency_factor = exp(-λ · Δt)`.
+Nodos y aristas son modelos Pydantic ([`src/memory/models.py`](src/memory/models.py)), validados al crear y al asignar.
+Cada arista tiene `weight ∈ [0,1]`, su propio `decay_factor` (λ) y `last_updated`; su peso efectivo es
+`weight · recency_factor`, con `recency_factor = exp(-λ · Δt)`. Los nodos guardan `embedding`,
+`metadata`, `last_accessed_at` y `activation_level`.
 
 ### El ciclo
 
@@ -104,14 +106,15 @@ usadas decaen con el tiempo y la poda las elimina. Tabla completa en
 
 ```text
 ├── specs/
-│   ├── memory_schema.json   # JSON Schema del grafo serializado
+│   ├── memory_schema.json   # JSON Schema GENERADO desde los modelos (scripts/export_schema.py)
 │   └── loop_protocol.md     # estados, transiciones, fórmulas, invariantes
 ├── src/
 │   ├── agent/
 │   │   ├── core.py          # Agent: Plan → Act → Observe → Consolidate
 │   │   └── tools.py         # herramientas simuladas + escenarios
 │   ├── memory/
-│   │   ├── graph.py         # MemoryGraph (NetworkX MultiDiGraph, JSON)
+│   │   ├── models.py        # Node, Edge, GraphDocument (Pydantic v2)
+│   │   ├── graph.py         # MemoryGraph (NetworkX MultiDiGraph, JSON v2 + migración v1)
 │   │   ├── associative.py   # siembra, activación propagada, ranking, lecciones
 │   │   └── consolidation.py # refuerzo, penalización, lecciones, poda
 │   └── main.py              # demo

@@ -17,9 +17,9 @@ def test_add_node_is_idempotent(mg):
     mg.tick()
     mg.add_node("action:x", NodeType.ACTION, "x", extra=1)
     assert len(mg) == 1
-    assert mg.node("action:x")["created_at"] == 0
-    assert mg.node("action:x")["last_seen"] == 1
-    assert mg.node("action:x")["extra"] == 1
+    assert mg.node("action:x").created_at == 0
+    assert mg.node("action:x").last_accessed_at == 1
+    assert mg.node("action:x").metadata["extra"] == 1
 
 
 def test_parallel_edges_are_keyed_by_type(mg):
@@ -29,16 +29,16 @@ def test_parallel_edges_are_keyed_by_type(mg):
     mg.add_edge("goal:1", "action:x", EdgeType.RESOLVED_BY, weight=0.9)
     mg.add_edge("goal:1", "action:x", EdgeType.LEADS_TO, weight=0.1)  # no duplica ni pisa el peso
     assert mg.g.number_of_edges() == 2
-    assert mg.edge("goal:1", "action:x", EdgeType.LEADS_TO)["weight"] == 0.5
+    assert mg.edge("goal:1", "action:x", EdgeType.LEADS_TO).weight == 0.5
     with pytest.raises(KeyError):
         mg.add_edge("goal:1", "missing", EdgeType.LEADS_TO)
 
 
 def test_recency_factor_decays_with_logical_clock(mg):
-    mg.add_node("a", NodeType.CONCEPT, "a")
-    mg.add_node("b", NodeType.CONCEPT, "b")
-    mg.add_edge("a", "b", EdgeType.ASSOCIATED_WITH, weight=0.8)
-    data = mg.edge("a", "b", EdgeType.ASSOCIATED_WITH)
+    mg.add_node("concept:a", NodeType.CONCEPT, "a")
+    mg.add_node("concept:b", NodeType.CONCEPT, "b")
+    mg.add_edge("concept:a", "concept:b", EdgeType.ASSOCIATED_WITH, weight=0.8)
+    data = mg.edge("concept:a", "concept:b", EdgeType.ASSOCIATED_WITH)
     assert mg.recency_factor(data) == 1.0
     for _ in range(5):
         mg.tick()
@@ -64,12 +64,12 @@ def test_serialization_roundtrip(mg, tmp_path):
 
 def test_reinforce_is_bounded_and_converges(mg):
     c = Consolidator(mg, learning_rate=0.5)
-    mg.add_node("a", NodeType.ACTION, "a")
-    mg.add_node("e", NodeType.CONCEPT, "e")
-    weights = [c.reinforce("a", "e", EdgeType.FAILED_DUE_TO, 1.0) for _ in range(10)]
+    mg.add_node("action:a", NodeType.ACTION, "a")
+    mg.add_node("concept:e", NodeType.CONCEPT, "e")
+    weights = [c.reinforce("action:a", "concept:e", EdgeType.FAILED_DUE_TO, 1.0) for _ in range(10)]
     assert weights == sorted(weights)
     assert 0.99 < weights[-1] <= 1.0
-    w = c.reinforce("a", "e", EdgeType.FAILED_DUE_TO, 0.0)
+    w = c.reinforce("action:a", "concept:e", EdgeType.FAILED_DUE_TO, 0.0)
     assert w < weights[-1]
 
 

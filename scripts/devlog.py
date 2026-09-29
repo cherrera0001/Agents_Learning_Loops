@@ -39,7 +39,7 @@ def rebuild(episodes: list[dict[str, Any]]) -> MemoryGraph:
     for ep in sorted(episodes, key=lambda e: e["seq"]):
         episode_id = mg.tick()
         goal = consolidator.record_goal(ep["goal"], episode_id)
-        mg.node(goal)["ref"] = ep["id"]
+        mg.node(goal).metadata["ref"] = ep["id"]
         steps = []
         for i, step in enumerate(ep["steps"]):
             result = ToolResult(step["success"], output=step.get("note"), error=step.get("error"))
@@ -52,7 +52,7 @@ def rebuild(episodes: list[dict[str, Any]]) -> MemoryGraph:
 
 
 def recall(mg: MemoryGraph, query: str, top_lessons: int = 5) -> str:
-    actions = [mg.node(n)["label"] for n in mg.nodes_of_type(NodeType.ACTION)]
+    actions = [mg.node(n).label for n in mg.nodes_of_type(NodeType.ACTION)]
     result = Retriever(mg).retrieve(query, actions)
     lines = [f"RETRIEVE: {query!r}", "", "Acciones (score = relevancia · valencia):"]
     lines += [

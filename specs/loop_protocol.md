@@ -28,8 +28,9 @@ stateDiagram-v2
 1. **Tiempo lógico**: `clock` se incrementa exactamente una vez por episodio, al entrar en PLAN.
 2. **Planificar antes de escribir**: la recuperación ocurre *antes* de insertar el `Goal` actual, para que la meta no se active a sí misma.
 3. **Orden estable**: ante empate de `score`, se conserva el orden de registro de herramientas. Con memoria vacía el agente se comporta igual que el agente sin memoria.
-4. **Pesos acotados**: `weight ∈ [0, 1]` siempre (regla EMA con objetivo en {0, 1}).
-5. **Integridad referencial**: toda arista une dos nodos existentes con `type` definido.
+4. **Pesos acotados**: `weight ∈ [0, 1]` siempre. Lo garantiza la regla EMA con objetivo en {0, 1} y, además, `Edge` (Pydantic, `validate_assignment`) rechaza cualquier asignación fuera de rango.
+5. **Integridad referencial**: toda arista une dos nodos existentes; nodos y aristas se validan contra `src/memory/models.py` (ids `goal:|action:|outcome:|concept:`, `relation` del enum `Relation`).
+6. **Contrato generado**: `specs/memory_schema.json` se genera desde los modelos (`python -m scripts.export_schema`); un test falla si no está sincronizado.
 
 ## 3. Recuperación (PLAN)
 
@@ -41,7 +42,7 @@ A₀ = seeds
 Aₖ₊₁(v) = Σ_{u→v} Aₖ(u) · δ · w̃(u,v)  +  Σ_{v→u} Aₖ(u) · δ · ρ(tipo) · w̃(v,u)
 A(v)    = min(1, Σₖ Aₖ(v))                       k ≤ max_hops, Aₖ ≥ umbral
 
-w̃(e)     = weight(e) · exp(-λ · (clock − last_updated(e)))
+w̃(e)     = weight(e) · exp(-λₑ · (clock − last_updated(e)))      λₑ = decay_factor de la arista
 valencia(a) = tanh( Σ w̃(· -RESOLVED_BY-> a)  −  Σ w̃(a -FAILED_DUE_TO-> ·) )
 score(a)  = A(a) · valencia(a)
 ```
