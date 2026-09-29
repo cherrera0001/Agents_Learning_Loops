@@ -14,6 +14,21 @@
       "train": "EXP-03",
       "transfer": "EXP-06",
       "distance": "L4"
+    },
+    {
+      "train": "EXP-01",
+      "transfer": "EXP-07",
+      "distance": "L3"
+    },
+    {
+      "train": "EXP-02",
+      "transfer": "EXP-08",
+      "distance": "L5"
+    },
+    {
+      "train": "EXP-03",
+      "transfer": "EXP-09",
+      "distance": "L4"
     }
   ],
   "negative": [
@@ -21,6 +36,30 @@
       "train": "EXP-01",
       "transfer": "EXP-05",
       "reason": "Similar None/AttributeError symptoms; identity and environment causes differ."
+    },
+    {
+      "train": "EXP-03",
+      "transfer": "EXP-07",
+      "kind": "misleading-no-lexical-cue",
+      "decoy_family": "readiness",
+      "true_family": "authentication",
+      "reason": "Startup/database/served vocabulary of EXP-03; the guard checks the raw header instead of the looked-up principal."
+    },
+    {
+      "train": "EXP-01",
+      "transfer": "EXP-08",
+      "kind": "misleading-no-lexical-cue",
+      "decoy_family": "authentication",
+      "true_family": "configuration",
+      "reason": "Request/returns/without/error vocabulary of EXP-01; the report label falls back to an empty string instead of its declared default."
+    },
+    {
+      "train": "EXP-02",
+      "transfer": "EXP-09",
+      "kind": "misleading-no-lexical-cue",
+      "decoy_family": "configuration",
+      "true_family": "readiness",
+      "reason": "Clean-environment/load/explicit-configuration vocabulary of EXP-02; the worker references initialize without calling it."
     }
   ],
   "taxonomy": {

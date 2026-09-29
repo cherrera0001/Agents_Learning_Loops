@@ -11,6 +11,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "cherrera0001/Agents_Learning_Loops"
+# Misleading tasks of #45 are published in the repository only (public JSON,
+# acceptance test and benchmark/issue-proposals/EXP-0x.md), tracked by #45;
+# no dedicated GitHub issue is created and their receipts carry issue=null.
+IN_REPOSITORY_ONLY = {"EXP-07", "EXP-08", "EXP-09"}
 
 
 def gh(*args):
@@ -40,6 +44,8 @@ def main():
     proposals = []
     for path in sorted((ROOT / "benchmark/public").glob("EXP-*.json")):
         task = json.loads(path.read_text("utf-8"))
+        if task["id"] in IN_REPOSITORY_ONLY:
+            continue
         title = f"[{task['id']}] {task['title']}"
         body = (
             f"## Context\n\n{task['context']}\n\n## Expected\n\n{task['expected']}\n\n"

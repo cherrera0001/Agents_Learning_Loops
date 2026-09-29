@@ -9,7 +9,11 @@ pip install -e .[dev]            # añade ,embeddings para los tests semánticos
 
 ## Flujo por issue (la vida del proyecto)
 
-Cada issue es un episodio del bucle de aprendizaje del propio repo ([`learning/README.md`](learning/README.md)):
+Cada issue es un episodio del bucle de aprendizaje del propio repo ([`learning/README.md`](learning/README.md)).
+Quien lo ejecuta es un agente de entorno: empieza por [`AGENTS.md`](AGENTS.md), que remite al
+[glosario](docs/entorno/glosario.md) y al [harness de entorno](docs/entorno/harness.md). Los pasos 1, 4 y el
+manejo de evidencia tienen skills de entorno: [`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md),
+[`registrar-episodio`](skills/registrar-episodio/SKILL.md) y [`proteger-evidencia`](skills/proteger-evidencia/SKILL.md).
 
 1. **RETRIEVE**: `python -m scripts.devlog recall "<título del issue>"` (`--embedder fastembed` para búsqueda semántica). Lee las lecciones antes de elegir herramientas.
 2. **Rama** `issue-<n>-<tema>`; la tarjeta del Project pasa a *In Progress*.

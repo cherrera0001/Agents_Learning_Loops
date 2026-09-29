@@ -1,0 +1,74 @@
+{
+  "EXP-07": {
+    "experiment": "software-learning-v1",
+    "task_set": "misleading-v1",
+    "family": "authentication",
+    "difficulty": "L3",
+    "hidden_cause_id": "AUTH-01",
+    "split": "transfer",
+    "distance": "L3",
+    "relevant_training_tasks": [
+      "EXP-01"
+    ],
+    "decoy_family": "readiness",
+    "decoy_training_tasks": [
+      "EXP-03"
+    ],
+    "decoy_reason": "Startup/database/served vocabulary of EXP-03; the guard checks the raw header instead of the looked-up principal.",
+    "lexical_cue_for_true_family": false,
+    "tracking_issue": 45,
+    "mutation": {
+      "path": "app/middleware.py",
+      "before": "    if principal is None:\n",
+      "after": "    if token is None:\n"
+    }
+  },
+  "EXP-08": {
+    "experiment": "software-learning-v1",
+    "task_set": "misleading-v1",
+    "family": "configuration",
+    "difficulty": "L3",
+    "hidden_cause_id": "CONFIG-01",
+    "split": "transfer",
+    "distance": "L5",
+    "relevant_training_tasks": [
+      "EXP-02"
+    ],
+    "decoy_family": "authentication",
+    "decoy_training_tasks": [
+      "EXP-01"
+    ],
+    "decoy_reason": "Request/returns/without/error vocabulary of EXP-01; the report label falls back to an empty string instead of its declared default.",
+    "lexical_cue_for_true_family": false,
+    "tracking_issue": 45,
+    "mutation": {
+      "path": "app/services/reporting.py",
+      "before": "os.getenv(\"LEDGER_REPORT_LABEL\") or DEFAULT_LABEL",
+      "after": "os.getenv(\"LEDGER_REPORT_LABEL\", \"\")"
+    }
+  },
+  "EXP-09": {
+    "experiment": "software-learning-v1",
+    "task_set": "misleading-v1",
+    "family": "readiness",
+    "difficulty": "L3",
+    "hidden_cause_id": "READY-01",
+    "split": "transfer",
+    "distance": "L4",
+    "relevant_training_tasks": [
+      "EXP-03"
+    ],
+    "decoy_family": "configuration",
+    "decoy_training_tasks": [
+      "EXP-02"
+    ],
+    "decoy_reason": "Clean-environment/load/explicit-configuration vocabulary of EXP-02; the worker references initialize without calling it.",
+    "lexical_cue_for_true_family": false,
+    "tracking_issue": 45,
+    "mutation": {
+      "path": "app/worker.py",
+      "before": "    database.initialize()\n",
+      "after": "    database.initialize\n"
+    }
+  }
+}

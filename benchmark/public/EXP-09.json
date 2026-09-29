@@ -1,0 +1,10 @@
+{
+  "id": "EXP-09",
+  "title": "Summary fails to load in a clean environment",
+  "context": "Running the summary in a clean environment raises an exception instead of returning the Open tasks label and a count. No explicit configuration is set.",
+  "expected": "In a clean environment a summary returns the label Open tasks and count 0.",
+  "observed": "Running the summary in a clean environment raises an exception instead of returning the Open tasks label and a count. No explicit configuration is set.",
+  "acceptance_criteria": "In a clean environment a summary returns the label Open tasks and count 0.",
+  "reproduction": "python -m experiments reproduce EXP-09",
+  "test_file": "EXP-09_test.py"
+}

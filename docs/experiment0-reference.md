@@ -7,7 +7,7 @@ The text below is preserved from the pre-experiment README. Its learning languag
 [![CI](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml/badge.svg)](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml)
 
 Implementación mínima y didáctica de una **memoria asociativa en grafo** para
-el bucle de aprendizaje de un agente: el agente registra sus trayectorias,
+el bucle de aprendizaje de un agente ([agente de biblioteca](entorno/glosario.md)): el agente registra sus trayectorias,
 extrae lecciones, las enlaza en un grafo semántico y las recupera por
 **activación propagada** para no repetir errores.
 

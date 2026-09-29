@@ -6,7 +6,8 @@ import uuid
 from pathlib import Path
 
 from .agent import BoundedRepairAgent
-from .evaluate import evaluate
+from .benchmark import HISTORICAL_CAMPAIGN, REFERENCE_CAMPAIGN, TASK_SETS
+from .evaluate import compare, evaluate
 from .evidence import read_receipt
 from .memory import EvidenceMemory
 from .models import MemoryMode
@@ -20,7 +21,7 @@ from .runner import (
 )
 
 
-def campaign(seeds, replicates, evidence_dir):
+def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"]):
     if replicates < 1 or len(set(seeds)) != len(seeds):
         raise ValueError("positive replication count and unique seeds required")
     for _ in range(replicates):
@@ -30,7 +31,7 @@ def campaign(seeds, replicates, evidence_dir):
             random.Random(seed).shuffle(modes)
             for mode in modes:
                 memory = EvidenceMemory()
-                for task_id in [f"EXP-{i:02d}" for i in range(1, 7)]:
+                for task_id in tasks:
                     path = run_experiment(
                         task_id,
                         BoundedRepairAgent(),
@@ -56,17 +57,54 @@ def main():
     parser = argparse.ArgumentParser(description="Reproducible software-learning laboratory")
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run")
-    run.add_argument("--seeds", nargs="+", type=int, default=[7, 11, 23])
-    run.add_argument("--replicates", type=int, default=2)
+    run.add_argument(
+        "--campaign",
+        choices=[REFERENCE_CAMPAIGN["name"]],
+        help="declared reference campaign (#44): fixes seeds, replicates and task set",
+    )
+    run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
+    run.add_argument("--replicates", type=int, help="default: 2")
     run.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
+    run.add_argument(
+        "--task-set",
+        choices=sorted(TASK_SETS),
+        help="default v1: published EXP-01..06 campaign; misleading-v1: adds EXP-07..09 (#45)",
+    )
     ev = sub.add_parser("evaluate")
     ev.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
     ev.add_argument("--output", type=Path, default=ROOT / "results")
+    cmp = sub.add_parser(
+        "compare",
+        help="compare two campaigns' semantic projections, source/test hashes included",
+    )
+    cmp.add_argument("--reference", type=Path, required=True)
+    cmp.add_argument("--candidate", type=Path, required=True)
     repro = sub.add_parser("reproduce")
     repro.add_argument("task")
     args = parser.parse_args()
     if args.command == "run":
-        campaign(args.seeds, args.replicates, args.evidence_dir)
+        declared = REFERENCE_CAMPAIGN if args.campaign else HISTORICAL_CAMPAIGN
+        seeds = list(declared["seeds"]) if args.seeds is None else args.seeds
+        replicates = declared["replicates"] if args.replicates is None else args.replicates
+        task_set = declared["task_set"] if args.task_set is None else args.task_set
+        if args.campaign and (
+            seeds != list(REFERENCE_CAMPAIGN["seeds"])
+            or replicates != REFERENCE_CAMPAIGN["replicates"]
+            or task_set != REFERENCE_CAMPAIGN["task_set"]
+        ):
+            parser.error(f"--campaign {args.campaign} fixes seeds, replicates and task set")
+        campaign(seeds, replicates, args.evidence_dir, TASK_SETS[task_set])
+    elif args.command == "compare":
+        try:
+            result = compare(args.reference, args.candidate)
+        except ValueError as error:
+            raise SystemExit(f"compare: {error}") from error
+        print(json.dumps(result, indent=2))
+        if not result["identical"]:
+            raise SystemExit(
+                "compare: candidate differs from reference. If the change in behaviour or "
+                "benchmark is intended, regenerate the reference campaign and review it."
+            )
     elif args.command == "evaluate":
         report = evaluate(args.evidence_dir, args.output)
         print(

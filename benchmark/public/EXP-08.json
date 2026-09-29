@@ -1,0 +1,10 @@
+{
+  "id": "EXP-08",
+  "title": "Summary request returns a blank label",
+  "context": "A summary request without arguments returns count 0 with a blank label instead of Open tasks; no error is raised and the count is correct.",
+  "expected": "A summary produced without arguments reports the label Open tasks together with the correct count.",
+  "observed": "A summary request without arguments returns count 0 with a blank label instead of Open tasks; no error is raised and the count is correct.",
+  "acceptance_criteria": "A summary produced without arguments reports the label Open tasks together with the correct count.",
+  "reproduction": "python -m experiments reproduce EXP-08",
+  "test_file": "EXP-08_test.py"
+}
