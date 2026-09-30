@@ -38,12 +38,23 @@
       "action": "update_docs",
       "success": true,
       "note": "Atributo -whitespace sólo en las copias de evidencia, como en la captura original: conservar bytes y hashes sin convertir fines de línea"
+    },
+    {
+      "action": "git_push",
+      "success": false,
+      "error": "Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Mismo test, checkout estable y sin nuevos commits durante la ejecución: 1 passed in 44.79s. No se alteró comparabilidad ni expectativas; la suite original conserva su fallo."
     }
   ],
   "lessons": [
     "Un GET models 200 acredita autenticación, no generación ni integración: comprobar cada capa por separado",
     "Un smoke que replica fetch y cambia de modelo no acredita el adaptador real; comprobar mismo camino y modelo efectivo",
     "No interpretar ECONNREFUSED de base como defecto de Gemini ni una prueba offline verde como resolución del bloqueo",
-    "Separar informes de implementadores de ejecución independiente y conservar cortes con SHA; no sumar conteos históricos"
+    "Separar informes de implementadores de ejecución independiente y conservar cortes con SHA; no sumar conteos históricos",
+    "Congelar el checkout durante pruebas que comparan procedencia: esperar el fin de la ejecución antes de modificar o publicar commits"
   ]
 }

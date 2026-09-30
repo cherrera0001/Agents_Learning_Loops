@@ -15,6 +15,9 @@
     "recibo.json": "8addd08cc0a2ddf1a645fe9b350882485ca3d1b67518174238e751d7fc2fc672",
     "revision-recibo.json": "287a3bb1a5127213a5a96f7626a574e7cbaacfef1742cb2652ce6729c545794f",
     "revision-unitarias-ffdc372.log": "4fe6c48a0311c891e982cc32f700adfd9ae4ed45ce46b830a76239d25880049b",
+    "suite-local.log": "6312c7596a435a627a096b02d005af8bf43d195e6ed4390a127317aaafbda1d4",
+    "test-provenance.log": "b306f94fedcb39c84bf532722641484e774d6c9fe406938ef9784bec8b42cfaf",
+    "validacion-local.json": "03a0a5e6eda0f5482e05504a42b484dfd6e32e383ea3ae14aec62645336f6084",
     "verify-quick.log": "f897eabab96407e70e2b4ebfad950bafbea6db27e05e4e89caac0a31916e4bad"
   }
 }

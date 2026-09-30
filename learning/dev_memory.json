@@ -266,7 +266,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 1,
-      "last_accessed_at": 29,
+      "last_accessed_at": 33,
       "activation_level": 0.0
     },
     {
@@ -12990,9 +12990,77 @@
       "activation_level": 0.0
     },
     {
+      "id": "outcome:33:7",
+      "type": "Outcome",
+      "label": "failure: Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla.",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla.",
+        "episode": 33,
+        "step": 7
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:se_public_un_commit_mientras_un_test_par",
+      "type": "Concept",
+      "label": "Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla.",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:33:8",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 33,
+        "step": 8
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
       "id": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
       "type": "Concept",
       "label": "'update_docs' falló con 'diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "type": "Concept",
+      "label": "'git_push' falló con 'Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla.'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:git_push:run_tests",
+      "type": "Concept",
+      "label": "Si 'git_push' falla con 'Se publicó un commit mientras un test pareado corría: control b2a88f4 y tratamiento 560bfd7; comparable rechazó provenance distinta. Suite 495 pasan y 1 falla.', usar 'run_tests'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -13041,6 +13109,18 @@
       "id": "concept:lesson:note:separar_informes_de_implementadores_de_ejecuci_n_independien",
       "type": "Concept",
       "label": "Separar informes de implementadores de ejecución independiente y conservar cortes con SHA; no sumar conteos históricos",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "type": "Concept",
+      "label": "Congelar el checkout durante pruebas que comparan procedencia: esperar el fin de la ejecución antes de modificar o publicar commits",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -13892,10 +13972,10 @@
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0003961408125713218,
+      "weight": 0.0003169126500570575,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 32,
+      "count": 33,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14002,10 +14082,10 @@
       "source": "action:run_tests",
       "target": "concept:error:test_de_protocolo_esperaba_plan_act_espe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.002361183241434823,
+      "weight": 0.0018889465931478584,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 24,
+      "count": 25,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14068,10 +14148,10 @@
       "source": "action:run_tests",
       "target": "concept:error:verificaci_n_por_mutaci_n_inv_lida_el_co",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.007205759403792794,
+      "weight": 0.005764607523034235,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 19,
+      "count": 20,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14134,10 +14214,10 @@
       "source": "action:run_tests",
       "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14145,10 +14225,10 @@
       "source": "action:run_tests",
       "target": "concept:error:und_err_connect_timeout_intermitente_de_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14200,10 +14280,10 @@
       "source": "action:run_tests",
       "target": "concept:error:el_7_pide_probar_faqpage_y_la_portada_ya",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14255,10 +14335,10 @@
       "source": "action:run_tests",
       "target": "concept:error:un_comando_mal_compuesto_ejecut_scripts_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.034359738368000006,
+      "weight": 0.027487790694400004,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 12,
+      "count": 13,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14310,10 +14390,10 @@
       "source": "action:run_tests",
       "target": "concept:error:una_orden_compuesta_de_powershell_para_r",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.06710886400000002,
+      "weight": 0.053687091200000016,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 9,
+      "count": 10,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14376,10 +14456,10 @@
       "source": "action:run_tests",
       "target": "concept:error:la_regeneraci_n_final_fall_al_importar_u",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 4,
+      "count": 5,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14409,10 +14489,10 @@
       "source": "action:run_tests",
       "target": "concept:error:sin_cloudflare_api_token_en_ning_n_env_l",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -14431,16 +14511,27 @@
       "source": "action:run_tests",
       "target": "concept:error:pytest_1_failed_495_passed_una_escritura",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
     {
       "source": "action:run_tests",
       "target": "outcome:33:2",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:33:8",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -15108,6 +15199,28 @@
       "count": 0,
       "metadata": {},
       "recency_factor": 0.818731
+    },
+    {
+      "source": "action:git_push",
+      "target": "outcome:33:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:git_push",
+      "target": "concept:error:se_public_un_commit_mientras_un_test_par",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:run_tests:keyerror_type_en_stats_add_edge_cre_un_n",
@@ -67132,12 +67245,12 @@
       "source": "goal:33",
       "target": "action:run_tests",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.755,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 1,
+      "count": 2,
       "metadata": {
-        "step": 2
+        "step": 8
       },
       "recency_factor": 1.0
     },
@@ -67145,10 +67258,10 @@
       "source": "goal:33",
       "target": "action:run_tests",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -67177,6 +67290,19 @@
       "recency_factor": 1.0
     },
     {
+      "source": "goal:33",
+      "target": "action:git_push",
+      "relation": "LEADS_TO",
+      "weight": 0.35,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {
+        "step": 7
+      },
+      "recency_factor": 1.0
+    },
+    {
       "source": "outcome:33:5",
       "target": "concept:error:diff_check_se_al_cr_como_trailing_whites",
       "relation": "FAILED_DUE_TO",
@@ -67190,6 +67316,28 @@
     {
       "source": "concept:error:diff_check_se_al_cr_como_trailing_whites",
       "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:33:7",
+      "target": "concept:error:se_public_un_commit_mientras_un_test_par",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:se_public_un_commit_mientras_un_test_par",
+      "target": "action:run_tests",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -67342,6 +67490,281 @@
       "recency_factor": 1.0
     },
     {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "action:git_push",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:error:se_public_un_commit_mientras_un_test_par",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:documentar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:proceso",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:supervision",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:gemini",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:confundir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:evidencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:entorno",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:aprendizaje",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:se_public_un_commit_mientras_un_test_par",
+      "target": "concept:topic:experimental",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "action:run_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:documentar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:proceso",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:supervision",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:gemini",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:confundir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:evidencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:entorno",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:aprendizaje",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:git_push:run_tests",
+      "target": "concept:topic:experimental",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:note:un_get_models_200_acredita_autenticaci_n_no_generaci_n_ni_in",
       "target": "goal:33",
       "relation": "ASSOCIATED_WITH",
@@ -67860,6 +68283,138 @@
     },
     {
       "source": "concept:lesson:note:separar_informes_de_implementadores_de_ejecuci_n_independien",
+      "target": "concept:topic:experimental",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "goal:33",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:documentar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:proceso",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:supervision",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:gemini",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:confundir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:evidencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:entorno",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
+      "target": "concept:topic:aprendizaje",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:congelar_el_checkout_durante_pruebas_que_comparan_procedenci",
       "target": "concept:topic:experimental",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
