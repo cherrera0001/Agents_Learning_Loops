@@ -1,0 +1,22 @@
+{
+  "seq": 21,
+  "id": "meta-vt-landing-issue-3",
+  "goal": "Episodio meta: publicar un canal ARCOP real en la landing de VinculaTerritorio (issue #3) con el correo corporativo que confirmó el dueño",
+  "ref": "vinculaterritorio/vt-landing#3, PR vinculaterritorio/vt-landing#16 y #17, issue nuevo #18",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "el issue (2026-09-17) decía que no había correo ni SPF/DKIM/DMARC; el DNS actual tiene MX y SPF de Zoho, DKIM de Resend y DMARC: manda el mundo actual"},
+    {"action": "recall_memory", "success": true, "note": "LEARN-001 (2026-09-24) fijaba contacto@vinculaterritorio.cl como destino del formulario: corroboró el correo del dueño sin cambiar la estrategia; el buscador de la landing sigue devolviendo []"},
+    {"action": "write_tests", "success": true, "note": "comprobación sobre la salida de yarn build (no sobre el fuente), roja en 095dd92 (exit 1) con tres fallos, incluido security.txt con Contact sin mailto: (RFC 9116)"},
+    {"action": "edit_module", "success": false, "error": "el texto nuevo de /privacidad habría publicado mailto:null si el correo volviera a null; lo reveló la mutación, no la comprobación verde"},
+    {"action": "edit_module", "success": true, "note": "texto protegido con la misma condición que la tabla; verde final exit 0 y mutación con el correo en null exit 1"},
+    {"action": "merge_pr", "success": true, "note": "PR vt-landing#16, merge 958caa9; #3 cerrado; producción enlaza el correo en /privacidad y security.txt, sellado con record"},
+    {"action": "gh_create_issues", "success": true, "note": "#18: el DNS publica dos registros DMARC (p=none y p=reject), así que no se aplica ninguno; requiere Cloudflare, sin credenciales en el .env de la landing"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+  ],
+  "lessons": [
+    "Contrastar el diagnóstico escrito de un issue con el estado actual del mundo antes de trabajar: la infraestructura de correo que el #3 daba por inexistente ya estaba publicada",
+    "Comprobar sobre lo que se publica (salida del build o producción), no sobre el código fuente: el fallo de security.txt no estaba en el código de la aplicación",
+    "Leer la salida de la mutación, no solo su código de salida: ahí apareció un defecto que la comprobación verde no veía",
+    "Un defecto encontrado fuera del alcance se registra como issue propio, con la evidencia, en vez de quedar en un comentario"
+  ]
+}
