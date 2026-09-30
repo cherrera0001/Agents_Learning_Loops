@@ -5,12 +5,16 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+from .agent import BoundedRepairAgent
 from .benchmark import (
     check_extra_annotations,
     private_metadata,
     write_breakdown,
     write_family_breakdown,
 )
+from .diagnostic import AGENT_NAME as DIAGNOSTIC_AGENT
+from .diagnostic import DECISION_INPUTS, replay_decision
+from .diagnostic import POLICY as DIAGNOSTIC_POLICY
 from .evidence import (
     SOURCE_HASH_NORMALIZATION,
     digest,
@@ -20,6 +24,12 @@ from .evidence import (
     source_sha256,
 )
 from .runner import ROOT, source_manifest
+
+# Decision policy each known agent must declare (#58); None = the default decision, without policy.
+AGENT_POLICIES = {BoundedRepairAgent.name: None, DIAGNOSTIC_AGENT: DIAGNOSTIC_POLICY}
+DIAGNOSTIC_FIELDS = frozenset(
+    {"policy", "diagnostic", "plan_without_memory", "memory_proposal", "memory_effect"}
+)
 
 
 def ratio(numerator, denominator):
@@ -84,6 +94,68 @@ def single_scheme(receipts):
     return schemes.pop() if schemes else None
 
 
+def decision_policy(record):
+    """(agent, policy) of a receipt, requiring both to agree in both directions (#58).
+
+    The default agent declares no policy and carries no diagnostic-baseline field; the
+    diagnostic agent declares exactly its policy. Any other agent is unknown: renaming
+    the agent or dropping the policy cannot move a receipt out of the diagnostic checks.
+    """
+    agent = record["agent"]
+    if agent not in AGENT_POLICIES:
+        raise ValueError(f"unknown agent: {agent!r}")
+    expected = AGENT_POLICIES[agent]
+    decision = record["decision"]
+    if expected is None:
+        if DIAGNOSTIC_FIELDS & decision.keys() or "decision_inputs" in record:
+            raise ValueError("default-agent receipt carries diagnostic-baseline fields")
+    elif decision.get("policy") != expected:
+        raise ValueError("agent and decision policy disagree")
+    return agent, expected
+
+
+def single_policy(runs):
+    """Refuse to pair or pool runs produced by different agents or decision policies.
+
+    Two campaigns in one directory would otherwise be paired inside each batch
+    and summed silently (#58).
+    """
+    policies = {decision_policy(r) for r in runs}
+    if len(policies) > 1:
+        raise ValueError(
+            "cannot evaluate a mix of agents or decision policies: "
+            + ", ".join(sorted(f"{agent}/{policy}" for agent, policy in policies))
+        )
+    return policies.pop() if policies else None
+
+
+def check_diagnostic(runs):
+    """Diagnostic-baseline receipts (#58), after ``single_policy``.
+
+    Each receipt must declare exactly the prior reproduction (``DECISION_INPUTS``),
+    whose test-0 failed; the decision must be consistent with what the receipt
+    recorded (task, eligible lessons, seed and test-0); and every condition of a cell
+    must have received the same diagnosis. The replay proves consistency, not that
+    nothing else was consulted: the order is enforced by the runner and tested there.
+    """
+    diagnoses = defaultdict(set)
+    for r in runs:
+        if r["agent"] != DIAGNOSTIC_AGENT:
+            continue
+        tests = r["tests"]
+        if (
+            r.get("decision_inputs") != DECISION_INPUTS
+            or [t["id"] for t in tests] != [f"test-{i}" for i in range(len(tests))]
+            or tests[0]["returncode"] == 0
+        ):
+            raise ValueError("diagnostic decision without the declared prior reproduction (failing test-0)")
+        if r["decision"] != replay_decision(r):
+            raise ValueError("diagnostic decision does not replay from its receipt")
+        diagnoses[(r["batch_id"], r["seed"], r["task"]["id"])].add(digest(r["decision"]["diagnostic"]))
+    if any(len(found) > 1 for found in diagnoses.values()):
+        raise ValueError("conditions of one cell received different diagnoses")
+
+
 def load_runs(evidence_dir):
     paths = sorted(Path(evidence_dir).glob("RUN-*.json"))
     receipts = [read_receipt(p) for p in paths]
@@ -99,6 +171,8 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
     evidence_dir = Path(evidence_dir or root / "evidence/runs")
     paths, receipts, runs = load_runs(evidence_dir)
     single_scheme(receipts)
+    single_policy(runs)
+    check_diagnostic(runs)
     metadata = private_metadata(root)
     by_id = {r["run_id"]: r for r in runs}
     # Same normalization as the runner's source manifest. For v1 receipts it is

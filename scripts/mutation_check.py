@@ -20,6 +20,11 @@ MEMORY = ROOT / "src" / "associative_agent_loop" / "memory"
 EXPERIMENTS = ROOT / "src" / "experiments"
 PROPERTIES = "tests/unit/test_properties.py"
 EXPERIMENT_TESTS = ["tests/test_experiment_harness.py", "tests/test_experiment_guards.py"]
+# Línea base de diagnóstico (#58): trazas sintéticas (rápido) y conexión con runner/evaluador.
+DIAGNOSTIC_TESTS = ["tests/test_experiment_diagnostic.py"]
+DIAGNOSTIC_HARNESS = ["tests/test_experiment_diagnostic_harness.py"]
+DIAGNOSTIC_ANALYSIS = ["tests/unit/test_analyze_diagnostic_baseline.py"]
+CONTROLS = ([PROPERTIES], EXPERIMENT_TESTS, DIAGNOSTIC_TESTS, DIAGNOSTIC_HARNESS, DIAGNOSTIC_ANALYSIS)
 
 # (nombre, archivo, original, mutación, destino de pytest que debe detectarla)
 # El destino es una lista de argumentos de pytest propia de cada mutación.
@@ -116,6 +121,147 @@ MUTATIONS = [
         "os.replace(temporary, target)",
         EXPERIMENT_TESTS,
     ),
+    # Línea base de diagnóstico (#58)
+    (
+        "D: candidatos por unión, no intersección",
+        EXPERIMENTS / "diagnostic.py",
+        "allowed &= set(FAILURE_MODES[mode])",
+        "allowed |= set(FAILURE_MODES[mode])",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: la memoria precede al diagnóstico",
+        EXPERIMENTS / "diagnostic.py",
+        "key=lambda op: (op not in candidates, op != proposal, prior.index(op))",
+        "key=lambda op: (op != proposal, op not in candidates, prior.index(op))",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: marcador NoneType ignorado",
+        EXPERIMENTS / "diagnostic.py",
+        'issubclass(cls, (TypeError, AttributeError)) and feature["none_marker"]',
+        "issubclass(cls, (TypeError, AttributeError))",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: fallback ambiguo distinto de DEFAULT",
+        EXPERIMENTS / "diagnostic.py",
+        'status, allowed = "ambiguous", set(STRATEGIES)',
+        'status, allowed = "ambiguous", {"initialize_storage"}',
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: el agente ignora la reproducción",
+        EXPERIMENTS / "diagnostic.py",
+        'diagnosis = diagnose(reproduction.get("stderr"))',
+        "diagnosis = diagnose(None)",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: la reproducción llega después de decidir",
+        EXPERIMENTS / "runner.py",
+        'if getattr(agent, "reads_reproduction", False):',
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador no repite la decisión",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("diagnostic decision does not replay from its receipt")',
+        "pass",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador acepta mezcla de políticas",
+        EXPERIMENTS / "evaluate.py",
+        "if len(policies) > 1:",
+        "if len(policies) > 9:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador acepta diagnósticos distintos por celda",
+        EXPERIMENTS / "evaluate.py",
+        "if any(len(found) > 1 for found in diagnoses.values()):",
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador no exige test-0 como primera prueba",
+        EXPERIMENTS / "evaluate.py",
+        'or [t["id"] for t in tests] != [f"test-{i}" for i in range(len(tests))]',
+        "or False",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: análisis con margen estricto",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        "if difference >= MARGIN:",
+        "if difference > MARGIN:",
+        DIAGNOSTIC_ANALYSIS,
+    ),
+    (
+        "D: decision_inputs solo por existencia",
+        EXPERIMENTS / "evaluate.py",
+        'r.get("decision_inputs") != DECISION_INPUTS',
+        '"decision_inputs" not in r',
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: reproducción que no falla aceptada",
+        EXPERIMENTS / "evaluate.py",
+        'or tests[0]["returncode"] == 0',
+        "or False",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: agente de diagnóstico sin su política aceptado",
+        EXPERIMENTS / "evaluate.py",
+        'elif decision.get("policy") != expected:',
+        "elif False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: agente desconocido aceptado sin política",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError(f"unknown agent: {agent!r}")',
+        "return agent, None",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: agente por defecto con campos de diagnóstico",
+        EXPERIMENTS / "evaluate.py",
+        'if DIAGNOSTIC_FIELDS & decision.keys() or "decision_inputs" in record:',
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: análisis acepta una sola réplica",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        "if len(batches) != REPLICATES:",
+        "if len(batches) > REPLICATES:",
+        DIAGNOSTIC_ANALYSIS,
+    ),
+    (
+        "D: análisis acepta lotes incompletos",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        "if found != expected:",
+        "if not found <= expected:",
+        DIAGNOSTIC_ANALYSIS,
+    ),
+    (
+        "D: análisis acepta entrenamiento futuro",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        'or order[prior["task"]["id"]] >= order[r["task"]["id"]]',
+        "or False",
+        DIAGNOSTIC_ANALYSIS,
+    ),
+    (
+        "D: análisis sin verificar el sello",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        "if checksum is None or hashlib.sha256(canonical(record)).hexdigest() != checksum:",
+        "if checksum is None:",
+        DIAGNOSTIC_ANALYSIS,
+    ),
 ]
 
 
@@ -127,7 +273,7 @@ def pytest_run(targets: list[str]) -> subprocess.CompletedProcess[str]:
 def control() -> bool:
     """Ejecución sin mutar: si falla, los resultados de mutación serían inválidos."""
     ok = True
-    for targets in ([PROPERTIES], EXPERIMENT_TESTS):
+    for targets in CONTROLS:
         result = pytest_run(targets)
         status = "VERDE " if result.returncode == 0 else "ROJO  "
         print(f"CONTROL {status} {' '.join(targets)}")

@@ -298,3 +298,5 @@ hashes; it lists the differing fields. CI reruns that campaign on Ubuntu and
 compares it with the reference. Any intended change to the agent, the project
 under repair or the benchmark changes the projection, so the reference must be
 regenerated and reviewed in the same pull request.
+
+Supplement: [diagnostic baseline (#58)](diagnostic_baseline_protocol.md), an opt-in agent that also reads the public reproduction.

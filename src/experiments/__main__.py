@@ -6,7 +6,8 @@ import uuid
 from pathlib import Path
 
 from .agent import BoundedRepairAgent
-from .benchmark import HISTORICAL_CAMPAIGN, REFERENCE_CAMPAIGN, TASK_SETS
+from .benchmark import DIAGNOSTIC_CAMPAIGN, HISTORICAL_CAMPAIGN, REFERENCE_CAMPAIGN, TASK_SETS
+from .diagnostic import DiagnosticRepairAgent
 from .evaluate import compare, evaluate
 from .evidence import read_receipt
 from .memory import EvidenceMemory
@@ -20,8 +21,10 @@ from .runner import (
     update_memory,
 )
 
+CAMPAIGNS = {c["name"]: c for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN)}
 
-def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"]):
+
+def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"], agent_factory=BoundedRepairAgent):
     if replicates < 1 or len(set(seeds)) != len(seeds):
         raise ValueError("positive replication count and unique seeds required")
     for _ in range(replicates):
@@ -34,7 +37,7 @@ def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"]):
                 for task_id in tasks:
                     path = run_experiment(
                         task_id,
-                        BoundedRepairAgent(),
+                        agent_factory(),
                         mode,
                         seed,
                         memory=memory,
@@ -59,12 +62,19 @@ def main():
     run = sub.add_parser("run")
     run.add_argument(
         "--campaign",
-        choices=[REFERENCE_CAMPAIGN["name"]],
-        help="declared reference campaign (#44): fixes seeds, replicates and task set",
+        choices=sorted(CAMPAIGNS),
+        help=(
+            "declared campaign: reference-v2 (#44) or the opt-in diagnostic-baseline-v1 (#58); "
+            "fixes seeds, replicates and task set (and the agent for #58)"
+        ),
     )
     run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
     run.add_argument("--replicates", type=int, help="default: 2")
-    run.add_argument("--evidence-dir", type=Path, default=ROOT / "evidence/runs")
+    run.add_argument(
+        "--evidence-dir",
+        type=Path,
+        help="default: evidence/runs; diagnostic-baseline-v1 defaults to its own directory",
+    )
     run.add_argument(
         "--task-set",
         choices=sorted(TASK_SETS),
@@ -83,17 +93,23 @@ def main():
     repro.add_argument("task")
     args = parser.parse_args()
     if args.command == "run":
-        declared = REFERENCE_CAMPAIGN if args.campaign else HISTORICAL_CAMPAIGN
+        declared = CAMPAIGNS[args.campaign] if args.campaign else HISTORICAL_CAMPAIGN
         seeds = list(declared["seeds"]) if args.seeds is None else args.seeds
         replicates = declared["replicates"] if args.replicates is None else args.replicates
         task_set = declared["task_set"] if args.task_set is None else args.task_set
         if args.campaign and (
-            seeds != list(REFERENCE_CAMPAIGN["seeds"])
-            or replicates != REFERENCE_CAMPAIGN["replicates"]
-            or task_set != REFERENCE_CAMPAIGN["task_set"]
+            seeds != list(declared["seeds"])
+            or replicates != declared["replicates"]
+            or task_set != declared["task_set"]
         ):
             parser.error(f"--campaign {args.campaign} fixes seeds, replicates and task set")
-        campaign(seeds, replicates, args.evidence_dir, TASK_SETS[task_set])
+        evidence_dir = args.evidence_dir or ROOT / declared.get("evidence_dir", "evidence/runs")
+        if declared is DIAGNOSTIC_CAMPAIGN:
+            campaign(
+                seeds, replicates, evidence_dir, TASK_SETS[task_set], agent_factory=DiagnosticRepairAgent
+            )
+        else:
+            campaign(seeds, replicates, evidence_dir, TASK_SETS[task_set])
     elif args.command == "compare":
         try:
             result = compare(args.reference, args.candidate)
