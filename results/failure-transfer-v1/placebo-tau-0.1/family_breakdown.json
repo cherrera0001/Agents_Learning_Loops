@@ -1,0 +1,172 @@
+{
+  "schema_id": "software-learning-family-breakdown/v1",
+  "partition": "transfer",
+  "kinds": {
+    "misleading": {
+      "authentication": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-07"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 6,
+          "iterations_total": 18,
+          "FirstAttemptSuccessRate": 0.5,
+          "IterationsPerTask": 1.5,
+          "LearningGain": {
+            "IterationsPerTask": 0.0,
+            "FirstAttemptSuccessRate": 0.0
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-07"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 6,
+          "iterations_total": 18,
+          "FirstAttemptSuccessRate": 0.5,
+          "IterationsPerTask": 1.5
+        }
+      },
+      "configuration": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-08"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 0,
+          "iterations_total": 30,
+          "FirstAttemptSuccessRate": 0.0,
+          "IterationsPerTask": 2.5,
+          "LearningGain": {
+            "IterationsPerTask": 0.5,
+            "FirstAttemptSuccessRate": -0.3333333333333333
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-08"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 4,
+          "iterations_total": 24,
+          "FirstAttemptSuccessRate": 0.3333333333333333,
+          "IterationsPerTask": 2.0
+        }
+      },
+      "readiness": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-09"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 12,
+          "iterations_total": 12,
+          "FirstAttemptSuccessRate": 1.0,
+          "IterationsPerTask": 1.0,
+          "LearningGain": {
+            "IterationsPerTask": 0.0,
+            "FirstAttemptSuccessRate": 0.0
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-09"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 12,
+          "iterations_total": 12,
+          "FirstAttemptSuccessRate": 1.0,
+          "IterationsPerTask": 1.0
+        }
+      }
+    },
+    "original": {
+      "authentication": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-04"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 12,
+          "iterations_total": 12,
+          "FirstAttemptSuccessRate": 1.0,
+          "IterationsPerTask": 1.0,
+          "LearningGain": {
+            "IterationsPerTask": -0.5,
+            "FirstAttemptSuccessRate": 0.5
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-04"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 6,
+          "iterations_total": 18,
+          "FirstAttemptSuccessRate": 0.5,
+          "IterationsPerTask": 1.5
+        }
+      },
+      "configuration": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-05"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 6,
+          "iterations_total": 18,
+          "FirstAttemptSuccessRate": 0.5,
+          "IterationsPerTask": 1.5,
+          "LearningGain": {
+            "IterationsPerTask": 0.0,
+            "FirstAttemptSuccessRate": 0.0
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-05"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 6,
+          "iterations_total": 18,
+          "FirstAttemptSuccessRate": 0.5,
+          "IterationsPerTask": 1.5
+        }
+      },
+      "readiness": {
+        "ASSOCIATIVE_MEMORY": {
+          "tasks": [
+            "EXP-06"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 12,
+          "iterations_total": 12,
+          "FirstAttemptSuccessRate": 1.0,
+          "IterationsPerTask": 1.0,
+          "LearningGain": {
+            "IterationsPerTask": 0.0,
+            "FirstAttemptSuccessRate": 0.0
+          }
+        },
+        "NO_MEMORY": {
+          "tasks": [
+            "EXP-06"
+          ],
+          "runs": 12,
+          "first_attempt_successes": 12,
+          "iterations_total": 12,
+          "FirstAttemptSuccessRate": 1.0,
+          "IterationsPerTask": 1.0
+        }
+      }
+    }
+  },
+  "definitions": {
+    "original": "transfer tasks without decoy_family (EXP-04..06): the public text is lexically closest to the correct family, so success does not show causal transfer over lexical cues",
+    "misleading": "transfer tasks with decoy_family (EXP-07..09): the public text imitates a decoy family; opposite interpretation, never pooled with original",
+    "cell": "runs = transfer runs of that family and condition over all seeds and replicates; rates = numerator / runs",
+    "LearningGain": "metric(condition) - metric(NO_MEMORY) in the same cell; negative IterationsPerTask is favourable, positive FirstAttemptSuccessRate is favourable"
+  }
+}

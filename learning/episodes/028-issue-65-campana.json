@@ -1,0 +1,26 @@
+{
+  "seq": 28,
+  "id": "issue-65-campana",
+  "goal": "Orquestar H7 (#65): probar de verdad si la memoria de fallos transfiere o contamina entre tareas, con dosis-respuesta del alcance y placebo, y leer el resultado sin inflarlo",
+  "ref": "#65, PR #66",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "antes de diseñar se revisaron issues, PR y worktrees abiertos (lección del episodio 026): no había trabajo en curso"},
+    {"action": "recall_memory", "success": true, "note": "devlog recall devolvió la lección de H6 sobre reglas refutables por construcción; confirmó el diseño (ya preveía celdas sin exposición), no lo cambió"},
+    {"action": "update_spec", "success": false, "error": "el pre-registro afirmó que un tipo sin exposición cumple hurt = 0 por construcción; es falso si Changed es 1 o 2 (lo detectó el implementador, desviación D1)"},
+    {"action": "update_spec", "success": false, "error": "el pre-registro no previó que el placebo acumula su propia memoria y diverge de la variante real (desviación D2)"},
+    {"action": "update_spec", "success": true, "note": "C0 b1565bf antes de implementar, con el conocimiento previo de la tabla de similitudes de H6 declarado; no se modificó después"},
+    {"action": "review_code", "success": true, "note": "C1 revisado con medios propios: ruff, mypy, 496 tests, 88/88 mutaciones, núcleo leído, H6 reproducido byte a byte"},
+    {"action": "run_demo", "success": true, "note": "campaña failure-transfer-v1 una sola vez sobre ffbf862: 1 944 PASS, 0 ERROR; evidencia comprometida antes de agregar"},
+    {"action": "run_tests", "success": true, "note": "veredicto pre-registrado sobre C: «contamina» (τ = 0.1); en C la memoria de fallos entre tareas nunca ayudó"},
+    {"action": "review_code", "success": true, "note": "atribución por recibo: cada efecto es una relación entre dos tareas; la no monotonía de τ = 0 es una cancelación tras contaminar el entrenamiento (EXP-01 → EXP-02), fuera de las reglas"},
+    {"action": "update_docs", "success": false, "error": "el primer borrador del informe clasificó EXP-04 → EXP-07 como familias distintas; los recibos muestran que es la misma familia"},
+    {"action": "update_docs", "success": true, "note": "corregido antes del commit: las relaciones útiles y las dañinas se intercalan en similitud, así que ningún τ las separa"}
+  ],
+  "lessons": [
+    "Una dosis-respuesta no monótona pide leer los recibos: puede ser una cancelación entre dos errores y no un alcance seguro",
+    "Un análisis que solo lee la transferencia puede dejar fuera la contaminación del entrenamiento: hay que contarla aparte",
+    "Antes de concluir que un umbral separa efectos, ordenar todas las relaciones observadas por esa señal y comprobar si se intercalan",
+    "Un placebo con memoria propia deja de ser el mismo registro rotado después de la primera divergencia: declararlo en el diseño",
+    "Clasificar la familia de una relación desde el resultado observado, no desde el recuerdo del diseño"
+  ]
+}
