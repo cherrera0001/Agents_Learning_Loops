@@ -29,6 +29,10 @@ FAILURE_MODES = {
     "other": STRATEGIES,
 }
 RULES_SHA256 = digest({"id": RULES_ID, "modes": FAILURE_MODES, "storage_modules": STORAGE_MODULES})
+# Exact declaration written by the runner in every receipt of this agent. The order
+# itself is enforced by the runner code (and tested by call order); the evaluator
+# requires this exact value and a failing test-0.
+DECISION_INPUTS = {"order": ["RETRIEVE", "test-0", "plan"], "reproduction": "test-0"}
 
 _SEPARATOR = re.compile(r"^={20,}$", re.MULTILINE)
 _HEADER = re.compile(r"^(ERROR|FAIL): ")

@@ -36,8 +36,17 @@ condition. The retrieval key (`title + context`) and memory content are unchange
 - Additive fields, written only by this agent: `decision.policy`, `decision.diagnostic`,
   `decision.plan_without_memory`, `decision.memory_proposal`, `decision.memory_effect`, and the record field
   `decision_inputs`. The hashed agent context also covers the reproduction the agent received.
-- `python -m experiments evaluate` rejects a directory that mixes agents or decision policies. For this
-  policy it also recomputes each decision from its receipt (task, eligible lessons, seed and `test-0`) and
-  requires the same diagnosis in the three conditions of each (batch, seed, task). Reports of published
-  campaigns are unchanged.
-- The pre-registered analysis is `python -m scripts.analyze_diagnostic_baseline --evidence <dir>`.
+- `python -m experiments evaluate` requires agent and policy to agree in both directions: the default
+  agent declares no policy and carries no diagnostic-baseline field, the diagnostic agent declares exactly
+  `diagnostic-baseline/v1`, and any other agent name is rejected. It rejects a directory that mixes agents
+  or policies. For diagnostic receipts it requires exactly
+  `decision_inputs = {"order": ["RETRIEVE", "test-0", "plan"], "reproduction": "test-0"}`, sequential test
+  IDs and a failing `test-0`; it recomputes each decision from the receipt (task, eligible lessons, seed and
+  `test-0`) and requires the same diagnosis in the three conditions of each (batch, seed, task). The replay
+  proves consistency with the recorded inputs, not that nothing else was consulted: the order is enforced
+  by the runner and tested by call order. Reports of published campaigns are unchanged.
+- The pre-registered analysis is `python -m scripts.analyze_diagnostic_baseline --evidence <dir>`. It
+  verifies each receipt seal with the standard library, cites `generated_from`, and rejects anything but
+  the declared campaign (2 batches × 6 seeds × 9 tasks × 3 conditions, no duplicates, lessons only from
+  earlier training of the same batch, seed and condition, one `memory_update` per B/C training run)
+  before any verdict. Pairs never mix batches.

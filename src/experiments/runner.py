@@ -1,5 +1,6 @@
 """Controller: immutable evidence from real subprocess tests in fresh copies."""
 
+import copy
 import difflib
 import json
 import os
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from .agent import RULES, AgentView, BoundedRepairAgent
 from .benchmark import ALL_TASKS, private_metadata
-from .diagnostic import DiagnosticView
+from .diagnostic import DECISION_INPUTS, DiagnosticView
 from .evidence import (
     RECEIPT_SCHEMA,
     SOURCE_HASH_NORMALIZATION,
@@ -239,10 +240,7 @@ def run_experiment(
                 public = {"returncode": reproduction["returncode"], "stderr": reproduction["stderr"]}
                 view = DiagnosticView(task.model_dump(), dict(initial), tuple(memories), mode, seed, public)
                 context["reproduction"] = public
-                record["decision_inputs"] = {
-                    "order": ["RETRIEVE", "test-0", "plan"],
-                    "reproduction": "test-0",
-                }
+                record["decision_inputs"] = copy.deepcopy(DECISION_INPUTS)
             else:
                 view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
             record["agent_context_sha256"] = digest(context)

@@ -124,16 +124,15 @@ def test_evaluator_accepts_a_consistent_diagnostic_campaign(cell):
         assert len(diagnoses) == 1  # A, B and C received the same diagnosis
 
 
-def resealed(cell, target, change):
-    """Copy a campaign, altering the EXP-04 TEXT_HISTORY receipt and resealing it as a
-    privileged author could: hashes alone cannot detect this, the replay must."""
+def resealed(cell, target, change, every=False):
+    """Copy a campaign, altering the EXP-04 TEXT_HISTORY receipt (or every task run) and
+    resealing it as a privileged author could: hashes alone cannot detect this."""
     target.mkdir()
     for path in cell.glob("RUN-*.json"):
         record = read_receipt(path)
         record.pop("receipt_sha256")
-        if record["kind"] == "task_run" and (record["task"]["id"], record["memory_mode"]) == (
-            "EXP-04",
-            "TEXT_HISTORY",
+        if record["kind"] == "task_run" and (
+            every or (record["task"]["id"], record["memory_mode"]) == ("EXP-04", "TEXT_HISTORY")
         ):
             change(record)
         publish(target, record)
@@ -164,9 +163,74 @@ def test_evaluator_rejects_different_diagnoses_within_one_cell(cell, tmp_path):
         evaluate(resealed(cell, tmp_path / "cell", consistent_but_different))
 
 
-def test_evaluator_requires_the_recorded_prior_reproduction(cell, tmp_path):
+def _set(key, value):
+    def change(record):
+        record[key] = value
+
+    return change
+
+
+def _test0(field, value):
+    def change(record):
+        record["tests"][0][field] = value
+
+    return change
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda record: record.pop("decision_inputs"),
+        _set("decision_inputs", {"order": ["plan", "test-0"], "reproduction": "test-9"}),  # false order
+        _set("decision_inputs", {"order": ["RETRIEVE", "test-0", "plan"], "reproduction": "test-0", "x": 1}),
+        _set("decision_inputs", "RETRIEVE, test-0, plan"),
+        _test0("returncode", 0),  # a reproduction that did not fail; the replay alone still agrees
+        _test0("id", "test-9"),
+    ],
+    ids=["missing", "false-order", "extra-key", "not-a-dict", "test0-passed", "test0-renamed"],
+)
+def test_evaluator_requires_the_exact_declared_prior_failing_reproduction(cell, tmp_path, change):
     with pytest.raises(ValueError, match="prior reproduction"):
-        evaluate(resealed(cell, tmp_path / "order", lambda record: record.pop("decision_inputs")))
+        evaluate(resealed(cell, tmp_path / "order", change))
+
+
+def _drop_policy(record):
+    record["decision"].pop("policy")
+
+
+def _as_agent(name, drop_policy):
+    def change(record):
+        record["agent"] = name
+        if drop_policy:
+            record["decision"].pop("policy")
+
+    return change
+
+
+@pytest.mark.parametrize(
+    ("change", "every", "message"),
+    [
+        (_drop_policy, False, "agent and decision policy disagree"),
+        (_drop_policy, True, "agent and decision policy disagree"),  # consistent omission, whole campaign
+        (lambda r: r["decision"].update(policy="diagnostic-baseline/v9"), True, "disagree"),
+        (_as_agent("custom-repair-v1", True), True, "unknown agent"),  # fake agent evading replay
+        (_as_agent("custom-repair-v1", False), True, "unknown agent"),
+        (_as_agent(BoundedRepairAgent.name, True), True, "default-agent receipt carries"),
+        (_as_agent(BoundedRepairAgent.name, False), False, "default-agent receipt carries"),
+    ],
+    ids=[
+        "policy-omitted",
+        "policy-omitted-all",
+        "policy-unknown",
+        "fake-agent-no-policy",
+        "fake-agent-with-policy",
+        "default-name-no-policy",
+        "default-name-with-policy",
+    ],
+)
+def test_evaluator_requires_agent_and_policy_to_agree_both_ways(cell, tmp_path, change, every, message):
+    with pytest.raises(ValueError, match=message):
+        evaluate(resealed(cell, tmp_path / "coherence", change, every))
 
 
 def test_evaluator_rejects_mixed_agents_or_policies(cell, tmp_path):
