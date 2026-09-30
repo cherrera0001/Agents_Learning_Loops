@@ -9,7 +9,7 @@ Los términos siguen el [glosario](glosario.md).
 ```mermaid
 flowchart TB
     subgraph E["Capa de entorno · quien edita el repositorio"]
-        AG["Agentes de entorno<br/>orquestador · implementador · revisor · evaluador · bitácora"]
+        AG["Agentes de entorno<br/>orquestador · implementador · revisor · cierre · evaluador · bitácora"]
         SK["Skills de entorno<br/>skills/*/SKILL.md"]
         HE["Harness de entorno<br/>permisos · parada · evidencia"]
     end
@@ -39,6 +39,7 @@ flowchart TB
 | Entorno | Regla de admisión de skills | [`skills.md`](skills.md) y [`skills/`](../../skills/README.md) |
 | Entorno | Flujo por issue y comprobaciones de CI | [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |
 | Entorno | Bitácora de desarrollo (fuente de verdad) | [`learning/README.md`](../../learning/README.md) y `learning/episodes/` |
+| Entorno | Caso real del sitio público (observacional; **no es evidencia del Experimento 1**) | [`caso-real-contacto-vt.md`](caso-real-contacto-vt.md) |
 | Experimento | Protocolo, frontera de fuga y recibos | [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md) |
 | Experimento | Evidencia y cómo corregir hallazgos | [`evidence/README.md`](../../evidence/README.md) |
 | Experimento | Aplicación bajo reparación | [`experiments/software_project/README.md`](../../experiments/software_project/README.md) |

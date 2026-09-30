@@ -154,12 +154,17 @@ Claude, es un **agente de entorno** y trabaja bajo un contrato documental, sin c
 |---|---|
 | Entrada para cualquier agente de entorno | [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` y `.cursor/rules/entorno.mdc` remiten a él) |
 | Glosario de los siete términos | [`docs/entorno/glosario.md`](docs/entorno/glosario.md) |
-| Roles: orquestador, implementador, revisor, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
+| Roles: orquestador, implementador, revisor, cierre, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
 | Harness de entorno (permisos, parada, evidencia) y resumen del harness de experimento | [`docs/entorno/harness.md`](docs/entorno/harness.md) |
 | Skills de entorno: procedimientos ya fijados, en Markdown | [`skills/`](skills/README.md) · regla de admisión en [`docs/entorno/skills.md`](docs/entorno/skills.md) |
 
 Las skills de entorno no son la **skill de memoria** del esquema `software-learning-memory/v1`, que sigue
 sin implementarse.
+
+El contrato de entorno también se usó fuera de este repositorio, en el sitio público `vinculaterritorio.cl`:
+agentes de entorno que recuperan la memoria del sitio, comprueban producción y cierran o bloquean issues. Es un
+[caso observacional](docs/entorno/caso-real-contacto-vt.md), sin ablación de memoria ni control pareado. No
+ejercita el solver acotado ni el grafo del Experimento 1 y no es evidencia de ninguno de los dos.
 
 ### 3.2 Modelo de construcción
 
@@ -892,6 +897,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   └── software_memory_schema_v1.json, reflection_schema_v1.json
 ├── docs/                      # verificación, estimación, pre-registro y resultados de H4, referencia histórica del Experimento 0
 │   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills, enrutamiento.md
+│       └── caso-real-contacto-vt.md  # caso observacional del sitio público (no es evidencia del Experimento 1)
 ├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
 ├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
 ├── learning/                  # episodios de desarrollo y memoria derivada
