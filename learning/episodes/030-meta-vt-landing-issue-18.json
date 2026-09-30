@@ -1,5 +1,5 @@
 {
-  "seq": 29,
+  "seq": 30,
   "id": "meta-vt-landing-issue-18",
   "goal": "Episodio meta: dejar un solo registro DMARC en vinculaterritorio.cl (vt-landing #18) con la memoria de ese repositorio, con la cuenta vinculaterritorio",
   "ref": "vinculaterritorio/vt-landing#18, PR vinculaterritorio/vt-landing#19",
