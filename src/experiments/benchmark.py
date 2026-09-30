@@ -57,6 +57,30 @@ FAILURE_MEMORY_CAMPAIGN = {
     "agent": "bounded-ast-repair-v1+diagnostic-v1+failure-memory-v1",
     "evidence_dir": "evidence/failure-memory-v1",
 }
+# Transferencia y contaminación de la memoria de fallos (H7, #65), opt-in: el diseño de H6 con 18
+# condiciones (bases A y C × sin memoria de fallos, real y placebo con τ = 0.5 / 0.25 / 0.1 / 0),
+# entrenamiento EXP-01..03 y una sola pasada de EXP-04..09. Pre-registrada en
+# docs/preregistration/failure-transfer.md; sus recibos van a su propio directorio.
+FAILURE_TRANSFER_CAMPAIGN = {
+    "name": "failure-transfer-v1",
+    "seeds": FAILURE_MEMORY_CAMPAIGN["seeds"],
+    "replicates": FAILURE_MEMORY_CAMPAIGN["replicates"],
+    "task_set": FAILURE_MEMORY_CAMPAIGN["task_set"],
+    "train": FAILURE_MEMORY_CAMPAIGN["train"],
+    "transfer": FAILURE_MEMORY_CAMPAIGN["transfer"],
+    "passes": 1,
+    "taus": (0.5, 0.25, 0.1, 0.0),
+    "conditions": tuple(
+        name
+        for base in ("A", "C")
+        for name in (
+            base,
+            *(f"{base}_{variant}{suffix}" for variant in "RP" for suffix in ("50", "25", "10", "00")),
+        )
+    ),
+    "agent": "bounded-ast-repair-v1+diagnostic-v1+failure-memory-v1+failure-transfer-v1",
+    "evidence_dir": "evidence/failure-transfer-v1",
+}
 
 
 def private_metadata(root):

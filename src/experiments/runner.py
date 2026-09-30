@@ -29,6 +29,9 @@ from .evidence import (
 )
 from .failure_memory import CONDITIONS, PASSES, STORE, FailureView
 from .failure_memory import DECISION_INPUTS as FAILURE_DECISION_INPUTS
+from .failure_transfer import CONDITIONS as TRANSFER_CONDITIONS
+from .failure_transfer import DECISION_INPUTS as TRANSFER_DECISION_INPUTS
+from .failure_transfer import TransferView
 from .memory import EvidenceMemory
 from .models import MemoryMode, PublicTask, Reflection
 
@@ -188,10 +191,22 @@ def run_experiment(
     reads_failures = getattr(agent, "reads_failures", False)
     if reads_failures != (condition is not None):
         raise ValueError("la memoria de fallos exige su agente y una condición declarada, y solo ellos")
-    if condition is not None and (
-        condition not in CONDITIONS
-        or CONDITIONS[condition] != (mode, failures is not None)
-        or pass_number not in PASSES
+    # Transferencia de fallos opt-in (#65): condiciones propias, con τ y placebo, y una sola pasada.
+    transfer = getattr(agent, "failure_transfer", False)
+    if (
+        condition is not None
+        and not transfer
+        and (
+            condition not in CONDITIONS
+            or CONDITIONS[condition] != (mode, failures is not None)
+            or pass_number not in PASSES
+        )
+    ):
+        raise ValueError("condición, modo de memoria, memoria de fallos y pasada no concuerdan")
+    if transfer and (
+        condition not in TRANSFER_CONDITIONS
+        or TRANSFER_CONDITIONS[condition][:2] != (mode, failures is not None)
+        or pass_number is not None
     ):
         raise ValueError("condición, modo de memoria, memoria de fallos y pasada no concuerdan")
     memory = memory or EvidenceMemory()
@@ -232,7 +247,13 @@ def run_experiment(
     }
     if condition is not None:
         record["condition"] = condition
-        record["pass"] = pass_number
+        if transfer:
+            # H7 (#65): el alcance y el placebo declarados de la condición; una sola pasada, sin ``pass``.
+            _, _, scope_tau, placebo = TRANSFER_CONDITIONS[condition]
+            record["failure_scope_tau"] = scope_tau
+            record["placebo"] = placebo
+        else:
+            record["pass"] = pass_number
     try:
         with tempfile.TemporaryDirectory(prefix="aal-task-") as directory:
             workspace = Path(directory)
@@ -277,6 +298,11 @@ def run_experiment(
                     )
                     context["failures"] = failure_input
                     record["decision_inputs"] = copy.deepcopy(FAILURE_DECISION_INPUTS)
+                    if transfer:
+                        # H7 (#65): el agente recibe también el alcance y el placebo de su condición.
+                        view = TransferView(**vars(view), scope_tau=scope_tau, placebo=placebo)
+                        context["failure_policy"] = {"failure_scope_tau": scope_tau, "placebo": placebo}
+                        record["decision_inputs"] = copy.deepcopy(TRANSFER_DECISION_INPUTS)
             else:
                 view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
             record["agent_context_sha256"] = digest(context)

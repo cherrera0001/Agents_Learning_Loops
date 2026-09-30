@@ -28,6 +28,10 @@ DIAGNOSTIC_ANALYSIS = ["tests/unit/test_analyze_diagnostic_baseline.py"]
 FAILURE_TESTS = ["tests/test_experiment_failure_memory.py"]
 FAILURE_HARNESS = ["tests/test_experiment_failure_memory_harness.py"]
 FAILURE_ANALYSIS = ["tests/unit/test_analyze_failure_memory.py"]
+# Transferencia de fallos (#65): alcance τ y placebo sintéticos, conexión con runner/evaluador y análisis.
+TRANSFER_TESTS = ["tests/test_experiment_failure_transfer.py"]
+TRANSFER_HARNESS = ["tests/test_experiment_failure_transfer_harness.py"]
+TRANSFER_ANALYSIS = ["tests/unit/test_analyze_failure_transfer.py"]
 CONTROLS = (
     [PROPERTIES],
     EXPERIMENT_TESTS,
@@ -37,8 +41,12 @@ CONTROLS = (
     FAILURE_TESTS,
     FAILURE_HARNESS,
     FAILURE_ANALYSIS,
+    TRANSFER_TESTS,
+    TRANSFER_HARNESS,
+    TRANSFER_ANALYSIS,
 )
 FAILURE_SCRIPT = ROOT / "scripts" / "analyze_failure_memory.py"
+TRANSFER_SCRIPT = ROOT / "scripts" / "analyze_failure_transfer.py"
 
 # (nombre, archivo, original, mutación, destino de pytest que debe detectarla)
 # El destino es una lista de argumentos de pytest propia de cada mutación.
@@ -294,15 +302,15 @@ MUTATIONS = [
     (
         "H6: alcance sin firma idéntica",
         EXPERIMENTS / "failure_memory.py",
-        "applies = same and similarity >= TAU",
-        "applies = similarity >= TAU",
+        "applies = same and similarity >= tau",
+        "applies = similarity >= tau",
         FAILURE_TESTS,
     ),
     (
         "H6: umbral de similitud estricto",
         EXPERIMENTS / "failure_memory.py",
-        "applies = same and similarity >= TAU",
-        "applies = same and similarity > TAU",
+        "applies = same and similarity >= tau",
+        "applies = same and similarity > tau",
         FAILURE_TESTS,
     ),
     (
@@ -364,8 +372,9 @@ MUTATIONS = [
     (
         "H6: evaluador acepta campos de H6 en otros agentes",
         EXPERIMENTS / "evaluate.py",
-        "if agent != FAILURE_AGENT and ("
-        "FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()):",
+        "if agent not in FAILURE_AGENTS and (\n"
+        "        FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()\n"
+        "    ):",
         "if False:",
         FAILURE_HARNESS,
     ),
@@ -445,6 +454,226 @@ MUTATIONS = [
         "valid = consistent and control and denominators",
         "valid = consistent and denominators",
         FAILURE_ANALYSIS,
+    ),
+    # Transferencia y contaminación de la memoria de fallos (#65)
+    (
+        "H7: el alcance ignora τ (siempre 0.5)",
+        EXPERIMENTS / "failure_transfer.py",
+        "decision = self.failure_decision(view, 0.0 if tau is None else tau, demote)",
+        "decision = self.failure_decision(view, 0.5, demote)",
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: scope() no recibe el τ parametrizado",
+        EXPERIMENTS / "failure_memory.py",
+        "item = scope(record, signature, query, tau)",
+        "item = scope(record, signature, query)",
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: placebo sin rotación",
+        EXPERIMENTS / "failure_transfer.py",
+        "demote = rotate if placebo else unchanged",
+        "demote = unchanged",
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: rotación del placebo al revés",
+        EXPERIMENTS / "failure_transfer.py",
+        "STRATEGIES[(i + 1) % len(STRATEGIES)]",
+        "STRATEGIES[(i - 1) % len(STRATEGIES)]",
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: F con la estrategia registrada en el placebo",
+        EXPERIMENTS / "failure_memory.py",
+        'failed.add(demote(record["strategy"]))',
+        'failed.add(record["strategy"])',
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: runner sin validar la condición de transferencia",
+        EXPERIMENTS / "runner.py",
+        "or TRANSFER_CONDITIONS[condition][:2] != (mode, failures is not None)",
+        "or False",
+        TRANSFER_TESTS,
+    ),
+    (
+        "H7: el agente no recibe τ ni placebo",
+        EXPERIMENTS / "runner.py",
+        "view = TransferView(**vars(view), scope_tau=scope_tau, placebo=placebo)",
+        "view = TransferView(**vars(view), scope_tau=0.5)",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: recibo con un τ distinto del de su condición",
+        EXPERIMENTS / "runner.py",
+        'record["failure_scope_tau"] = scope_tau',
+        'record["failure_scope_tau"] = 0.5',
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador no repite la decisión",
+        EXPERIMENTS / "evaluate.py",
+        'if r["decision"] != replay_transfer_decision(r):',
+        "if False:",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador acepta τ o placebo distintos de la condición",
+        EXPERIMENTS / "evaluate.py",
+        'if mode != r["memory_mode"] or r["failure_scope_tau"] != tau or r["placebo"] is not placebo:',
+        'if mode != r["memory_mode"]:',
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador acepta registros en A y C",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("las bases A y C no admiten registros de fallo")',
+        "pass",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador acepta un registro aplicado de la misma tarea",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("registro de fallo aplicado con origen en la misma tarea")',
+        "pass",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador sin la cadena de registros de H6",
+        EXPERIMENTS / "evaluate.py",
+        "    check_failure_chain(\n"
+        "        cells, by_id, stores, transfer_index, lambda condition: TRANSFER_CONDITIONS[condition][1]\n"
+        "    )",
+        "    pass",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: evaluador acepta campos de H7 en otros agentes",
+        EXPERIMENTS / "evaluate.py",
+        "if agent != TRANSFER_AGENT and (",
+        "if False and (",
+        TRANSFER_HARNESS,
+    ),
+    (
+        "H7: análisis acepta una sola réplica",
+        TRANSFER_SCRIPT,
+        "if len(batches) != REPLICATES:",
+        "if len(batches) > REPLICATES:",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis acepta lotes incompletos",
+        TRANSFER_SCRIPT,
+        "if found != expected:",
+        "if not found <= expected:",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis acepta réplicas distintas",
+        TRANSFER_SCRIPT,
+        "if behaviour(r, by_id) != behaviour(twin, by_id):",
+        "if False:",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis acepta registros en las bases",
+        TRANSFER_SCRIPT,
+        'if not enabled and (inputs or r["decision"]["failure_ids"] or r["failure_origins"]):',
+        "if False:",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis acepta un registro aplicado de la misma tarea",
+        TRANSFER_SCRIPT,
+        "raise ValueError(f\"registro aplicado con origen en la misma tarea en {r['run_id']}\")",
+        "pass",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis verifica el placebo sin rotar",
+        TRANSFER_SCRIPT,
+        'demotes = ROTATION[record["strategy"]] if placebo else record["strategy"]',
+        'demotes = record["strategy"]',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: análisis no compara la similitud con τ",
+        TRANSFER_SCRIPT,
+        'or item.get("applies") is not (match and tau is not None and item["similarity"] >= tau)',
+        'or item.get("applies") is not (match and tau is not None)',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: exposición con margen estricto",
+        TRANSFER_SCRIPT,
+        '"exposure": EXPOSED if changed >= MARGIN else NOT_EXPOSED,',
+        '"exposure": EXPOSED if changed > MARGIN else NOT_EXPOSED,',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: helped sin parear con la base",
+        TRANSFER_SCRIPT,
+        "helped = sum(first_ok(v) and not first_ok(x) for v, x in zip(variant, base, strict=True))",
+        "helped = sum(first_ok(v) for v, x in zip(variant, base, strict=True))",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: hurt nunca contado",
+        TRANSFER_SCRIPT,
+        "hurt = sum(first_ok(x) and not first_ok(v) for v, x in zip(variant, base, strict=True))",
+        "hurt = 0",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7a: lee celdas sin exposición",
+        TRANSFER_SCRIPT,
+        "readable = [k for k in KINDS if exposed(cells[k])]",
+        "readable = list(KINDS)",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7b: un tipo sin exposición debe tener hurt = 0 observado",
+        TRANSFER_SCRIPT,
+        '"hurt_zero": (not readable) or cells[k]["hurt"]["numerator"] == 0,',
+        '"hurt_zero": cells[k]["hurt"]["numerator"] == 0,',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7b: exige helped ≥ 3 en los dos tipos",
+        TRANSFER_SCRIPT,
+        'elif any(v["helped_at_least_margin"] for v in kinds.values()) and all(',
+        'elif all(v["helped_at_least_margin"] for v in kinds.values()) and all(',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7c: margen estricto",
+        TRANSFER_SCRIPT,
+        "elif difference >= MARGIN:",
+        "elif difference > MARGIN:",
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7c: signo invertido",
+        TRANSFER_SCRIPT,
+        'difference = real["NetTransfer"] - placebo["NetTransfer"]',
+        'difference = placebo["NetTransfer"] - real["NetTransfer"]',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: conclusión sobre la base A",
+        TRANSFER_SCRIPT,
+        'CONCLUSION_BASE = "C"',
+        'CONCLUSION_BASE = "A"',
+        TRANSFER_ANALYSIS,
+    ),
+    (
+        "H7: conclusión sin exigir el contraste con el placebo",
+        TRANSFER_SCRIPT,
+        'c[k]["verdict"] == "el contenido importa" for k in where',
+        "True for k in where",
+        TRANSFER_ANALYSIS,
     ),
 ]
 
