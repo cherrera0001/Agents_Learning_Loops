@@ -1,0 +1,35 @@
+{
+  "seq": 19,
+  "id": "meta-vt-landing-issue-6",
+  "goal": "Episodio meta: corregir un pendiente real de VinculaTerritorio (landing, issue #6) con la memoria de ese repositorio y dejar la experiencia sellada allí, sin copiar el parche aquí",
+  "ref": "vinculaterritorio/vt-landing#6, PR vinculaterritorio/vt-landing#13 y #14",
+  "steps": [
+    {"action": "git_push", "success": false, "error": "credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)"},
+    {"action": "git_push", "success": false, "error": "git fetch con el credential helper de gh en una variable: la shell partió '!gh auth git-credential' y git no reconoció la orden"},
+    {"action": "git_push", "success": true, "note": "fetch con una función de shell y el token del .env de la landing (cuenta vinculaterritorio, comprobada con gh api user); landing de fd83e03 a 51a1b8c; plataforma ya en origin/main (8140bfc), sin cambios"},
+    {"action": "run_tests", "success": true, "note": "#9 no se reproduce en 51a1b8c: yarn build exit 0 y el árbol queda igual; #10 y #11 ya resueltos en código aunque GitHub los mostraba abiertos"},
+    {"action": "recall_memory", "success": false, "error": "la búsqueda de la memoria de la landing devuelve [] para toda consulta: su buscador lee lessons/*.json y las lecciones están en .md"},
+    {"action": "recall_memory", "success": true, "note": "lectura manual de LEARN-001 (2026-09-24) y LEARN-002 (2026-09-25): ninguna trata .well-known; recuperación y línea de control persistidas antes de editar"},
+    {"action": "write_tests", "success": true, "note": "comprobación nueva en la landing, roja en 51a1b8c (exit 1) y sellada con el record de ese repositorio"},
+    {"action": "edit_module", "success": true, "note": "arreglo en rama (613392d); comprobación verde (exit 0); al revertir el arreglo vuelve a dar exit 1"},
+    {"action": "update_docs", "success": true, "note": "run receipt e INDEX de la memoria de la landing (abdd408); su validador ya fallaba en 51a1b8c por un run anterior y el run nuevo no añade errores"},
+    {"action": "open_pr", "success": true, "note": "PR vt-landing#13 con la cuenta vinculaterritorio"},
+    {"action": "merge_pr", "success": true, "note": "publicar = llevar a la rama principal: merge commit 0e1cb8e, para que los SHA citados por la evidencia sigan en master; #6 se cerró por el PR"},
+    {"action": "run_tests", "success": false, "error": "node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404"},
+    {"action": "run_tests", "success": false, "error": "UND_ERR_CONNECT_TIMEOUT intermitente de la red local al sellar la comprobación de producción"},
+    {"action": "run_tests", "success": true, "note": "producción responde 404 en el archivo quitado, con reintentos y process.exitCode; security.txt sigue en 200"},
+    {"action": "gh_project_add", "success": true, "note": "#9, #10 y #11 cerrados con evidencia en el comentario; el roadmap los movió a Done"},
+    {"action": "update_docs", "success": true, "note": "el run de la landing pasa de pendiente de merge a COMPLETE, con los recibos fallidos conservados (PR vt-landing#14, merge b709e79)"},
+    {"action": "recall_memory", "success": true, "note": "devlog recall de este repositorio, corrido después del trabajo en la landing: no pudo influir en la primera acción"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado con este episodio"}
+  ],
+  "lessons": [
+    "Leer las credenciales del .env del proyecto que se modifica y confirmar con gh api user la cuenta antes de publicar; en VT y VT-Landinpage solo vinculaterritorio",
+    "Probar la recuperación con una consulta que debería acertar antes de aceptar un resultado vacío: una memoria que su propio buscador no puede leer está guardada, pero no se puede recuperar",
+    "Contrastar la memoria con el mundo actual antes de usarla: la memoria de la landing del 2026-09-25 daba /api/contacto por pendiente de verificar, y producción ya respondía 405 a GET",
+    "Comprobar cada issue abierto contra el código de origin antes de elegirlo, y cerrarlo con la evidencia si ya está resuelto: #9, #10 y #11 figuraban abiertos",
+    "Si la recuperación no trae nada aplicable, la primera acción coincide con la línea de control y el episodio no es evidencia de uso ni de utilidad de la memoria",
+    "Un registro que dice pendiente de merge queda obsoleto al mergear: actualizarlo en el mismo ciclo, con la verificación en producción",
+    "En node -e sobre Windows, terminar con process.exitCode y no con process.exit mientras hay un fetch abierto"
+  ]
+}
