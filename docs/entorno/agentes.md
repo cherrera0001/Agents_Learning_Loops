@@ -42,6 +42,22 @@ Comprueba una entrega antes del merge.
   conclusiones nuevas se apoyan en una campaña nueva e identificada (skill
   [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md)).
 
+## Cierre
+
+Decide el estado final de un issue después de su comprobación.
+
+- Un issue se **cierra** si su comprobación está en exit 0 contra el sistema real, o se **bloquea en el dueño**
+  con la etiqueta `human-decision` si lo que falta es una decisión, una credencial o un acceso que solo tiene el
+  dueño.
+- **Prohibido dejarlo en Todo** después de una comprobación en exit 0: o se cierra, o se bloquea con la etiqueta y
+  un comentario que diga qué falta y quién lo tiene.
+- Integrar código listo para aplicar no cierra el issue si la comprobación del sistema real sigue en rojo: el PR
+  usa `Refs #<n>`, no `Closes #<n>`.
+
+El verificador SEO de la landing de VinculaTerritorio no es un agente de este laboratorio. Su comprobación
+publicada es `yarn check:produccion` en `vinculaterritorio/vt-landing`; aquí se enlaza, no se reimplementa
+([caso real](caso-real-contacto-vt.md)).
+
 ## Evaluador del experimento
 
 Es el **único** rol que lee `benchmark/private/` y agrega recibos (`python -m experiments evaluate`). Aplica
