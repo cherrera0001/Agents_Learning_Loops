@@ -1,0 +1,14 @@
+{
+  "seq": 32,
+  "id": "registro-visible-caso-real",
+  "goal": "Hacer visible en el repositorio cada resultado del caso real, también los que no salieron verdes: el sitio comprobó el contrato de entorno, no el LearningGain",
+  "ref": "docs/entorno/caso-real-contacto-vt.md#registro-visible",
+  "steps": [
+    {"action": "update_docs", "success": false, "error": "el caso real decía #4, #7 y #18 abiertos, 2 registros DMARC y un sitemap de 4 URL; los tres textos habían quedado obsoletos frente a producción y a los issues"},
+    {"action": "update_docs", "success": true, "note": "conteos por clase desde los archivos, con su fuente; lo que no tiene recibo (el 503 observado, los tamaños en bytes, los tokens) se publica como «no está en el repo»"},
+    {"action": "validate_schema", "success": true, "note": "el diagrama mermaid se renderizó sin errores antes de publicarlo"}
+  ],
+  "lessons": [
+    "Un resultado sin archivo que lo cite no se registra, y una flecha sin archivo que enlace causa y desenlace no se dibuja"
+  ]
+}

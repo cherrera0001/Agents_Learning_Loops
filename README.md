@@ -164,7 +164,9 @@ sin implementarse.
 El contrato de entorno también se usó fuera de este repositorio, en el sitio público `vinculaterritorio.cl`:
 agentes de entorno que recuperan la memoria del sitio, comprueban producción y cierran o bloquean issues. Es un
 [caso observacional](docs/entorno/caso-real-contacto-vt.md), sin ablación de memoria ni control pareado. No
-ejercita el solver acotado ni el grafo del Experimento 1 y no es evidencia de ninguno de los dos.
+ejercita el solver acotado ni el grafo del Experimento 1 y no es evidencia de ninguno de los dos. Su
+[registro visible](docs/entorno/caso-real-contacto-vt.md#registro-visible) cuenta desde los archivos todos los
+resultados, no solo los verdes, y los dibuja: una flecha solo donde un archivo enlaza la causa con el desenlace.
 
 ### 3.2 Modelo de construcción
 
