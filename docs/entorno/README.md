@@ -47,3 +47,7 @@ flowchart TB
 
 Si un documento de entorno contradice uno de experimento o de biblioteca, prevalece el de experimento o
 el de biblioteca, y el documento de entorno debe corregirse.
+
+## Caso de campo
+
+[Supervisión del formulario de VinculaTerritorio](caso-real-contacto-vt.md): registro observacional de agentes de entorno, separado de los Experimentos 0 y 1.

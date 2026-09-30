@@ -1,0 +1,47 @@
+{
+  "seq": 31,
+  "id": "caso-real-contacto-vt",
+  "goal": "Documentar el caso observacional de campo",
+  "ref": "#68",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "python del sistema: ModuleNotFoundError: No module named associative_agent_loop"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con .venv/Scripts/python.exe; lecciones sobre identidad por repositorio y evidencia"
+    },
+    {
+      "action": "read_docs",
+      "success": false,
+      "error": "Lectura inicial de Project #5 con cuenta vinculaterritorio: Could not resolve to a ProjectV2 with the number 5; no se escribieron tarjetas"
+    },
+    {
+      "action": "read_docs",
+      "success": true,
+      "note": "Lectura con identidad cherrera0001: 36 tarjetas Done, sin escrituras en tablero ni cambio persistente de cuenta"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Caso separado del harness de experimento"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "pytest: 1 failed, 495 passed; una escritura concurrente introdujo seq29 duplicado durante la comprobación"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El otro proceso renumeró su episodio a30; este caso se reserva seq31 para evitar colisión. Documentación inicialmente recibió caracteres ? por codificación de tubería PowerShell; corregida antes de publicación con UTF8."
+    }
+  ],
+  "lessons": [
+    "Comprobar identidad y propietario antes de interpretar una respuesta de acceso como ausencia",
+    "Separar casos de campo y campañas; las pruebas de ingeniería no atribuyen aprendizaje"
+  ]
+}
