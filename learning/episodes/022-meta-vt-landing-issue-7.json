@@ -1,0 +1,23 @@
+{
+  "seq": 22,
+  "id": "meta-vt-landing-issue-7",
+  "goal": "Episodio meta: ejecutar la verificación post-despliegue de la landing de VinculaTerritorio (issue #7) en todo lo que no requiere la cuenta del dueño",
+  "ref": "vinculaterritorio/vt-landing#7, PR vinculaterritorio/vt-landing#17",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "LEARN-002 verificaba canonical en out/, que ya no existe; se verificó sobre producción"},
+    {"action": "run_tests", "success": true, "note": "lista del #7 a mano contra producción: www 308, sitemap con 4 URLs, noindex del archivo sin bloqueo en robots.txt, JSON-LD, security.txt, og.png, CSP"},
+    {"action": "run_tests", "success": false, "error": "el #7 pide probar FAQPage y la portada ya no lo publica: el rediseño 4441bfe (2026-09-24) quitó la sección visible de preguntas; el punto quedó obsoleto y no se repone"},
+    {"action": "run_demo", "success": false, "error": "PageSpeed Insights sin API key respondió 429 (sin cuota diaria)"},
+    {"action": "run_demo", "success": true, "note": "Lighthouse 12.8.2 con Chrome local: sin errores de consola (la CSP no rompe nada), CLS ≤ 0.011, LCP móvil de la portada 4.4 s"},
+    {"action": "write_tests", "success": false, "error": "el mensaje de fallo de security.txt decía 'responde 200' cuando el problema era la falta de Contact mailto:; se vio en la salida de la mutación"},
+    {"action": "write_tests", "success": true, "note": "yarn check:produccion con el mensaje corregido: exit 0 contra producción y exit 1 contra otro host; los recibos anteriores quedan como reemplazados"},
+    {"action": "merge_pr", "success": true, "note": "PR vt-landing#17, merge 21e92c0; el #7 sigue abierto solo por Search Console, con la lista pendiente en un comentario"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+  ],
+  "lessons": [
+    "Separar en un issue de verificación lo automatizable de lo que requiere cuentas del dueño, automatizar lo primero y dejar lo segundo como lista explícita",
+    "Un punto de una lista de verificación puede quedar obsoleto por un cambio posterior del producto: registrarlo como obsoleto con su causa en vez de marcarlo hecho o reponerlo",
+    "Si una API pública de medición no tiene cuota, la herramienta local equivalente sirve siempre que se declare que son datos de laboratorio",
+    "Un mensaje de error engañoso en una comprobación es un defecto de la comprobación: corregirlo y volver a sellar, conservando el recibo anterior"
+  ]
+}

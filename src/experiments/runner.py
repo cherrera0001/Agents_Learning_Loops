@@ -1,5 +1,6 @@
 """Controller: immutable evidence from real subprocess tests in fresh copies."""
 
+import copy
 import difflib
 import json
 import os
@@ -16,6 +17,7 @@ from pathlib import Path
 
 from .agent import RULES, AgentView, BoundedRepairAgent
 from .benchmark import ALL_TASKS, private_metadata
+from .diagnostic import DECISION_INPUTS, DiagnosticView
 from .evidence import (
     RECEIPT_SCHEMA,
     SOURCE_HASH_NORMALIZATION,
@@ -150,6 +152,15 @@ def execute_tests(workspace, index, timeout=20):
     }
 
 
+def reproduce(workspace, record):
+    """test-0: the public reproduction on the untouched defective workspace."""
+    result = execute_tests(workspace, 0)
+    record["tests"].append(result)
+    if result["returncode"] == 0:
+        raise ValueError("invalid fixture: defect did not reproduce")
+    return result
+
+
 def run_experiment(
     task,
     agent=None,
@@ -217,21 +228,27 @@ def run_experiment(
             memories, paths = memory.retrieve(task.query(), mode)
             record["retrieval"] = {"memories": memories, "paths": paths}
             record["retrieved_memories"] = [m["id"] for m in memories]
-            view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
-            record["agent_context_sha256"] = digest(
-                {
-                    "task": view.task,
-                    "files": {k: normalize_source(v) for k, v in view.files.items()},
-                    "memories": memories,
-                }
-            )
+            context = {
+                "task": task.model_dump(),
+                "files": {k: normalize_source(v) for k, v in initial.items()},
+                "memories": memories,
+            }
+            if getattr(agent, "reads_reproduction", False):
+                # Opt-in diagnostic baseline (#58): the public reproduction precedes
+                # the decision; later test output never reaches the agent.
+                reproduction = reproduce(workspace, record)
+                public = {"returncode": reproduction["returncode"], "stderr": reproduction["stderr"]}
+                view = DiagnosticView(task.model_dump(), dict(initial), tuple(memories), mode, seed, public)
+                context["reproduction"] = public
+                record["decision_inputs"] = copy.deepcopy(DECISION_INPUTS)
+            else:
+                view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
+            record["agent_context_sha256"] = digest(context)
             decision = agent.plan(view)
             record["decision"] = decision
             record["initial_hypothesis"] = decision["initial_hypothesis"]
-            reproduction = execute_tests(workspace, 0)
-            record["tests"].append(reproduction)
-            if reproduction["returncode"] == 0:
-                raise ValueError("invalid fixture: defect did not reproduce")
+            if not record["tests"]:
+                reproduce(workspace, record)
             successful = None
             for index, strategy in enumerate(decision["plan"][:max_iterations], 1):
                 advance(record, "INSPECT")

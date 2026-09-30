@@ -1,0 +1,28 @@
+{
+  "seq": 20,
+  "id": "meta-vt-landing-issue-8",
+  "goal": "Episodio meta: hacer que yarn lint corra en la landing de VinculaTerritorio (issue #8) con la memoria de ese repositorio, y publicarlo en su rama principal",
+  "ref": "vinculaterritorio/vt-landing#8, PR vinculaterritorio/vt-landing#15",
+  "steps": [
+    {"action": "git_push", "success": true, "note": "fetch con el token del .env de la landing y cuenta vinculaterritorio comprobada con gh api user antes de cada escritura; master en b709e79"},
+    {"action": "recall_memory", "success": false, "error": "el buscador de la memoria de la landing sigue devolviendo [] (lee lessons/*.json; las lecciones están en .md)"},
+    {"action": "recall_memory", "success": true, "note": "lectura manual: LEARN-001, LEARN-002 y el run del #6 no tratan ESLint; recuperación y línea de control persistidas antes de editar"},
+    {"action": "run_tests", "success": true, "note": "fallo reproducido: el binario de yarn lint sale con exit 2 en b709e79 y queda sellado"},
+    {"action": "add_dependency", "success": false, "error": "eslint 7.2.0 no cumplía el peer de eslint-config-next (^7.23 || ^8 || ^9): la configuración sola no bastaba"},
+    {"action": "add_dependency", "success": true, "note": "eslint 8.57.1 y eslint-config-next 15.5.21, alineado con next 15.5.21"},
+    {"action": "write_code", "success": false, "error": "con .eslintrc.json en next/core-web-vitals, el primer lint dio 25 errores: 7 en la capa VT (enlaces internos con <a>) y 18 en el archivo de Outline"},
+    {"action": "edit_module", "success": true, "note": "capa VT corregida con <Link>; el archivo de Outline excluido con ignorePatterns, siguiendo la regla del repo: se aísla, no se corrige"},
+    {"action": "run_tests", "success": true, "note": "lint exit 0; yarn build exit 0 con ESLint activo; mutaciones selladas: sin configuración exit 2, con un <a> interno restaurado exit 1"},
+    {"action": "update_docs", "success": true, "note": "run e INDEX en la memoria de la landing, cerrados con el preview de Vercel en verde antes del merge para no dejar un registro pendiente"},
+    {"action": "merge_pr", "success": true, "note": "PR vt-landing#15 con merge commit 095dd92; #8 cerrado; despliegue de producción en success y el roadmap lo movió a Done"},
+    {"action": "recall_memory", "success": true, "note": "devlog recall de este repositorio corrido después del trabajo: devolvió las lecciones del episodio 019, pero ya se habían aplicado desde el contexto de la sesión, no desde la recuperación"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado con este episodio"}
+  ],
+  "lessons": [
+    "Antes de añadir una configuración de lint, comprobar que la versión instalada cumple el peer del preset; si no, el fallo cambia de forma pero no desaparece",
+    "Si un repositorio separa una capa propia de una heredada que no se debe tocar, el lint cubre la capa propia y excluye la heredada con una lista explícita, no con desactivaciones regla a regla",
+    "Un script de verificación que existe y falla es peor que no tenerlo: después de arreglarlo, activarlo en el build para que no vuelva a quedar sin uso",
+    "Cerrar el registro de memoria con la verificación del preview antes del merge evita tener que publicar una segunda corrección",
+    "El cambio de conducta respecto del episodio 019 vino del contexto de la sesión, no de devlog recall: no cuenta como evidencia de que la memoria recuperada cambió la decisión"
+  ]
+}

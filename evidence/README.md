@@ -15,6 +15,13 @@
   receipt schema v2. Run with `python -m experiments run --campaign reference-v2`;
   evaluated in `results/reference-v2/`. The historical `runs/` (seeds 7 11 23) is
   unchanged.
+- `diagnostic-baseline-v1/`: opt-in diagnostic-baseline campaign (#58): agent
+  `bounded-ast-repair-v1+diagnostic-v1`, same seeds, task set, replicates and
+  receipt schema as `reference-v2/`; 324 task runs + 72 memory updates, produced
+  by commit `0d90edc`. Run with `python -m experiments run --campaign
+  diagnostic-baseline-v1`; evaluated in `results/diagnostic-baseline-v1/`, read in
+  `docs/results/diagnostic-baseline.md`. Pre-registration:
+  `docs/preregistration/diagnostic-baseline.md`.
 - `runs/`: fixed-protocol immutable task and memory-update receipts. Raw failures
   stay in these files. `python -m experiments evaluate` regenerates results.
 - `validation/`: captured development/check outputs, separate from task evidence.
