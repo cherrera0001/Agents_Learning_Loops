@@ -44,7 +44,7 @@ generada por el script y sin editar. Incluye el hash de cada recibo que la produ
 Unidad primaria: la réplica 1 (`BATCH-660dd8b5…`). La réplica 2 es idéntica en comportamiento y **no se suma**
 como muestra independiente. Las familias original y engañosa se leen por separado y **nunca se agregan**.
 El `README.md` y el `experiment1.json` que genera el evaluador en `results/diagnostic-baseline-v1/` suman las
-dos réplicas y los tres tipos de tarea (72 ejecuciones por condición): sirven para la auditoría genérica, no
+dos réplicas de transferencia, original y engañosa (72 ejecuciones por condición): sirven para la auditoría genérica, no
 para esta lectura.
 
 ## Resultado primario (18 pares por tipo y condición)
@@ -144,7 +144,7 @@ Misma receta, semillas y hashes que referencia v2, con el agente DEFAULT en luga
 | Original | 6/18 → 12/18 | 18/18 → 18/18 | 18/18 → 18/18 |
 | Engañosa | 6/18 → 11/18 | 0/18 → 9/18 | 0/18 → 9/18 |
 
-D sube el FA de las tres condiciones y reduce la ventaja de la memoria en las originales (de +12 a +6) y su
+D sube el FA de A en las originales y de las tres condiciones en las engañosas. Reduce la ventaja de la memoria en las originales (de +12 a +6) y su
 daño en las engañosas (de −6 a −2). No es una comparación pre-registrada: se muestra para situar la pregunta,
 no para el veredicto.
 
