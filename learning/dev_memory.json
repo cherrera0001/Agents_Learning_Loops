@@ -541,7 +541,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 2,
-      "last_accessed_at": 2,
+      "last_accessed_at": 19,
       "activation_level": 0.0
     },
     {
@@ -2063,7 +2063,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 6,
-      "last_accessed_at": 18,
+      "last_accessed_at": 19,
       "activation_level": 0.0
     },
     {
@@ -6826,6 +6826,34 @@
     {
       "id": "outcome:19:0",
       "type": "Outcome",
+      "label": "failure: credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)",
+        "episode": 19,
+        "step": 0
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:credenciales_le_das_del_env_de_agents_le",
+      "type": "Concept",
+      "label": "credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:1",
+      "type": "Outcome",
       "label": "failure: git fetch con el credential helper de gh en una variable: la shell partió '!gh auth git-credential' y git no reconoció la orden",
       "embedding": null,
       "metadata": {
@@ -6833,7 +6861,7 @@
         "latency_ms": 0.0,
         "error": "git fetch con el credential helper de gh en una variable: la shell partió '!gh auth git-credential' y git no reconoció la orden",
         "episode": 19,
-        "step": 0
+        "step": 1
       },
       "created_at": 19,
       "last_accessed_at": 19,
@@ -6846,22 +6874,6 @@
       "embedding": null,
       "metadata": {
         "kind": "error"
-      },
-      "created_at": 19,
-      "last_accessed_at": 19,
-      "activation_level": 0.0
-    },
-    {
-      "id": "outcome:19:1",
-      "type": "Outcome",
-      "label": "success",
-      "embedding": null,
-      "metadata": {
-        "success": true,
-        "latency_ms": 0.0,
-        "error": null,
-        "episode": 19,
-        "step": 1
       },
       "created_at": 19,
       "last_accessed_at": 19,
@@ -6886,6 +6898,22 @@
     {
       "id": "outcome:19:3",
       "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 3
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:4",
+      "type": "Outcome",
       "label": "failure: la búsqueda de la memoria de la landing devuelve [] para toda consulta: su buscador lee lessons/*.json y las lecciones están en .md",
       "embedding": null,
       "metadata": {
@@ -6893,7 +6921,7 @@
         "latency_ms": 0.0,
         "error": "la búsqueda de la memoria de la landing devuelve [] para toda consulta: su buscador lee lessons/*.json y las lecciones están en .md",
         "episode": 19,
-        "step": 3
+        "step": 4
       },
       "created_at": 19,
       "last_accessed_at": 19,
@@ -6906,22 +6934,6 @@
       "embedding": null,
       "metadata": {
         "kind": "error"
-      },
-      "created_at": 19,
-      "last_accessed_at": 19,
-      "activation_level": 0.0
-    },
-    {
-      "id": "outcome:19:4",
-      "type": "Outcome",
-      "label": "success",
-      "embedding": null,
-      "metadata": {
-        "success": true,
-        "latency_ms": 0.0,
-        "error": null,
-        "episode": 19,
-        "step": 4
       },
       "created_at": 19,
       "last_accessed_at": 19,
@@ -6976,16 +6988,6 @@
       "activation_level": 0.0
     },
     {
-      "id": "action:open_pr",
-      "type": "Action",
-      "label": "open_pr",
-      "embedding": null,
-      "metadata": {},
-      "created_at": 19,
-      "last_accessed_at": 19,
-      "activation_level": 0.0
-    },
-    {
       "id": "outcome:19:8",
       "type": "Outcome",
       "label": "success",
@@ -6997,6 +6999,16 @@
         "episode": 19,
         "step": 8
       },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "action:open_pr",
+      "type": "Action",
+      "label": "open_pr",
+      "embedding": null,
+      "metadata": {},
       "created_at": 19,
       "last_accessed_at": 19,
       "activation_level": 0.0
@@ -7034,6 +7046,154 @@
       "activation_level": 0.0
     },
     {
+      "id": "outcome:19:11",
+      "type": "Outcome",
+      "label": "failure: node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404",
+        "episode": 19,
+        "step": 11
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
+      "type": "Concept",
+      "label": "node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:12",
+      "type": "Outcome",
+      "label": "failure: UND_ERR_CONNECT_TIMEOUT intermitente de la red local al sellar la comprobación de producción",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "UND_ERR_CONNECT_TIMEOUT intermitente de la red local al sellar la comprobación de producción",
+        "episode": 19,
+        "step": 12
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:und_err_connect_timeout_intermitente_de_",
+      "type": "Concept",
+      "label": "UND_ERR_CONNECT_TIMEOUT intermitente de la red local al sellar la comprobación de producción",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:13",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 13
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:14",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 14
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:15",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 15
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:16",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 16
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:19:17",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 19,
+        "step": 17
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "type": "Concept",
+      "label": "'git_push' falló con 'credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
       "id": "concept:lesson:avoid:git_push:git_fetch_con_el_credential_helper_de_gh",
       "type": "Concept",
       "label": "'git_push' falló con 'git fetch con el credential helper de gh en una variable: la shell partió '!gh auth git-credential' y git no reconoció la orden'",
@@ -7048,7 +7208,7 @@
     {
       "id": "concept:lesson:fallback:git_push:git_push",
       "type": "Concept",
-      "label": "Si 'git_push' falla con 'git fetch con el credential helper de gh en una variable: la shell partió '!gh auth git-credential' y git no reconoció la orden', usar 'git_push'",
+      "label": "Si 'git_push' falla con 'credenciales leídas del .env de Agents Learning Loops para operar sobre la landing; cada proyecto tiene su propio .env (corrección del usuario)', usar 'git_push'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -7061,6 +7221,54 @@
       "id": "concept:lesson:avoid:recall_memory:la_b_squeda_de_la_memoria_de_la_landing_",
       "type": "Concept",
       "label": "'recall_memory' falló con 'la búsqueda de la memoria de la landing devuelve [] para toda consulta: su buscador lee lessons/*.json y las lecciones están en .md'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "type": "Concept",
+      "label": "'run_tests' falló con 'node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "type": "Concept",
+      "label": "'run_tests' falló con 'UND_ERR_CONNECT_TIMEOUT intermitente de la red local al sellar la comprobación de producción'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:run_tests:run_tests",
+      "type": "Concept",
+      "label": "Si 'run_tests' falla con 'node -e con process.exit dentro de fetch: aserción de libuv en Windows (exit 3221226505) aunque la respuesta ya era HTTP 404', usar 'run_tests'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "type": "Concept",
+      "label": "Leer las credenciales del .env del proyecto que se modifica y confirmar con gh api user la cuenta antes de publicar; en VT y VT-Landinpage solo vinculaterritorio",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -7096,7 +7304,7 @@
     {
       "id": "concept:lesson:note:comprobar_cada_issue_abierto_contra_el_c_digo_de_origin_ante",
       "type": "Concept",
-      "label": "Comprobar cada issue abierto contra el código de origin antes de elegirlo: #9, #10 y #11 figuraban abiertos y ya estaban resueltos",
+      "label": "Comprobar cada issue abierto contra el código de origin antes de elegirlo, y cerrarlo con la evidencia si ya está resuelto: #9, #10 y #11 figuraban abiertos",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -7118,9 +7326,21 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "id": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "type": "Concept",
-      "label": "Pasar el credential helper de gh como argumento directo de git (función de shell), no dentro de una variable que la shell vuelva a partir",
+      "label": "Un registro que dice pendiente de merge queda obsoleto al mergear: actualizarlo en el mismo ciclo, con la verificación en producción",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 19,
+      "last_accessed_at": 19,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "type": "Concept",
+      "label": "En node -e sobre Windows, terminar con process.exitCode y no con process.exit mientras hay un fetch abierto",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -7697,10 +7917,10 @@
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.01125899906842624,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 16,
+      "count": 17,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -7807,10 +8027,10 @@
       "source": "action:run_tests",
       "target": "concept:error:test_de_protocolo_esperaba_plan_act_espe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -7873,10 +8093,10 @@
       "source": "action:run_tests",
       "target": "concept:error:verificaci_n_por_mutaci_n_inv_lida_el_co",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.256,
+      "weight": 0.2048,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 3,
+      "count": 4,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -7893,12 +8113,67 @@
     },
     {
       "source": "action:run_tests",
-      "target": "outcome:19:2",
+      "target": "outcome:19:3",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:19:11",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:19:12",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:19:13",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "concept:error:und_err_connect_timeout_intermitente_de_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -8223,7 +8498,7 @@
     },
     {
       "source": "action:edit_module",
-      "target": "outcome:19:6",
+      "target": "outcome:19:7",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -8339,6 +8614,28 @@
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:git_push",
+      "target": "outcome:19:2",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:git_push",
+      "target": "concept:error:credenciales_le_das_del_env_de_agents_le",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -9300,12 +9597,23 @@
       "source": "action:gh_project_add",
       "target": "concept:error:item_de_la_pica_no_visible_en_gh_project",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
-      "last_updated": 2,
-      "count": 2,
+      "last_updated": 19,
+      "count": 3,
       "metadata": {},
-      "recency_factor": 0.427415
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:gh_project_add",
+      "target": "outcome:19:14",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "outcome:2:3",
@@ -10654,17 +10962,6 @@
     },
     {
       "source": "action:recall_memory",
-      "target": "outcome:19:3",
-      "relation": "LEADS_TO",
-      "weight": 1.0,
-      "decay_factor": 0.05,
-      "last_updated": 19,
-      "count": 0,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "action:recall_memory",
       "target": "outcome:19:4",
       "relation": "LEADS_TO",
       "weight": 1.0,
@@ -10676,7 +10973,18 @@
     },
     {
       "source": "action:recall_memory",
-      "target": "outcome:19:9",
+      "target": "outcome:19:5",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:recall_memory",
+      "target": "outcome:19:16",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -10929,7 +11237,7 @@
     },
     {
       "source": "action:write_tests",
-      "target": "outcome:19:5",
+      "target": "outcome:19:6",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -11270,7 +11578,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:19:10",
+      "target": "outcome:19:17",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -12562,10 +12870,10 @@
       "source": "action:update_docs",
       "target": "concept:error:salida_de_referencia_desactualizada_scor",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.16384,
+      "weight": 0.13107200000000002,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 5,
+      "count": 6,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -12604,7 +12912,18 @@
     },
     {
       "source": "action:update_docs",
-      "target": "outcome:19:7",
+      "target": "outcome:19:8",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:19:15",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -15170,12 +15489,12 @@
       "source": "action:merge_pr",
       "target": "concept:error:timeout_de_red_contra_api_github_com_dur",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.16384,
+      "weight": 0.13107200000000002,
       "decay_factor": 0.05,
-      "last_updated": 18,
-      "count": 5,
+      "last_updated": 19,
+      "count": 6,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "action:merge_pr",
@@ -15225,12 +15544,23 @@
       "source": "action:merge_pr",
       "target": "concept:error:riesgo_detectado_a_tiempo_el_squash_elim",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
-      "last_updated": 18,
-      "count": 2,
+      "last_updated": 19,
+      "count": 3,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "outcome:19:10",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "outcome:6:11",
@@ -30440,12 +30770,12 @@
       "source": "goal:19",
       "target": "action:git_push",
       "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
+      "weight": 0.4715,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 2,
+      "count": 3,
       "metadata": {
-        "step": 1
+        "step": 2
       },
       "recency_factor": 1.0
     },
@@ -30464,12 +30794,12 @@
       "source": "goal:19",
       "target": "action:run_tests",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.52295,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 4,
       "metadata": {
-        "step": 2
+        "step": 13
       },
       "recency_factor": 1.0
     },
@@ -30477,10 +30807,10 @@
       "source": "goal:19",
       "target": "action:run_tests",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30493,7 +30823,7 @@
       "last_updated": 19,
       "count": 3,
       "metadata": {
-        "step": 9
+        "step": 16
       },
       "recency_factor": 1.0
     },
@@ -30517,7 +30847,7 @@
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 5
+        "step": 6
       },
       "recency_factor": 1.0
     },
@@ -30541,7 +30871,7 @@
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 6
+        "step": 7
       },
       "recency_factor": 1.0
     },
@@ -30560,12 +30890,12 @@
       "source": "goal:19",
       "target": "action:update_docs",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.755,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {
-        "step": 7
+        "step": 15
       },
       "recency_factor": 1.0
     },
@@ -30573,10 +30903,10 @@
       "source": "goal:19",
       "target": "action:update_docs",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30589,13 +30919,61 @@
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 8
+        "step": 9
       },
       "recency_factor": 1.0
     },
     {
       "source": "goal:19",
       "target": "action:open_pr",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:merge_pr",
+      "relation": "LEADS_TO",
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {
+        "step": 10
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:merge_pr",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:gh_project_add",
+      "relation": "LEADS_TO",
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {
+        "step": 14
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:19",
+      "target": "action:gh_project_add",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -30613,7 +30991,7 @@
       "last_updated": 19,
       "count": 1,
       "metadata": {
-        "step": 10
+        "step": 17
       },
       "recency_factor": 1.0
     },
@@ -30630,6 +31008,28 @@
     },
     {
       "source": "outcome:19:0",
+      "target": "concept:error:credenciales_le_das_del_env_de_agents_le",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:credenciales_le_das_del_env_de_agents_le",
+      "target": "action:git_push",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:19:1",
       "target": "concept:error:git_fetch_con_el_credential_helper_de_gh",
       "relation": "FAILED_DUE_TO",
       "weight": 1.0,
@@ -30651,7 +31051,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "outcome:19:3",
+      "source": "outcome:19:4",
       "target": "concept:error:la_b_squeda_de_la_memoria_de_la_landing_",
       "relation": "FAILED_DUE_TO",
       "weight": 1.0,
@@ -30674,12 +31074,287 @@
     },
     {
       "source": "action:open_pr",
-      "target": "outcome:19:8",
+      "target": "outcome:19:9",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 19,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:19:11",
+      "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "action:run_tests",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:19:12",
+      "target": "concept:error:und_err_connect_timeout_intermitente_de_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:und_err_connect_timeout_intermitente_de_",
+      "target": "action:run_tests",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "action:git_push",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:error:credenciales_le_das_del_env_de_agents_le",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:git_push:credenciales_le_das_del_env_de_agents_le",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30918,10 +31593,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "action:git_push",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30929,10 +31604,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:episodio",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30940,10 +31615,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:meta",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30951,10 +31626,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:corregir",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30962,10 +31637,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:pendiente",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30973,10 +31648,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:real",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30984,10 +31659,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:vinculaterritorio",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -30995,10 +31670,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:landing",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31006,10 +31681,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:issue",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31017,10 +31692,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:memoria",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31028,10 +31703,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:ese",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31039,10 +31714,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:repositorio",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31050,10 +31725,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:dejar",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31061,10 +31736,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:experiencia",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31072,10 +31747,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:sellada",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31083,10 +31758,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:alli",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31094,10 +31769,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:sin",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31105,10 +31780,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:copiar",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31116,10 +31791,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:parche",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31127,10 +31802,10 @@
       "source": "concept:lesson:fallback:git_push:git_push",
       "target": "concept:topic:aqui",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 19,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -31366,6 +32041,908 @@
       "recency_factor": 1.0
     },
     {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "action:run_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:node_e_con_process_exit_dentro_de_fetch_",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "action:run_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:error:und_err_connect_timeout_intermitente_de_",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:und_err_connect_timeout_intermitente_de_",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "action:run_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:run_tests",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "goal:19",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:leer_las_credenciales_del_env_del_proyecto_que_se_modifica_y",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:note:probar_la_recuperaci_n_con_una_consulta_que_deber_a_acertar_",
       "target": "goal:19",
       "relation": "ASSOCIATED_WITH",
@@ -32246,7 +33823,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "goal:19",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32257,7 +33834,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:episodio",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32268,7 +33845,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:meta",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32279,7 +33856,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:corregir",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32290,7 +33867,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:pendiente",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32301,7 +33878,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:real",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32312,7 +33889,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:vinculaterritorio",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32323,7 +33900,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:landing",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32334,7 +33911,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:issue",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32345,7 +33922,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:memoria",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32356,7 +33933,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:ese",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32367,7 +33944,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:repositorio",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32378,7 +33955,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:dejar",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32389,7 +33966,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:experiencia",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32400,7 +33977,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:sellada",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32411,7 +33988,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:alli",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32422,7 +33999,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:sin",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32433,7 +34010,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:copiar",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32444,7 +34021,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
       "target": "concept:topic:parche",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -32455,7 +34032,227 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:note:pasar_el_credential_helper_de_gh_como_argumento_directo_de_g",
+      "source": "concept:lesson:note:un_registro_que_dice_pendiente_de_merge_queda_obsoleto_al_me",
+      "target": "concept:topic:aqui",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "goal:19",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:episodio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:meta",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:corregir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:pendiente",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:vinculaterritorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:landing",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:memoria",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:ese",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:repositorio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:dejar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:experiencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:sellada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:alli",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:copiar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
+      "target": "concept:topic:parche",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 19,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:en_node_e_sobre_windows_terminar_con_process_exitcode_y_no_c",
       "target": "concept:topic:aqui",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
