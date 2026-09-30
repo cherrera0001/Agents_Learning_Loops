@@ -1,0 +1,20 @@
+{
+  "fecha": "2026-09-30T22:37:49.302755+00:00",
+  "sha_revisado": "ffdc372cbb0b69e0a2090a4b31058549625bda00",
+  "tipo": "revision independiente de entorno; no campaña controlada",
+  "resultado": "44/44 offline: 33 IA, 11 small-N",
+  "hashes": {
+    "unitarias.log": "4fe6c48a0311c891e982cc32f700adfd9ae4ed45ce46b830a76239d25880049b"
+  },
+  "lectura_de_codigo": [
+    "smoke-gemini-live.mjs usa fetch propio y puede cambiar a un modelo alternativo; no ejecuta AsistenteGemini ni obtenerAsistentePara",
+    "Leer el seed de ai_agent no acredita la fila viva del catálogo"
+  ],
+  "no_medido": [
+    "generateContent por el adaptador real",
+    "catalogo vivo",
+    "resistencia global a reconstruccion por filtros/totales",
+    "produccion"
+  ],
+  "alcance": "No se repitió smoke ni se enviaron datos reales; no se declara resolución completa ni aprendizaje causado por memoria."
+}

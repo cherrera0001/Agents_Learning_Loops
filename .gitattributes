@@ -1,2 +1,5 @@
 * text=auto eol=lf
 *.png binary
+
+# Copias de evidencia de entorno: conservar los bytes que verifican sus hashes.
+docs/entorno/evidencia/agy-gemini-20260930/* -text

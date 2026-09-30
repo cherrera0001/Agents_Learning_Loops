@@ -1,0 +1,39 @@
+{
+  "seq": 34,
+  "id": "caso-real-agy-gemini",
+  "goal": "Documentar el proceso real de supervisión Gemini sin confundir evidencia de entorno con aprendizaje experimental",
+  "ref": "#73",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Consulta antes de implementar: revisar cortes actualizados y no atribuir aprendizaje sin control"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Seis hashes del recibo original coinciden; smoke de agy usa fetch propio y alternativa de modelo, no el adaptador"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "VT ffdc372: 33 IA + 11 small-N, 44/44 offline. Catalogo vivo y generación real no ejecutados"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Registro por corte, copia íntegra de evidencia, fallos de supervisión originales y límites de causalidad"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Tras rebuild, una consulta elegida después recupera las cuatro reglas; prueba de accesibilidad, sin control ni ganancia causal"
+    }
+  ],
+  "lessons": [
+    "Un GET models 200 acredita autenticación, no generación ni integración: comprobar cada capa por separado",
+    "Un smoke que replica fetch y cambia de modelo no acredita el adaptador real; comprobar mismo camino y modelo efectivo",
+    "No interpretar ECONNREFUSED de base como defecto de Gemini ni una prueba offline verde como resolución del bloqueo",
+    "Separar informes de implementadores de ejecución independiente y conservar cortes con SHA; no sumar conteos históricos"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "fecha": "2026-09-30T15:32:51.002195+00:00",
+  "sha": "8140bfc3eba1a11279a72d19fd7f0dd7d6966bcc",
+  "wip": 1,
+  "estado": "DIAGNOSTICO_PARCIAL",
+  "unidad": "28/28, exit 0",
+  "catalogo": "9 fallos por ECONNREFUSED; 58 pruebas pasan; estado ai_agent NO MEDIDO",
+  "google_models": "GET models HTTP 200 con clave raiz; incluye gemini-3.6-flash; sin generateContent ni datos territoriales",
+  "verify_quick": "exit 0, 10/10; no acredita conexion real del adaptador ni produccion",
+  "docker": "ambos contextos no disponibles",
+  "siguiente": "continuar misma sesion agy, primero Gemini; despues #265 y matching existente",
+  "hashes": {
+    "ai-catalogo.log": "5f37b860703d245097de0a2222edb95fa12f4eba65e1cc4c5ba2119b2ab8a9b5",
+    "ai-unit.log": "6d7a53a403dbe9bed3a975a84a684e1e7300b3aa62ae62d2e46a251dccce9126",
+    "docker.log": "84dbd222635c42d4af4e8cde0239d72ab4aec4af4bbd1efa3d7fb8e00afc534e",
+    "model-list.json": "210c674edbfa449d1bd91826698d28de41b699ed4807a57d505debb2ab787a58",
+    "recall.json": "40f5a1ed8ae6151ea88762a11fbc7fdab03685efb682d08e42fa35c3fc11426c",
+    "verify-quick.log": "f897eabab96407e70e2b4ebfad950bafbea6db27e05e4e89caac0a31916e4bad"
+  }
+}
