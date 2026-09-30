@@ -1,0 +1,20 @@
+{
+  "suite": "495 passed, 1 failed; coverage 98.72%",
+  "fallo": "test_prior_causal_experience_changes_future_strategy",
+  "pares": [
+    {
+      "mode": "ASSOCIATIVE_MEMORY",
+      "git_commit": "560bfd7b916831888178fa246f64c883c6e809f7",
+      "receipt_sha256": "11fc1db4c67db7c449e9dd9b83b33faf9c957ee63b0c60480317fa682dd71c92"
+    },
+    {
+      "mode": "NO_MEMORY",
+      "git_commit": "b2a88f4d1c2725799344d4a348585d5a3ed90534",
+      "receipt_sha256": "010ce8327e6107b66e163864a78d75bdb23bf0b66522bcad05b717148caafbe6"
+    }
+  ],
+  "causa": "El supervisor cambió el SHA del checkout durante la ejecución; comparable exige igual provenance",
+  "repeticion_sin_cambios": "1 passed in 44.79s",
+  "mypy_local": "DLL bloqueada por Control de aplicaciones; no medido local",
+  "ci_pre_correccion_documental": "12/12 sobre 3c3a445; no sustituye CI del commit final"
+}

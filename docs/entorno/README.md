@@ -53,3 +53,5 @@ el de biblioteca, y el documento de entorno debe corregirse.
 ## Caso de campo
 
 [Supervisión del formulario de VinculaTerritorio](caso-real-contacto-vt.md): registro observacional de agentes de entorno, separado de los Experimentos 0 y 1.
+
+[Supervisión de agy/Gemini](caso-real-agy-gemini.md): diagnóstico, fallos del supervisor, revisión independiente y límites de un smoke que no ejecuta el adaptador.
