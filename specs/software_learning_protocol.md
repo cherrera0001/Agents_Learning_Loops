@@ -300,3 +300,5 @@ under repair or the benchmark changes the projection, so the reference must be
 regenerated and reviewed in the same pull request.
 
 Supplement: [diagnostic baseline (#58)](diagnostic_baseline_protocol.md), an opt-in agent that also reads the public reproduction.
+
+Supplement: [failure memory with revision (#63)](failure_memory_protocol.md), an opt-in agent that also demotes strategies that already failed in a similar context.

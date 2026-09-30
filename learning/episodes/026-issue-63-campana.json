@@ -1,0 +1,27 @@
+{
+  "seq": 26,
+  "id": "issue-63-campana",
+  "goal": "Orquestar H6 (#63): verificar #58, pre-registrar la memoria de fallos, delegar C1, revisar con medios propios, correr la campaña una vez y leer el resultado sin inflarlo",
+  "ref": "#63, PR #64; también #58/#61 y #56/#57",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "se diseñó una base fuerte sin memoria sin revisar antes los issues y PR abiertos: el #58 de otro agente ya la había corrido"},
+    {"action": "review_code", "success": true, "note": "#58 verificado con medios propios: evaluate y el análisis regeneran byte a byte los resultados; pre-registro anterior al código y a los datos"},
+    {"action": "merge_pr", "success": false, "error": "los PR #61 y #57 chocaban con los episodios 019-022 publicados en paralelo (seq 21 y 19 repetidos, dev_memory.json en conflicto)"},
+    {"action": "merge_pr", "success": true, "note": "episodios renumerados a 023 y 024, dev_memory.json regenerado con rebuild, merge commit para conservar los SHA citados; CI 12/12 con sondeo estricto"},
+    {"action": "update_spec", "success": false, "error": "la primera regla H6a era refutable por construcción en una celda sin holgura (C original acierta 18/18); corregida antes del commit de registro"},
+    {"action": "update_spec", "success": false, "error": "CrossTaskEffect.helped no era observable con la definición pre-registrada (el intento desplazado no se prueba si el nuevo acierta); lo detectó el implementador y se declara como desviación D1"},
+    {"action": "update_spec", "success": true, "note": "pre-registro C0 87c5941 antes de implementar; no se modificó después"},
+    {"action": "review_code", "success": true, "note": "C1 del subagente revisado con medios propios: ruff, mypy, 354 tests, 57/57 mutaciones, núcleo leído (alcance, orden de la clave y frontera: el solver no ve el id de la tarea ni el origen del registro)"},
+    {"action": "run_demo", "success": true, "note": "campaña failure-memory-v1 una sola vez sobre 02a7b84: 720 PASS, 0 ERROR; evidencia comprometida antes de agregar"},
+    {"action": "run_tests", "success": true, "note": "reglas pre-registradas: H6a apoyada, H6b apoyada, H6c aporta (+9/18); conclusión literal «aprendió de su error sin contaminar»"},
+    {"action": "review_code", "success": true, "note": "revisión adversarial de los recibos: 0 de 351 registros de otra tarea entraron en el alcance; la pasada 2 es perfecta por construcción y H6b es nula por construcción"},
+    {"action": "update_docs", "success": true, "note": "informe de resultados con las reglas literales y lo que no dicen: repetición, no transferencia; contaminación no ejercitada"}
+  ],
+  "lessons": [
+    "Antes de diseñar un experimento, revisar los issues y PR abiertos: otro agente puede haberlo corrido ya",
+    "Una regla de decisión con margen fijo debe prever las celdas sin holgura, o queda refutada por construcción",
+    "Una métrica que solo puede observar daño no prueba ausencia de daño por sí sola: hay que contar cuántas veces tuvo ocasión de ocurrir",
+    "Cuando todas las predicciones se cumplen, buscar en los recibos qué parte del resultado estaba garantizada por construcción",
+    "No repetir un error en la misma tarea y no contaminar otra son preguntas distintas: un alcance que nunca cruza responde la primera y deja la segunda sin probar"
+  ]
+}

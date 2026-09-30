@@ -1,0 +1,33 @@
+{
+  "seq": 25,
+  "id": "issue-63-c1",
+  "goal": "Memoria de fallos con revisión (H6): implementación y análisis, sin campaña",
+  "ref": "#63",
+  "steps": [
+    {"action": "recall_memory", "success": false, "error": "el guard del harness de Bash rechazó el comando de recall porque el nombre del ejecutable se calculaba en tiempo de ejecución (variable $PY con la ruta del venv)"},
+    {"action": "recall_memory", "success": true, "note": "recall léxico desde PowerShell con PYTHONPATH=src;. y __file__ de experiments, associative_agent_loop y scripts comprobado en el worktree; las lecciones recuperadas (PYTHONPATH en Windows, .env por proyecto) se aplicaron"},
+    {"action": "write_code", "success": true, "note": "experiments/failure_memory.py con registro, alcance, política y replay; runner opt-in (condition, pass_number, failures) y update_failure_memory; receta failure-memory-v1; evaluador aditivo con informe genérico por corte"},
+    {"action": "write_code", "success": true, "note": "scripts/analyze_failure_memory.py con validación cerrada de la campaña antes de cualquier veredicto, métricas por pasada, condición y tipo y reglas H6a, H6b y H6c literales"},
+    {"action": "write_tests", "success": false, "error": "primer borrador del harness: forzaba el fallo de test-1 también en el entrenamiento (la lección de C dejaba de estar garantizada), el helper de orígenes suponía EXP-04 como origen de todo registro y el memory_update copiado se re-sellaba sin quitar su receipt_sha256"},
+    {"action": "review_code", "success": true, "note": "autorrevisión antes de ejecutar: fallo forzado solo en EXP-04 (reconocida por su test de aceptación público), orígenes desde los recibos y sello retirado antes de publicar la copia"},
+    {"action": "edit_module", "success": false, "error": "check_failure_memory se ejecutaba antes de la procedencia de lecciones: al re-sellar un recibo de C_N cambiaba su sello y fallaba primero la cadena de registros, así que el test de lecciones compartidas entre C y C_N no aislaba su guarda"},
+    {"action": "edit_module", "success": true, "note": "check_failure_memory después de la verificación por recibo de las lecciones; cada negativo queda anclado con match al mensaje de su guarda"},
+    {"action": "write_code", "success": false, "error": "ruff: SIM300, RUF043 (dos patrones de match con |), E741 (constantes I, E, S), E501 y RUF005"},
+    {"action": "edit_module", "success": true, "note": "ruff format, nombres ID/ENV/STO y mensajes exactos en los negativos"},
+    {"action": "write_tests", "success": false, "error": "cobertura de src/experiments por ruta: tres guardas del evaluador sin test (memory_update que no deriva, diagnósticos distintos entre condiciones o pasadas y ejecución repetida)"},
+    {"action": "write_tests", "success": true, "note": "tests de conexión para las tres guardas y para un registro bien formado que cita un intento que pasó; failure_memory.py al 100 %"},
+    {"action": "run_tests", "success": false, "error": "una orden compuesta de PowerShell para regenerar las evaluaciones publicadas fue bloqueada por el harness (Remove-Item sobre una ruta calculada)"},
+    {"action": "run_tests", "success": true, "note": "script Python temporal: evidence/runs, reference-v2, diagnostic-baseline-v1 y pilot/misleading-v1 regeneran byte a byte sus archivos publicados; el análisis de #58 reproduce diagnostic_analysis.json; evidence/, results/ y el pre-registro sin diff"},
+    {"action": "review_code", "success": true, "note": "contraste con el texto literal del C0: con la regla de la sección 5, helped no es observable (si el nuevo primer intento acierta, la ejecución termina y el desplazado queda untested); CrossTaskEffect cuenta cualquier registro aplicado de otra tarea (mixed aparte); se documentan como desviaciones candidatas, sin tocar el pre-registro"},
+    {"action": "run_tests", "success": true, "note": "ruff, ruff format, mypy, pytest --cov (354 tests, 98.72 %), export_schema, export_experiment_schema y mutation_check (57/57 mutaciones detectadas, 24 nuevas, 8 controles en verde)"},
+    {"action": "update_docs", "success": true, "note": "suplemento specs/failure_memory_protocol.md enlazado con una línea desde el protocolo y entrada en CHANGELOG Unreleased"},
+    {"action": "rebuild_memory", "success": true, "note": "devlog rebuild con este episodio"}
+  ],
+  "lessons": [
+    "Ordenar las guardas del evaluador para que un recibo re-sellado solo dispare la guarda que el test quiere probar: las verificaciones de cadena (sellos citados por recibos posteriores) van después de las verificaciones por recibo",
+    "Cuando un test de conexión necesite fallos, forzarlos solo en la tarea que los requiere, para no romper precondiciones de otras fases (lecciones del entrenamiento)",
+    "Medir la cobertura de src/experiments con --cov=src/experiments: --cov=experiments se confunde con el directorio experiments/ de la raíz y no mide nada",
+    "Contrastar cada regla del pre-registro con la mecánica del runner: una métrica que exige probar el intento desplazado en la misma ejecución no puede observar helped, porque la ejecución termina en su primer acierto",
+    "En este harness, ejecutar el intérprete por su ruta literal y escribir los mensajes de commit en un archivo: los nombres de comando calculados y las órdenes compuestas se bloquean"
+  ]
+}
