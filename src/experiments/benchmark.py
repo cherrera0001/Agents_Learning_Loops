@@ -31,6 +31,17 @@ REFERENCE_CAMPAIGN = {
     "replicates": 2,
     "task_set": "misleading-v1",
 }
+# Diagnostic baseline (#58), opt-in: the reference-v2 design with the opt-in agent
+# that reads the public reproduction before deciding. Pre-registered in
+# docs/preregistration/diagnostic-baseline.md; its receipts go to their own directory.
+DIAGNOSTIC_CAMPAIGN = {
+    "name": "diagnostic-baseline-v1",
+    "seeds": REFERENCE_CAMPAIGN["seeds"],
+    "replicates": REFERENCE_CAMPAIGN["replicates"],
+    "task_set": REFERENCE_CAMPAIGN["task_set"],
+    "agent": "bounded-ast-repair-v1+diagnostic-v1",
+    "evidence_dir": "evidence/diagnostic-baseline-v1",
+}
 
 
 def private_metadata(root):

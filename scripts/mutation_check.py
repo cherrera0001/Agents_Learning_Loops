@@ -20,6 +20,11 @@ MEMORY = ROOT / "src" / "associative_agent_loop" / "memory"
 EXPERIMENTS = ROOT / "src" / "experiments"
 PROPERTIES = "tests/unit/test_properties.py"
 EXPERIMENT_TESTS = ["tests/test_experiment_harness.py", "tests/test_experiment_guards.py"]
+# Línea base de diagnóstico (#58): trazas sintéticas (rápido) y conexión con runner/evaluador.
+DIAGNOSTIC_TESTS = ["tests/test_experiment_diagnostic.py"]
+DIAGNOSTIC_HARNESS = ["tests/test_experiment_diagnostic_harness.py"]
+DIAGNOSTIC_ANALYSIS = ["tests/unit/test_analyze_diagnostic_baseline.py"]
+CONTROLS = ([PROPERTIES], EXPERIMENT_TESTS, DIAGNOSTIC_TESTS, DIAGNOSTIC_HARNESS, DIAGNOSTIC_ANALYSIS)
 
 # (nombre, archivo, original, mutación, destino de pytest que debe detectarla)
 # El destino es una lista de argumentos de pytest propia de cada mutación.
@@ -116,6 +121,84 @@ MUTATIONS = [
         "os.replace(temporary, target)",
         EXPERIMENT_TESTS,
     ),
+    # Línea base de diagnóstico (#58)
+    (
+        "D: candidatos por unión, no intersección",
+        EXPERIMENTS / "diagnostic.py",
+        "allowed &= set(FAILURE_MODES[mode])",
+        "allowed |= set(FAILURE_MODES[mode])",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: la memoria precede al diagnóstico",
+        EXPERIMENTS / "diagnostic.py",
+        "key=lambda op: (op not in candidates, op != proposal, prior.index(op))",
+        "key=lambda op: (op != proposal, op not in candidates, prior.index(op))",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: marcador NoneType ignorado",
+        EXPERIMENTS / "diagnostic.py",
+        'issubclass(cls, (TypeError, AttributeError)) and feature["none_marker"]',
+        "issubclass(cls, (TypeError, AttributeError))",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: fallback ambiguo distinto de DEFAULT",
+        EXPERIMENTS / "diagnostic.py",
+        'status, allowed = "ambiguous", set(STRATEGIES)',
+        'status, allowed = "ambiguous", {"initialize_storage"}',
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: el agente ignora la reproducción",
+        EXPERIMENTS / "diagnostic.py",
+        'diagnosis = diagnose(reproduction.get("stderr"))',
+        "diagnosis = diagnose(None)",
+        DIAGNOSTIC_TESTS,
+    ),
+    (
+        "D: la reproducción llega después de decidir",
+        EXPERIMENTS / "runner.py",
+        'if getattr(agent, "reads_reproduction", False):',
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador no repite la decisión",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("diagnostic decision does not replay from its receipt")',
+        "pass",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador acepta mezcla de políticas",
+        EXPERIMENTS / "evaluate.py",
+        "if len(policies) > 1:",
+        "if len(policies) > 9:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador acepta diagnósticos distintos por celda",
+        EXPERIMENTS / "evaluate.py",
+        "if any(len(found) > 1 for found in diagnoses.values()):",
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: evaluador no exige la reproducción previa",
+        EXPERIMENTS / "evaluate.py",
+        'if r["tests"][0]["id"] != "test-0" or "decision_inputs" not in r:',
+        "if False:",
+        DIAGNOSTIC_HARNESS,
+    ),
+    (
+        "D: análisis con margen estricto",
+        ROOT / "scripts" / "analyze_diagnostic_baseline.py",
+        "if difference >= MARGIN:",
+        "if difference > MARGIN:",
+        DIAGNOSTIC_ANALYSIS,
+    ),
 ]
 
 
@@ -127,7 +210,7 @@ def pytest_run(targets: list[str]) -> subprocess.CompletedProcess[str]:
 def control() -> bool:
     """Ejecución sin mutar: si falla, los resultados de mutación serían inválidos."""
     ok = True
-    for targets in ([PROPERTIES], EXPERIMENT_TESTS):
+    for targets in CONTROLS:
         result = pytest_run(targets)
         status = "VERDE " if result.returncode == 0 else "ROJO  "
         print(f"CONTROL {status} {' '.join(targets)}")

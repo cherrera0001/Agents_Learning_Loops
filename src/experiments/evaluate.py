@@ -11,6 +11,8 @@ from .benchmark import (
     write_breakdown,
     write_family_breakdown,
 )
+from .diagnostic import POLICY as DIAGNOSTIC_POLICY
+from .diagnostic import replay_decision
 from .evidence import (
     SOURCE_HASH_NORMALIZATION,
     digest,
@@ -84,6 +86,38 @@ def single_scheme(receipts):
     return schemes.pop() if schemes else None
 
 
+def single_policy(runs):
+    """Refuse to pair or pool runs produced by different agents or decision policies.
+
+    Two campaigns in one directory would otherwise be paired inside each batch
+    and summed silently (#58).
+    """
+    policies = {(r["agent"], r.get("decision", {}).get("policy")) for r in runs}
+    if len(policies) > 1:
+        raise ValueError(
+            "cannot evaluate a mix of agents or decision policies: "
+            + ", ".join(sorted(f"{agent}/{policy}" for agent, policy in policies))
+        )
+    return policies.pop() if policies else None
+
+
+def check_diagnostic(runs):
+    """Diagnostic-baseline receipts (#58): the decision must replay from the receipt
+    (task, eligible lessons, seed and test-0 only), and every condition of a cell
+    must have received the same diagnosis."""
+    diagnoses = defaultdict(set)
+    for r in runs:
+        if r["decision"].get("policy") != DIAGNOSTIC_POLICY:
+            continue
+        if r["tests"][0]["id"] != "test-0" or "decision_inputs" not in r:
+            raise ValueError("diagnostic decision without a recorded prior reproduction")
+        if r["decision"] != replay_decision(r):
+            raise ValueError("diagnostic decision does not replay from its receipt")
+        diagnoses[(r["batch_id"], r["seed"], r["task"]["id"])].add(digest(r["decision"]["diagnostic"]))
+    if any(len(found) > 1 for found in diagnoses.values()):
+        raise ValueError("conditions of one cell received different diagnoses")
+
+
 def load_runs(evidence_dir):
     paths = sorted(Path(evidence_dir).glob("RUN-*.json"))
     receipts = [read_receipt(p) for p in paths]
@@ -99,6 +133,8 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
     evidence_dir = Path(evidence_dir or root / "evidence/runs")
     paths, receipts, runs = load_runs(evidence_dir)
     single_scheme(receipts)
+    single_policy(runs)
+    check_diagnostic(runs)
     metadata = private_metadata(root)
     by_id = {r["run_id"]: r for r in runs}
     # Same normalization as the runner's source manifest. For v1 receipts it is

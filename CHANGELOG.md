@@ -8,6 +8,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 ### Añadido
 - Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.
 - Documentación del modelo de construcción (qué modelo de Claude construye cada issue, cómo se aplica y con qué fuerza), sin cambio de comportamiento: README § 3.2 y `docs/entorno/enrutamiento.md`.
+- Línea base de diagnóstico público opt-in (#58): pre-registro, agente `bounded-ast-repair-v1+diagnostic-v1` que lee la reproducción pública antes de decidir, receta `--campaign diagnostic-baseline-v1`, verificaciones aditivas del evaluador (rechaza mezclar políticas, repite cada decisión desde su recibo) y análisis pre-registrado. El agente por defecto y las campañas publicadas no cambian; la campaña aún no se ha ejecutado.
 
 ## [0.2.0] - 2026-09-29
 
