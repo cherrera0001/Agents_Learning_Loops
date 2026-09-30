@@ -29,6 +29,12 @@ from .failure_memory import CONDITIONS, PASSES, STORE, query_of
 from .failure_memory import DECISION_INPUTS as FAILURE_DECISION_INPUTS
 from .failure_memory import POLICY as FAILURE_POLICY
 from .failure_memory import replay_decision as replay_failure_decision
+from .failure_transfer import AGENT_NAME as TRANSFER_AGENT
+from .failure_transfer import BASES, TAUS, VARIANTS
+from .failure_transfer import CONDITIONS as TRANSFER_CONDITIONS
+from .failure_transfer import DECISION_INPUTS as TRANSFER_DECISION_INPUTS
+from .failure_transfer import POLICY as TRANSFER_POLICY
+from .failure_transfer import replay_decision as replay_transfer_decision
 from .runner import ROOT, source_manifest
 
 # Decision policy each known agent must declare (#58); None = the default decision, without policy.
@@ -36,7 +42,10 @@ AGENT_POLICIES = {
     BoundedRepairAgent.name: None,
     DIAGNOSTIC_AGENT: DIAGNOSTIC_POLICY,
     FAILURE_AGENT: FAILURE_POLICY,
+    TRANSFER_AGENT: TRANSFER_POLICY,
 }
+# Agentes que llevan los campos de la memoria de fallos: el de H6 (#63) y el de H7 (#65), que la extiende.
+FAILURE_AGENTS = frozenset({FAILURE_AGENT, TRANSFER_AGENT})
 DIAGNOSTIC_FIELDS = frozenset(
     {"policy", "diagnostic", "plan_without_memory", "memory_proposal", "memory_effect"}
 )
@@ -45,6 +54,11 @@ FAILURE_FIELDS = frozenset(
     {"plan_without_failures", "failure_scope", "failure_ids", "failure_strategies", "failure_effect"}
 )
 FAILURE_RECORD_FIELDS = frozenset({"condition", "pass", "failure_memory_input", "failure_origins"})
+# Transferencia de fallos (#65): campos aditivos de la decisión y del recibo, solo de su agente. Sus
+# recibos llevan los de H6 salvo ``pass`` (una sola pasada), más el alcance y el placebo declarados.
+TRANSFER_FIELDS = frozenset({"failure_scope_tau", "failure_placebo", "failure_recorded_strategies"})
+TRANSFER_RECORD_FIELDS = frozenset({"failure_scope_tau", "placebo"})
+TRANSFER_RUN_FIELDS = (FAILURE_RECORD_FIELDS - {"pass"}) | TRANSFER_RECORD_FIELDS
 # Orden temporal declarado de la secuencia de H6 dentro de una (lote, semilla, condición).
 TASK_ORDER = TASK_SETS["misleading-v1"]
 
@@ -128,8 +142,14 @@ def decision_policy(record):
             raise ValueError("default-agent receipt carries diagnostic-baseline fields")
     elif decision.get("policy") != expected:
         raise ValueError("agent and decision policy disagree")
-    if agent != FAILURE_AGENT and (FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()):
+    if agent not in FAILURE_AGENTS and (
+        FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()
+    ):
         raise ValueError("un recibo ajeno a la memoria de fallos lleva campos de memoria de fallos")
+    if agent != TRANSFER_AGENT and (
+        TRANSFER_FIELDS & decision.keys() or TRANSFER_RECORD_FIELDS & record.keys()
+    ):
+        raise ValueError("un recibo ajeno a la transferencia de fallos lleva campos de transferencia (H7)")
     return agent, expected
 
 
@@ -274,16 +294,23 @@ def check_failure_memory(runs, receipts):
         diagnoses[(r["batch_id"], r["seed"], r["task"]["id"])].add(digest(r["decision"]["diagnostic"]))
     if any(len(found) != 1 for found in diagnoses.values()):
         raise ValueError("las condiciones o pasadas de una celda recibieron diagnósticos distintos")
+    check_failure_chain(cells, by_id, stores, sequence_index, lambda condition: CONDITIONS[condition][1])
+
+
+def check_failure_chain(cells, by_id, stores, index_of, enabled_of):
+    """La cadena de registros de fallo de cada (lote, semilla, condición), en su orden temporal declarado
+    (``index_of``): común a H6 (#63) y H7 (#65). ``enabled_of(condición)`` dice si la condición tiene
+    memoria de fallos; ``stores`` son todos los ``memory_update`` de memoria de fallos del directorio."""
     updates = defaultdict(list)
     for update in stores:
         updates[update["source_receipt"]].append(update)
     expected_updates = set()
     for items in cells.values():
-        items.sort(key=sequence_index)
-        position = {r["run_id"]: sequence_index(r) for r in items}
+        items.sort(key=index_of)
+        position = {r["run_id"]: index_of(r) for r in items}
         if len(set(position.values())) != len(items):
             raise ValueError("ejecución repetida en una secuencia de memoria de fallos")
-        enabled = CONDITIONS[items[0]["condition"]][1]
+        enabled = enabled_of(items[0]["condition"])
         written = []
         for r in items:
             inputs = r["failure_memory_input"]
@@ -311,6 +338,89 @@ def check_failure_memory(runs, receipts):
         raise ValueError(
             "los memory_update de memoria de fallos no corresponden a los intentos fallidos de A_N y C_N"
         )
+
+
+def transfer_index(record):
+    """Posición declarada de una ejecución de H7 en su secuencia: una sola pasada, orden de la tarea."""
+    return TASK_ORDER.index(record["task"]["id"])
+
+
+def check_failure_transfer(runs, receipts):
+    """Recibos de transferencia de fallos (H7, #65), después de ``single_policy``.
+
+    Además de lo que exige H6 a cada recibo (``decision_inputs`` exacto, ``test-0`` fallido, condición
+    coherente con el modo, la misma D en todas las condiciones de cada (lote, semilla, tarea)), el alcance τ
+    y el placebo registrados deben ser los de su condición, y la decisión se repite desde el recibo con ese τ
+    y ese placebo. Las bases A y C no tienen registros de fallo, y ningún registro aplicado tiene origen en la
+    misma tarea (una sola pasada: por construcción, todo registro aplicado viene de otra tarea). Después,
+    la misma cadena de registros que H6, en el orden de la única pasada.
+    """
+    transfer_runs = [r for r in runs if r["agent"] == TRANSFER_AGENT]
+    stores = [u for u in receipts if u["kind"] == "memory_update" and "memory_store" in u]
+    by_id = {r["run_id"]: r for r in transfer_runs}
+    cells, diagnoses = defaultdict(list), defaultdict(set)
+    for r in transfer_runs:
+        tests = r["tests"]
+        if (
+            r.get("decision_inputs") != TRANSFER_DECISION_INPUTS
+            or [t["id"] for t in tests] != [f"test-{i}" for i in range(len(tests))]
+            or not tests[0]["returncode"]
+        ):
+            raise ValueError(
+                "decisión de transferencia de fallos sin la reproducción previa declarada (test-0 fallido)"
+            )
+        if (
+            not r.keys() >= TRANSFER_RUN_FIELDS
+            or "pass" in r
+            or r["condition"] not in TRANSFER_CONDITIONS
+            or r["task"]["id"] not in TASK_ORDER
+        ):
+            raise ValueError(
+                "recibo de transferencia de fallos sin condición, alcance o tarea declarados, o con pasada"
+            )
+        mode, enabled, tau, placebo = TRANSFER_CONDITIONS[r["condition"]]
+        if mode != r["memory_mode"] or r["failure_scope_tau"] != tau or r["placebo"] is not placebo:
+            raise ValueError("la condición no concuerda con el modo de memoria, el alcance τ o el placebo")
+        if not enabled and (
+            r["failure_memory_input"] or r["decision"]["failure_ids"] or r["failure_origins"]
+        ):
+            raise ValueError("las bases A y C no admiten registros de fallo")
+        if r["decision"] != replay_transfer_decision(r):
+            raise ValueError("la decisión de transferencia de fallos no se repite desde su recibo")
+        cells[(r["batch_id"], r["seed"], r["condition"])].append(r)
+        diagnoses[(r["batch_id"], r["seed"], r["task"]["id"])].add(digest(r["decision"]["diagnostic"]))
+    if any(len(found) != 1 for found in diagnoses.values()):
+        raise ValueError("las condiciones de una celda recibieron diagnósticos distintos")
+    for r in transfer_runs:
+        inputs = {x.get("id"): x for x in r["failure_memory_input"]}
+        sources = [
+            by_id.get(str(inputs.get(i, {}).get("evidence", "")).partition("#")[0])
+            for i in r["decision"]["failure_ids"]
+        ]
+        if any(s is not None and s["task"]["id"] == r["task"]["id"] for s in sources) or any(
+            o.get("origin") != "other_task" for o in r["failure_origins"]
+        ):
+            raise ValueError("registro de fallo aplicado con origen en la misma tarea")
+    check_failure_chain(
+        cells, by_id, stores, transfer_index, lambda condition: TRANSFER_CONDITIONS[condition][1]
+    )
+
+
+def transfer_slices(runs):
+    """Cortes del informe genérico de H7: sin memoria de fallos (A y C) y cada variante real o placebo por τ.
+
+    Cada corte tiene las dos bases de una variante (A_x y C_x) con su entrenamiento y su única pasada: como
+    mucho una ejecución por (lote, semilla, tarea, modo), así que el emparejamiento con NO_MEMORY no mezcla
+    condiciones (A_x se empareja consigo mismo y C_x con A_x).
+    """
+    names = {"without-failure-memory": ""}
+    for variant, placebo in VARIANTS.items():
+        for suffix, tau in TAUS.items():
+            names[f"{'placebo' if placebo else 'real'}-tau-{tau}"] = f"_{variant}{suffix}"
+    return {
+        name: [r for r in runs if r["condition"] in {base + suffix for base in BASES}]
+        for name, suffix in names.items()
+    }
 
 
 def failure_slices(runs):
@@ -378,11 +488,17 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
             refs = {prior["run_id"] + "#" + t["id"] for t in prior["tests"]}
             if not lesson["evidence"] or not set(lesson["evidence"]) <= refs:
                 raise ValueError("unresolvable memory evidence")
-    check_failure_memory(runs, receipts)
+    transfer = any(r["agent"] == TRANSFER_AGENT for r in runs)
+    if transfer:
+        check_failure_transfer(runs, receipts)
+    else:
+        check_failure_memory(runs, receipts)
     check_extra_annotations(runs, root, source_manifest(root))
     generated_from = {p.name: r["receipt_sha256"] for p, r in zip(paths, receipts, strict=True)}
     if any(r["agent"] == FAILURE_AGENT for r in runs):
         return failure_memory_report(runs, metadata, generated_from, output)
+    if transfer:
+        return failure_transfer_report(runs, metadata, generated_from, output)
     comparisons, metrics, gains = paired(runs, metadata)
     return campaign_report(runs, metadata, generated_from, comparisons, metrics, gains, output)
 
@@ -558,24 +674,58 @@ def failure_memory_report(runs, metadata, generated_from, output):
     ``replication`` indexados por corte. El análisis pre-registrado de H6 es
     ``scripts/analyze_failure_memory.py``; este informe sirve para la auditoría genérica.
     """
+    return sliced_report(
+        runs,
+        metadata,
+        generated_from,
+        output,
+        campaign="failure-memory-v1",
+        slices=failure_slices(runs),
+        definition=(
+            "without/with failure memory (A+C / A_N+C_N) x transfer pass; each slice holds its "
+            "training runs and one transfer pass, so pairs and metrics never mix conditions or passes"
+        ),
+        title="failure memory (#63)",
+        analysis="Pre-registered H6 analysis: `python -m scripts.analyze_failure_memory`.",
+    )
+
+
+def failure_transfer_report(runs, metadata, generated_from, output):
+    """Informe genérico de una campaña de transferencia de fallos (H7, #65), por corte (``transfer_slices``).
+
+    El análisis pre-registrado de H7 es ``scripts/analyze_failure_transfer.py``; este informe sirve para la
+    auditoría genérica.
+    """
+    return sliced_report(
+        runs,
+        metadata,
+        generated_from,
+        output,
+        campaign="failure-transfer-v1",
+        slices=transfer_slices(runs),
+        definition=(
+            "without failure memory (A+C) and each real or placebo variant by scope tau (A_x+C_x); each "
+            "slice holds its training runs and its single transfer pass, so pairs and metrics never mix "
+            "conditions"
+        ),
+        title="failure transfer (#65)",
+        analysis="Pre-registered H7 analysis: `python -m scripts.analyze_failure_transfer`.",
+    )
+
+
+def sliced_report(runs, metadata, generated_from, output, *, campaign, slices, definition, title, analysis):
+    """Informe genérico por corte, común a H6 (#63) y H7 (#65)."""
     report = {
         "schema_id": "software-learning-results/v1",
-        "campaign": "failure-memory-v1",
+        "campaign": campaign,
         "generated_from": generated_from,
         "metrics": {},
         "LearningGain": {},
         "comparisons": {},
         "replication": {},
         "interpretation": INTERPRETATION,
-        "definitions": {
-            **DEFINITIONS,
-            "slices": (
-                "without/with failure memory (A+C / A_N+C_N) x transfer pass; each slice holds its "
-                "training runs and one transfer pass, so pairs and metrics never mix conditions or passes"
-            ),
-        },
+        "definitions": {**DEFINITIONS, "slices": definition},
     }
-    slices = failure_slices(runs)
     for name, members in slices.items():
         comparisons, metrics, gains = paired(members, metadata)
         report["metrics"][name] = metrics
@@ -589,12 +739,11 @@ def failure_memory_report(runs, metadata, generated_from, output):
             json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n"
         )
         lines = [
-            "# Generated Experiment 1 results · failure memory (#63)",
+            f"# Generated Experiment 1 results · {title}",
             "",
             report["interpretation"],
             "",
-            "Generated with `python -m experiments evaluate`. Do not edit by hand. Pre-registered H6 "
-            "analysis: `python -m scripts.analyze_failure_memory`.",
+            f"Generated with `python -m experiments evaluate`. Do not edit by hand. {analysis}",
             "",
         ]
         for name, metrics in report["metrics"].items():
@@ -664,7 +813,7 @@ def projections(runs):
     single_scheme(runs)
     groups = defaultdict(list)
     for r in runs:
-        extra = (r["condition"], r["pass"]) if "condition" in r else ()
+        extra = (r["condition"], r.get("pass")) if "condition" in r else ()  # H7 (#65): sin pasada
         groups[(r["seed"], r["task"]["id"], r["memory_mode"], *extra)].append(semantic(r))
     return groups
 

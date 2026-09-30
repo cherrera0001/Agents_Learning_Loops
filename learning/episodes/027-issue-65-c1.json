@@ -1,0 +1,30 @@
+{
+  "seq": 27,
+  "id": "issue-65-c1",
+  "goal": "Transferencia y contaminación de la memoria de fallos (H7): implementación y análisis, sin campaña",
+  "ref": "#65",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recall léxico desde PowerShell con PYTHONPATH=src;. y __file__ de experiments, associative_agent_loop y scripts comprobado en el worktree; lecciones aplicadas: celdas sin holgura y métricas que no tienen ocasión de ocurrir (regla de exposición), --cov=src/experiments, mensajes de commit en archivo"},
+    {"action": "run_tests", "success": true, "note": "antes de tocar código, script temporal fuera del repo que regenera evaluate de runs, reference-v2, diagnostic-baseline-v1, failure-memory-v1 y pilot, y los analizadores h4, #58 y H6: línea base igual a lo publicado (los analizadores solo difieren por CRLF de la consola de Windows)"},
+    {"action": "edit_module", "success": true, "note": "failure_memory: scope() y la decisión parametrizados por τ y por la estrategia que baja cada registro, con los valores de H6 por defecto; FailureMemory.check_source para reutilizar la memoria en H7"},
+    {"action": "write_code", "success": true, "note": "experiments/failure_transfer.py (τ, placebo rotado al construir F, 18 condiciones, replay), runner opt-in sin pass, receta failure-transfer-v1, evaluador aditivo con la cadena de H6 extraída a check_failure_chain e informe genérico por corte"},
+    {"action": "run_tests", "success": true, "note": "a mitad de la implementación, evaluaciones y analizadores publicados regenerados otra vez: idénticos byte a byte a la línea base"},
+    {"action": "write_code", "success": true, "note": "scripts/analyze_failure_transfer.py con validación cerrada (rechaza incompletas, duplicados, semillas y réplicas distintas), métricas pareadas y reglas H7a, H7b, H7c y conclusión literales"},
+    {"action": "write_tests", "success": false, "error": "test del placebo con las tres estrategias: los registros sintéticos llevaban la firma parcial y la reproducción era ambigua, así que ningún registro aplicaba"},
+    {"action": "edit_module", "success": false, "error": "los arreglos de ese test y de cinco avisos de ruff se aplicaron con un script Python en un heredoc de bash con \\n, que las instrucciones prohíben; funcionó, pero se volvió a las herramientas de edición"},
+    {"action": "review_code", "success": true, "note": "autorrevisión: en el análisis, la guarda de misma tarea era inalcanzable (en una sola pasada, 'anterior en la celda' ya lo excluye) y su mutación habría sobrevivido; se movió al principio y contra toda la campaña. La conclusión se parametrizó por base para que la mutación C→A fuera detectable"},
+    {"action": "write_tests", "success": false, "error": "dos expectativas del simulador estaban mal: quitar un registro dispara antes la cadena que la longitud del alcance, y en el escenario solo-A la base C no tiene changed_first (sin exposición, no neutral)"},
+    {"action": "write_tests", "success": true, "note": "escenarios del simulador con números derivados a mano (transfiere 3/18 frente a placebo 0, contaminación 6/18 peor que placebo, frontera de exposición, τ exacto 0.25, placebo que también transfiere) y reglas sobre celdas sintéticas; ningún test exige ganancia"},
+    {"action": "run_tests", "success": false, "error": "la regeneración final falló al importar: un script temporal propio llamado inspect.py, en el mismo directorio que regen.py, tapaba el módulo inspect de la biblioteca estándar"},
+    {"action": "run_tests", "success": true, "note": "renombrado; ruff, ruff format, mypy, export_schema, export_experiment_schema, pytest --cov (496 tests, 98.72 %; failure_transfer.py y failure_memory.py al 100 %) y mutation_check (88/88 detectadas, 31 nuevas, 11 controles en verde); las recetas publicadas siguen idénticas byte a byte"},
+    {"action": "update_docs", "success": true, "note": "suplemento specs/failure_transfer_protocol.md enlazado desde el protocolo y entrada en CHANGELOG Unreleased; desviaciones candidatas para el PR sin tocar el pre-registro"},
+    {"action": "rebuild_memory", "success": true, "note": "devlog rebuild con este episodio"}
+  ],
+  "lessons": [
+    "Una guarda de defensa en profundidad que otra guarda anterior hace inalcanzable no se puede probar: ordenarla primero o aceptar que su mutación sobrevive",
+    "Parametrizar por base o variante lo que una regla fija como constante, para que la mutación que la cambia sea detectable",
+    "Capturar la línea base de las recetas publicadas antes de tocar código y compararla byte a byte después, no solo contra los archivos publicados",
+    "Los scripts temporales no deben llevar el nombre de un módulo de la biblioteca estándar: su directorio va primero en sys.path",
+    "Derivar a mano los números de cada escenario sintético antes de ejecutarlo; si coinciden, el test mide lo que dice"
+  ]
+}

@@ -9,6 +9,7 @@ from .agent import BoundedRepairAgent
 from .benchmark import (
     DIAGNOSTIC_CAMPAIGN,
     FAILURE_MEMORY_CAMPAIGN,
+    FAILURE_TRANSFER_CAMPAIGN,
     HISTORICAL_CAMPAIGN,
     REFERENCE_CAMPAIGN,
     TASK_SETS,
@@ -17,6 +18,8 @@ from .diagnostic import DiagnosticRepairAgent
 from .evaluate import compare, evaluate
 from .evidence import read_receipt
 from .failure_memory import CONDITIONS, FailureMemory, FailureMemoryRepairAgent
+from .failure_transfer import CONDITIONS as TRANSFER_CONDITIONS
+from .failure_transfer import FailureTransferRepairAgent, TransferFailureMemory
 from .memory import EvidenceMemory
 from .models import MemoryMode
 from .runner import (
@@ -29,7 +32,10 @@ from .runner import (
     update_memory,
 )
 
-CAMPAIGNS = {c["name"]: c for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN, FAILURE_MEMORY_CAMPAIGN)}
+CAMPAIGNS = {
+    c["name"]: c
+    for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN, FAILURE_MEMORY_CAMPAIGN, FAILURE_TRANSFER_CAMPAIGN)
+}
 
 
 def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"], agent_factory=BoundedRepairAgent):
@@ -117,6 +123,66 @@ def failure_campaign(
                         update_failure_memory(failures, path, evidence_dir)
 
 
+def transfer_campaign(
+    seeds,
+    replicates,
+    evidence_dir,
+    train=FAILURE_TRANSFER_CAMPAIGN["train"],
+    transfer=FAILURE_TRANSFER_CAMPAIGN["transfer"],
+    conditions=FAILURE_TRANSFER_CAMPAIGN["conditions"],
+):
+    """Transferencia de fallos (H7, #65), pre-registro sección 2: por (réplica, semilla, condición),
+    memorias nuevas; entrenamiento y **una sola pasada** de la transferencia, en el orden declarado.
+    Las lecciones solo se añaden en entrenamiento (quedan congeladas tras él); la memoria de fallos de
+    las variantes real y placebo se actualiza en línea después de cada ejecución, en las dos fases. Como
+    ninguna tarea se repite, todo registro que aplica proviene de otra tarea. ``conditions`` solo se
+    reduce en los tests; la receta declarada usa las 18."""
+    if replicates < 1 or len(set(seeds)) != len(seeds):
+        raise ValueError("positive replication count and unique seeds required")
+    if (
+        not conditions
+        or len(set(conditions)) != len(conditions)
+        or not set(conditions) <= set(TRANSFER_CONDITIONS)
+    ):
+        raise ValueError("condiciones de transferencia desconocidas o repetidas")
+    sequence = [(task, "train") for task in train] + [(task, "transfer") for task in transfer]
+    for _ in range(replicates):
+        batch = "BATCH-" + uuid.uuid4().hex
+        for seed in seeds:
+            order = list(conditions)
+            random.Random(seed).shuffle(order)
+            for condition in order:
+                mode, enabled, _, _ = TRANSFER_CONDITIONS[condition]
+                memory = EvidenceMemory()
+                failures = TransferFailureMemory() if enabled else None
+                for task_id, split in sequence:
+                    path = run_experiment(
+                        task_id,
+                        FailureTransferRepairAgent(),
+                        mode,
+                        seed,
+                        memory=memory,
+                        evidence_dir=evidence_dir,
+                        batch_id=batch,
+                        failures=failures,
+                        condition=condition,
+                    )
+                    receipt = read_receipt(path)
+                    print(
+                        f"{batch} seed={seed} {condition} {task_id}: "
+                        f"{receipt['result']} iterations={receipt['iterations']}",
+                        flush=True,
+                    )
+                    if receipt["result"] == "ERROR":
+                        raise RuntimeError(receipt["error"])
+                    if receipt["split"] != split:
+                        raise RuntimeError(f"{task_id} no pertenece a la partición declarada ({split})")
+                    if split == "train" and mode != MemoryMode.NO_MEMORY:
+                        update_memory(memory, path, evidence_dir)
+                    if failures is not None:
+                        update_failure_memory(failures, path, evidence_dir)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Reproducible software-learning laboratory")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -125,9 +191,9 @@ def main():
         "--campaign",
         choices=sorted(CAMPAIGNS),
         help=(
-            "declared campaign: reference-v2 (#44), the opt-in diagnostic-baseline-v1 (#58) or the "
-            "opt-in failure-memory-v1 (#63); fixes seeds, replicates and task set (and the agent, "
-            "conditions and passes for the opt-in ones)"
+            "declared campaign: reference-v2 (#44), the opt-in diagnostic-baseline-v1 (#58), the "
+            "opt-in failure-memory-v1 (#63) or the opt-in failure-transfer-v1 (#65); fixes seeds, "
+            "replicates and task set (and the agent, conditions and passes for the opt-in ones)"
         ),
     )
     run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
@@ -136,8 +202,8 @@ def main():
         "--evidence-dir",
         type=Path,
         help=(
-            "default: evidence/runs; diagnostic-baseline-v1 and failure-memory-v1 default to their "
-            "own directories"
+            "default: evidence/runs; diagnostic-baseline-v1, failure-memory-v1 and failure-transfer-v1 "
+            "default to their own directories"
         ),
     )
     run.add_argument(
@@ -180,6 +246,14 @@ def main():
                 evidence_dir,
                 FAILURE_MEMORY_CAMPAIGN["train"],
                 FAILURE_MEMORY_CAMPAIGN["transfer"],
+            )
+        elif declared is FAILURE_TRANSFER_CAMPAIGN:
+            transfer_campaign(
+                seeds,
+                replicates,
+                evidence_dir,
+                FAILURE_TRANSFER_CAMPAIGN["train"],
+                FAILURE_TRANSFER_CAMPAIGN["transfer"],
             )
         else:
             campaign(seeds, replicates, evidence_dir, TASK_SETS[task_set])

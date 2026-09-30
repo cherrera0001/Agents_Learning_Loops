@@ -56,11 +56,15 @@ def query_of(task):
     return task["title"] + " " + task["context"]
 
 
-def scope(record, signature, query):
-    """Alcance de un registro: firma idéntica y similitud de la clave ≥ τ (pre-registro, sección 3)."""
+def scope(record, signature, query, tau=TAU):
+    """Alcance de un registro: firma idéntica y similitud de la clave ≥ τ (pre-registro, sección 3).
+
+    ``tau`` es el de H6 (0.5) salvo en la transferencia de H7 (#65), que lo parametriza. El coseno léxico
+    nunca es negativo, así que con τ = 0 basta la firma.
+    """
     same = record["signature"] == signature
     similarity = cosine_similarity(query, record["query"])
-    applies = same and similarity >= TAU
+    applies = same and similarity >= tau
     return {
         "strategy": record["strategy"],
         "signature_match": same,
@@ -98,16 +102,21 @@ class FailureMemoryRepairAgent(DiagnosticRepairAgent):
     reads_failures = True
 
     def plan(self, view):
+        return self.failure_decision(view, TAU, lambda strategy: strategy)
+
+    def failure_decision(self, view, tau, demote):
+        """La decisión de H6 con el alcance ``tau``; ``demote`` da la estrategia que baja cada registro
+        aplicado (la suya en H6; la rotada en el placebo de H7, #65)."""
         base = super().plan(view)  # la decisión de #58, exactamente
         signature = base["diagnostic"]["features"]
         query = query_of(view.task)
         scopes, applied, failed = [], [], set()
         for record in getattr(view, "failures", ()):
-            item = scope(record, signature, query)
+            item = scope(record, signature, query, tau)
             scopes.append(item)
             if item["applies"]:
                 applied.append(record["id"])
-                failed.add(record["strategy"])
+                failed.add(demote(record["strategy"]))
         plan = failure_plan(
             base["considered"], base["diagnostic"]["candidates"], base["memory_proposal"], failed
         )
@@ -186,15 +195,19 @@ class FailureMemory:
         self.cell = cell
 
     def copy(self):
-        return FailureMemory(copy.deepcopy(self.records), self.origins, self.cell)
+        return type(self)(copy.deepcopy(self.records), self.origins, self.cell)
 
     def snapshot(self):
         return {"schema_id": STORE, "records": copy.deepcopy(self.records)}
 
-    def consolidate(self, receipt_path):
-        receipt = read_receipt(receipt_path)
+    def check_source(self, receipt):
+        """Solo los recibos del agente de H6 en A_N y C_N escriben esta memoria."""
         if receipt.get("agent") != AGENT_NAME or not failure_enabled(receipt.get("condition")):
             raise ValueError("la memoria de fallos solo se escribe desde recibos de A_N y C_N")
+
+    def consolidate(self, receipt_path):
+        receipt = read_receipt(receipt_path)
+        self.check_source(receipt)
         cell = (receipt["batch_id"], receipt["seed"], receipt["condition"])
         if self.cell is not None and self.cell != cell:
             raise ValueError("el recibo es de otra (lote, semilla, condición)")

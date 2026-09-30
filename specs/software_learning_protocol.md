@@ -302,3 +302,5 @@ regenerated and reviewed in the same pull request.
 Supplement: [diagnostic baseline (#58)](diagnostic_baseline_protocol.md), an opt-in agent that also reads the public reproduction.
 
 Supplement: [failure memory with revision (#63)](failure_memory_protocol.md), an opt-in agent that also demotes strategies that already failed in a similar context.
+
+Supplement: [failure transfer and contamination (#65)](failure_transfer_protocol.md), the same opt-in agent with a declared scope threshold and a placebo, over a single transfer pass.
