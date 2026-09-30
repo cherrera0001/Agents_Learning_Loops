@@ -1,0 +1,39 @@
+{
+  "seq": 20,
+  "id": "issue-58",
+  "goal": "Línea base de diagnóstico público: ¿la experiencia previa mejora la selección de operadores cuando A, B y C reciben el mismo diagnóstico del fallo?",
+  "ref": "#58",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "devlog recall léxico sin resultados; con fastembed, 5 lecciones (pre-registrar antes de los datos, reproducir el defecto antes de corregirlo, no relajar la regla, expuestas frente a citadas)"},
+    {"action": "update_docs", "success": false, "error": "fase 1: gh issue view y mcp issue_read pedían aprobación, el MCP apuntaba a cherrera0001/Agents-Learning-Loops (con guion; el repositorio es Agents_Learning_Loops) y la escritura de docs/preregistration fue denegada: el diseño se entregó como texto"},
+    {"action": "update_docs", "success": true, "note": "con el cuerpo del issue y las decisiones del supervisor: pre-registro C0 1ed70e0 comprometido antes de implementar"},
+    {"action": "write_code", "success": false, "error": "classify marcaba el nulo por construcción con una condición distinta del texto del pre-registro"},
+    {"action": "review_code", "success": true, "note": "autorrevisión contra el C0: classify alineado con el texto literal de la sección 7"},
+    {"action": "write_tests", "success": false, "error": "suponían que el evaluador solo pareja B y C (también pareja A consigo mismo), afirmaban que el directorio de la campaña no existe (fallaría tras la campaña) y dejaban sin cubrir la rama de éxito y el par faltante"},
+    {"action": "run_tests", "success": true, "note": "pareo con set(MODES), test del directorio eliminado y ramas cubiertas"},
+    {"action": "write_code", "success": false, "error": "ruff: E501, I001, SIM300 y RUF043 (patrón de match sin prefijo r)"},
+    {"action": "edit_module", "success": true, "note": "ruff format, ruff --fix y patrón raw"},
+    {"action": "run_tests", "success": false, "error": "un comando mal compuesto ejecutó scripts/mutation_check.py dos veces en serie; la restauración byte a byte quedó limpia"},
+    {"action": "run_tests", "success": true, "note": "C1 4a0baaa: 209 tests, 24/24 mutaciones, ruff, mypy y exports"},
+    {"action": "write_code", "success": false, "error": "cobertura: analyze() aceptaba campañas parciales (27 task_run) porque solo exigía pares; no validaba tareas, semillas, lotes, duplicados ni la procedencia de las lecciones"},
+    {"action": "write_code", "success": false, "error": "temporalidad: el evaluador comprobaba decision_inputs solo por su existencia y no exigía que test-0 fuera la reproducción previa y fallida"},
+    {"action": "write_code", "success": false, "error": "política: la coherencia agente-política era evadible; omitir la política, renombrar el agente o declarar otra política sacaba el recibo de las verificaciones de diagnóstico"},
+    {"action": "review_code", "success": true, "note": "la revisión de Codex (supervisor) sobre C1 reprodujo los tres defectos y no aprobó la campaña; reproducidos aquí con tests nuevos (11 de 13 casos estructurales aceptados y 21 fallos) antes de corregir"},
+    {"action": "write_tests", "success": false, "error": "negativos sin match: una mutación sobrevivía porque el desempaquetado de replicates() también lanza ValueError; el caso de semilla en otro lote usaba BATCH-b y lo rechazaba el control de duplicados"},
+    {"action": "edit_module", "success": true, "note": "match en cada negativo, tercer lote BATCH-c y la mutación cuyo código original desapareció, redirigida"},
+    {"action": "run_tests", "success": true, "note": "0d90edc: 241 tests (98.52 %), 33/33 mutaciones, ruff, mypy y exports; evaluación publicada de runs y reference-v2 idéntica"},
+    {"action": "review_code", "success": true, "note": "Codex aprobó 0d90edc: reprodujo por su cuenta los rechazos (false_order, missing_policy, one_replica, missing_cell, duplicate) y aceptó una campaña sintética de 396"},
+    {"action": "run_demo", "success": true, "note": "una sola campaña con 0d90edc: 324 task_run + 72 memory_update, 324 PASS, 0 ERROR, réplicas iguales (162/162); original B y C +6/18 al primer intento (aporta), engañosa −2/18 (sin diferencia); PD1-PD6 se cumplen"},
+    {"action": "update_docs", "success": true, "note": "docs/results/diagnostic-baseline.md con numeradores, pares, holgura y coste; diagnostic_analysis.json generado por el script sin editar; catálogo de evidence y CHANGELOG"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado con este episodio; la bitácora registra el desarrollo, no la memoria del experimento"}
+  ],
+  "lessons": [
+    "Validar en el análisis la campaña completa declarada (tareas, semillas, lotes, duplicados y procedencia de lecciones) antes de cualquier veredicto: exigir solo pares aceptaba 27 de 324 ejecuciones",
+    "Comprobar un campo de procedencia por su valor exacto, no por su existencia",
+    "Derivar la política esperada del agente y exigirla en los dos sentidos: seleccionar recibos por un campo que el propio recibo declara permite evadir la verificación",
+    "Anclar cada test negativo con match al mensaje de su guarda: sin él, otra excepción del mismo tipo deja sobrevivir la mutación",
+    "Implementar las reglas del pre-registro con su texto literal y contrastarlas con él antes de escribir los tests",
+    "Confirmar el owner/repo exacto (guion bajo) antes de llamar a gh o al MCP",
+    "Reportar la holgura (primeros intentos forzados, vetos) junto a la diferencia: con D decisivo o vetando, la memoria no puede actuar y el nulo no es evidencia sobre ella"
+  ]
+}
