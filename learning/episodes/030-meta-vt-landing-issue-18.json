@@ -1,0 +1,22 @@
+{
+  "seq": 30,
+  "id": "meta-vt-landing-issue-18",
+  "goal": "Episodio meta: dejar un solo registro DMARC en vinculaterritorio.cl (vt-landing #18) con la memoria de ese repositorio, con la cuenta vinculaterritorio",
+  "ref": "vinculaterritorio/vt-landing#18, PR vinculaterritorio/vt-landing#19",
+  "steps": [
+    {"action": "git_push", "success": true, "note": "token GITHUB_TOKEN_CLASIC del .env de la landing, con guarda que aborta si gh api user no es vinculaterritorio; trabajo en un worktree aparte porque la copia local tenía cambios ajenos en AGENTS.md y CLAUDE.md"},
+    {"action": "recall_memory", "success": false, "error": "el recibo de recuperación declaró que ninguna lección trataba el DNS antes de leer los runs nuevos del mismo día; era falso"},
+    {"action": "recall_memory", "success": true, "note": "contacto-cierre-integrado fija rua=vinculaterritorio@gmail.com y deja la política al dueño; LEARN-003 registra los dos DMARC. La corrección queda en el run porque el recibo es de una sola escritura"},
+    {"action": "write_tests", "success": true, "note": "check-dmarc.mjs contra 1.1.1.1 y 8.8.8.8: rojo (exit 1, 2 registros) y control verde en una zona real con un solo DMARC (exit 0)"},
+    {"action": "write_code", "success": true, "note": "cf-dmarc.sh idempotente con DRY_RUN, probado contra una API falsa en cinco casos; p=reject por defecto con evidencia de DKIM alineado (resend y zmail) y la política como parámetro"},
+    {"action": "run_tests", "success": false, "error": "sin CLOUDFLARE_API_TOKEN en ningún .env: la escritura del DNS no pudo ejecutarse y el issue queda abierto"},
+    {"action": "merge_pr", "success": true, "note": "PR vt-landing#19, merge 489b16d, con «Refs #18» y no «Closes», porque la comprobación sigue en rojo en el DNS real"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+  ],
+  "lessons": [
+    "Leer toda la memoria disponible antes de escribir el recibo de recuperación: un «sin coincidencias» escrito antes de leer es una afirmación falsa sellada",
+    "Aquí la memoria recuperada cambió la primera acción frente a la línea de control: el buzón rua y quién decide la política. Es el primer caso de uso real que cambió una decisión, y no mide todavía si el resultado mejoró",
+    "Un issue que depende de una credencial ausente se publica con la corrección lista y verificada fuera de línea, con «Refs», y no se cierra hasta ver el verde en el sistema real",
+    "Comprobar que una verificación también puede dar verde, contra un caso real conocido, antes de confiar en su rojo"
+  ]
+}
