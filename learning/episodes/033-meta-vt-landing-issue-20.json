@@ -1,0 +1,19 @@
+{
+  "seq": 33,
+  "id": "meta-vt-landing-issue-20",
+  "goal": "Episodio meta: que la memoria de la landing de VinculaTerritorio sea recuperable por su propia herramienta (vt-landing #20), siguiendo la secuencia canónica de ese repositorio",
+  "ref": "vinculaterritorio/vt-landing#20, PR vinculaterritorio/vt-landing#21",
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "la secuencia canónica es la skill publicada resolver-issue más docs/AGENT_LEARNING_WORKFLOW.md de la landing; cuenta vinculaterritorio comprobada antes de cada escritura en VT"},
+    {"action": "gh_create_issues", "success": true, "note": "issue #20 abierto para un defecto real registrado en siete recibos, asignado y anunciado en el issue para que otra sesión no lo tome en paralelo"},
+    {"action": "recall_memory", "success": true, "note": "INDEX y LEARN-001..004 leídos a mano antes de sellar la recuperación; LEARN-004 (una prueba verde no vale sin mutación) se aplicó"},
+    {"action": "write_tests", "success": true, "note": "cuatro pruebas en test:learning sobre la CLI real: tres rojas antes del arreglo (exit 1) y un control negativo"},
+    {"action": "edit_module", "success": true, "note": "la CLI lee LEARN-*.md; test:learning 53/53 y la mutación que vuelve a *.json da rojo"},
+    {"action": "write_tests", "success": false, "error": "el control negativo usaba palabras reales («inexistente») y falló cuando la lección nueva las usó; se cambió por un término sin sentido y se volvieron a sellar verde y mutación"},
+    {"action": "merge_pr", "success": true, "note": "PR vt-landing#21, merge fbe202a; verificado sobre master integrado; cierre con comando, exit code y recibo; tablero 11/11 Done"}
+  ],
+  "lessons": [
+    "La primera vez que la herramienta de memoria de la landing recupera lecciones es después de este arreglo: los seis ciclos anteriores dependieron de leerlas a mano",
+    "Un control negativo de búsqueda no debe usar palabras reales: la memoria que se escribe después puede contenerlas"
+  ]
+}
