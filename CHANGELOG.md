@@ -14,6 +14,9 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 ### Corregido
 - Análisis y evaluador de la línea base de diagnóstico (#58), antes de la campaña: el análisis valida la campaña completa declarada, el evaluador exige `decision_inputs` exacto con `test-0` fallido y la coherencia agente↔política en los dos sentidos.
 
+### Corregido
+- Documentación (sin cambio de comportamiento ni de evidencia): el README separa la campaña histórica (6 tareas), la referencia v2 (9 tareas, 6 permutaciones) y el resultado negativo de H4; sustituye limitaciones y hoja de ruta obsoletas y distingue los hashes v1 (`checkout-bytes/v0`) de los v2 (`lf/v1`). `specs/loop_protocol.md` cita las rutas actuales de `core.py`, `models.py` y `test_learning.py` (#56).
+
 ## [0.2.0] - 2026-09-29
 
 ### Añadido
