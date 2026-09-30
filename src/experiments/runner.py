@@ -27,6 +27,8 @@ from .evidence import (
     source_sha256,
     sources_digest,
 )
+from .failure_memory import CONDITIONS, PASSES, STORE, FailureView
+from .failure_memory import DECISION_INPUTS as FAILURE_DECISION_INPUTS
 from .memory import EvidenceMemory
 from .models import MemoryMode, PublicTask, Reflection
 
@@ -172,12 +174,26 @@ def run_experiment(
     batch_id="adhoc",
     root=ROOT,
     max_iterations=3,
+    failures=None,
+    condition=None,
+    pass_number=None,
 ):
     mode = MemoryMode(memory_mode).value
     if not 1 <= max_iterations <= 3:
         raise ValueError("iteration budget must be 1..3")
     task = load_task(task, root)
     agent = agent or BoundedRepairAgent()
+    # Memoria de fallos opt-in (#63): solo su agente declara condición y pasada, y solo A_N y C_N
+    # reciben una memoria de fallos. Las demás recetas no pasan estos argumentos.
+    reads_failures = getattr(agent, "reads_failures", False)
+    if reads_failures != (condition is not None):
+        raise ValueError("la memoria de fallos exige su agente y una condición declarada, y solo ellos")
+    if condition is not None and (
+        condition not in CONDITIONS
+        or CONDITIONS[condition] != (mode, failures is not None)
+        or pass_number not in PASSES
+    ):
+        raise ValueError("condición, modo de memoria, memoria de fallos y pasada no concuerdan")
     memory = memory or EvidenceMemory()
     evidence_dir = Path(evidence_dir or root / "evidence/runs")
     started = time.perf_counter()
@@ -214,6 +230,9 @@ def run_experiment(
             "test_environment": "allowlisted OS variables only",
         },
     }
+    if condition is not None:
+        record["condition"] = condition
+        record["pass"] = pass_number
     try:
         with tempfile.TemporaryDirectory(prefix="aal-task-") as directory:
             workspace = Path(directory)
@@ -228,6 +247,9 @@ def run_experiment(
             memories, paths = memory.retrieve(task.query(), mode)
             record["retrieval"] = {"memories": memories, "paths": paths}
             record["retrieved_memories"] = [m["id"] for m in memories]
+            if condition is not None:
+                failure_input = failures.snapshot()["records"] if failures is not None else []
+                record["failure_memory_input"] = failure_input
             context = {
                 "task": task.model_dump(),
                 "files": {k: normalize_source(v) for k, v in initial.items()},
@@ -241,12 +263,32 @@ def run_experiment(
                 view = DiagnosticView(task.model_dump(), dict(initial), tuple(memories), mode, seed, public)
                 context["reproduction"] = public
                 record["decision_inputs"] = copy.deepcopy(DECISION_INPUTS)
+                if reads_failures:
+                    # Memoria de fallos (#63): registros de ejecuciones selladas anteriores, nunca
+                    # los tests de esta ejecución.
+                    view = FailureView(
+                        task.model_dump(),
+                        dict(initial),
+                        tuple(memories),
+                        mode,
+                        seed,
+                        public,
+                        failures=tuple(copy.deepcopy(failure_input)),
+                    )
+                    context["failures"] = failure_input
+                    record["decision_inputs"] = copy.deepcopy(FAILURE_DECISION_INPUTS)
             else:
                 view = AgentView(task.model_dump(), dict(initial), tuple(memories), mode, seed)
             record["agent_context_sha256"] = digest(context)
             decision = agent.plan(view)
             record["decision"] = decision
             record["initial_hypothesis"] = decision["initial_hypothesis"]
+            if condition is not None:
+                # Lado del controlador, después de decidir: el origen de cada registro aplicado se
+                # lee de su recibo sellado y nunca llega al agente.
+                record["failure_origins"] = [
+                    {"id": i, "origin": failures.origin(i, task.id)} for i in decision["failure_ids"]
+                ]
             if not record["tests"]:
                 reproduce(workspace, record)
             successful = None
@@ -357,4 +399,32 @@ def update_memory(memory, receipt_path, evidence_dir):
     }
     path = publish(Path(evidence_dir), record)
     memory.document = candidate.document
+    return path
+
+
+def update_failure_memory(failures, receipt_path, evidence_dir):
+    """Memoria de fallos (#63): un ``memory_update`` sellado y separado por ejecución con intentos fallidos.
+
+    Transaccional como ``update_memory``: los registros se derivan del ``task_run`` sellado sobre una
+    copia, se publica el recibo y solo entonces se reemplaza la memoria. Una ejecución sin intentos
+    fallidos no escribe nada y devuelve None.
+    """
+    candidate = failures.copy()
+    changes = candidate.consolidate(receipt_path)
+    if not changes:
+        return None
+    record = {
+        "run_id": "RUN-" + uuid.uuid4().hex,
+        "kind": "memory_update",
+        "schema_id": RECEIPT_SCHEMA,
+        "source_hash_normalization": SOURCE_HASH_NORMALIZATION,
+        "memory_store": STORE,
+        "source_receipt": receipt_path.name,
+        "phases": ["MEMORY_UPDATE"],
+        "memory_before": failures.snapshot(),
+        "memory_after": candidate.snapshot(),
+        "memory_changes": changes,
+    }
+    path = publish(Path(evidence_dir), record)
+    failures.records, failures.origins, failures.cell = candidate.records, candidate.origins, candidate.cell
     return path

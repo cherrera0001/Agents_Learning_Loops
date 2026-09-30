@@ -6,10 +6,17 @@ import uuid
 from pathlib import Path
 
 from .agent import BoundedRepairAgent
-from .benchmark import DIAGNOSTIC_CAMPAIGN, HISTORICAL_CAMPAIGN, REFERENCE_CAMPAIGN, TASK_SETS
+from .benchmark import (
+    DIAGNOSTIC_CAMPAIGN,
+    FAILURE_MEMORY_CAMPAIGN,
+    HISTORICAL_CAMPAIGN,
+    REFERENCE_CAMPAIGN,
+    TASK_SETS,
+)
 from .diagnostic import DiagnosticRepairAgent
 from .evaluate import compare, evaluate
 from .evidence import read_receipt
+from .failure_memory import CONDITIONS, FailureMemory, FailureMemoryRepairAgent
 from .memory import EvidenceMemory
 from .models import MemoryMode
 from .runner import (
@@ -18,10 +25,11 @@ from .runner import (
     load_task,
     prepare,
     run_experiment,
+    update_failure_memory,
     update_memory,
 )
 
-CAMPAIGNS = {c["name"]: c for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN)}
+CAMPAIGNS = {c["name"]: c for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN, FAILURE_MEMORY_CAMPAIGN)}
 
 
 def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"], agent_factory=BoundedRepairAgent):
@@ -56,6 +64,59 @@ def campaign(seeds, replicates, evidence_dir, tasks=TASK_SETS["v1"], agent_facto
                         update_memory(memory, path, evidence_dir)
 
 
+def failure_campaign(
+    seeds,
+    replicates,
+    evidence_dir,
+    train=FAILURE_MEMORY_CAMPAIGN["train"],
+    transfer=FAILURE_MEMORY_CAMPAIGN["transfer"],
+):
+    """Memoria de fallos (#63), pre-registro sección 4: por (réplica, semilla, condición), memorias
+    nuevas; entrenamiento, pasada 1 y pasada 2 de la transferencia en el mismo orden. Las lecciones solo
+    se añaden en entrenamiento (quedan congeladas tras él); la memoria de fallos de A_N y C_N se
+    actualiza en línea después de cada ejecución, en las tres fases."""
+    if replicates < 1 or len(set(seeds)) != len(seeds):
+        raise ValueError("positive replication count and unique seeds required")
+    sequence = [(task, 1, "train") for task in train]
+    sequence += [(task, 1, "transfer") for task in transfer] + [(task, 2, "transfer") for task in transfer]
+    for _ in range(replicates):
+        batch = "BATCH-" + uuid.uuid4().hex
+        for seed in seeds:
+            conditions = list(CONDITIONS)
+            random.Random(seed).shuffle(conditions)
+            for condition in conditions:
+                mode, enabled = CONDITIONS[condition]
+                memory = EvidenceMemory()
+                failures = FailureMemory() if enabled else None
+                for task_id, pass_number, split in sequence:
+                    path = run_experiment(
+                        task_id,
+                        FailureMemoryRepairAgent(),
+                        mode,
+                        seed,
+                        memory=memory,
+                        evidence_dir=evidence_dir,
+                        batch_id=batch,
+                        failures=failures,
+                        condition=condition,
+                        pass_number=pass_number,
+                    )
+                    receipt = read_receipt(path)
+                    print(
+                        f"{batch} seed={seed} {condition} pass={pass_number} {task_id}: "
+                        f"{receipt['result']} iterations={receipt['iterations']}",
+                        flush=True,
+                    )
+                    if receipt["result"] == "ERROR":
+                        raise RuntimeError(receipt["error"])
+                    if receipt["split"] != split:
+                        raise RuntimeError(f"{task_id} no pertenece a la partición declarada ({split})")
+                    if split == "train" and mode != MemoryMode.NO_MEMORY:
+                        update_memory(memory, path, evidence_dir)
+                    if failures is not None:
+                        update_failure_memory(failures, path, evidence_dir)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Reproducible software-learning laboratory")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -64,8 +125,9 @@ def main():
         "--campaign",
         choices=sorted(CAMPAIGNS),
         help=(
-            "declared campaign: reference-v2 (#44) or the opt-in diagnostic-baseline-v1 (#58); "
-            "fixes seeds, replicates and task set (and the agent for #58)"
+            "declared campaign: reference-v2 (#44), the opt-in diagnostic-baseline-v1 (#58) or the "
+            "opt-in failure-memory-v1 (#63); fixes seeds, replicates and task set (and the agent, "
+            "conditions and passes for the opt-in ones)"
         ),
     )
     run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
@@ -73,7 +135,10 @@ def main():
     run.add_argument(
         "--evidence-dir",
         type=Path,
-        help="default: evidence/runs; diagnostic-baseline-v1 defaults to its own directory",
+        help=(
+            "default: evidence/runs; diagnostic-baseline-v1 and failure-memory-v1 default to their "
+            "own directories"
+        ),
     )
     run.add_argument(
         "--task-set",
@@ -107,6 +172,14 @@ def main():
         if declared is DIAGNOSTIC_CAMPAIGN:
             campaign(
                 seeds, replicates, evidence_dir, TASK_SETS[task_set], agent_factory=DiagnosticRepairAgent
+            )
+        elif declared is FAILURE_MEMORY_CAMPAIGN:
+            failure_campaign(
+                seeds,
+                replicates,
+                evidence_dir,
+                FAILURE_MEMORY_CAMPAIGN["train"],
+                FAILURE_MEMORY_CAMPAIGN["transfer"],
             )
         else:
             campaign(seeds, replicates, evidence_dir, TASK_SETS[task_set])

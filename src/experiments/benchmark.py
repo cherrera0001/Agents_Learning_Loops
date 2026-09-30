@@ -42,6 +42,21 @@ DIAGNOSTIC_CAMPAIGN = {
     "agent": "bounded-ast-repair-v1+diagnostic-v1",
     "evidence_dir": "evidence/diagnostic-baseline-v1",
 }
+# Memoria de fallos con revisión (H6, #63), opt-in: el diseño de #58 con cuatro condiciones (A, A_N,
+# C, C_N), entrenamiento EXP-01..03 y dos pasadas de EXP-04..09, en el mismo orden. Pre-registrada en
+# docs/preregistration/failure-memory.md; sus recibos van a su propio directorio.
+FAILURE_MEMORY_CAMPAIGN = {
+    "name": "failure-memory-v1",
+    "seeds": DIAGNOSTIC_CAMPAIGN["seeds"],
+    "replicates": DIAGNOSTIC_CAMPAIGN["replicates"],
+    "task_set": DIAGNOSTIC_CAMPAIGN["task_set"],
+    "train": TASK_SETS["misleading-v1"][:3],
+    "transfer": TASK_SETS["misleading-v1"][3:],
+    "passes": 2,
+    "conditions": ("A", "A_N", "C", "C_N"),
+    "agent": "bounded-ast-repair-v1+diagnostic-v1+failure-memory-v1",
+    "evidence_dir": "evidence/failure-memory-v1",
+}
 
 
 def private_metadata(root):

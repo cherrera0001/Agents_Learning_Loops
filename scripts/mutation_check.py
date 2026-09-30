@@ -24,7 +24,21 @@ EXPERIMENT_TESTS = ["tests/test_experiment_harness.py", "tests/test_experiment_g
 DIAGNOSTIC_TESTS = ["tests/test_experiment_diagnostic.py"]
 DIAGNOSTIC_HARNESS = ["tests/test_experiment_diagnostic_harness.py"]
 DIAGNOSTIC_ANALYSIS = ["tests/unit/test_analyze_diagnostic_baseline.py"]
-CONTROLS = ([PROPERTIES], EXPERIMENT_TESTS, DIAGNOSTIC_TESTS, DIAGNOSTIC_HARNESS, DIAGNOSTIC_ANALYSIS)
+# Memoria de fallos (#63): política y registros sintéticos, conexión con runner/evaluador y análisis.
+FAILURE_TESTS = ["tests/test_experiment_failure_memory.py"]
+FAILURE_HARNESS = ["tests/test_experiment_failure_memory_harness.py"]
+FAILURE_ANALYSIS = ["tests/unit/test_analyze_failure_memory.py"]
+CONTROLS = (
+    [PROPERTIES],
+    EXPERIMENT_TESTS,
+    DIAGNOSTIC_TESTS,
+    DIAGNOSTIC_HARNESS,
+    DIAGNOSTIC_ANALYSIS,
+    FAILURE_TESTS,
+    FAILURE_HARNESS,
+    FAILURE_ANALYSIS,
+)
+FAILURE_SCRIPT = ROOT / "scripts" / "analyze_failure_memory.py"
 
 # (nombre, archivo, original, mutación, destino de pytest que debe detectarla)
 # El destino es una lista de argumentos de pytest propia de cada mutación.
@@ -261,6 +275,176 @@ MUTATIONS = [
         "if checksum is None or hashlib.sha256(canonical(record)).hexdigest() != checksum:",
         "if checksum is None:",
         DIAGNOSTIC_ANALYSIS,
+    ),
+    # Memoria de fallos con revisión (#63)
+    (
+        "H6: la memoria de fallos precede al diagnóstico",
+        EXPERIMENTS / "failure_memory.py",
+        "key=lambda op: (op not in candidates, op in failed, op != proposal, prior.index(op)),",
+        "key=lambda op: (op in failed, op not in candidates, op != proposal, prior.index(op)),",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: la lección precede a la memoria de fallos",
+        EXPERIMENTS / "failure_memory.py",
+        "key=lambda op: (op not in candidates, op in failed, op != proposal, prior.index(op)),",
+        "key=lambda op: (op not in candidates, op != proposal, op in failed, prior.index(op)),",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: alcance sin firma idéntica",
+        EXPERIMENTS / "failure_memory.py",
+        "applies = same and similarity >= TAU",
+        "applies = similarity >= TAU",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: umbral de similitud estricto",
+        EXPERIMENTS / "failure_memory.py",
+        "applies = same and similarity >= TAU",
+        "applies = same and similarity > TAU",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: registro de un intento que pasó",
+        EXPERIMENTS / "failure_memory.py",
+        'if test["returncode"] == 0:',
+        "if False:",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: registros escritos desde A o C",
+        EXPERIMENTS / "failure_memory.py",
+        'raise ValueError("la memoria de fallos solo se escribe desde recibos de A_N y C_N")',
+        "pass",
+        FAILURE_TESTS,
+    ),
+    (
+        "H6: el agente no recibe la memoria de fallos",
+        EXPERIMENTS / "runner.py",
+        "failures=tuple(copy.deepcopy(failure_input)),",
+        "failures=(),",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: origen anotado sin leer el recibo",
+        EXPERIMENTS / "runner.py",
+        '{"id": i, "origin": failures.origin(i, task.id)}',
+        '{"id": i, "origin": "other_task"}',
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador no repite la decisión",
+        EXPERIMENTS / "evaluate.py",
+        'if r["decision"] != replay_failure_decision(r):',
+        "if False:",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador acepta una memoria incompleta",
+        EXPERIMENTS / "evaluate.py",
+        "if inputs != [expected_failure_record(by_id[source], i) for source, i in written]:",
+        "if False:",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador acepta un registro posterior",
+        EXPERIMENTS / "evaluate.py",
+        'if position[source_id] >= position[run["run_id"]]:',
+        "if False:",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador acepta un registro de un test que pasó",
+        EXPERIMENTS / "evaluate.py",
+        'if index < 1 or test["returncode"] == 0:',
+        "if index < 1:",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador acepta campos de H6 en otros agentes",
+        EXPERIMENTS / "evaluate.py",
+        "if agent != FAILURE_AGENT and ("
+        "FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()):",
+        "if False:",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: evaluador acepta lecciones de otra condición",
+        EXPERIMENTS / "evaluate.py",
+        'or prior.get("condition") != r.get("condition")',
+        "or False",
+        FAILURE_HARNESS,
+    ),
+    (
+        "H6: análisis acepta una sola réplica",
+        FAILURE_SCRIPT,
+        "if len(batches) != REPLICATES:",
+        "if len(batches) > REPLICATES:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: análisis acepta lotes incompletos",
+        FAILURE_SCRIPT,
+        "if found != expected:",
+        "if not found <= expected:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: análisis acepta registros en A o C",
+        FAILURE_SCRIPT,
+        'if not enabled and (inputs or r["decision"]["failure_ids"] or r["failure_origins"]):',
+        "if False:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: análisis acepta registros posteriores",
+        FAILURE_SCRIPT,
+        "if source is None or position(source) >= position(r):",
+        "if source is None:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: análisis acepta registros de un test que pasó",
+        FAILURE_SCRIPT,
+        'if index < 1 or source["tests"][index]["returncode"] == 0:',
+        "if index < 1:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: repetición contada al revés",
+        FAILURE_SCRIPT,
+        'r["actions"][0]["strategy"] in earlier_failures',
+        'r["actions"][0]["strategy"] not in earlier_failures',
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6a: holgura estricta",
+        FAILURE_SCRIPT,
+        'headroom = rx["numerator"] >= MARGIN',
+        'headroom = rx["numerator"] > MARGIN',
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6a: celda con holgura sin margen",
+        FAILURE_SCRIPT,
+        'limit = rx["numerator"] - MARGIN if headroom else rx["numerator"]',
+        'limit = rx["numerator"]',
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6b: hurt nunca contado",
+        FAILURE_SCRIPT,
+        "if target_ok and not new_ok:",
+        "if False:",
+        FAILURE_ANALYSIS,
+    ),
+    (
+        "H6: control de determinismo ignorado",
+        FAILURE_SCRIPT,
+        "valid = consistent and control and denominators",
+        "valid = consistent and denominators",
+        FAILURE_ANALYSIS,
     ),
 ]
 
