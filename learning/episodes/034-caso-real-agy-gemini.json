@@ -28,6 +28,16 @@
       "action": "recall_memory",
       "success": true,
       "note": "Tras rebuild, una consulta elegida después recupera las cuatro reglas; prueba de accesibilidad, sin control ni ganancia causal"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Atributo -whitespace sólo en las copias de evidencia, como en la captura original: conservar bytes y hashes sin convertir fines de línea"
     }
   ],
   "lessons": [

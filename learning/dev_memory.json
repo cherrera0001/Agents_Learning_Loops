@@ -9094,7 +9094,7 @@
         "kind": "lesson"
       },
       "created_at": 23,
-      "last_accessed_at": 31,
+      "last_accessed_at": 33,
       "activation_level": 0.0
     },
     {
@@ -12940,6 +12940,62 @@
         "error": null,
         "episode": 33,
         "step": 4
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:33:5",
+      "type": "Outcome",
+      "label": "failure: diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida",
+        "episode": 33,
+        "step": 5
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:diff_check_se_al_cr_como_trailing_whites",
+      "type": "Concept",
+      "label": "diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:33:6",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 33,
+        "step": 6
+      },
+      "created_at": 33,
+      "last_accessed_at": 33,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "type": "Concept",
+      "label": "'update_docs' falló con 'diff --check señaló CR como trailing whitespace en copias marcadas -text; la cadena PowerShell no detuvo el commit ante esa salida'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
       },
       "created_at": 33,
       "last_accessed_at": 33,
@@ -20175,10 +20231,10 @@
       "source": "action:update_docs",
       "target": "concept:error:salida_de_referencia_desactualizada_scor",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.007205759403792794,
+      "weight": 0.005764607523034235,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 19,
+      "count": 20,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20285,10 +20341,10 @@
       "source": "action:update_docs",
       "target": "concept:error:fase_1_gh_issue_view_y_mcp_issue_read_pe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20329,10 +20385,10 @@
       "source": "action:update_docs",
       "target": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.053687091200000016,
+      "weight": 0.04294967296000001,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 10,
+      "count": 11,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20395,10 +20451,10 @@
       "source": "action:update_docs",
       "target": "concept:error:el_primer_borrador_del_informe_clasific_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.13107200000000002,
+      "weight": 0.10485760000000002,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 6,
+      "count": 7,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20450,10 +20506,10 @@
       "source": "action:update_docs",
       "target": "concept:error:el_caso_real_dec_a_4_7_y_18_abiertos_2_r",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.256,
+      "weight": 0.2048,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 3,
+      "count": 4,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20465,6 +20521,39 @@
       "decay_factor": 0.05,
       "last_updated": 33,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:33:5",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:33:6",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:diff_check_se_al_cr_como_trailing_whites",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -50134,12 +50223,12 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "action:update_docs",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.8704000000000001,
+      "weight": 0.9222400000000001,
       "decay_factor": 0.05,
-      "last_updated": 31,
-      "count": 4,
+      "last_updated": 33,
+      "count": 5,
       "metadata": {},
-      "recency_factor": 0.904837
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:update_docs",
@@ -50574,12 +50663,12 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:sin",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 28,
-      "count": 1,
+      "last_updated": 33,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.778801
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:update_docs",
@@ -50651,12 +50740,12 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:real",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 31,
-      "count": 1,
+      "last_updated": 33,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.904837
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:update_docs",
@@ -50739,12 +50828,12 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:entorno",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 31,
-      "count": 1,
+      "last_updated": 33,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.904837
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:update_docs",
@@ -50756,6 +50845,94 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.904837
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:documentar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:proceso",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:supervision",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:gemini",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:confundir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:evidencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:aprendizaje",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:update_docs",
+      "target": "concept:topic:experimental",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:write_code:classify_marcaba_el_nulo_por_construcci_",
@@ -66979,12 +67156,12 @@
       "source": "goal:33",
       "target": "action:update_docs",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.6185,
       "decay_factor": 0.05,
       "last_updated": 33,
-      "count": 1,
+      "count": 3,
       "metadata": {
-        "step": 3
+        "step": 6
       },
       "recency_factor": 1.0
     },
@@ -66992,6 +67169,171 @@
       "source": "goal:33",
       "target": "action:update_docs",
       "relation": "RESOLVED_BY",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:33:5",
+      "target": "concept:error:diff_check_se_al_cr_como_trailing_whites",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:diff_check_se_al_cr_como_trailing_whites",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:error:diff_check_se_al_cr_como_trailing_whites",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:documentar",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:proceso",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:real",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:supervision",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:gemini",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:confundir",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:evidencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:entorno",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:aprendizaje",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 33,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:diff_check_se_al_cr_como_trailing_whites",
+      "target": "concept:topic:experimental",
+      "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
       "decay_factor": 0.05,
       "last_updated": 33,
