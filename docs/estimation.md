@@ -64,7 +64,7 @@ El modelo es el mayor entre el de la fila de la talla y el mínimo de la excepci
 |---|---|---|---|
 | R = 3 | Mínimo Sonnet 5.5 (regla 1) | Vigente | #30 |
 | I = 3 | Mínimo Opus 5.5, aunque la talla sea S | **Nueva** | S con A1, I3, R1, V1: suma 6 → S → Sonnet `medium`, sin efecto de la incertidumbre |
-| Escritura en un sistema externo compartido (DNS, tablero, credenciales) | Nunca Haiku 4.5; la hace quien orquesta | **Nueva** | #76 |
+| Escritura en un sistema externo compartido (DNS, tablero, credenciales) | Nunca Haiku 4.5; la decide quien orquesta: la hace él o la encarga con el valor exacto a un subagente (§ 2.7) | **Nueva** | #76 |
 | El orquestador implementa él mismo | Declara el modelo de su sesión como previsto | **Nueva** | #68 |
 
 ### 2.3 Agentes que no son Claude
@@ -74,6 +74,7 @@ Para Codex, agy u otro agente que no es un modelo de Claude: *Modelo* (previsto)
 ### 2.4 Registro
 
 - **Estimación v1** en el cuerpo del issue, antes de pasar a *In Progress*. Cada cambio es un comentario «Estimación v2…» con fecha, motivo y evidencia.
+- La talla se copia en una etiqueta `talla:<talla>` del issue, para que se vea sin abrir el tablero. Es un espejo: si difiere del campo *Talla*, manda el campo.
 - *Modelo* es el modelo **previsto** y nunca se sobrescribe (en #56 se sobrescribió con el final y el previsto solo quedó en el cuerpo).
 - Al cerrar se completan *Modelo usado* y *Escaló*; el motivo del escalamiento va en un comentario (caso #56: Sonnet 5.5 `high` → Opus 5.5 por la regla 2).
 - *Modelo usado* es **autoinformado**, salvo que exista transcripción: solo las transcripciones locales de Claude Code (la de la sesión y la de cada subagente) registran modelo y tokens, y solo de esa máquina. No hay telemetría del proveedor accesible.
@@ -86,6 +87,18 @@ Ambas pueden contradecirse. **La tabla de § 2 manda como valor por defecto.** L
 ### 2.6 Brazo Haiku del piloto (hipótesis en evaluación, no regla vigente)
 
 Los issues S con I = 1, R = 1 y criterios de aceptación claros empiezan con Haiku 4.5. Si la verificación falla, se escala un escalón (regla 2) y se registra. El brazo se detiene si dos entregas seguidas fallan la verificación. Diseño y medición: [`docs/piloto-estimacion.md`](piloto-estimacion.md).
+
+### 2.7 Subagentes que no construyen: revisores y gestor (elección sin medir)
+
+La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4) no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
+
+| Definición | Modelo | Motivo de la elección |
+|---|---|---|
+| `revisor-codigo` | Opus 5.5 | Es el modelo con el que el orquestador revisaba a mano; no se ha probado uno menor |
+| `revisor-docs` | Sonnet 5.5 | Comprueba afirmaciones contra sus fuentes con una lista escrita; no se ha probado uno menor ni uno mayor |
+| `gestor-proyecto` | Sonnet 5.5 | Lee y redacta; solo escribe en GitHub campos de ESTIMAR con el valor que el orquestador le da (§ 2.2) |
+
+Un revisor puede ser de un modelo menor que el autor de lo que revisa (caso: `revisor-docs` sobre el PR #92, escrito por el orquestador): por eso su informe no decide, lo decide el orquestador. Lo observado hasta el 2026-10-02 son tres revisiones (PR #90, #91 y #92), las tres con defectos reales no declarados por el autor; no bastan para decir si otro modelo habría hecho lo mismo.
 
 ## 3. Estimación de los issues abiertos (2026-09-29)
 

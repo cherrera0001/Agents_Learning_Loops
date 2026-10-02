@@ -41,7 +41,13 @@ No lee `benchmark/private/` y no agrega recibos: eso corresponde al evaluador de
 
 ## Revisor
 
-Comprueba una entrega antes del merge.
+Comprueba una entrega antes del merge, con medios propios e independientes de quien la produjo. No edita la
+entrega: informa. Se desdobla en dos roles, porque revisar un cambio de código y revisar un documento
+exigen comprobaciones distintas; un PR que toca ambos pasa por los dos.
+
+### Revisor de código
+
+Definición ejecutable: [`.claude/agents/revisor-codigo.md`](../../.claude/agents/revisor-codigo.md).
 
 - Los tests y las comprobaciones de [`CONTRIBUTING.md`](../../CONTRIBUTING.md) pasan, y CI está en verde.
 - Cada test nuevo puede fallar: tiene un control o una mutación que lo demuestra.
@@ -50,6 +56,34 @@ Comprueba una entrega antes del merge.
 - El PR no mezcla evidencia vieja con conclusiones nuevas: no modifica recibos existentes y las
   conclusiones nuevas se apoyan en una campaña nueva e identificada (skill
   [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md)).
+- Inyecta defectos propios en el código nuevo y comprueba que los tests los detectan; ejecuta él mismo lo
+  que el issue pide ejecutar, sin copiar la salida del implementador.
+
+### Revisor de documentos
+
+Definición ejecutable: [`.claude/agents/revisor-docs.md`](../../.claude/agents/revisor-docs.md).
+
+- Cada cifra, fecha, ruta, issue o comando que el cambio añade tiene una fuente que existe y que dice eso.
+- El cambio no deja falsa una frase en otro documento, y no copia lo que ya tiene un texto canónico
+  (`CONTRIBUTING.md` para el flujo, `docs/estimation.md` para la política, `specs/` para los protocolos).
+- Nada autoinformado se presenta como medido, los puntos no se leen como horas ni tokens, y ningún
+  registro histórico se reescribe.
+- Enlaces y anclas resuelven, los diagramas coinciden con el texto y los términos son los del
+  [glosario](glosario.md).
+
+## Gestor del proyecto
+
+Prepara y vigila la planificación en GitHub para el orquestador, que sigue siendo quien decide. Definición
+ejecutable: [`.claude/agents/gestor-proyecto.md`](../../.claude/agents/gestor-proyecto.md).
+
+- Redacta épicas e issues con su plantilla y propone la «Estimación v1»
+  ([jerarquía](../../CONTRIBUTING.md#jerarquía-épica-issue-tareas)).
+- Informa del estado: chequeo del tablero, issues abiertos por épica y qué le falta a cada uno según su
+  tipo de cierre.
+- Calcula las lecturas del [piloto](../piloto-estimacion.md), cada medida con numerador, denominador y
+  fuente.
+- Solo lee, salvo que el encargo ordene de forma explícita qué escribir. No mueve tarjetas a *Done* a
+  mano, no sobrescribe *Modelo* y no cierra épicas.
 
 ## Cierre
 
