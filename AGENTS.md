@@ -18,7 +18,8 @@ este repositorio. El contrato completo está en [`docs/entorno/`](docs/entorno/R
    - al terminar, [`registrar-episodio`](skills/registrar-episodio/SKILL.md) (con `estimate` y `outcome`) y
      `python -m scripts.devlog rebuild`;
    - CONFIRMAR: tras el merge verificado, el orquestador comprueba el criterio de cierre
-     ([`confirmar-cierre`](skills/confirmar-cierre/SKILL.md)) y solo entonces mueve a *Done*.
+     ([`confirmar-cierre`](skills/confirmar-cierre/SKILL.md)) y registra *Verificación*; una tarjeta en
+     *Done* sin *Verificación* = *Verificada* no está confirmada (`python -m scripts.devlog board`).
 4. **Respeta la frontera de fuga.** El solver acotado nunca recibe `benchmark/private/`, causas ocultas,
    parches dorados ni el checkout completo. Solo el evaluador del experimento lee `benchmark/private/`.
 5. **No reescribas evidencia.** Los recibos de `evidence/` y los agregados de `results/` no se editan a

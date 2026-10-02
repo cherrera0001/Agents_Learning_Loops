@@ -17,8 +17,10 @@ description: Confirmar el criterio de cierre de un issue antes de moverlo a Done
 
 ## Cuándo
 
-Rol **orquestador** ([`agentes.md`](../../docs/entorno/agentes.md)): después de que el PR esté mergeado y
-antes de mover la tarjeta a *Done*. En el Project #5, *Done* cierra el issue automáticamente.
+Rol **orquestador** ([`agentes.md`](../../docs/entorno/agentes.md)): en cuanto el PR está mergeado. En el
+Project #5 la automatización ya habrá puesto la tarjeta en *Done* si el PR usó `Closes` (y mover una
+tarjeta a *Done* a mano cierra el issue): *Done* no es el cierre confirmado; lo es *Verificación* =
+*Verificada*.
 
 ## Procedimiento
 
@@ -27,10 +29,12 @@ antes de mover la tarjeta a *Done*. En el Project #5, *Done* cierra el issue aut
    (código y docs: CI verde en main; experimento: recibos, verificación independiente y lectura
    publicada; sistema externo: observación real con comando y fecha).
 3. Enlaza la evidencia en un comentario del issue y pon *Verificación* = *Verificada* en el tablero. Si la
-   comprobación falla, *Verificación* = *Fallida* y el issue sigue abierto. Si es de sistema externo y falta
-   la observación, *Verificación* = *Pendiente*, el issue sigue abierto y el PR usó `Refs`.
+   comprobación falla, *Verificación* = *Fallida* y el issue se reabre si el merge lo cerró. Si es de sistema
+   externo y falta la observación, *Verificación* = *Pendiente*, el issue sigue abierto y el PR usó `Refs`.
 4. Registra *Modelo usado* y *Escaló* en el tablero. Sin transcripción, *Modelo usado* es autoinformado y no
    se presenta como medido. *Modelo* (el previsto) no se toca.
-5. Solo con *Verificación* = *Verificada*, mueve la tarjeta a *Done*.
+5. Solo con *Verificación* = *Verificada* la tarjeta queda en *Done*; si la automatización no la movió,
+   muévela ahora. Termina con `python -m scripts.devlog board --since <n>` sin hallazgos: su regla 3 señala
+   toda tarjeta en *Done* sin verificar.
 6. Si el issue es hijo de una épica, esta se cierra cuando todos sus hijos obligatorios están cerrados y sus
    criterios propios cumplidos.
