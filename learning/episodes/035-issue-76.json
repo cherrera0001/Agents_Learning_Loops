@@ -1,0 +1,43 @@
+{
+  "seq": 35,
+  "id": "issue-76",
+  "goal": "Crear en el Project #5 los campos del piloto de estimación y dejar el tablero coherente con los issues (#65 y #68)",
+  "ref": "#76, épica #75",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "xhigh"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "transcript",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {"action": "review_code", "success": false, "error": "la auditoría afirmó que la talla y el tablero no estaban en el ciclo sin haber leído CONTRIBUTING.md, que sí los pide en los pasos 2, 3 y 7"},
+    {"action": "review_code", "success": true, "note": "leído CONTRIBUTING.md: el hueco real está en el diagrama de learning/README.md, las skills y el formato del episodio; la afirmación se corrigió ante el usuario"},
+    {"action": "confirm_closure", "success": false, "error": "la cuenta activa del llavero de gh (vinculaterritorio) no ve el Project #5: Could not resolve to a ProjectV2"},
+    {"action": "confirm_closure", "success": true, "note": "GH_TOKEN de cherrera0001 por comando; leídas 38 tarjetas: #65 y #68 cerrados con PR mergeado y tarjeta en In Progress"},
+    {"action": "confirm_closure", "success": false, "error": "se dejó en duda el cierre de vt-landing#18 antes de comprobarlo; estaba bien cerrado, con el DNS corregido y un solo registro DMARC visible en 8.8.8.8"},
+    {"action": "recall_memory", "success": true, "note": "lecciones recuperadas: Done cierra el issue en el Project #5; escribir comentarios sin BOM"},
+    {"action": "gh_create_issues", "success": true, "note": "épica #75 y subissues #76 a #79 con la plantilla nueva y «Estimación v1» en el cuerpo, antes de empezar el trabajo"},
+    {"action": "gh_project_update", "success": true, "note": "instantánea previa guardada; cinco campos creados (Incertidumbre, Riesgo, Modelo usado, Escaló, Verificación); 0 valores cambiados en las 38 tarjetas existentes"},
+    {"action": "estimate_issue", "success": true, "note": "talla, puntos, incertidumbre, riesgo y modelo previsto en #76 a #79; en #77 la suma daba S y el ancla M: se registró la discrepancia"},
+    {"action": "confirm_closure", "success": true, "note": "#65: PR #66 mergeado, 12/12 en main y el análisis re-ejecutado es igual al publicado; #68: PR #69 mergeado y 12/12 en main; evidencia en un comentario de #76 y tarjetas a Done"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+  ],
+  "lessons": [
+    "Antes de afirmar que algo falta en el ciclo, leer todos los documentos que lo describen: CONTRIBUTING.md es el flujo canónico y ya pedía talla y mergedAt",
+    "Guardar una instantánea del tablero antes de escribir en él: permite demostrar que no se perdió ningún valor y sirve de caso rojo para el chequeo",
+    "No cambiar por API las opciones de un campo de selección que ya tiene valores: crear un campo nuevo es reversible y no arriesga los valores existentes",
+    "Una tarjeta pasa a Done con la evidencia de su tipo de cierre enlazada, no por estar el issue cerrado: en un experimento, re-ejecutar el análisis y compararlo con el publicado",
+    "Una duda sobre el estado de un issue ajeno se comprueba antes de enunciarla: el comentario de cierre y el sistema real estaban a una consulta de distancia"
+  ]
+}
