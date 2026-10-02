@@ -1,0 +1,55 @@
+{
+  "seq": 36,
+  "id": "issue-77",
+  "goal": "Integrar ESTIMAR y CONFIRMAR al ciclo de la bitácora (diagramas, plantillas, formato de episodio, skills)",
+  "ref": "#77",
+  "estimate": {"version": 1, "date": "2026-10-02", "size": "M", "points": 3, "uncertainty": 1, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "high"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "Dos llamadas de arranque rechazadas por el entorno del worktree: 'export GH_TOKEN=$(...)' y 'python por ruta computada' en bash; el recall y la lectura de los issues no se ejecutaron. Un jq con '\\n' también falló en PowerShell."
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Repetido en PowerShell con GH_TOKEN por comando; recall léxico devolvió lecciones sobre merge_pr y BOM en gh_create_issues, útiles para el flujo de cierre"
+    },
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "La estimación v1 (M, 3 puntos, Sonnet 5.5 high) ya venía registrada en el issue; este episodio la copia en el bloque estimate"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Flujo canónico y jerarquía en CONTRIBUTING.md; diagramas en learning/README.md, harness.md y README.md; criterios de cierre por tipo en harness.md; AGENTS.md y agentes.md solo enlazan"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Skills estimar-issue y confirmar-cierre, plantillas epica.md e issue.md, y docs/piloto-estimacion.md con el pre-registro copiado de la épica #75"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "rebuild produce el mismo grafo con y sin estimate/outcome, con control (cambiar un step sí cambia el grafo) y claves validadas en episodios reales"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff, mypy, pytest --cov (498 pasan, 98.72 %), export_schema --check y mutation_check en exit 0; enlaces relativos nuevos comprobados con un script ad hoc"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "dev_memory.json regenerado con el episodio 036"
+    }
+  ],
+  "lessons": [
+    "El flujo por issue debe tener un solo texto canónico: los demás documentos enlazan y a lo sumo repiten el diagrama",
+    "La verificación del cierre no va en el episodio porque se escribe antes del merge y quedaría obsoleta: vive en el tablero y en el issue",
+    "El modelo usado es autoinformado salvo transcripción: registrar model_source junto a used_model para no presentarlo como medido"
+  ]
+}

@@ -774,12 +774,22 @@ derivada ([`learning/dev_memory.json`](learning/dev_memory.json)) se consulta an
 
 ```mermaid
 flowchart LR
-    I["Issue #n"] --> R["RETRIEVE<br/>devlog recall<br/>léxico + semántico"]
+    I["Issue listo<br/>(plantilla)"] --> S["ESTIMAR<br/>talla + modelo previsto"]
+    S --> P["In Progress"]
+    P --> R["RETRIEVE<br/>devlog recall<br/>léxico + semántico"]
     R --> W["Implementación<br/>rama + PR + CI"]
     W --> E["Episodio<br/>learning/episodes/NNN.json"]
     E --> B["CONSOLIDATE<br/>devlog rebuild"]
+    B --> C["CONFIRMAR<br/>criterio de cierre"]
+    C --> D["Done"]
     B -. "dev_memory.json" .-> R
 ```
+
+ESTIMAR y CONFIRMAR los hace el orquestador sobre el issue y el Project #5; el episodio conserva su rastro
+en los bloques opcionales `estimate` y `outcome`. Pasos canónicos en
+[`CONTRIBUTING.md`](CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto); el piloto que mide si este
+registro se sostiene (no valida todavía las tallas) está en
+[`docs/piloto-estimacion.md`](docs/piloto-estimacion.md).
 
 ```bash
 python -m scripts.devlog recall "título del issue" --embedder fastembed

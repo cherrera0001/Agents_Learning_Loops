@@ -10,9 +10,15 @@ este repositorio. El contrato completo está en [`docs/entorno/`](docs/entorno/R
 2. **Antes de delegar o de implementar, lee [`docs/estimation.md`](docs/estimation.md)**: estima la talla y
    usa el ID y el esfuerzo de esa fila. Este archivo no cambia el modelo de tu sesión; el ID se aplica al
    crear el subagente o el worktree ([`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md)).
-3. **Ejecuta el ciclo de la bitácora** ([`learning/README.md`](learning/README.md)):
+3. **Ejecuta el ciclo de la bitácora** ([`learning/README.md`](learning/README.md); pasos canónicos en
+   [`CONTRIBUTING.md`](CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto)):
+   - ESTIMAR: el orquestador registra la estimación antes de empezar
+     ([`estimar-issue`](skills/estimar-issue/SKILL.md)); el implementador pasa a *In Progress*;
    - antes de implementar, [`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md);
-   - al terminar, [`registrar-episodio`](skills/registrar-episodio/SKILL.md) y `python -m scripts.devlog rebuild`.
+   - al terminar, [`registrar-episodio`](skills/registrar-episodio/SKILL.md) (con `estimate` y `outcome`) y
+     `python -m scripts.devlog rebuild`;
+   - CONFIRMAR: tras el merge verificado, el orquestador comprueba el criterio de cierre
+     ([`confirmar-cierre`](skills/confirmar-cierre/SKILL.md)) y solo entonces mueve a *Done*.
 4. **Respeta la frontera de fuga.** El solver acotado nunca recibe `benchmark/private/`, causas ocultas,
    parches dorados ni el checkout completo. Solo el evaluador del experimento lee `benchmark/private/`.
 5. **No reescribas evidencia.** Los recibos de `evidence/` y los agregados de `results/` no se editan a

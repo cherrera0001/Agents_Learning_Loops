@@ -11,19 +11,75 @@ pip install -e .[dev]            # añade ,embeddings para los tests semánticos
 
 Cada issue es un episodio del bucle de aprendizaje del propio repo ([`learning/README.md`](learning/README.md)).
 Quien lo ejecuta es un agente de entorno: empieza por [`AGENTS.md`](AGENTS.md), que remite al
-[glosario](docs/entorno/glosario.md) y al [harness de entorno](docs/entorno/harness.md). Los pasos 1, 5 y el
-manejo de evidencia tienen skills de entorno: [`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md),
-[`registrar-episodio`](skills/registrar-episodio/SKILL.md) y [`proteger-evidencia`](skills/proteger-evidencia/SKILL.md).
+[glosario](docs/entorno/glosario.md) y al [harness de entorno](docs/entorno/harness.md). Los pasos 1, 3, 5, 7
+y el manejo de evidencia tienen skills de entorno: [`estimar-issue`](skills/estimar-issue/SKILL.md),
+[`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md),
+[`registrar-episodio`](skills/registrar-episodio/SKILL.md),
+[`confirmar-cierre`](skills/confirmar-cierre/SKILL.md) y [`proteger-evidencia`](skills/proteger-evidencia/SKILL.md).
 
-1. **RETRIEVE**: `python -m scripts.devlog recall "<título del issue>"` (`--embedder fastembed` para búsqueda semántica). Lee las lecciones antes de elegir herramientas.
-2. **Talla y modelo**: el orquestador asigna la talla y el modelo de construcción según
-   [`docs/estimation.md`](docs/estimation.md), antes de la rama ([`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md)).
-3. **Rama** `issue-<n>-<tema>`; la tarjeta del Project pasa a *In Progress*.
-4. **Implementar** con tests. Cada test debe poder fallar: añade un control cuando el efecto pueda quedar oculto.
-5. **Registrar** `learning/episodes/NNN-issue-<n>.json` con los fallos **tal como ocurrieron** (en la acción que los causó).
+Este es el **único texto canónico** del ciclo; los demás documentos lo enlazan y, a lo sumo, muestran su
+diagrama:
+
+```text
+Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar (rama + PR) → episodio
+→ CONSOLIDATE → CONFIRMAR → Done
+```
+
+0. **Issue listo**: escrito con la plantilla [`issue.md`](.github/ISSUE_TEMPLATE/issue.md) (o
+   [`epica.md`](.github/ISSUE_TEMPLATE/epica.md)), con su *Tipo de cierre* y su *Evidencia requerida*.
+1. **ESTIMAR** (orquestador), antes de que nadie empiece. La talla y el modelo de construcción salen de
+   [`docs/estimation.md`](docs/estimation.md) y se aplican como indica
+   [`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md). Se registra en dos sitios: la sección
+   «Estimación v1» (con fecha) en el cuerpo del issue y los campos *Talla*, *Puntos*, *Incertidumbre*,
+   *Riesgo* y *Modelo* del Project #5. *Modelo* es el modelo **previsto**; los puntos son tamaño
+   relativo, no horas ni tokens. Procedimiento: skill [`estimar-issue`](skills/estimar-issue/SKILL.md).
+2. **In Progress** (implementador): la tarjeta pasa a *In Progress* al crear la rama
+   `issue-<n>-<tema>`.
+3. **RETRIEVE**: `python -m scripts.devlog recall "<título del issue>"` (`--embedder fastembed` para
+   búsqueda semántica). Lee las lecciones antes de elegir herramientas.
+4. **Implementar** con tests y abrir el PR. Cada test debe poder fallar: añade un control cuando el efecto
+   pueda quedar oculto. El PR lleva `Closes #<n>`, salvo que el *Tipo de cierre* sea «sistema externo»
+   y falte la observación: entonces `Refs #<n>` ([criterios de cierre](docs/entorno/harness.md#criterios-de-cierre-por-tipo-de-trabajo)).
+   El implementador no hace merge.
+5. **Registrar** `learning/episodes/NNN-issue-<n>.json` con los fallos **tal como ocurrieron** (en la
+   acción que los causó), más los bloques opcionales `estimate` y `outcome`
+   ([formato](learning/README.md#formato-de-un-episodio)).
 6. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
-7. **PR** con `Closes #<n>`, abierto por el implementador; el orquestador hace el merge squash **verificado**
-   (`mergedAt`) antes de mover la tarjeta a *Done*.
+7. **CONFIRMAR** (orquestador), después del merge squash **verificado** (`mergedAt`) y no antes. Se
+   comprueba el criterio de cierre según el tipo de trabajo y se escribe en el tablero y en el issue:
+   *Verificación* = *Verificada* con la evidencia enlazada, *Modelo usado* y *Escaló*. Si falla,
+   *Verificación* = *Fallida* y el issue sigue abierto. Procedimiento: skill
+   [`confirmar-cierre`](skills/confirmar-cierre/SKILL.md).
+8. **Done**: solo el orquestador mueve la tarjeta. En el Project #5, *Done* cierra el issue
+   automáticamente: por eso no se mueve antes de CONFIRMAR.
+
+Responsables: el **orquestador** estima, confirma y mueve a *Done*; el **implementador** pasa a
+*In Progress*, implementa y registra el episodio ([roles](docs/entorno/agentes.md)).
+
+### Reglas del registro
+
+- **La estimación se conserva.** Si cambia el alcance, se añade un comentario «Estimación v2» con fecha,
+  motivo y evidencia; la v1 no se reescribe.
+- **El modelo previsto no se sobrescribe.** El campo *Modelo* sigue siendo el previsto aunque se escale;
+  el resultado va en *Modelo usado* y *Escaló*. *Modelo usado* es autoinformado salvo que exista una
+  transcripción.
+- **La verificación del cierre no va en el episodio.** El episodio se escribe antes del merge y
+  quedaría obsoleto; la verificación vive en el tablero y en el issue.
+- Campos, métricas y límites del piloto: [`docs/piloto-estimacion.md`](docs/piloto-estimacion.md).
+  El chequeo de coherencia del tablero llegará con `python -m scripts.devlog board` (otro issue).
+
+## Jerarquía: épica, issue, tareas
+
+Tres niveles, definidos aquí y en ningún otro sitio:
+
+| Nivel | Qué es | Reglas |
+|---|---|---|
+| **Épica** | Issue con la etiqueta `epic` y subissues ([`epica.md`](.github/ISSUE_TEMPLATE/epica.md)) | Solo si tres o más issues comparten un resultado. No se estima: muestra la suma de sus hijos. Se cierra con todos los hijos obligatorios cerrados y sus criterios propios cumplidos. |
+| **Issue** | La unidad que se estima ([`issue.md`](.github/ISSUE_TEMPLATE/issue.md)) | Se asigna a un modelo o agente, tiene tarjeta en el Project #5 y se cierra. |
+| **Tareas** | Lista de verificación en el cuerpo del issue | Sin tarjeta ni talla. |
+
+Si un issue necesita subissues, se convierte en épica y deja de estimarse. No hay nivel «historia de
+usuario».
 
 ## Comprobaciones (las mismas que CI)
 
