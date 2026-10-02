@@ -154,10 +154,120 @@ piloto no se declara validado con una lectura parcial: los criterios de éxito s
 
 ### Ciclo 2
 
-- **Fecha de la lectura:**
-- **Issues incluidos (n):**
+- **Fecha de la lectura:** 2026-10-02 (UTC), sobre una instantánea del tablero de las 02:24.
+- **Issues incluidos (n = 4):** #84 (S, lectura del ciclo 1), #85 (S, reglas 7 a 10 del chequeo, brazo
+  Haiku), #86 (S, definiciones de implementador) y #87 (S, lectura por comando). Todos cerrados.
 - **Medidas y denominadores:**
-- **Criterios de éxito (8 de 8; 0 *Done* sin evidencia; modelos registrados; ninguno sobrescrito):**
-- **Condiciones de parada (activadas o no):**
-- **Límites de esta lectura:**
+
+  | Medida | Numerador | Denominador | Fuente y observaciones |
+  |---|---|---|---|
+  | Estimación previa | 4 | 4 | «Estimación v1» al crear el issue; campos antes de *In Progress* |
+  | *Done* con evidencia | 4 | 4 | Comentario de cierre y *Verificación* = *Verificada* |
+  | *Done* antes de CONFIRMAR | al menos 1 | 4 | #84, señalado por la regla 3 del chequeo. #86 y #87 se cerraron con `Closes` por el mismo mecanismo, pero nadie registró la observación. #85 no: su PR no llevaba `Closes` |
+  | Revisiones de estimación | 0 | 4 | Ningún comentario «Estimación v2» |
+  | Escalamientos | 1 | 4 | #85: Haiku 4.5 → Sonnet 5.5, con el motivo en un comentario del issue |
+  | PR adicionales | 0 | 4 | Un PR por issue (#89, #90, #91 y #93) |
+  | Modelo previsto distinto del usado | 1 | 4 | #85 |
+  | Modelo usado leído de transcripción | 3 | 4 | El episodio de #85 dice `self-reported`; el orquestador leyó después las dos transcripciones (comentario de cierre), pero el episodio ya estaba en main |
+  | Modelo previsto sobrescrito | 0 | 4 | Campo *Modelo* igual al de la «Estimación v1»; en #85 sigue diciendo Haiku 4.5 tras escalar |
+  | Rondas de corrección | 3 | 4 | #85, el escalamiento; #86, una del orquestador; #87, una del propio implementador tras la revisión; #84, ninguna |
+  | Discrepancia entre suma y ancla | 2 | 4 | #84 (suma XS, ancla S) y #87 (suma M, ancla S) |
+
+- **Revisiones independientes** (no estaban en el pre-registro; empezaron en este ciclo): tres de los
+  cuatro PR pasaron por un subagente revisor antes del merge. En el PR #90, 6 de 18 defectos inyectados
+  pasaban los tests y había cuatro tests existentes modificados. En el PR #91, 4 de 26 afirmaciones no
+  coincidían con su fuente. En el PR #93, 4 de 48 defectos pasaban y hubo cinco hallazgos no bloqueantes.
+  En los tres casos el autor no había declarado esos defectos. El PR #89 no pasó por revisor.
+- **Criterios de éxito y condiciones de parada:** se leen sobre los 8 en la lectura final.
+- **Límites de esta lectura:** cuatro issues, todos de talla S y de herramientas o documentación del propio
+  piloto. Las revisiones las encargó y las interpretó la misma sesión que orquesta.
+- **Decisiones tomadas:** las de la lectura final.
+
+### Lectura final (8 de 8)
+
+- **Fecha:** 2026-10-02 (UTC). **Población:** #76 a #79 y #84 a #87, los ocho issues del pre-registro.
+  Quedan fuera #88 y #94, que siguieron el mismo ciclo pero no estaban entre «los próximos 8».
+- **Cómo se calculó:** las diez primeras filas, con
+  `python -m scripts.devlog pilot --since 76 --until 87` sobre la instantánea; las cuatro últimas, a mano,
+  porque el comando no las calcula.
+
+  | Medida | Resultado | Origen |
+  |---|---|---|
+  | Estimación completa en el tablero | 8 de 8 | Comando |
+  | *Done* con *Verificación* = *Verificada* | 8 de 8 | Comando |
+  | Escalamientos | 1 de 8 (#85) | Comando |
+  | Modelo previsto distinto del usado | 1 de 8 (#85) | Comando |
+  | PR adicionales | 0 de 8 | Comando (episodios) |
+  | Revisiones de estimación | 0 de 8 | Comando (episodios) |
+  | `model_source` = `transcript` | 7 de 8 (falta #85) | Comando (episodios) |
+  | Pasos fallidos, XS (autoinformado) | 3 de 11 | Comando |
+  | Pasos fallidos, S (autoinformado) | 16 de 61, en seis issues | Comando |
+  | Pasos fallidos, M (autoinformado) | 2 de 10 | Comando |
+  | *Done* antes de CONFIRMAR | al menos 4 de 8 (#77, #78, #79, #84) | A mano |
+  | Modelo previsto sobrescrito | 0 de 8 | A mano |
+  | Issues con alguna ronda de corrección | 6 de 8 (todos menos #76 y #84, que hizo el orquestador) | A mano |
+  | Discrepancia entre suma y ancla | 3 de 8 (#77, #84, #87) | A mano |
+
+- **Tokens de los implementadores** (transcripciones locales; no incluyen al orquestador):
+
+  | Issue | Talla | Modelo | Entrada | Escritura de caché | Lectura de caché | Salida |
+  |---|---|---|---|---|---|---|
+  | #77 | M | Sonnet 5.5 | 70 | 205 985 | 3 084 359 | 31 235 |
+  | #78 | S | Sonnet 5.5 | 62 | 199 466 | 2 657 709 | 34 631 |
+  | #79 | S | Sonnet 5.5 | 68 | 164 192 | 2 360 600 | 14 670 |
+  | #85, primera entrega | S | Haiku 4.5 | 830 | 233 865 | 8 304 906 | 39 605 |
+  | #85, corrección | S | Sonnet 5.5 | 70 | 193 039 | 2 917 187 | 30 826 |
+  | #86 | S | Sonnet 5.5 | 44 | 242 585 | 1 345 337 | 12 334 |
+  | #87, con su ronda de corrección | S | Sonnet 5.5 | 98 | 713 380 | 4 980 099 | 55 976 |
+
+  #76 y #84 no se miden: se hicieron en la sesión del orquestador. Los subagentes revisores sumaron, en
+  tokens de salida, 14 816 (PR #90, Opus 5.5), 10 339 (PR #91, Sonnet 5.5) y 20 282 (PR #93, Opus 5.5).
+  Los tokens de modelos distintos no se suman ni se comparan como costo: tienen precios distintos.
+
+- **Criterios de éxito del pre-registro, uno por uno:**
+  1. *8 de 8 con estimación previa.* **Cumplido**: los ocho issues nacieron con su «Estimación v1» en el
+     cuerpo y los campos se pusieron antes de *In Progress*.
+  2. *0 Done sin evidencia.* **Cumplido al cierre**, con una reserva: al menos cuatro tarjetas estuvieron
+     en *Done* sin verificar durante minutos, por la automatización del tablero. Desde #84, *Done* ya no
+     cuenta como cierre confirmado.
+  3. *Modelo previsto y usado registrados en los 8.* **Cumplido** en el tablero. En los episodios, 7 de 8
+     dicen que el modelo se leyó de una transcripción.
+  4. *Ningún modelo previsto sobrescrito.* **Cumplido**, incluido el único caso con escalamiento.
+
+  Lo que esto permite decir: **el registro se sostuvo en ocho issues**. No dice nada sobre si las tallas
+  o la matriz de modelos son correctas, que el piloto no medía.
+- **Condiciones de parada, una por una:**
+  1. *Más de una corrección manual por issue.* **No activada**: ningún issue tuvo más de una ronda. La
+     condición estaba mal definida; aquí «ronda» es un conjunto de commits de corrección posterior a la
+     entrega, sin contar la integración de main.
+  2. *Dos agentes pisan el mismo campo.* **No activada** entre agentes. La automatización del tablero sí
+     escribió *Status* por delante del orquestador.
+  3. *Al cuarto issue nadie consultó los campos nuevos.* **No activada**: los leen `devlog board` y
+     `devlog pilot`.
+- **Brazo Haiku** (`docs/estimation.md` § 2.6): una entrega (#85), una verificación fallida. El código era
+  correcto en lo probado y pasó el CI; falló la disciplina de la entrega (cuatro tests existentes
+  modificados sin declararlo, un requisito sin cubrir, PR sin `Closes`). Esa entrega consumió más
+  mensajes y más lectura de caché que cualquiera de Sonnet 5.5 del piloto, y después hubo que pagar la
+  corrección. Es un solo caso: no confirma ni refuta la hipótesis, y el brazo sigue abierto.
+- **Límites:**
+  - Ocho issues: siete de talla S o XS y uno M, todos de documentación o herramientas del propio piloto.
+    Ninguno de talla L o XL, ninguno de experimento y ninguno de sistema externo salvo el tablero.
+  - Quien diseñó el piloto lo ejecutó, lo midió y escribe esta lectura. Lo que no depende de esa sesión
+    son el CI, las transcripciones y los informes de los subagentes revisores.
+  - Los pasos fallidos de los episodios son autoinformados. Las tallas no se pueden comparar: seis de los
+    ocho son S.
+  - La comparación entre el comando y la lectura manual del ciclo 1 comparte fuente (tablero y episodios),
+    salvo los tokens, que se recalcularon con un guion independiente.
 - **Decisiones tomadas:**
+  1. El ciclo ESTIMAR → CONFIRMAR, los campos del tablero, el chequeo y la lectura por comando se quedan
+     como práctica del repositorio; el piloto termina.
+  2. Todo PR pasa por un subagente revisor antes del merge (`revisor-codigo` o `revisor-docs`): en los
+     cuatro PR revisados (#90 a #93) encontró defectos que el autor no había declarado. El orquestador
+     sigue decidiendo el merge.
+  3. Las definiciones de implementador exigen `Closes` al principio del PR, el recall como primera orden
+     y no tocar tests existentes sin declararlo (#94).
+  4. El brazo Haiku sigue como hipótesis; la próxima entrega fallida lo detiene.
+  5. Queda sin resolver, como propuesta: `learning/dev_memory.json` es un archivo derivado que cada PR
+     versiona, así que los PR paralelos chocan siempre en él y hubo que integrar main y regenerarlo a mano
+     en los PR #81, #82, #83, #90, #91 y #93. Las tallas y la matriz siguen sin calibrar: haría falta un
+     piloto con issues de talla L y XL y de tipo experimento.

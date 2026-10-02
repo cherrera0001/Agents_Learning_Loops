@@ -47,6 +47,12 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
    acción que los causó), más los bloques opcionales `estimate` y `outcome`
    ([formato](learning/README.md#formato-de-un-episodio)).
 6. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
+
+   Antes del merge, el orquestador encarga la **revisión** del PR a un revisor independiente del autor
+   ([`revisor-codigo`](.claude/agents/revisor-codigo.md) o [`revisor-docs`](.claude/agents/revisor-docs.md),
+   según lo que toque; ambos si toca código y documentos), y decide el merge con su informe y con el CI en
+   verde. El revisor informa y no edita; las correcciones vuelven al implementador o las hace el
+   orquestador, y si la verificación falla se escala un modelo (regla 2 de `docs/estimation.md`).
 7. **CONFIRMAR** (orquestador), después del merge squash **verificado** (`mergedAt`) y no antes. Se
    comprueba el criterio de cierre según el tipo de trabajo y se escribe en el tablero y en el issue:
    *Verificación* = *Verificada* con la evidencia enlazada, *Modelo usado* y *Escaló*. Si falla,
