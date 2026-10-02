@@ -29,7 +29,8 @@ tarjeta a *In Progress* y antes de crear su rama o subagente.
    incertidumbre, el riesgo, el modelo previsto y el esfuerzo. Si la suma de factores y una comparación
    con un issue ancla discrepan, registra la discrepancia.
 3. Rellena en el Project #5 los campos *Talla*, *Puntos*, *Incertidumbre*, *Riesgo* y *Modelo*. *Modelo*
-   es el modelo **previsto**.
+   es el modelo **previsto**. Pon también la etiqueta `talla:<talla>` en el issue; si difiere del campo,
+   manda el campo.
 4. Delega con el ID y el esfuerzo previstos ([`enrutamiento.md`](../../docs/entorno/enrutamiento.md)).
 5. Si después cambia el alcance, añade un comentario **«Estimación v2»** con fecha, motivo y evidencia. La
    v1 no se reescribe y *Modelo* no se sobrescribe, tampoco al escalar.
