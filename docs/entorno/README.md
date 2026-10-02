@@ -9,7 +9,7 @@ Los términos siguen el [glosario](glosario.md).
 ```mermaid
 flowchart TB
     subgraph E["Capa de entorno · quien edita el repositorio"]
-        AG["Agentes de entorno<br/>orquestador · implementador · revisores · gestor · cierre · evaluador · bitácora"]
+        AG["Agentes de entorno<br/>orquestador · implementador · revisores · gestor · staff de texto público · cierre · evaluador · bitácora"]
         SK["Skills de entorno<br/>skills/*/SKILL.md"]
         HE["Harness de entorno<br/>permisos · parada · evidencia"]
     end

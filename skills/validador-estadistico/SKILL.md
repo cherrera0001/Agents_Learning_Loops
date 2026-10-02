@@ -65,7 +65,7 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
 Son los cinco de `CONTRIBUTING.md`
 ([vetos obligatorios](../../CONTRIBUTING.md#revisión-de-un-texto-público)). Los vetos concretos de cada
 revisión, con la frase y su fuente, van al registro fechado; el primero es
-[`docs/entorno/revision-texto-publico-2026-10-02.md`](../../docs/entorno/revision-texto-publico-2026-10-02.md).
+[registro del 2026-10-02](../../docs/entorno/revision-texto-publico-2026-10-02.md).
 
 ## Informe
 

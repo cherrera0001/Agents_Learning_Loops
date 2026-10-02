@@ -48,7 +48,7 @@ o que cite una obra.
 ## Fichas
 
 Las fichas no viven en esta skill: van al registro fechado de cada revisión. El primero es
-[`docs/entorno/revision-texto-publico-2026-10-02.md`](../../docs/entorno/revision-texto-publico-2026-10-02.md).
+[registro del 2026-10-02](../../docs/entorno/revision-texto-publico-2026-10-02.md).
 
 ## Informe
 

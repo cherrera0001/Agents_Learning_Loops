@@ -92,6 +92,20 @@ publicarlo. Son personal de entorno: no son el agente de biblioteca ni el solver
 veto, solo informa y no publica en ninguna red. El procedimiento está en
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público).
 
+```mermaid
+flowchart LR
+    T["Texto público<br/>README · post · artículo"] --> I["Investigador de papers<br/>abre cada obra citada"]
+    T --> V["Validador estadístico<br/>veto o visto bueno por número"]
+    I --> R["Revisor redactor<br/>reescribe sin lo vetado"]
+    V --> R
+    R --> F{"Validador lee<br/>la versión exacta"}
+    F -->|veta una frase| R
+    F -->|cita el conteo y no veta| OK["Firmado<br/>registro fechado en docs/entorno/"]
+```
+
+El investigador y el validador no dependen uno del otro. El staff no publica: un texto firmado queda en el
+registro fechado, y cualquier cambio posterior exige otra lectura del validador.
+
 ### Investigador de papers
 
 Skill: [`investigador-papers`](../../skills/investigador-papers/SKILL.md). Definición ejecutable:
