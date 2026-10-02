@@ -22,7 +22,7 @@ Tabla complementaria a los siete términos anteriores, que conservan su numeraci
 |---|---|---|---|
 | **Modelo de datos** | El grafo Pydantic: `Node`, `Edge`, `GraphDocument` | No es un modelo de Claude ni de embedding | [`src/associative_agent_loop/memory/models.py`](../../src/associative_agent_loop/memory/models.py); README § 4 |
 | **Modelo de embedding** | `LexicalEmbedder` o `FastEmbedEmbedder`; `GraphDocument.embedding_model` nombra este | No es el modelo de Claude que construye un issue | [`src/associative_agent_loop/memory/embeddings.py`](../../src/associative_agent_loop/memory/embeddings.py); README § 6 |
-| **Modelo de construcción** | El modelo de Claude que construye un issue, elegido por talla | No se fija en un Markdown de sesión: el ID se aplica al crear el subagente | Política: [`docs/estimation.md`](../estimation.md); aplicación: [`enrutamiento.md`](enrutamiento.md); registro: campos *Talla*, *Modelo* y *Puntos* del Project #5 |
+| **Modelo de construcción** | El modelo de Claude que construye un issue, elegido por talla | No se fija en un Markdown de sesión: el ID se aplica al crear el subagente | Política: [`docs/estimation.md`](../estimation.md); aplicación: [`enrutamiento.md`](enrutamiento.md); registro: cuerpo del issue y Project #5 (*Modelo* es el previsto; *Modelo usado*, el real) |
 
 Par que no debe confundirse: **Task Ledger** ([`experiments/software_project/`](../../experiments/software_project/README.md))
 es la aplicación bajo reparación del Experimento 1 y no asigna modelos; el registro de modelos de

@@ -12,21 +12,29 @@ No se confunden con el **agente de biblioteca** (Experimento 0) ni con el **solv
 
 Coordina el trabajo sobre los issues. Es la regla 4 de [`docs/estimation.md`](../estimation.md) convertida en rol.
 
-1. **Estima** la talla de cada issue con la política de `docs/estimation.md`.
+1. **Estima** la talla de cada issue con la política de `docs/estimation.md` y la registra («Estimación v1»
+   en el issue y campos del Project #5), skill [`estimar-issue`](../../skills/estimar-issue/SKILL.md).
 2. **Delega** pasando el ID del modelo y el esfuerzo de esa fila al crear el subagente o el worktree
    ([`enrutamiento.md`](enrutamiento.md)).
 3. **Revisa** cada entrega con medios propios, independientes del agente que la produjo.
 4. Es el **único que hace merge**, después de verificar `mergedAt`.
+5. **Confirma** el cierre según el tipo de trabajo ([criterios](harness.md#criterios-de-cierre-por-tipo-de-trabajo)),
+   registra *Verificación*, *Modelo usado* y *Escaló* y es el único que mueve la tarjeta a *Done*; skill
+   [`confirmar-cierre`](../../skills/confirmar-cierre/SKILL.md). Flujo canónico:
+   [`CONTRIBUTING.md`](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto).
 
 ## Implementador
 
 Resuelve un issue.
 
-1. Recupera memoria antes de actuar: skill [`recall-antes-de-issue`](../../skills/recall-antes-de-issue/SKILL.md).
+1. Pasa la tarjeta a *In Progress* y recupera memoria antes de actuar: skill
+   [`recall-antes-de-issue`](../../skills/recall-antes-de-issue/SKILL.md).
 2. Edita en una rama `issue-<n>-<tema>`, dentro de los permisos del [harness de entorno](harness.md).
-3. Registra el episodio con los fallos tal como ocurrieron: skill [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md).
+3. Registra el episodio con los fallos tal como ocurrieron, y con los bloques `estimate` y `outcome`: skill
+   [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md).
 4. Reconstruye la bitácora con `python -m scripts.devlog rebuild`.
-5. Abre el PR con `Closes #<n>` y **no hace merge**: el merge corresponde al orquestador.
+5. Abre el PR con `Closes #<n>` (`Refs #<n>` si el cierre es de sistema externo y falta la observación) y
+   **no hace merge** ni mueve la tarjeta a *Done*: eso corresponde al orquestador.
 
 No lee `benchmark/private/` y no agrega recibos: eso corresponde al evaluador del experimento.
 

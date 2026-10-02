@@ -40,12 +40,18 @@
       "note": "Salida real: instantánea previa señala #65 y #68 (código 1); tablero real con --since 76 sin hallazgos; sin GH_TOKEN, código 2 y mensaje de que la cuenta no ve el Project"
     },
     {
-      "action": "rebuild_memory",
+      "action": "open_pr",
       "success": true
     },
     {
-      "action": "open_pr",
-      "success": true
+      "action": "review_code",
+      "success": true,
+      "note": "revisión del orquestador: seis mutaciones propias sobre las reglas, las seis detectadas por los tests; la transcripción del subagente registra claude-sonnet-5-5 en sus 31 mensajes; conflicto de learning/README.md resuelto al integrar main"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "dev_memory.json regenerado tras integrar main"
     }
   ],
   "lessons": [

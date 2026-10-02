@@ -11,6 +11,8 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 
 | Skill | Cuándo | Fuente |
 |---|---|---|
+| [`estimar-issue`](estimar-issue/SKILL.md) | Antes de que un issue pase a *In Progress* | `CONTRIBUTING.md`, `learning/README.md` |
 | [`recall-antes-de-issue`](recall-antes-de-issue/SKILL.md) | Antes de implementar un issue | `learning/README.md`, `CONTRIBUTING.md` |
 | [`registrar-episodio`](registrar-episodio/SKILL.md) | Al cerrar un issue, antes del PR | `learning/README.md` |
+| [`confirmar-cierre`](confirmar-cierre/SKILL.md) | Tras el merge verificado y antes de mover a *Done* | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`proteger-evidencia`](proteger-evidencia/SKILL.md) | Al tocar evidencia, benchmark o el solver acotado | `evidence/README.md`, *Leakage boundary* |
