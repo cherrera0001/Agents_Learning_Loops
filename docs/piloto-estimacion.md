@@ -80,7 +80,9 @@ python -m scripts.devlog pilot --since 76 --transcripts <dir> --map 77=agent-xxx
   porcentaje, solo «n de m».
 - **Tokens:** solo con `--transcripts`; sin él, «no medido». Se suma el último uso de cada `message.id` de la
   transcripción. El archivo sale de `outcome.transcript` del episodio o de `--map`, que prevalece; un archivo
-  declarado que no existe da la fila «transcripción no encontrada».
+  declarado que no existe da la fila «transcripción no encontrada»; un archivo vacío o sin ningún uso, «transcripción sin uso
+  registrado», y uno que no se lee como UTF-8, «transcripción ilegible». `--map` sin `--transcripts` se avisa
+  por stderr y se ignora.
 - **Límites:** las transcripciones son locales (solo existen en la máquina que ejecutó), no incluyen la
   revisión del orquestador ni a otros agentes, y no son una factura. El comando cuenta; no declara éxito ni
   valida el piloto.

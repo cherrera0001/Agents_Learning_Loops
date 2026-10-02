@@ -550,3 +550,84 @@ def test_devlog_pilot_exit_two_when_unreadable(tmp_path, monkeypatch, capsys):
     with pytest.raises(SystemExit) as exc:
         devlog.main()
     assert exc.value.code == 2
+
+
+# --- Revisión: transcripciones vacías o ilegibles, entradas mal formadas -----------------------
+
+
+def token_text(tmp_path: Path, name: str, data: bytes) -> str:
+    (tmp_path / name).write_bytes(data)
+    snap = write_snapshot(tmp_path / "snap", [issue(5)], [full_card(5)])
+    code, out, _ = run(snap, [episode("#5", outcome=outcome(transcript=name))], transcripts=tmp_path)
+    assert code == 0
+    return out
+
+
+def test_empty_transcript_is_reported_as_without_usage_not_as_zeros(tmp_path):
+    out = token_text(tmp_path, "t.jsonl", b"")
+    assert "transcripción sin uso registrado" in out and "| 0 | 0 | 0 | 0 |" not in out
+
+
+def test_transcript_without_any_usage_line_is_reported_as_without_usage(tmp_path):
+    out = token_text(tmp_path, "t.jsonl", b'{"type": "user", "message": {"role": "user"}}\n')
+    assert "transcripción sin uso registrado" in out and "| 0 | 0 | 0 | 0 |" not in out
+
+
+def test_transcript_with_usage_is_not_reported_as_without_usage(tmp_path):
+    out = token_text(tmp_path, "t.jsonl", line("a", output_tokens=4).encode())
+    assert "sin uso registrado" not in out and "| 4 | claude-sonnet-5-5 |" in out
+
+
+def test_transcript_with_a_real_zero_usage_is_a_row_of_zeros(tmp_path):
+    out = token_text(tmp_path, "t.jsonl", line("a").encode())  # un mensaje con uso 0 sí es uso registrado
+    assert "sin uso registrado" not in out and "| 0 | 0 | 0 | 0 | claude-sonnet-5-5 |" in out
+
+
+def test_non_utf8_transcript_is_reported_as_unreadable_not_a_traceback(tmp_path):
+    out = token_text(tmp_path, "t.jsonl", b"\xff\xfe\x00\xc3\x28 no es utf-8\n")
+    assert "transcripción ilegible" in out and "sin uso registrado" not in out
+
+
+def test_issue_without_number_is_a_failed_read_with_exit_two(tmp_path):
+    snap = write_snapshot(tmp_path / "snap", [issue(5), {"state": "CLOSED"}], [full_card(5)])
+    code, out, err = run(snap, [])
+    assert code == 2 and out == "" and "no tiene un 'number'" in err
+
+
+def test_non_numeric_outcome_prs_is_a_failed_read_with_exit_two(tmp_path):
+    snap = write_snapshot(tmp_path / "snap", [issue(5)], [full_card(5)])
+    code, out, err = run(snap, [episode("#5", outcome=outcome(prs="dos"))])
+    assert code == 2 and out == "" and "outcome.prs no es numérico" in err
+    code, _, err = run(snap, [episode("#5", outcome=outcome(estimate_revisions=None))])
+    assert code == 2 and "outcome.estimate_revisions no es numérico" in err
+
+
+def test_map_without_transcripts_warns_and_tokens_stay_not_measured(tmp_path):
+    snap = write_snapshot(tmp_path / "snap", [issue(5)], [full_card(5)])
+    code, out, err = run(snap, [], mapping={5: "t.jsonl"})
+    assert code == 0 and "--map se ignora sin --transcripts" in err and NOT_MEASURED in out
+    code, _, err = run(snap, [])
+    assert "--map" not in err
+
+
+# --- Revisión: huecos de tests -----------------------------------------------------------------
+
+
+@pytest.mark.parametrize("blank", ["talla", "puntos", "incertidumbre", "riesgo"])
+def test_each_estimate_field_blank_makes_the_estimate_incomplete(blank):
+    assert pair(compute([issue(5)], [full_card(5, **{blank: ""})], []), "Estimación completa") == (0, 1)
+    assert pair(compute([issue(5)], [full_card(5, **{blank: None})], []), "Estimación completa") == (0, 1)
+    assert pair(compute([issue(5)], [full_card(5)], []), "Estimación completa") == (1, 1)
+
+
+@pytest.mark.parametrize("kind", ["PullRequest", "DraftIssue"])
+def test_a_card_that_is_not_an_issue_is_not_the_issue_card(kind):
+    other = full_card(5)
+    other["content"]["type"] = kind
+    assert pair(compute([issue(5)], [other], []), "Estimación completa") == (0, 1)
+    assert pair(compute([issue(5)], [other], []), "Done con Verificación") == (0, 0)
+
+
+def test_a_later_episode_without_outcome_does_not_hide_the_earlier_outcome():
+    eps = [episode("#5", 1, outcome=outcome(prs=3)), episode("#5", 2)]
+    assert pair(compute([issue(5)], [], eps), "PR adicionales") == (2, 1)

@@ -15481,12 +15481,12 @@
     {
       "id": "outcome:40:0",
       "type": "Outcome",
-      "label": "failure: ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
+      "label": "failure: se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
       "embedding": null,
       "metadata": {
         "success": false,
         "latency_ms": 0.0,
-        "error": "ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
+        "error": "se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
         "episode": 40,
         "step": 0
       },
@@ -15495,9 +15495,9 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
+      "id": "concept:error:se_omiti_devlog_recall_antes_de_implemen",
       "type": "Concept",
-      "label": "ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
+      "label": "se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
       "embedding": null,
       "metadata": {
         "kind": "error"
@@ -15525,12 +15525,12 @@
     {
       "id": "outcome:40:2",
       "type": "Outcome",
-      "label": "failure: ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
+      "label": "failure: ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
       "embedding": null,
       "metadata": {
         "success": false,
         "latency_ms": 0.0,
-        "error": "ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
+        "error": "ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
         "episode": 40,
         "step": 2
       },
@@ -15539,9 +15539,9 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:error:ruff_check_ruf015_en_tests_integration_t",
+      "id": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
       "type": "Concept",
-      "label": "ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
+      "label": "ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)",
       "embedding": null,
       "metadata": {
         "kind": "error"
@@ -15569,14 +15569,26 @@
     {
       "id": "outcome:40:4",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
-        "error": null,
+        "error": "ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
         "episode": 40,
         "step": 4
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:ruff_check_ruf015_en_tests_integration_t",
+      "type": "Concept",
+      "label": "ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
       },
       "created_at": 40,
       "last_accessed_at": 40,
@@ -15617,26 +15629,14 @@
     {
       "id": "outcome:40:7",
       "type": "Outcome",
-      "label": "failure: se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
+      "label": "success",
       "embedding": null,
       "metadata": {
-        "success": false,
+        "success": true,
         "latency_ms": 0.0,
-        "error": "se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
+        "error": null,
         "episode": 40,
         "step": 7
-      },
-      "created_at": 40,
-      "last_accessed_at": 40,
-      "activation_level": 0.0
-    },
-    {
-      "id": "concept:error:se_omiti_devlog_recall_antes_de_implemen",
-      "type": "Concept",
-      "label": "se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar",
-      "embedding": null,
-      "metadata": {
-        "kind": "error"
       },
       "created_at": 40,
       "last_accessed_at": 40,
@@ -15653,6 +15653,94 @@
         "error": null,
         "episode": 40,
         "step": 8
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:9",
+      "type": "Outcome",
+      "label": "failure: la revisión independiente encontró: una transcripción vacía o sin usage se imprimía como una fila de ceros; una transcripción no UTF-8, un issue sin number y un outcome.prs no numérico acababan en traza con código 1; --map sin --transcripts se ignoraba en silencio; y los tests no detectaban quitar Incertidumbre, aceptar tarjetas que no son Issue ni que un episodio posterior sin outcome tape al anterior",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "la revisión independiente encontró: una transcripción vacía o sin usage se imprimía como una fila de ceros; una transcripción no UTF-8, un issue sin number y un outcome.prs no numérico acababan en traza con código 1; --map sin --transcripts se ignoraba en silencio; y los tests no detectaban quitar Incertidumbre, aceptar tarjetas que no son Issue ni que un episodio posterior sin outcome tape al anterior",
+        "episode": 40,
+        "step": 9
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:la_revisi_n_independiente_encontr_una_tr",
+      "type": "Concept",
+      "label": "la revisión independiente encontró: una transcripción vacía o sin usage se imprimía como una fila de ceros; una transcripción no UTF-8, un issue sin number y un outcome.prs no numérico acababan en traza con código 1; --map sin --transcripts se ignoraba en silencio; y los tests no detectaban quitar Incertidumbre, aceptar tarjetas que no son Issue ni que un episodio posterior sin outcome tape al anterior",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:10",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 40,
+        "step": 10
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:11",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 40,
+        "step": 11
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:12",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 40,
+        "step": 12
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "type": "Concept",
+      "label": "'recall_memory' falló con 'se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
       },
       "created_at": 40,
       "last_accessed_at": 40,
@@ -15683,9 +15771,9 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "id": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "type": "Concept",
-      "label": "'recall_memory' falló con 'se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar'",
+      "label": "'write_code' falló con 'la revisión independiente encontró: una transcripción vacía o sin usage se imprimía como una fila de ceros; una transcripción no UTF-8, un issue sin number y un outcome.prs no numérico acababan en traza con código 1; --map sin --transcripts se ignoraba en silencio; y los tests no detectaban quitar Incertidumbre, aceptar tarjetas que no son Issue ni que un episodio posterior sin outcome tape al anterior'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -15722,6 +15810,18 @@
       "id": "concept:lesson:note:al_comparar_un_comando_con_una_lectura_manual_agregar_por_ta",
       "type": "Concept",
       "label": "Al comparar un comando con una lectura manual, agregar por talla da 4 de 17 donde la tabla a mano daba 2 de 10 y 2 de 7: el detalle por issue permite cotejar sin ajustar cifras",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "type": "Concept",
+      "label": "Un archivo de entrada que existe pero está vacío no es un cero: distinguir «sin dato» de «dato cero» en cada fila y convertir las entradas mal formadas en un error claro, no en una traza",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -16884,7 +16984,18 @@
     },
     {
       "source": "action:write_code",
-      "target": "outcome:40:0",
+      "target": "outcome:40:2",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:write_code",
+      "target": "outcome:40:9",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -16896,6 +17007,17 @@
     {
       "source": "action:write_code",
       "target": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:write_code",
+      "target": "concept:error:la_revisi_n_independiente_encontr_una_tr",
       "relation": "FAILED_DUE_TO",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -17106,10 +17228,10 @@
       "source": "action:run_tests",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.00016225927682921344,
+      "weight": 0.00012980742146337075,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 36,
+      "count": 37,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17216,10 +17338,10 @@
       "source": "action:run_tests",
       "target": "concept:error:test_de_protocolo_esperaba_plan_act_espe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0009671406556917035,
+      "weight": 0.0007737125245533628,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 28,
+      "count": 29,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17282,10 +17404,10 @@
       "source": "action:run_tests",
       "target": "concept:error:verificaci_n_por_mutaci_n_inv_lida_el_co",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0029514790517935286,
+      "weight": 0.002361183241434823,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 23,
+      "count": 24,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17348,10 +17470,10 @@
       "source": "action:run_tests",
       "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.004611686018427388,
+      "weight": 0.0036893488147419105,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 21,
+      "count": 22,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17359,10 +17481,10 @@
       "source": "action:run_tests",
       "target": "concept:error:und_err_connect_timeout_intermitente_de_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.004611686018427388,
+      "weight": 0.0036893488147419105,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 21,
+      "count": 22,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17414,10 +17536,10 @@
       "source": "action:run_tests",
       "target": "concept:error:el_7_pide_probar_faqpage_y_la_portada_ya",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17469,10 +17591,10 @@
       "source": "action:run_tests",
       "target": "concept:error:un_comando_mal_compuesto_ejecut_scripts_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.01125899906842624,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 16,
+      "count": 17,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17524,10 +17646,10 @@
       "source": "action:run_tests",
       "target": "concept:error:una_orden_compuesta_de_powershell_para_r",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17590,10 +17712,10 @@
       "source": "action:run_tests",
       "target": "concept:error:la_regeneraci_n_final_fall_al_importar_u",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17623,10 +17745,10 @@
       "source": "action:run_tests",
       "target": "concept:error:sin_cloudflare_api_token_en_ning_n_env_l",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.13107200000000002,
+      "weight": 0.10485760000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 6,
+      "count": 7,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17645,10 +17767,10 @@
       "source": "action:run_tests",
       "target": "concept:error:pytest_1_failed_495_passed_una_escritura",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.13107200000000002,
+      "weight": 0.10485760000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 6,
+      "count": 7,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17698,7 +17820,18 @@
     },
     {
       "source": "action:run_tests",
-      "target": "outcome:40:5",
+      "target": "outcome:40:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:run_tests",
+      "target": "outcome:40:12",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -17810,10 +17943,10 @@
       "source": "action:edit_module",
       "target": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0015111572745182867,
+      "weight": 0.0012089258196146294,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 26,
+      "count": 27,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17887,10 +18020,10 @@
       "source": "action:edit_module",
       "target": "concept:error:parche_por_heredoc_convirti_n_en_un_salt",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.004611686018427388,
+      "weight": 0.0036893488147419105,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 21,
+      "count": 22,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17931,10 +18064,10 @@
       "source": "action:edit_module",
       "target": "concept:error:parche_por_heredoc_convirti_n_en_salto_d",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.005764607523034235,
+      "weight": 0.004611686018427388,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 20,
+      "count": 21,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -17986,10 +18119,10 @@
       "source": "action:edit_module",
       "target": "concept:error:test_dependencies_ubicaba_pyproject_toml",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.009007199254740993,
+      "weight": 0.007205759403792794,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 18,
+      "count": 19,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -18074,10 +18207,10 @@
       "source": "action:edit_module",
       "target": "concept:error:el_texto_nuevo_de_privacidad_habr_a_publ",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.053687091200000016,
+      "weight": 0.04294967296000001,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 10,
+      "count": 11,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -18140,10 +18273,10 @@
       "source": "action:edit_module",
       "target": "concept:error:check_failure_memory_se_ejecutaba_antes_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 7,
+      "count": 8,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -18173,10 +18306,10 @@
       "source": "action:edit_module",
       "target": "concept:error:los_arreglos_de_ese_test_y_de_cinco_avis",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 4,
+      "count": 5,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -18204,7 +18337,18 @@
     },
     {
       "source": "action:edit_module",
-      "target": "outcome:40:1",
+      "target": "outcome:40:3",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:edit_module",
+      "target": "outcome:40:10",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21240,7 +21384,7 @@
     },
     {
       "source": "action:recall_memory",
-      "target": "outcome:40:7",
+      "target": "outcome:40:0",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21251,7 +21395,7 @@
     },
     {
       "source": "action:recall_memory",
-      "target": "outcome:40:8",
+      "target": "outcome:40:1",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21297,10 +21441,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.009007199254740993,
+      "weight": 0.007205759403792794,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 18,
+      "count": 19,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21330,10 +21474,10 @@
       "source": "action:write_tests",
       "target": "concept:error:tomllib_requiere_python_3_11_y_requires_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21363,10 +21507,10 @@
       "source": "action:write_tests",
       "target": "concept:error:tests_v0_1_usaban_ids_sin_prefijo_a_e_re",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21385,10 +21529,10 @@
       "source": "action:write_tests",
       "target": "concept:error:expectativa_err_nea_se_asumi_que_el_cami",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.01125899906842624,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 16,
+      "count": 17,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21407,10 +21551,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_tautol_gico_el_refuerzo_ema_posteri",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.01125899906842624,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 16,
+      "count": 17,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21462,10 +21606,10 @@
       "source": "action:write_tests",
       "target": "concept:error:mutaci_n_sobrevivi_la_propiedad_de_satur",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21495,10 +21639,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_test_del_verificador_encontr_que_mean",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.034359738368000006,
+      "weight": 0.027487790694400004,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 12,
+      "count": 13,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21561,10 +21705,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_mensaje_de_fallo_de_security_txt_dec_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.06710886400000002,
+      "weight": 0.053687091200000016,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 9,
+      "count": 10,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21594,10 +21738,10 @@
       "source": "action:write_tests",
       "target": "concept:error:supon_an_que_el_evaluador_solo_pareja_b_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21605,10 +21749,10 @@
       "source": "action:write_tests",
       "target": "concept:error:negativos_sin_match_una_mutaci_n_sobrevi",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21649,10 +21793,10 @@
       "source": "action:write_tests",
       "target": "concept:error:primer_borrador_del_harness_forzaba_el_f",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21660,10 +21804,10 @@
       "source": "action:write_tests",
       "target": "concept:error:cobertura_de_src_experiments_por_ruta_tr",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.06710886400000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21704,10 +21848,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_del_placebo_con_las_tres_estrategia",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 7,
+      "count": 8,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21715,10 +21859,10 @@
       "source": "action:write_tests",
       "target": "concept:error:dos_expectativas_del_simulador_estaban_m",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 7,
+      "count": 8,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21759,10 +21903,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_control_negativo_usaba_palabras_reale",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 4,
+      "count": 5,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -21790,7 +21934,7 @@
     },
     {
       "source": "action:write_tests",
-      "target": "outcome:40:2",
+      "target": "outcome:40:4",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21801,7 +21945,18 @@
     },
     {
       "source": "action:write_tests",
-      "target": "outcome:40:3",
+      "target": "outcome:40:5",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "action:write_tests",
+      "target": "outcome:40:11",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21814,10 +21969,10 @@
       "source": "action:write_tests",
       "target": "concept:error:ruff_check_ruf015_en_tests_integration_t",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -22340,7 +22495,7 @@
     },
     {
       "source": "action:review_code",
-      "target": "outcome:40:6",
+      "target": "outcome:40:8",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -24444,7 +24599,7 @@
     },
     {
       "source": "action:update_docs",
-      "target": "outcome:40:4",
+      "target": "outcome:40:6",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -31172,10 +31327,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "action:edit_module",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.98320384,
+      "weight": 0.989922304,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 8,
+      "count": 9,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31513,10 +31668,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:issue",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31832,10 +31987,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:lectura",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31887,10 +32042,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:devlog",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31909,10 +32064,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:piloto",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31920,10 +32075,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:comando",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31931,10 +32086,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:pilot",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31942,10 +32097,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:calcula",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31953,10 +32108,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:medidas",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31964,10 +32119,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:docs",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31975,10 +32130,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:estimacion",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31986,10 +32141,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:md",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -31997,10 +32152,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:numerador",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -32008,10 +32163,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:denominador",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -32019,10 +32174,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:tokens",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -32030,10 +32185,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:desde",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -32041,10 +32196,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:transcripciones",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -32052,10 +32207,10 @@
       "source": "concept:lesson:fallback:write_code:edit_module",
       "target": "concept:topic:locales",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
@@ -82374,25 +82529,12 @@
     },
     {
       "source": "goal:40",
-      "target": "action:write_code",
+      "target": "action:recall_memory",
       "relation": "LEADS_TO",
-      "weight": 0.35,
+      "weight": 0.5449999999999999,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
-      "metadata": {
-        "step": 0
-      },
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:edit_module",
-      "relation": "LEADS_TO",
-      "weight": 0.65,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {
         "step": 1
       },
@@ -82400,7 +82542,7 @@
     },
     {
       "source": "goal:40",
-      "target": "action:edit_module",
+      "target": "action:recall_memory",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -82411,14 +82553,51 @@
     },
     {
       "source": "goal:40",
-      "target": "action:write_tests",
+      "target": "action:write_code",
       "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
+      "weight": 0.245,
       "decay_factor": 0.05,
       "last_updated": 40,
       "count": 2,
       "metadata": {
-        "step": 3
+        "step": 9
+      },
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:edit_module",
+      "relation": "LEADS_TO",
+      "weight": 0.755,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 2,
+      "metadata": {
+        "step": 10
+      },
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:edit_module",
+      "relation": "RESOLVED_BY",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:write_tests",
+      "relation": "LEADS_TO",
+      "weight": 0.6815,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 3,
+      "metadata": {
+        "step": 11
       },
       "recency_factor": 0.951229
     },
@@ -82426,64 +82605,16 @@
       "source": "goal:40",
       "target": "action:write_tests",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 0.951229
     },
     {
       "source": "goal:40",
       "target": "action:update_docs",
-      "relation": "LEADS_TO",
-      "weight": 0.65,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {
-        "step": 4
-      },
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:update_docs",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:run_tests",
-      "relation": "LEADS_TO",
-      "weight": 0.65,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {
-        "step": 5
-      },
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:run_tests",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:review_code",
       "relation": "LEADS_TO",
       "weight": 0.65,
       "decay_factor": 0.05,
@@ -82496,6 +82627,54 @@
     },
     {
       "source": "goal:40",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:run_tests",
+      "relation": "LEADS_TO",
+      "weight": 0.755,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 2,
+      "metadata": {
+        "step": 12
+      },
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:run_tests",
+      "relation": "RESOLVED_BY",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
+      "target": "action:review_code",
+      "relation": "LEADS_TO",
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {
+        "step": 8
+      },
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "goal:40",
       "target": "action:review_code",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
@@ -82506,75 +82685,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "goal:40",
-      "target": "action:recall_memory",
-      "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 2,
-      "metadata": {
-        "step": 8
-      },
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "goal:40",
-      "target": "action:recall_memory",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
       "source": "outcome:40:0",
-      "target": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
-      "relation": "FAILED_DUE_TO",
-      "weight": 1.0,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 0,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
-      "target": "action:edit_module",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "outcome:40:2",
-      "target": "concept:error:ruff_check_ruf015_en_tests_integration_t",
-      "relation": "FAILED_DUE_TO",
-      "weight": 1.0,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 0,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "concept:error:ruff_check_ruf015_en_tests_integration_t",
-      "target": "action:write_tests",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 40,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 0.951229
-    },
-    {
-      "source": "outcome:40:7",
       "target": "concept:error:se_omiti_devlog_recall_antes_de_implemen",
       "relation": "FAILED_DUE_TO",
       "weight": 1.0,
@@ -82596,6 +82707,281 @@
       "recency_factor": 0.951229
     },
     {
+      "source": "outcome:40:2",
+      "target": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:error:ruff_check_e501_en_dos_l_neas_de_scripts",
+      "target": "action:edit_module",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "outcome:40:4",
+      "target": "concept:error:ruff_check_ruf015_en_tests_integration_t",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:error:ruff_check_ruf015_en_tests_integration_t",
+      "target": "action:write_tests",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "outcome:40:9",
+      "target": "concept:error:la_revisi_n_independiente_encontr_una_tr",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:error:la_revisi_n_independiente_encontr_una_tr",
+      "target": "action:edit_module",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "action:recall_memory",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:error:se_omiti_devlog_recall_antes_de_implemen",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:comando",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:devlog",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:pilot",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:calcula",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:medidas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:md",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:numerador",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:denominador",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:tokens",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:desde",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:transcripciones",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "target": "concept:topic:locales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
       "source": "concept:lesson:avoid:write_code:ruff_check_e501_en_dos_l_neas_de_scripts",
       "target": "action:write_code",
       "relation": "ASSOCIATED_WITH",
@@ -83014,8 +83400,8 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
-      "target": "action:recall_memory",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
+      "target": "action:write_code",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -83025,8 +83411,8 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
-      "target": "concept:error:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
+      "target": "concept:error:la_revisi_n_independiente_encontr_una_tr",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
       "decay_factor": 0.05,
@@ -83036,7 +83422,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:lectura",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83047,7 +83433,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:piloto",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83058,7 +83444,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:comando",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83069,7 +83455,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:devlog",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83080,7 +83466,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:pilot",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83091,7 +83477,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:calcula",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83102,7 +83488,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:medidas",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83113,7 +83499,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:docs",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83124,7 +83510,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:estimacion",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83135,7 +83521,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:md",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83146,7 +83532,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:numerador",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83157,7 +83543,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:denominador",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83168,7 +83554,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:tokens",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83179,7 +83565,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:issue",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83190,7 +83576,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:desde",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83201,7 +83587,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:transcripciones",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83212,7 +83598,7 @@
       "recency_factor": 0.951229
     },
     {
-      "source": "concept:lesson:avoid:recall_memory:se_omiti_devlog_recall_antes_de_implemen",
+      "source": "concept:lesson:avoid:write_code:la_revisi_n_independiente_encontr_una_tr",
       "target": "concept:topic:locales",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -83807,6 +84193,204 @@
     },
     {
       "source": "concept:lesson:note:al_comparar_un_comando_con_una_lectura_manual_agregar_por_ta",
+      "target": "concept:topic:locales",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "goal:40",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:comando",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:devlog",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:pilot",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:calcula",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:medidas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:md",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:numerador",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:denominador",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:tokens",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:desde",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
+      "target": "concept:topic:transcripciones",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:note:un_archivo_de_entrada_que_existe_pero_est_vac_o_no_es_un_cer",
       "target": "concept:topic:locales",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,

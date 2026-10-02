@@ -52,6 +52,8 @@ MIN_RATE_DENOMINATOR = 8
 NO_DATA = "sin datos"
 NOT_MEASURED = "no medido"
 NOT_FOUND = "transcripción no encontrada"
+NO_USAGE = "transcripción sin uso registrado"
+UNREADABLE = "transcripción ilegible"
 SIZE_ORDER = ("XS", "S", "M", "L", "XL")
 ESTIMATE_FIELDS = ("talla", "puntos", "incertidumbre", "riesgo")
 _ISSUE_REF = re.compile(r"#(\d+)(?!\w)")
@@ -68,6 +70,8 @@ class TokenUsage:
     output: int = 0
     models: frozenset[str] = frozenset()
     skipped_lines: int = 0
+    messages: int = 0  # ids de mensaje con uso; 0: la transcripción no registra ningún uso
+    unreadable: bool = False  # el archivo existe pero no se pudo leer como texto UTF-8
 
 
 def _count(usage: Mapping[str, Any], key: str) -> int:
@@ -106,6 +110,7 @@ def parse_transcript(lines: Sequence[str]) -> TokenUsage:
         output=sum(_count(u, "output_tokens") for u in totals),
         models=frozenset(models),
         skipped_lines=skipped,
+        messages=len(last),
     )
 
 
@@ -164,7 +169,9 @@ def select_population(
     board = _board(cards)
     out = []
     for issue in issues:
-        n = int(issue["number"])
+        n = issue.get("number") if isinstance(issue, Mapping) else None
+        if not isinstance(n, int) or isinstance(n, bool):
+            raise BoardReadError(f"issues: un issue no tiene un 'number' numérico ({issue!r:.80})")
         card = board.get(n, {})
         epic = EPIC_LABEL in _label_names(issue.get("labels")) | _label_names(card.get("labels"))
         if (
@@ -270,8 +277,14 @@ def compute_measures(
         assert found is not None
         return found
 
-    extra_prs = {n: int(outcome(n).get("prs", 1)) - 1 for n in with_outcome}
-    revisions = {n: int(outcome(n).get("estimate_revisions", 0)) for n in with_outcome}
+    def number(n: int, key: str, default: int) -> int:
+        value = outcome(n).get(key, default)
+        if not isinstance(value, int) or isinstance(value, bool):
+            raise BoardReadError(f"episodio de #{n}: outcome.{key} no es numérico ({value!r})")
+        return value
+
+    extra_prs = {n: number(n, "prs", 1) - 1 for n in with_outcome}
+    revisions = {n: number(n, "estimate_revisions", 0) for n in with_outcome}
     from_transcript = [n for n in with_outcome if outcome(n).get("model_source") == "transcript"]
 
     measures = [
@@ -364,6 +377,12 @@ def format_report(report: PilotReport) -> str:
             if u is None:
                 lines.append(f"| #{row.issue} | {row.size} | {NOT_FOUND} | | | | |")
                 continue
+            if u.unreadable:
+                lines.append(f"| #{row.issue} | {row.size} | {UNREADABLE} | | | | |")
+                continue
+            if u.messages == 0:
+                lines.append(f"| #{row.issue} | {row.size} | {NO_USAGE} | | | | |")
+                continue
             models = ", ".join(sorted(u.models)) or "—"
             if u.skipped_lines:
                 models += f" (líneas ilegibles: {u.skipped_lines})"
@@ -392,7 +411,11 @@ def read_usage(directory: Path, name: str) -> TokenUsage | None:
     path = directory / name
     if not path.is_file():
         return None
-    return parse_transcript(path.read_text("utf-8-sig").splitlines())
+    try:
+        text = path.read_text("utf-8-sig")
+    except (UnicodeDecodeError, OSError):
+        return TokenUsage(unreadable=True)
+    return parse_transcript(text.splitlines())
 
 
 def run_pilot(
@@ -410,20 +433,23 @@ def run_pilot(
     """Lee, calcula e imprime. Devuelve 0, o 2 si no se pudo leer la fuente."""
     out = out or sys.stdout
     err = err or sys.stderr
+    if mapping and transcripts is None:
+        print("aviso: --map se ignora sin --transcripts", file=err)
     try:
         if snapshot is not None:
             items, issues, _ = read_snapshot(snapshot)
         else:
             items, issues, _ = read_github(runner)
+        tokens: dict[int, TokenUsage | None] | None = None
+        if transcripts is not None:
+            population = select_population(issues, items, since, until)
+            names = transcript_names(population, episodes, mapping)
+            tokens = {n: read_usage(transcripts, name) for n, name in names.items()}
+        report = compute_measures(issues, items, episodes, tokens, since, until)
     except BoardReadError as exc:
         print(f"error: no se pudo leer la fuente: {exc}", file=err)
         return 2
-    tokens: dict[int, TokenUsage | None] | None = None
-    if transcripts is not None:
-        population = select_population(issues, items, since, until)
-        names = transcript_names(population, episodes, mapping)
-        tokens = {n: read_usage(transcripts, name) for n, name in names.items()}
-    print(format_report(compute_measures(issues, items, episodes, tokens, since, until)), file=out)
+    print(format_report(report), file=out)
     return 0
 
 
