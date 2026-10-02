@@ -13,9 +13,11 @@
 **capturar trayectorias de ejecución, extraer lecciones, enlazarlas en un grafo asociativo y
 recuperarlas por activación propagada** para condicionar decisiones futuras. El objetivo operativo
 es: *el agente no debe repetir un error cuya causa ya observó*, y la experiencia adquirida en un
-contexto no debe contaminar decisiones en contextos no relacionados. **Ese objetivo está evaluado solo
-en parte**: se cumple en tres de los cuatro escenarios simulados y no se cumple en tareas de software con
-señuelo ([qué presenta este experimento](#qué-presenta-este-experimento)).
+contexto no debe contaminar decisiones en contextos no relacionados.
+**Ese objetivo está evaluado solo en parte**: «no repetir» se cumple en tres de los cuatro
+escenarios simulados; con señuelo y el agente por defecto no se cumple (H4), y con un diagnóstico
+público común no hay diferencia según el criterio pre-registrado (#58)
+([qué presenta este experimento](#qué-presenta-este-experimento)).
 
 El propio repositorio registra su desarrollo con este mecanismo: cada issue se guarda como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
@@ -702,7 +704,7 @@ agente opt-in y sus recibos propios; el agente por defecto y las campañas ya pu
 
 ```mermaid
 flowchart LR
-    H4["H4 · #46<br/>la asociativa no supera al historial<br/>con señuelo, peor con memoria"]
+    H4["H4 · #46<br/>la asociativa no supera al historial<br/>con señuelo y agente por defecto,<br/>peor con memoria"]
     D58["#58 · diagnóstico público común<br/>originales +6/18<br/>engañosas −2/18"]
     H6["H6 · #63 · memoria de fallos<br/>no repite en la misma tarea<br/>contaminación sin poner a prueba"]
     H7["H7 · #65 · fallos entre tareas<br/>«contamina» con τ = 0.1<br/>3 de 18 pares"]
@@ -721,9 +723,11 @@ Evidencia en [`evidence/`](evidence/README.md) y agregados en [`results/`](resul
 por campaña.
 
 El objetivo operativo del encabezado queda así. «No repetir» se cumple en simulación (tres de los cuatro
-escenarios) y, en software, en las tareas originales con pista léxica (18/18 al primer intento con memoria
-frente a 6/18 sin ella, campaña histórica) y, con memoria de fallos, al repetir la misma tarea (H6), por
-construcción y sin transferencia; con señuelo, las dos memorias empeoran el primer intento (H4). «No contaminar» no se puso a prueba con el alcance
+escenarios) y, en software, en las tareas originales (18/18 al primer intento con memoria frente a 6/18
+sin ella, campaña histórica) y, con memoria de fallos, al repetir la misma tarea (H6), por construcción y
+sin transferencia; con señuelo y el agente por defecto, las dos memorias empeoran el primer intento (H4,
+0/18 frente a 6/18) y, con el diagnóstico público común, no hay diferencia según el criterio
+pre-registrado (#58). «No contaminar» no se puso a prueba con el alcance
 de H6 y no se cumple cuando el alcance deja pasar fallos de otra tarea (H7, base C, τ = 0.1).
 
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
