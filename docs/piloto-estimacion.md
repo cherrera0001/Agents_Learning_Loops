@@ -59,6 +59,34 @@ issues ninguna es una tasa estable: son conteos para decidir si el registro se s
 | Tokens | Tokens de entrada, de caché (escritura y lectura) y de salida, por separado | Solo issues donde una sesión o un subagente equivale a un issue | Transcripción local de Claude Code de esa sesión o subagente | No incluye la revisión del orquestador ni otros agentes; solo existe en la máquina que ejecutó; no es una factura | Coste por talla, solo si el denominador existe |
 | Modelo previsto sobrescrito | Issues cuyo campo *Modelo* difiere del modelo de su «Estimación v1» | Issues del piloto cerrados | Campo *Modelo* y cuerpo del issue (su historial de ediciones es visible) | No detecta un cambio que se haga a la vez en el campo y en el cuerpo | Criterio de éxito del pre-registro (debe ser 0) |
 
+## Cálculo por comando
+
+`python -m scripts.devlog pilot` calcula las medidas anteriores sin escribir nada (código 0; 2 si no se pudo
+leer el tablero, con el mismo mensaje que `board`):
+
+```bash
+python -m scripts.devlog pilot --since 76 [--until 79]            # lee GitHub con gh (GH_TOKEN de cherrera0001)
+python -m scripts.devlog pilot --since 76 --snapshot <dir>         # lee <dir>/items.json e issues.json
+python -m scripts.devlog pilot --since 76 --transcripts <dir> --map 77=agent-xxx.jsonl
+```
+
+- **Población:** issues cerrados como completados, con número entre `--since` y `--until` (opcional) y sin
+  épicas; la salida los lista. El episodio de cada issue es el que lo cita primero en su `ref`; con varios
+  se suman los pasos y vale el `outcome` del de mayor `seq` que lo tenga.
+- **Filas:** estimación completa (*Talla*, *Puntos*, *Incertidumbre*, *Riesgo*), *Done* con *Verificación* =
+  Verificada, *Escaló* = Sí, *Modelo* distinto de *Modelo usado*, PR adicionales, revisiones de estimación,
+  `model_source` = `transcript`, pasos fallidos por talla (autoinformado) y tokens por issue. Cada una lleva
+  numerador y denominador; con denominador 0 dice «sin datos», y con menos de 8 en el denominador no hay
+  porcentaje, solo «n de m».
+- **Tokens:** solo con `--transcripts`; sin él, «no medido». Se suma el último uso de cada `message.id` de la
+  transcripción. El archivo sale de `outcome.transcript` del episodio o de `--map`, que prevalece; un archivo
+  declarado que no existe da la fila «transcripción no encontrada»; un archivo vacío o sin ningún uso, «transcripción sin uso
+  registrado», y uno que no se lee como UTF-8, «transcripción ilegible». `--map` sin `--transcripts` se avisa
+  por stderr y se ignora.
+- **Límites:** las transcripciones son locales (solo existen en la máquina que ejecutó), no incluyen la
+  revisión del orquestador ni a otros agentes, y no son una factura. El comando cuenta; no declara éxito ni
+  valida el piloto.
+
 ## Lecturas por ciclo
 
 Se rellena al cerrar cada ciclo de lectura, con las medidas del pre-registro y sus denominadores. El

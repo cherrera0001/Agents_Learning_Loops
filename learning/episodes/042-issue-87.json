@@ -1,0 +1,81 @@
+{
+  "seq": 42,
+  "id": "issue-87",
+  "goal": "Lectura del piloto por comando: devlog pilot calcula las medidas de docs/piloto-estimacion.md con numerador y denominador, y los tokens por issue desde transcripciones locales",
+  "ref": "#87",
+  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1, "transcript": "agent-a2acb6858a8b48c10.jsonl"},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "se omitió devlog recall antes de implementar (paso 6 de la definición del implementador); se ejecutó al terminar"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "recall ejecutado tras la implementación: ninguna lección previa sobre lectura de piloto cambiaba el diseño"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "ruff check: E501 en dos líneas de scripts/pilot_metrics.py (115 y 121 columnas, límite 110)"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "ruff format partió las dos líneas; el detalle de pasos fallidos pasó a listar «#n: f de t» por issue para poder cotejarlo con la lectura manual"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "ruff check: RUF015 en tests/integration/test_pilot_metrics.py (indexado [0] sobre una lista por comprensión)"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "se quitó la aserción redundante; pruebas del módulo y una de test_devlog para outcome.transcript opcional"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "learning/README.md (clave opcional outcome.transcript) y sección «Cálculo por comando» en docs/piloto-estimacion.md sin tocar el pre-registro ni la lectura del ciclo 1"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff, mypy, pytest --cov y export_schema --check en verde; la lectura real coincide con el ciclo 1 fila a fila"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "cuatro defectos inyectados uno a uno (primer uso de cada id, 0 % con denominador 0, épicas incluidas, > en vez de >= en since): los tests fallaron en los cuatro"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "la revisión independiente encontró: una transcripción vacía o sin usage se imprimía como una fila de ceros; una transcripción no UTF-8, un issue sin number y un outcome.prs no numérico acababan en traza con código 1; --map sin --transcripts se ignoraba en silencio; y los tests no detectaban quitar Incertidumbre, aceptar tarjetas que no son Issue ni que un episodio posterior sin outcome tape al anterior"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "filas «transcripción sin uso registrado» y «transcripción ilegible»; issue sin number y outcome numérico inválido pasan a BoardReadError con código 2; aviso por stderr de --map sin --transcripts"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "un caso por hallazgo con su control verde, los cuatro campos de estimación en blanco por separado, tarjeta que no es Issue y episodio posterior sin outcome"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "los siete defectos (los cuatro originales y los tres nuevos) hacen fallar algún test; ruff, mypy, pytest --cov y export_schema --check en verde"
+    }
+  ],
+  "lessons": [
+    "Una medida con denominador 0 se imprime como «sin datos» y con menos de 8 no lleva porcentaje: así una lectura de piloto no sugiere una tasa donde solo hay conteos",
+    "Una transcripción de Claude Code repite el mismo message.id en varias líneas con uso creciente: sumar todas las líneas cuenta de más; hay que tomar el último uso de cada id",
+    "Al comparar un comando con una lectura manual, agregar por talla da 4 de 17 donde la tabla a mano daba 2 de 10 y 2 de 7: el detalle por issue permite cotejar sin ajustar cifras",
+    "Un archivo de entrada que existe pero está vacío no es un cero: distinguir «sin dato» de «dato cero» en cada fila y convertir las entradas mal formadas en un error claro, no en una traza"
+  ]
+}
