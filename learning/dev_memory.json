@@ -5320,7 +5320,7 @@
         "kind": "lesson"
       },
       "created_at": 15,
-      "last_accessed_at": 35,
+      "last_accessed_at": 40,
       "activation_level": 0.0
     },
     {
@@ -15569,6 +15569,34 @@
     {
       "id": "outcome:40:7",
       "type": "Outcome",
+      "label": "failure: revisor-codigo decía no editar el repositorio y mandaba inyectar defectos en el worktree; gestor-proyecto podía escribir campos de CONFIRMAR y chocaba con § 2.2; la justificación de los modelos era una regla nueva puesta en enrutamiento.md; dos observaciones no tenían respaldo escrito y el criterio del modelo en transcripción no se declaraba pendiente; planned_effort no estaba en la Estimación v1",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "revisor-codigo decía no editar el repositorio y mandaba inyectar defectos en el worktree; gestor-proyecto podía escribir campos de CONFIRMAR y chocaba con § 2.2; la justificación de los modelos era una regla nueva puesta en enrutamiento.md; dos observaciones no tenían respaldo escrito y el criterio del modelo en transcripción no se declaraba pendiente; planned_effort no estaba en la Estimación v1",
+        "episode": 40,
+        "step": 7
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
+      "type": "Concept",
+      "label": "revisor-codigo decía no editar el repositorio y mandaba inyectar defectos en el worktree; gestor-proyecto podía escribir campos de CONFIRMAR y chocaba con § 2.2; la justificación de los modelos era una regla nueva puesta en enrutamiento.md; dos observaciones no tenían respaldo escrito y el criterio del modelo en transcripción no se declaraba pendiente; planned_effort no estaba en la Estimación v1",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:8",
+      "type": "Outcome",
       "label": "success",
       "embedding": null,
       "metadata": {
@@ -15576,7 +15604,23 @@
         "latency_ms": 0.0,
         "error": null,
         "episode": 40,
-        "step": 7
+        "step": 8
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:40:9",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 40,
+        "step": 9
       },
       "created_at": 40,
       "last_accessed_at": 40,
@@ -15610,6 +15654,18 @@
       "id": "concept:lesson:avoid:write_code:la_primera_versi_n_de_revisor_codigo_y_r",
       "type": "Concept",
       "label": "'write_code' falló con 'la primera versión de revisor-codigo y revisor-docs no decía qué hacer con un worktree ocupado ni con tests existentes modificados, pedía solo de tres a seis defectos, mandaba usar grep en PowerShell y no comprobaba el frontmatter ni las instrucciones a agentes contra el flujo canónico'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "type": "Concept",
+      "label": "'update_docs' falló con 'revisor-codigo decía no editar el repositorio y mandaba inyectar defectos en el worktree; gestor-proyecto podía escribir campos de CONFIRMAR y chocaba con § 2.2; la justificación de los modelos era una regla nueva puesta en enrutamiento.md; dos observaciones no tenían respaldo escrito y el criterio del modelo en transcripción no se declaraba pendiente; planned_effort no estaba en la Estimación v1'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -15670,6 +15726,18 @@
       "id": "concept:lesson:note:una_sesi_n_de_claude_code_no_carga_las_definiciones_de_subag",
       "type": "Concept",
       "label": "Una sesión de Claude Code no carga las definiciones de subagente creadas durante la propia sesión; se comprueban desde una sesión nueva y el modelo se lee en la transcripción",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 40,
+      "last_accessed_at": 40,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "type": "Concept",
+      "label": "Quien escribe una definición de revisor también pasa por ella: la revisión del propio PR encontró diez afirmaciones sin respaldo o contradictorias que el autor no vio",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -21724,10 +21792,10 @@
       "source": "action:review_code",
       "target": "concept:error:la_auditor_a_afirm_que_la_talla_y_el_tab",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 7,
+      "count": 8,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -21778,6 +21846,17 @@
     {
       "source": "action:review_code",
       "target": "outcome:40:4",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:40:8",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -21986,7 +22065,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:40:7",
+      "target": "outcome:40:9",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -23865,6 +23944,28 @@
       "decay_factor": 0.05,
       "last_updated": 40,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:40:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -39334,12 +39435,12 @@
       "source": "concept:lesson:fallback:update_docs:review_code",
       "target": "action:review_code",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.784,
       "decay_factor": 0.05,
-      "last_updated": 35,
-      "count": 2,
+      "last_updated": 40,
+      "count": 3,
       "metadata": {},
-      "recency_factor": 0.778801
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:review_code",
@@ -39505,6 +39606,116 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.778801
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:subagentes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:revisor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:codigo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:documentos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:gestor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:proyecto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:talla",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:visible",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:etiquetas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:note:los_n_meros_citados_en_la_documentaci_n_divergen_del_c_digo_",
@@ -81161,12 +81372,12 @@
       "source": "goal:40",
       "target": "action:review_code",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.755,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {
-        "step": 4
+        "step": 8
       },
       "recency_factor": 1.0
     },
@@ -81174,10 +81385,10 @@
       "source": "goal:40",
       "target": "action:review_code",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -81185,12 +81396,12 @@
       "source": "goal:40",
       "target": "action:update_docs",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.455,
       "decay_factor": 0.05,
       "last_updated": 40,
-      "count": 1,
+      "count": 2,
       "metadata": {
-        "step": 5
+        "step": 7
       },
       "recency_factor": 1.0
     },
@@ -81238,7 +81449,7 @@
       "last_updated": 40,
       "count": 1,
       "metadata": {
-        "step": 7
+        "step": 9
       },
       "recency_factor": 1.0
     },
@@ -81288,6 +81499,28 @@
     },
     {
       "source": "concept:error:la_primera_versi_n_de_revisor_codigo_y_r",
+      "target": "action:review_code",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:40:7",
+      "target": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
       "target": "action:review_code",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
@@ -81683,6 +81916,138 @@
       "recency_factor": 1.0
     },
     {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:subagentes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:revisor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:codigo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:documentos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:gestor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:proyecto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:talla",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:visible",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:revisor_codigo_dec_a_no_editar_el_reposi",
+      "target": "concept:topic:etiquetas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:note:un_dato_que_solo_vive_en_un_campo_que_la_vista_no_muestra_no",
       "target": "goal:40",
       "relation": "ASSOCIATED_WITH",
@@ -82278,6 +82643,127 @@
     },
     {
       "source": "concept:lesson:note:una_sesi_n_de_claude_code_no_carga_las_definiciones_de_subag",
+      "target": "concept:topic:etiquetas",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "goal:40",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:subagentes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:revisor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:codigo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:documentos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:gestor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:proyecto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:talla",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:visible",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
+      "target": "concept:topic:issue",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 40,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:quien_escribe_una_definici_n_de_revisor_tambi_n_pasa_por_ell",
       "target": "concept:topic:etiquetas",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,

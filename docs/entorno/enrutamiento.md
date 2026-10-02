@@ -61,23 +61,21 @@ Por herramienta:
   `description`. Qué **declaran**: el alias del modelo del subagente (`haiku`, `sonnet` u `opus`). A qué ID
   resuelve cada alias lo decide Claude Code, no este repositorio: el 2026-10-02, en subagentes lanzados
   pasando el alias a mano, las transcripciones registraron `claude-sonnet-5-5` para `sonnet` y
-  `claude-haiku-4-5-20251001` para `haiku`. Observado ese mismo día: la sesión que creó las definiciones
-  no las cargó (`Agent type 'implementador-haiku' not found`); una sesión nueva sí, y el subagente lanzado
-  con `implementador-haiku` corrió con `claude-haiku-4-5-20251001` según su transcripción. Las de Sonnet y
-  Opus no se han observado. Qué **no fijan**: el esfuerzo (la herramienta de subagentes no lo permite) ni el
-  modelo de la sesión ya abierta. `.gitignore` ignora el resto de `.claude/`.
+  `claude-haiku-4-5-20251001` para `haiku`. Observado ese mismo día (comentario de cierre de #86): la
+  sesión que creó las definiciones no las cargó (`Agent type 'implementador-haiku' not found`); una sesión
+  nueva sí, y el subagente lanzado con `implementador-haiku` corrió con `claude-haiku-4-5-20251001` según
+  su transcripción. Las de Sonnet y Opus no se han observado. Qué **no fijan**: el esfuerzo (la herramienta
+  de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
+  `.claude/`.
 
-  Hay además tres definiciones que no implementan ([roles](agentes.md)): solo leen e informan.
-
-  | Definición | Alias | Por qué ese modelo |
-  |---|---|---|
-  | [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) | `opus` | La regla 4 de `docs/estimation.md` pone la revisión en el orquestador (Opus 5.5); quien revisa no debe ser menor que quien implementa |
-  | [`revisor-docs`](../../.claude/agents/revisor-docs.md) | `sonnet` | Comprobación de afirmaciones contra sus fuentes: acotada y con criterios escritos |
-  | [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) | `sonnet` | Lee el tablero y redacta; solo escribe en GitHub lo que el encargo ordena, así que la excepción de § 2.2 (escritura en un sistema externo: la decide quien orquesta, nunca Haiku 4.5) se respeta |
-
-  Estas tres asignaciones son un punto de partida sin medir: en su primer uso, `revisor-codigo` (PR #90) y
-  `revisor-docs` (PR #91) encontraron defectos reales que el implementador no había declarado, pero dos
-  revisiones no dicen si un modelo menor habría bastado.
+  Hay además tres definiciones que no construyen ([roles](agentes.md)):
+  [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
+  [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
+  [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y
+  que es una elección sin medir, está en [`docs/estimation.md`](../estimation.md) § 2.7. Sus tres primeros
+  usos (PR #90, #91 y #92) se hicieron pasando el archivo de la definición a un subagente genérico con ese
+  alias, no con la definición cargada: prueban el procedimiento, no que la definición aplique su modelo.
+  Eso queda pendiente de observar desde una sesión nueva, como se hizo con `implementador-haiku`.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 

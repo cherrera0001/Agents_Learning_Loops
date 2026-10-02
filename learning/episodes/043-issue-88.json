@@ -3,23 +3,81 @@
   "id": "issue-88",
   "goal": "Subagentes revisor de código, revisor de documentos y gestor del proyecto, y talla visible en el issue con etiquetas",
   "ref": "#88, épica #75",
-  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Opus 5.5", "planned_effort": "xhigh"},
-  "outcome": {"used_model": "Opus 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "transcript",
+    "escalated": false,
+    "estimate_revisions": 1,
+    "prs": 1
+  },
   "steps": [
-    {"action": "recall_memory", "success": true, "note": "sin lecciones sobre definiciones de subagente; se evaluaron los seis roles de agentes.md, las cinco skills y la ausencia de agentes ejecutables"},
-    {"action": "estimate_issue", "success": false, "error": "los issues del piloto tenían talla y puntos en el tablero, pero la única vista del Project #5 no muestra esos campos y la lista de issues tampoco: para quien mira, los issues no tenían peso"},
-    {"action": "gh_project_update", "success": true, "note": "etiquetas talla:XS a talla:XL creadas y puestas en #76 a #79 y #84 a #88, iguales al campo Talla; la vista del tablero no se puede cambiar por API"},
-    {"action": "write_code", "success": false, "error": "la primera versión de revisor-codigo y revisor-docs no decía qué hacer con un worktree ocupado ni con tests existentes modificados, pedía solo de tres a seis defectos, mandaba usar grep en PowerShell y no comprobaba el frontmatter ni las instrucciones a agentes contra el flujo canónico"},
-    {"action": "review_code", "success": true, "note": "las definiciones se usaron de verdad: revisor-codigo (Opus 5.5) sobre el PR #90 inyectó 18 defectos, 6 sin detectar, y halló cuatro tests modificados contra el issue; revisor-docs (Sonnet 5.5) sobre el PR #91 halló un frontmatter YAML inválido, una instrucción contraria al flujo y una afirmación sin observar. Cada revisor valoró su propia definición y sus carencias se incorporaron"},
-    {"action": "update_docs", "success": true, "note": "agentes.md: el rol Revisor se desdobla y se añade Gestor del proyecto; CONTRIBUTING.md y la skill estimar-issue: etiqueta talla; enrutamiento.md: modelo de cada definición y lo observado sobre la carga"},
-    {"action": "validate_schema", "success": true, "note": "frontmatter de las seis definiciones parseado con un parser YAML; descriptions entrecomilladas"},
-    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "sin lecciones sobre definiciones de subagente; se evaluaron los seis roles de agentes.md, las cinco skills y la ausencia de agentes ejecutables"
+    },
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "los issues del piloto tenían talla y puntos en el tablero, pero la única vista del Project #5 no muestra esos campos y la lista de issues tampoco: para quien mira, los issues no tenían peso"
+    },
+    {
+      "action": "gh_project_update",
+      "success": true,
+      "note": "etiquetas talla:XS a talla:XL creadas y puestas con gh issue edit en #76 a #79 y #84 a #88, iguales al campo Talla (no es una escritura en el tablero: el vocabulario no tiene una acción para etiquetas); la vista del tablero no se puede cambiar por API"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "la primera versión de revisor-codigo y revisor-docs no decía qué hacer con un worktree ocupado ni con tests existentes modificados, pedía solo de tres a seis defectos, mandaba usar grep en PowerShell y no comprobaba el frontmatter ni las instrucciones a agentes contra el flujo canónico"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "el procedimiento de las definiciones se usó en entregas reales, pasando el archivo a un subagente genérico con el alias del modelo (no con la definición cargada): sobre el PR #90, 18 defectos inyectados, 6 sin detectar y cuatro tests modificados contra el issue; sobre el PR #91, un frontmatter YAML inválido, una instrucción contraria al flujo y una afirmación sin observar. Cada revisor valoró su propia definición y sus carencias se incorporaron"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "agentes.md: el rol Revisor se desdobla y se añade Gestor del proyecto; CONTRIBUTING.md y la skill estimar-issue: etiqueta talla; enrutamiento.md: modelo de cada definición y lo observado sobre la carga"
+    },
+    {
+      "action": "validate_schema",
+      "success": true,
+      "note": "frontmatter de las seis definiciones parseado con un parser YAML; descriptions entrecomilladas"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "revisor-codigo decía no editar el repositorio y mandaba inyectar defectos en el worktree; gestor-proyecto podía escribir campos de CONFIRMAR y chocaba con § 2.2; la justificación de los modelos era una regla nueva puesta en enrutamiento.md; dos observaciones no tenían respaldo escrito y el criterio del modelo en transcripción no se declaraba pendiente; planned_effort no estaba en la Estimación v1"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "revisión del PR #92 con el procedimiento de revisor-docs (subagente Sonnet): 40 afirmaciones comprobadas, 10 sin respaldo o contradictorias, todas corregidas: defectos siempre en una copia exportada, gestor limitado a campos de ESTIMAR, § 2.7 en docs/estimation.md como elección sin medir, observaciones respaldadas en el comentario de cierre de #86 y criterio pendiente declarado"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "dev_memory.json regenerado"
+    }
   ],
   "lessons": [
     "Un dato que solo vive en un campo que la vista no muestra no existe para quien mira: copiar la talla en una etiqueta del issue y decir qué fuente manda si difieren",
     "Una definición de revisor se prueba usándola en una entrega real y pidiéndole al revisor que diga qué le faltó: las dos primeras versiones tenían huecos que solo salieron así",
     "Pedir al revisor un defecto por cada rama de cada regla nueva, no un número fijo: con tres a seis defectos los huecos del PR #90 no habrían salido",
     "El frontmatter de una definición de subagente se parsea con un parser YAML antes de publicarlo: una description con dos puntos y espacio sin comillas lo invalida",
-    "Una sesión de Claude Code no carga las definiciones de subagente creadas durante la propia sesión; se comprueban desde una sesión nueva y el modelo se lee en la transcripción"
+    "Una sesión de Claude Code no carga las definiciones de subagente creadas durante la propia sesión; se comprueban desde una sesión nueva y el modelo se lee en la transcripción",
+    "Quien escribe una definición de revisor también pasa por ella: la revisión del propio PR encontró diez afirmaciones sin respaldo o contradictorias que el autor no vio"
   ]
 }

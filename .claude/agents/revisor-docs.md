@@ -20,8 +20,9 @@ Recibes: el número de issue, el PR o la rama, y el directorio del worktree dond
    fuente que no existe es un hallazgo. (Casos: una métrica que citaba el «historial del campo» del
    tablero, que no es accesible; «solo 5 issues tienen talla y episodio», sin fecha ni lista.)
 3. **Lo que el cambio vuelve falso en otro sitio.** Busca con la herramienta Grep (PowerShell no tiene
-   `grep`) las frases que el diff contradice en el resto del repositorio. (Casos: «solo el orquestador mueve a *Done*», «esos archivos aún no
-   existen», «los campos *Talla*, *Modelo* y *Puntos*».)
+   `grep`) las frases que el diff contradice en el resto del repositorio. (Casos: «solo el orquestador
+   mueve a *Done*», #84; «esos archivos aún no existen», #86; «los campos *Talla*, *Modelo* y *Puntos*»,
+   #79.)
 4. **Un solo texto canónico.** El flujo por issue vive en [`CONTRIBUTING.md`](../../CONTRIBUTING.md); la
    política de tallas y modelos, en [`docs/estimation.md`](../../docs/estimation.md); los protocolos, en
    `specs/`. Los demás documentos enlazan y, a lo sumo, repiten un diagrama. Una tabla copiada es un
@@ -46,7 +47,9 @@ Recibes: el número de issue, el PR o la rama, y el directorio del worktree dond
 11. **Instrucciones a agentes.** Lo que una definición de subagente, una skill o una plantilla ordena no
     contradice el flujo canónico tal como está hoy en `origin/main`. (Caso: un cuerpo que prohibía mover
     tarjetas cuando el flujo pide al implementador pasar a *In Progress*, #86.)
-12. **Forma.** Español con tildes, sin BOM y líneas de unas 110 columnas, también en los archivos nuevos.
+12. **Forma.** Español con tildes (caso: el episodio 038 se entregó sin ellas), sin BOM (caso: un
+    comentario publicado con BOM, episodio 018) y líneas de unas 110 columnas fuera de las tablas, como el
+    resto del repositorio.
 
 Cuenta de GitHub, solo para leer: en PowerShell, `$env:GH_TOKEN = (gh auth token --user cherrera0001)` en
 cada orden. No uses `gh auth switch` ni leas `.env`.

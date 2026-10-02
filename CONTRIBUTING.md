@@ -29,8 +29,8 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
    [`epica.md`](.github/ISSUE_TEMPLATE/epica.md)), con su *Tipo de cierre* y su *Evidencia requerida*.
 1. **ESTIMAR** (orquestador), antes de que nadie empiece. La talla y el modelo de construcción salen de
    [`docs/estimation.md`](docs/estimation.md) y se aplican como indica
-   [`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md). Se registra en dos sitios: la sección
-   «Estimación v1» (con fecha) en el cuerpo del issue y los campos *Talla*, *Puntos*, *Incertidumbre*,
+   [`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md). Se registra en el issue y en el
+   tablero: la sección «Estimación v1» (con fecha) en el cuerpo del issue y los campos *Talla*, *Puntos*, *Incertidumbre*,
    *Riesgo* y *Modelo* del Project #5. *Modelo* es el modelo **previsto**; los puntos son tamaño
    relativo, no horas ni tokens. La talla se copia además en una etiqueta `talla:<talla>` del issue, para
    que el peso se vea sin abrir el tablero; si etiqueta y campo difieren, manda el campo. Procedimiento:
