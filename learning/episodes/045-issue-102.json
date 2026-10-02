@@ -1,0 +1,70 @@
+{
+  "seq": 45,
+  "id": "issue-102",
+  "goal": "Ficha técnica de Kaggle verificada contra arnés, condición A del kit y limpieza del prototipo",
+  "ref": "#102, épica #100",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Otro agente",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Otro agente",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Consulta devlog recall antes de editar sobre ficha Kaggle y arnés swegemma; aplicar lecciones de no asumir datos sin fuente verificable y no rotular como consolidada una skill no medida"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En las entregas preliminares, kaggle_specifications.md declaró como verificados datos erróneos de la API (cuota diaria y fecha de fusión del Paper Track) y atribuyó procedencia comunitaria sin fuente a los criterios del jurado"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corrección rigurosa de kaggle_specifications.md contrastando cada dato contra data/HARNESS_README.md y la API (5 envíos/día, fusión 2026-11-12, userHasEntered: false, criterios de jurado no verificados); README.md actualizado acotando transferencia a tareas de un mismo proyecto (Task Ledger)"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "La skill inicial se rotuló como consolidada offline de ALL y posteriormente como placebo B conteniendo la intervención de D (get_code_neighbors); agent.yaml conservaba la mención errónea en su descripción"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Aislamiento de la Condición A en conditions/a_kit/ como copia exacta del starter kit de Kaggle; descarga e inspección de adaptadores LoRA (r=4, capas=0, 217 KB); agent.yaml y skills trasladados a drafts/ documentados explícitamente como borradores sin condición asignada"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Se creó experiments/__init__.py y un prototipo ejecutable no soportado por el arnés (gemma_agent.py, estimation.py, test_gemma_agent.py); __init__.py duplicaba y tapaba el paquete src/experiments/ causando fallos de importación en la suite"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Retiro completo del prototipo Python fuera de contrato y de los __init__.py conflictivos; preservación de conceptos de disyuntor en drafts/NOTES_DISYUNTOR_Y_PRESUPUESTO.md"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "python -m pytest ejecutado en limpio: 614/614 pasando sin errores de colección; ruff check y mypy pasando sin advertencias; ausencia de tokens (.env, KGAT) y datos pesados en git ls-files"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "Ejecución de devlog rebuild para indexar el episodio"
+    }
+  ]
+}
