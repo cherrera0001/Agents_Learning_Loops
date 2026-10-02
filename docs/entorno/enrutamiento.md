@@ -10,7 +10,7 @@ tiene** esa elección. Terminología: [glosario](glosario.md), tabla «Tres usos
 |---|---|---|
 | **Modelo de datos** | El grafo Pydantic: `Node`, `Edge`, `GraphDocument` | [`src/associative_agent_loop/memory/models.py`](../../src/associative_agent_loop/memory/models.py); README § 4 |
 | **Modelo de embedding** | `LexicalEmbedder` o `FastEmbedEmbedder`. El campo `GraphDocument.embedding_model` nombra **este** modelo, no un modelo de Claude | [`src/associative_agent_loop/memory/embeddings.py`](../../src/associative_agent_loop/memory/embeddings.py); README § 6 |
-| **Modelo de construcción** | El modelo de Claude que construye un issue | Política: [`docs/estimation.md`](../estimation.md). Registro por issue: campos *Talla*, *Modelo* y *Puntos* del Project #5 |
+| **Modelo de construcción** | El modelo de Claude que construye un issue | Política: [`docs/estimation.md`](../estimation.md). Registro por issue: cuerpo del issue y Project #5 (§ 3) |
 
 Este documento trata solo del **modelo de construcción**.
 
@@ -25,11 +25,17 @@ Fuente única: [`docs/estimation.md`](../estimation.md). Aquí solo se resume, s
   2. si la verificación falla, se sube **un solo escalón**;
   3. antes de sumar modelos, bajar el esfuerzo;
   4. el orquestador (Opus 5.5) especifica, revisa y es el único que hace merge.
+- **Excepciones que mandan sobre la talla** (I = 3, sistema externo compartido, orquestador que implementa):
+  § 2.2.
 
 ## 3. Registro
 
-El registro por issue son los campos *Talla*, *Modelo* y *Puntos* del Project #5, y la sección 5 de
-`docs/estimation.md` cuando se cierra un ciclo.
+El registro por issue es la «Estimación v1» del cuerpo del issue, los comentarios «Estimación v2…» y los
+campos del Project #5: *Talla*, *Puntos*, *Incertidumbre*, *Riesgo*, *Modelo* (previsto, no se
+sobrescribe) y, al cerrar, *Modelo usado*, *Escaló* y *Verificación*. *Modelo usado* es autoinformado salvo
+que exista transcripción. Las excepciones, los agentes que no son Claude y el esfuerzo no aplicable por la
+herramienta de subagentes están en [`docs/estimation.md`](../estimation.md) § 2.1–2.5; la sección 5 de ese
+documento es el registro histórico de 2026-09-29.
 
 **[`experiments/software_project/`](../../experiments/software_project/README.md) no es este registro.** Es
 Task Ledger, la aplicación bajo reparación del Experimento 1, y no asigna modelos de Claude.

@@ -1,0 +1,52 @@
+{
+  "seq": 38,
+  "id": "issue-79",
+  "goal": "Política de tallas y modelo de construcción: factores con anclas, excepciones que mandan sobre la talla, agentes que no son Claude, registro y brazo Haiku como hipótesis",
+  "ref": "#79, épica #75",
+  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "gh issue view --comments no imprimió nada con exit 0 en PowerShell: los issues #56, #68 y #73 no se pudieron leer por esa vía"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "cuerpo y comentarios leídos con gh api; sin lecciones previas sobre política de tallas; leídos estimation.md, enrutamiento.md y el glosario"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "estimation.md § 2.1 a § 2.6 sin tocar cifras de § 1 y § 2 ni reescribir § 3 a § 5; solo una nota histórica bajo el título de § 3"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "coherencia mínima en enrutamiento.md, glosario.md y README § 3.2: el registro ya no se describe como los campos Talla, Modelo y Puntos"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "el episodio se escribió sin tildes, atribuyó el fallo de lectura a gh_create_issues y declaró el modelo como autoinformado sin consultar la transcripción"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "revisión del orquestador: episodio corregido; la transcripción del subagente registra claude-sonnet-5-5 en sus 31 mensajes; la cifra «5 issues con talla y episodio» quedó fechada"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "devlog rebuild tras integrar main (episodio 035)"
+    }
+  ],
+  "lessons": [
+    "Una regla de escalamiento que sobrescribe el campo del modelo previsto destruye la evidencia de la estimación: registrar previsto y usado en campos separados",
+    "Cuando suma y ancla discrepan, el ancla manda y la discrepancia se registra; la suma de factores ordinales supone pesos iguales y no está calibrada",
+    "Una excepción por incertidumbre alta evita que la suma oculte el factor que más cambia el modelo necesario",
+    "La transcripción de un subagente registra el modelo de cada mensaje: el orquestador puede comprobar el modelo usado en lugar de dejarlo autoinformado",
+    "En gh con PowerShell, leer issues con gh api cuando gh issue view devuelve salida vacía con exit 0"
+  ]
+}
