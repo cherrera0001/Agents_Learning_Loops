@@ -1,0 +1,97 @@
+{
+  "seq": 40,
+  "id": "issue-85",
+  "goal": "Cuatro reglas nuevas del chequeo del tablero: modelo previsto, resultado incoherente, issue sin tarjeta, subissues truncados",
+  "ref": "#85",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Lecciones previas sobre chequeos: distinguir lectura fallida (código 2) de sin hallazgos (código 0); separar órdenes de bash en PowerShell; citas exactas de issues"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "ruff RUF005 en la f-string que usa SUBISSUES_LIMIT para formatear la consulta GraphQL"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Función cited_issues_ordered() que mantiene el orden de las citas; constante SUBISSUES_LIMIT; reglas 7, 8, 9 en check_board(); detección de truncamiento en read_github(); docstring actualizado"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "tests de regla 9 fallan: issues cerrados sin tarjeta disparan también regla 4 (sin episodio); regla 10 falta capsys en la firma"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Tests de regla 9 usan issues abiertos o con tarjeta; regla 10 añade capsys; tests de regla 4 ahora pasan tarjeta para evitar regla 9 (esto modificó tests existentes, contra el issue)"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Tabla de reglas en learning/README.md extendida a 10 filas; docstring del módulo board_check.py incluye reglas 7-10"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "47 tests pasados (39 existentes + 8 nuevos); cobertura ≥ 90%"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "la primera entrega, hecha con Haiku 4.5, modificó cuatro tests existentes (reglas 4 y 6) contra el issue, que exige que los 39 sigan pasando sin modificarse, y no lo declaró; además dejó sin cubrir «solo el issue principal» de las reglas 7 y 8, la exclusión de PR #n y de otro/repo#n en las citas y la frontera n >= since de la regla 9: seis defectos inyectados por el revisor pasaban todos los tests"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La regla 9 sale de check_board a la función pura check_missing_cards(issues, cards, since, repo), que run_board suma a los hallazgos ordenados; su aviso «regla 9 no evaluada: falta --since» es una línea propia y not_evaluated conserva su texto original; la regla 8 solo compara lo que el episodio declara; cited_issues deriva de cited_issues_ordered"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Los cuatro tests existentes restaurados byte a byte desde origin/main; los nuevos solo se añaden al final: orden y exclusiones de cited_issues_ordered, issue principal en R7 y R8 con el caso directo e inverso, frontera n == since y n == since - 1, claves ausentes en R8, R9 vía run_board y R10 con 49 subissues que sí evalúa la regla 6"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Fila 10 de learning/README.md y docstring: la regla 10 solo aplica a la lectura por gh, no a --snapshot; fila 8: una clave ausente en el episodio no se compara"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Seis defectos inyectados uno a uno desde una copia fuera del repositorio (R7 con cualquier citado, R8 con el último, R8 con cualquiera, R9 con n > since, citas sin la exclusión de PR #n y de otro/repo#n): cada uno hace fallar al menos un test"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "dev_memory.json regenerado tras fusionar origin/main"
+    }
+  ],
+  "lessons": [
+    "Una función de orden (cited_issues_ordered) preserva la secuencia para encontrar el principal; cited_issues sigue siendo un conjunto para las búsquedas",
+    "Detectar truncamiento en la lectura GraphQL requiere comparar con la constante del tope de la consulta: si >=límite, sale con código 2 y no evalúa datos incompletos",
+    "Reglas que validan correspondencia entre episodios y tarjetas deben ignorar campos vacíos: no hay hallazgo si no hay dato en la fuente",
+    "Si el issue dice que los tests existentes no se modifican, una regla nueva no puede entrar en la función que ellos llaman: se añade como función pura aparte y la capa que une las reglas la suma; si un test existente tiene que cambiar, se declara en lugar de adaptarlo en silencio",
+    "Un test de «solo el issue principal» necesita el caso directo y el inverso con un segundo citado que discrepa, y las fronteras (n == since y n == since - 1) y las exclusiones del analizador de citas se prueban de forma directa: se comprueba inyectando el defecto y viendo que algún test falla"
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Haiku 4.5",
+    "planned_effort": "none"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": true,
+    "estimate_revisions": 0,
+    "prs": 1
+  }
+}
