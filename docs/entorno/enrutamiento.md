@@ -61,10 +61,21 @@ Por herramienta:
   `description`. Qué **declaran**: el alias del modelo del subagente (`haiku`, `sonnet` u `opus`). A qué ID
   resuelve cada alias lo decide Claude Code, no este repositorio: el 2026-10-02, en subagentes lanzados
   pasando el alias a mano, las transcripciones registraron `claude-sonnet-5-5` para `sonnet` y
-  `claude-haiku-4-5-20251001` para `haiku`. Que un subagente lanzado **con la definición** corra con ese
-  modelo está pendiente de observar en una transcripción, y una definición nueva puede no cargarse hasta
-  reiniciar la sesión; tampoco está comprobado. Qué **no fijan**: el esfuerzo (la herramienta de subagentes
-  no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de `.claude/`.
+  `claude-haiku-4-5-20251001` para `haiku`. Observado ese mismo día (comentario de cierre de #86): la
+  sesión que creó las definiciones no las cargó (`Agent type 'implementador-haiku' not found`); una sesión
+  nueva sí, y el subagente lanzado con `implementador-haiku` corrió con `claude-haiku-4-5-20251001` según
+  su transcripción. Las de Sonnet y Opus no se han observado. Qué **no fijan**: el esfuerzo (la herramienta
+  de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
+  `.claude/`.
+
+  Hay además tres definiciones que no construyen ([roles](agentes.md)):
+  [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
+  [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
+  [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y
+  que es una elección sin medir, está en [`docs/estimation.md`](../estimation.md) § 2.7. Sus tres primeros
+  usos (PR #90, #91 y #92) se hicieron pasando el archivo de la definición a un subagente genérico con ese
+  alias, no con la definición cargada: prueban el procedimiento, no que la definición aplique su modelo.
+  Eso queda pendiente de observar desde una sesión nueva, como se hizo con `implementador-haiku`.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 

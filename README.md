@@ -154,7 +154,7 @@ Claude, es un **agente de entorno** y trabaja bajo un contrato documental, sin c
 |---|---|
 | Entrada para cualquier agente de entorno | [`AGENTS.md`](AGENTS.md) (`CLAUDE.md` y `.cursor/rules/entorno.mdc` remiten a él) |
 | Glosario de los siete términos | [`docs/entorno/glosario.md`](docs/entorno/glosario.md) |
-| Roles: orquestador, implementador, revisor, cierre, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
+| Roles: orquestador, implementador, revisor (de código y de documentos), gestor del proyecto, cierre, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
 | Harness de entorno (permisos, parada, evidencia) y resumen del harness de experimento | [`docs/entorno/harness.md`](docs/entorno/harness.md) |
 | Skills de entorno: procedimientos ya fijados, en Markdown | [`skills/`](skills/README.md) · regla de admisión en [`docs/entorno/skills.md`](docs/entorno/skills.md) |
 
@@ -200,8 +200,9 @@ previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la 
   ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
   fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
   `.claude/agents/<rol>.md`; el repositorio versiona `implementador-haiku`, `implementador-sonnet` e
-  `implementador-opus`, que declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se
-  comprueba en la transcripción). En Cursor, la persona elige el modelo del chat
+  `implementador-opus`, y tres que no construyen (`revisor-codigo`, `revisor-docs` y `gestor-proyecto`);
+  todas declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se comprueba en la
+  transcripción). En Cursor, la persona elige el modelo del chat
   en el selector, y un subagente usa el ID de la tabla solo si quien lo lanza lo copia desde
   `docs/estimation.md`.
 
