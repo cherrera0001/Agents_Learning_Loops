@@ -65,7 +65,7 @@
   },
   "outcome": {
     "used_model": "Sonnet 5.5",
-    "model_source": "self-reported",
+    "model_source": "transcript",
     "escalated": false,
     "estimate_revisions": 0,
     "prs": 1
