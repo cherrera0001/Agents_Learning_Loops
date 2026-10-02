@@ -26,8 +26,8 @@ este repositorio. El contrato completo está en [`docs/entorno/`](docs/entorno/R
    mano: se corrige el código y se publica una campaña nueva identificada
    ([`proteger-evidencia`](skills/proteger-evidencia/SKILL.md)).
 6. **Detente** cuando pasen los tests y las comprobaciones de [`CONTRIBUTING.md`](CONTRIBUTING.md). El
-   implementador abre un PR con `Closes #<n>` y no hace merge; el merge lo hace el orquestador después de
-   verificar `mergedAt`.
+   implementador abre un PR con `Closes #<n>` y no hace merge; el orquestador lo pasa por un revisor
+   independiente y hace el merge, que verifica con `mergedAt`.
 
 Roles: [`docs/entorno/agentes.md`](docs/entorno/agentes.md) · Permisos, parada y evidencia:
 [`docs/entorno/harness.md`](docs/entorno/harness.md).

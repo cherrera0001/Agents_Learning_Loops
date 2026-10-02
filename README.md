@@ -784,7 +784,9 @@ flowchart LR
     R --> W["Implementación<br/>rama + PR + CI"]
     W --> E["Episodio<br/>learning/episodes/NNN.json"]
     E --> B["CONSOLIDATE<br/>devlog rebuild"]
-    B --> C["CONFIRMAR<br/>criterio de cierre"]
+    B --> V["REVISAR<br/>revisor independiente"]
+    V --> M["merge<br/>mergedAt"]
+    M --> C["CONFIRMAR<br/>criterio de cierre"]
     C --> D["Done"]
     B -. "dev_memory.json" .-> R
 ```
