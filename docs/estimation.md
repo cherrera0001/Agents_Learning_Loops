@@ -54,7 +54,7 @@ La **talla se asigna por alcance**, por comparación con un issue ancla ya cerra
 | XL | #46 | Experimento nuevo con pre-registro y evidencia nueva |
 
 Incertidumbre y riesgo se registran aparte (campos *Incertidumbre* y *Riesgo* del Project #5) y activan las excepciones de § 2.2; V determina el tipo de criterio de cierre. La suma A+I+R+V de § 1 se conserva como referencia. Si suma y ancla discrepan, **manda el ancla** y la discrepancia se registra en la estimación (ejemplo: #77, suma 7 → S, ancla → M).
-Límites: los factores son ordinales, sumarlos supone pesos iguales y la escala **no está calibrada**: solo 5 issues tienen talla y episodio (un M y cuatro XL).
+Límites: los factores son ordinales, sumarlos supone pesos iguales y la escala **no está calibrada**: al 2026-10-02, antes del piloto, solo 5 issues tenían talla y episodio (un M, #56, y cuatro XL: #46, #58, #63 y #65).
 
 ### 2.2 Excepciones que mandan sobre la talla
 
@@ -76,7 +76,7 @@ Para Codex, agy u otro agente que no es un modelo de Claude: *Modelo* (previsto)
 - **Estimación v1** en el cuerpo del issue, antes de pasar a *In Progress*. Cada cambio es un comentario «Estimación v2…» con fecha, motivo y evidencia.
 - *Modelo* es el modelo **previsto** y nunca se sobrescribe (en #56 se sobrescribió con el final y el previsto solo quedó en el cuerpo).
 - Al cerrar se completan *Modelo usado* y *Escaló*; el motivo del escalamiento va en un comentario (caso #56: Sonnet 5.5 `high` → Opus 5.5 por la regla 2).
-- *Modelo usado* es **autoinformado**, salvo que exista transcripción: solo las transcripciones locales de Claude Code registran modelo y tokens, y solo de esa máquina. No hay telemetría del proveedor accesible.
+- *Modelo usado* es **autoinformado**, salvo que exista transcripción: solo las transcripciones locales de Claude Code (la de la sesión y la de cada subagente) registran modelo y tokens, y solo de esa máquina. No hay telemetría del proveedor accesible.
 - Límite: la herramienta que lanza subagentes permite fijar el modelo pero no el nivel de esfuerzo; el esfuerzo de la tabla hoy no es aplicable por esa vía.
 
 ### 2.5 Regla 3 frente a XS → Haiku 4.5
