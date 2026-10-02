@@ -32,7 +32,9 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
    [`docs/entorno/enrutamiento.md`](docs/entorno/enrutamiento.md). Se registra en dos sitios: la sección
    «Estimación v1» (con fecha) en el cuerpo del issue y los campos *Talla*, *Puntos*, *Incertidumbre*,
    *Riesgo* y *Modelo* del Project #5. *Modelo* es el modelo **previsto**; los puntos son tamaño
-   relativo, no horas ni tokens. Procedimiento: skill [`estimar-issue`](skills/estimar-issue/SKILL.md).
+   relativo, no horas ni tokens. La talla se copia además en una etiqueta `talla:<talla>` del issue, para
+   que el peso se vea sin abrir el tablero; si etiqueta y campo difieren, manda el campo. Procedimiento:
+   skill [`estimar-issue`](skills/estimar-issue/SKILL.md).
 2. **In Progress** (implementador): la tarjeta pasa a *In Progress* al crear la rama
    `issue-<n>-<tema>`.
 3. **RETRIEVE**: `python -m scripts.devlog recall "<título del issue>"` (`--embedder fastembed` para
