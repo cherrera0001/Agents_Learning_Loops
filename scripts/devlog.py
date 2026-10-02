@@ -9,6 +9,7 @@ Uso::
     python -m scripts.devlog recall "texto del issue"
     python -m scripts.devlog rebuild
     python -m scripts.devlog board --since 76        # chequeo de solo lectura (ver board_check)
+    python -m scripts.devlog pilot --since 76        # lectura del piloto (ver pilot_metrics)
 """
 
 from __future__ import annotations
@@ -97,6 +98,13 @@ def main() -> None:
         type=Path,
         help="directorio con items.json e issues.json (y subissues.json opcional) en vez de gh",
     )
+    p_pilot = sub.add_parser(
+        "pilot",
+        help="lectura de solo lectura del piloto de estimación (salida 0, o 2 sin lectura; no interpreta)",
+    )
+    from scripts.pilot_metrics import add_arguments, parse_map
+
+    add_arguments(p_pilot)
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):  # UTF-8 también al redirigir en Windows
         sys.stdout.reconfigure(encoding="utf-8")
@@ -107,6 +115,23 @@ def main() -> None:
         from scripts.board_check import run_board
 
         sys.exit(run_board(since=args.since, snapshot=args.snapshot, episodes=load_episodes()))
+    if args.cmd == "pilot":
+        from scripts.pilot_metrics import run_pilot
+
+        try:
+            mapping = parse_map(args.map)
+        except ValueError as exc:
+            parser.error(str(exc))
+        sys.exit(
+            run_pilot(
+                since=args.since,
+                until=args.until,
+                snapshot=args.snapshot,
+                episodes=load_episodes(),
+                transcripts=args.transcripts,
+                mapping=mapping,
+            )
+        )
     if args.cmd == "rebuild":
         mg = rebuild(load_episodes())
         mg.save(MEMORY_PATH)

@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from associative_agent_loop.memory.graph import EdgeType, NodeType
 from scripts.devlog import EPISODES_DIR, load_episodes, rebuild, recall
 
@@ -88,16 +90,42 @@ def test_recall_returns_related_lessons_and_actions():
     assert "(sin experiencia relacionada)" in recall(rebuild(EPISODES), "xyz")
 
 
+OPTIONAL_OUTCOME_KEYS = {"transcript"}
+
+
+def check_episode(ep):
+    """Validación de un episodio; `outcome.transcript` es opcional y cualquier otra clave sobra."""
+    assert ep["goal"] and ep["steps"]
+    assert all({"action", "success"} <= set(s) for s in ep["steps"])
+    if "estimate" in ep:
+        assert set(ep["estimate"]) == set(ESTIMATE)
+    if "outcome" in ep:
+        keys = set(ep["outcome"])
+        assert set(OUTCOME) <= keys, f"faltan claves en outcome: {set(OUTCOME) - keys}"
+        assert keys <= set(OUTCOME) | OPTIONAL_OUTCOME_KEYS, f"claves desconocidas: {keys - set(OUTCOME)}"
+        assert ep["outcome"]["model_source"] in {"self-reported", "transcript"}
+        if "transcript" in keys:
+            assert isinstance(ep["outcome"]["transcript"], str) and ep["outcome"]["transcript"]
+
+
 def test_committed_episodes_are_valid_and_ordered():
     episodes = load_episodes(EPISODES_DIR)
     assert episodes, "debe existir al menos el episodio retroactivo v0.1"
     seqs = [e["seq"] for e in episodes]
     assert seqs == sorted(seqs) and len(set(seqs)) == len(seqs)
     for ep in episodes:
-        assert ep["goal"] and ep["steps"]
-        assert all({"action", "success"} <= set(s) for s in ep["steps"])
-        if "estimate" in ep:
-            assert set(ep["estimate"]) == set(ESTIMATE)
-        if "outcome" in ep:
-            assert set(ep["outcome"]) == set(OUTCOME)
-            assert ep["outcome"]["model_source"] in {"self-reported", "transcript"}
+        check_episode(ep)
+
+
+def test_outcome_transcript_is_optional_but_other_keys_are_rejected():
+    base = dict(EPISODES[0], estimate=ESTIMATE)
+    check_episode(dict(base, outcome=OUTCOME))  # sin transcript
+    check_episode(dict(base, outcome=dict(OUTCOME, transcript="agent-x.jsonl")))  # con transcript
+    with pytest.raises(AssertionError, match="claves desconocidas"):
+        check_episode(dict(base, outcome=dict(OUTCOME, transcripts="agent-x.jsonl")))
+    with pytest.raises(AssertionError, match="claves desconocidas"):
+        check_episode(dict(base, outcome=dict(OUTCOME, transcript="a.jsonl", extra=1)))
+    with pytest.raises(AssertionError, match="faltan claves"):
+        check_episode(dict(base, outcome={k: v for k, v in OUTCOME.items() if k != "prs"}))
+    with pytest.raises(AssertionError):
+        check_episode(dict(base, outcome=dict(OUTCOME, transcript="")))
