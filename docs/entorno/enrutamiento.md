@@ -68,7 +68,7 @@ Por herramienta:
   de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
   `.claude/`.
 
-  Hay además tres definiciones que no construyen ([roles](agentes.md)):
+  Hay además seis definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
   [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
   [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
   [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y
@@ -76,6 +76,12 @@ Por herramienta:
   usos (PR #90, #91 y #92) se hicieron pasando el archivo de la definición a un subagente genérico con ese
   alias, no con la definición cargada: prueban el procedimiento, no que la definición aplique su modelo.
   Eso queda pendiente de observar desde una sesión nueva, como se hizo con `implementador-haiku`.
+
+  Las otras tres son el [staff de texto público](agentes.md#staff-de-texto-público):
+  [`investigador-papers`](../../.claude/agents/investigador-papers.md),
+  [`revisor-redactor`](../../.claude/agents/revisor-redactor.md) y
+  [`validador-estadistico`](../../.claude/agents/validador-estadistico.md), las tres con alias `sonnet`,
+  también una elección sin medir (§ 2.7 de la misma política).
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 

@@ -37,6 +37,8 @@ flowchart TB
 | Entorno | Modelo de construcción (qué modelo de Claude construye cada issue) | [`docs/estimation.md`](../estimation.md); cómo se aplica y con qué fuerza: [`enrutamiento.md`](enrutamiento.md) |
 | Entorno | Permisos, parada y evidencia | [`harness.md`](harness.md) |
 | Entorno | Regla de admisión de skills | [`skills.md`](skills.md) y [`skills/`](../../skills/README.md) |
+| Entorno | Staff de texto público: investigador de papers, revisor redactor y validador estadístico, cada uno con veto | [`agentes.md`](agentes.md#staff-de-texto-público); skills [`investigador-papers`](../../skills/investigador-papers/SKILL.md), [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md) y [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md) |
+| Entorno | Registro fechado de una revisión de texto público: fichas, vetos y texto firmado | [`revision-texto-publico-2026-10-02.md`](revision-texto-publico-2026-10-02.md) |
 | Entorno | Flujo por issue y comprobaciones de CI | [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |
 | Entorno | Bitácora de desarrollo (fuente de verdad) | [`learning/README.md`](../../learning/README.md) y `learning/episodes/` |
 | Entorno | Piloto de estimación y cierre verificado: pre-registro, campos del tablero, métricas y lecturas | [`docs/piloto-estimacion.md`](../piloto-estimacion.md) |
