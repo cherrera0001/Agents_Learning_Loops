@@ -187,7 +187,8 @@ calcula la talla XS–XL con cuatro factores (alcance, incertidumbre, riesgo y v
 3. antes de sumar modelos, bajar el esfuerzo;
 4. el orquestador (Opus 5.5) especifica, revisa y es el único que hace merge.
 
-El registro por issue son los campos *Talla*, *Modelo* y *Puntos* del Project #5. Task Ledger
+El registro por issue es la estimación del cuerpo del issue y los campos del Project #5 (*Modelo* es el
+previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la § 2.2 de esa política. Task Ledger
 (`experiments/software_project/`) es la aplicación del Experimento 1 y no es ese registro.
 
 **Cuánta fuerza tiene la elección.** No existe un interruptor automático. La elección opera en tres niveles:

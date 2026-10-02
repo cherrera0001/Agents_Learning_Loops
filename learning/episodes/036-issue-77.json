@@ -2,9 +2,9 @@
   "seq": 36,
   "id": "issue-77",
   "goal": "Integrar ESTIMAR y CONFIRMAR al ciclo de la bitácora (diagramas, plantillas, formato de episodio, skills)",
-  "ref": "#77",
+  "ref": "#77, épica #75",
   "estimate": {"version": 1, "date": "2026-10-02", "size": "M", "points": 3, "uncertainty": 1, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "high"},
-  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1},
   "steps": [
     {
       "action": "recall_memory",
@@ -42,9 +42,19 @@
       "note": "ruff, mypy, pytest --cov (498 pasan, 98.72 %), export_schema --check y mutation_check en exit 0; enlaces relativos nuevos comprobados con un script ad hoc"
     },
     {
+      "action": "update_docs",
+      "success": false,
+      "error": "dos métricas del piloto citaban fuentes que no existen: el historial del campo del tablero y una «telemetría de la sesión» sin especificar"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "revisión del orquestador: «modelo previsto sobrescrito» se compara con la «Estimación v1» del issue y los tokens salen de la transcripción local del subagente, que registra claude-sonnet-5-5 en sus 35 mensajes"
+    },
+    {
       "action": "rebuild_memory",
       "success": true,
-      "note": "dev_memory.json regenerado con el episodio 036"
+      "note": "dev_memory.json regenerado con el episodio 036 tras integrar main"
     }
   ],
   "lessons": [

@@ -1,7 +1,7 @@
 # Piloto: estimación conservada, modelo previsto/usado y cierre verificado
 
 Es un piloto: mide si el registro se sostiene. **No valida** todavía las tallas ni la matriz de modelos de
-[`docs/estimation.md`](estimation.md). El ciclo que se piloteó está en
+[`docs/estimation.md`](estimation.md). El ciclo que se pilotea está en
 [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto) y su formato de episodio en
 [`learning/README.md`](../learning/README.md).
 
@@ -56,8 +56,8 @@ issues ninguna es una tasa estable: son conteos para decidir si el registro se s
 | PR adicionales | PR del issue menos 1, sumados | Issues del piloto cerrados | `outcome.prs` y el issue | Un PR adicional puede ser trabajo nuevo y no un fallo | Si el alcance de la talla estaba mal medido (**PR adicionales**) |
 | Modelo previsto contra usado | Issues con *Modelo* distinto de *Modelo usado* | Issues con ambos campos registrados | Campos *Modelo* y *Modelo usado* | *Modelo usado* es autoinformado salvo `model_source` = `transcript` | Si la matriz de `docs/estimation.md` se respeta; no la calibra |
 | Pasos fallidos por talla | Pasos con `success: false` de los episodios, por talla | Pasos de los episodios del piloto | `steps` de los episodios | Autoinformado; ocho issues no dan una distribución | Si una talla concentra fallos (**autoinformado**) |
-| Tokens | Tokens de la sesión | Solo issues donde una sesión equivale a un issue | Telemetría de la sesión | No se calcula si una sesión cubre varios issues o un issue varias sesiones | Coste por talla, solo si el denominador existe |
-| Modelo previsto sobrescrito | Issues cuyo *Modelo* cambió tras ESTIMAR | Issues del piloto cerrados | Historial del campo y «Estimación v1» | Requiere el historial del tablero | Criterio de éxito del pre-registro (debe ser 0) |
+| Tokens | Tokens de entrada, de caché (escritura y lectura) y de salida, por separado | Solo issues donde una sesión o un subagente equivale a un issue | Transcripción local de Claude Code de esa sesión o subagente | No incluye la revisión del orquestador ni otros agentes; solo existe en la máquina que ejecutó; no es una factura | Coste por talla, solo si el denominador existe |
+| Modelo previsto sobrescrito | Issues cuyo campo *Modelo* difiere del modelo de su «Estimación v1» | Issues del piloto cerrados | Campo *Modelo* y cuerpo del issue (su historial de ediciones es visible) | No detecta un cambio que se haga a la vez en el campo y en el cuerpo | Criterio de éxito del pre-registro (debe ser 0) |
 
 ## Lecturas por ciclo
 
