@@ -28,8 +28,7 @@ encabezado del README, un post o un artículo.
 
 ## Procedimiento
 
-1. **Español, frases completas.** Sujeto, verbo y complemento; sin listas de palabras sueltas, sin
-   flechas en lugar de verbos y sin jerga interna sin explicar.
+1. **Español, frases completas**, para alguien técnico que no vive en el repositorio.
 2. **Quita el anuncio.** Fuera las preguntas retóricas, las cifras de gancho y los adjetivos de venta.
 3. **Conserva el límite.** Todo texto dice qué se midió, en qué diseño (un proyecto, tres operadores
    escritos a mano, seis o nueve tareas) y **qué salió peor**. Un resultado negativo no se omite por

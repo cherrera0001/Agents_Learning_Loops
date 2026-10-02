@@ -12,8 +12,9 @@ reescribe; una revisión nueva abre un archivo nuevo. No es evidencia del Experi
 | B · post de LinkedIn del 2026-09-29, español e inglés (el inglés llegó cortado y no se completó) | no publicar tal cual | no publicar tal cual | no publicar |
 | C · fragmento de artículo, tratado como borrador de debate | no publicar | no publicar como resultado | no publicar |
 
-Los tres roles corrieron como subagentes con las definiciones de `.claude/agents/`. Sus informes no están en
-el repositorio: este registro conserva las fichas, los vetos y el texto firmado.
+Según el orquestador, los tres roles corrieron como subagentes lanzados con las definiciones de
+`.claude/agents/`. Es autoinformado: no se comprobó en la transcripción qué modelo ejecutó cada uno, y sus
+informes no se conservaron en el repositorio. Este registro guarda las fichas, los vetos y el texto firmado.
 
 ## Fichas
 
@@ -48,9 +49,11 @@ el repositorio no incluye una línea base vectorial.
 
 ## Texto firmado
 
-El validador leyó este texto entero, en esta versión, contó 1.297 caracteres y no vetó ninguna frase. Antes
-había vetado dos versiones: una decía «0 fallos repetidos» sin el fallo del escenario de dominio cruzado y
-otra no decía que el conteo era con memoria. No se publicó desde este repositorio.
+Según el orquestador, el validador leyó este texto entero, en esta versión, contó 1.297 caracteres y no
+vetó ninguna frase, después de vetar dos versiones anteriores: una decía «0 fallos repetidos» sin el fallo
+del escenario de dominio cruzado y otra no decía que el conteo era con memoria. El número de caracteres se
+puede volver a contar sobre el bloque siguiente; lo demás es autoinformado. No se publicó desde este
+repositorio.
 
 ```text
 Estoy construyendo Agents Learning Loops, un experimento abierto sobre si un agente puede evitar repetir un error cuya causa ya observó. Acepto críticas.

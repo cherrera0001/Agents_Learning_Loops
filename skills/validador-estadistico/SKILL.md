@@ -34,7 +34,7 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
 1. **Lista cada número** del texto, uno por fila.
 2. **Busca su fuente**: archivo y, si existe, recibo o comando que lo reproduce. Sin fuente, la fila dice
    «no está en el repo» y lleva veto.
-3. **Decide fila por fila**: visto bueno o veto. No hay «aproximadamente bien».
+3. **Decide fila por fila**: visto bueno o veto.
 4. **Reglas fijas**:
    - No hay inferencia estadística en el protocolo. Seis o nueve tareas, un proyecto, tres operadores y
      réplicas de la misma semilla no son una muestra. Las réplicas verifican determinismo.
@@ -62,8 +62,9 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
 
 ## Vetos obligatorios
 
-Son los cinco de `CONTRIBUTING.md` ([vetos obligatorios](../../CONTRIBUTING.md#revisión-de-un-texto-público)). Los vetos concretos de
-cada revisión, con la frase y su fuente, van al registro fechado; el primero es
+Son los cinco de `CONTRIBUTING.md`
+([vetos obligatorios](../../CONTRIBUTING.md#revisión-de-un-texto-público)). Los vetos concretos de cada
+revisión, con la frase y su fuente, van al registro fechado; el primero es
 [`docs/entorno/revision-texto-publico-2026-10-02.md`](../../docs/entorno/revision-texto-publico-2026-10-02.md).
 
 ## Informe

@@ -877,7 +877,8 @@ Lecciones de proceso incorporadas como mecanismos, no solo como recordatorios: v
 del esquema. Formato y vocabulario de acciones: [`learning/README.md`](learning/README.md).
 
 Los procedimientos ya fijados de este ciclo (entre ellos recuperar antes de un issue, registrar un
-episodio, proteger la evidencia y revisar un texto público) también están escritos como **skills de entorno** en [`skills/`](skills/README.md). Son una
+episodio, proteger la evidencia y revisar un texto público) también están escritos como **skills de
+entorno** en [`skills/`](skills/README.md). Son una
 proyección legible: los episodios de `learning/episodes/` siguen siendo la fuente de verdad y
 `learning/dev_memory.json` sigue siendo derivado. El rol que ejecuta `recall` y `rebuild` es la
 **bitácora** ([`docs/entorno/agentes.md`](docs/entorno/agentes.md)).

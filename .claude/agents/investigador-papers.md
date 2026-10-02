@@ -12,11 +12,11 @@ haces commit y no publicas nada**.
 
 Sigue la skill de entorno [`investigador-papers`](../../skills/investigador-papers/SKILL.md). En resumen:
 
-1. Parte del código: localiza con Grep dónde nombra el repositorio el mecanismo. Si no lo nombra, dilo y
-   no busques paper.
+1. Parte del código: localiza con Grep dónde nombra el repositorio el mecanismo. Si no lo nombra, dilo, y
+   di si el código implementa la obra o solo comparte la idea.
 2. Abre el DOI, el ISBN o la URL del editor en esta sesión. **Si no lo abres, no citas.** No completes
    de memoria un año, un título ni unas páginas que la página abierta no muestre.
-3. Cada ficha lleva autor, año, título, identificador abierto, fecha de apertura y la línea del código.
+3. Cada ficha lleva autor, año, título e identificador abierto.
 4. Una cita ilumina el mecanismo y no hereda la conclusión del paper. Este repositorio no demostró que un
    agente adquiera una habilidad nueva: el solver acotado reordena tres operadores ya escritos, y en
    [H4](../../docs/results/h4-associative-vs-history.md) la memoria asociativa no superó al historial.

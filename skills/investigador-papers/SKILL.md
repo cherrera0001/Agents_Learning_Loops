@@ -31,19 +31,19 @@ o que cite una obra.
 ## Procedimiento
 
 1. **Parte del código.** Localiza con Grep dónde nombra el repositorio el mecanismo. Si el código no lo
-   nombra, no se busca paper: se informa «el repositorio no nombra ese mecanismo».
+   nombra, se dice, y la ficha indica si el código implementa la obra o solo comparte la idea.
 2. **Abre el identificador.** DOI, ISBN o URL del editor, en esta sesión. Si no se abre, no se cita. Un
    registro de Crossref cuenta como DOI abierto y se anota como tal.
-3. **Escribe la ficha**: autor, año, título, identificador abierto, fecha de apertura y la línea del
-   código que nombra el mecanismo.
-4. **La cita ilumina el mecanismo; no hereda la conclusión.** Junto a cada ficha va lo que este
-   repositorio no demostró: el solver acotado reordena tres operadores ya escritos y no adquiere una
-   habilidad nueva, y en H4 la memoria asociativa no superó al historial textual.
+3. **Escribe la ficha**: autor, año, título e identificador abierto, sin completar de memoria lo que la
+   página no muestra.
+4. **La cita ilumina el mecanismo; no hereda la conclusión.** Este repositorio no demostró que un agente
+   adquiera una habilidad nueva: el solver acotado reordena tres operadores ya escritos, y en H4 la
+   memoria asociativa no superó al historial textual.
 5. **Implementa o comparte la idea.** Si un texto nombra una obra (por ejemplo, HippoRAG), ábrela y di
    cuál de las dos cosas ocurre. El grafo de este repositorio es siembra, activación propagada, refuerzo
    acotado y decaimiento; no es el índice de ningún paper.
-6. **Veto.** Se veta toda cita sin identificador abierto, toda cita cuyo mecanismo no esté en el código y
-   toda frase que use el paper como prueba de un resultado propio.
+6. **Veto.** Se veta toda cita sin identificador abierto y toda frase que use el paper como prueba de un
+   resultado propio.
 
 ## Fichas
 
