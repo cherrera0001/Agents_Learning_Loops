@@ -61,19 +61,74 @@ issues ninguna es una tasa estable: son conteos para decidir si el registro se s
 
 ## Lecturas por ciclo
 
-Se rellena al cerrar cada ciclo de lectura, con las medidas del pre-registro y sus denominadores. Vacía
-hasta que exista la primera lectura; no se declara validado el piloto antes de tenerla.
+Se rellena al cerrar cada ciclo de lectura, con las medidas del pre-registro y sus denominadores. El
+piloto no se declara validado con una lectura parcial: los criterios de éxito son sobre los 8 issues.
 
 ### Ciclo 1
+
+- **Fecha de la lectura:** 2026-10-02 (UTC).
+- **Issues incluidos (n = 4):** #76 (XS, tablero), #77 (M, ciclo y plantillas), #78 (S, chequeo) y #79 (S,
+  política). Todos cerrados. La épica #75 no se cuenta: no se estima.
+- **Medidas y denominadores:**
+
+  | Medida | Numerador | Denominador | Fuente y observaciones |
+  |---|---|---|---|
+  | Estimación previa | 4 | 4 | «Estimación v1» en el cuerpo al crear el issue; campos del tablero puestos antes de *In Progress* |
+  | *Done* con evidencia | 4 | 4 | Comentario de cierre con evidencia en cada issue y *Verificación* = *Verificada* |
+  | *Done* antes de CONFIRMAR | 3 | 4 | #77, #78 y #79: la automatización del tablero los movió a *Done* al mergear; estuvieron minutos en *Done* sin verificar. No estaba entre las medidas del pre-registro |
+  | Revisiones de estimación | 0 | 4 | Ningún comentario «Estimación v2» |
+  | Escalamientos | 0 | 4 | Campo *Escaló* |
+  | PR adicionales | 0 | 4 | Un PR por issue (#80 a #83) |
+  | Modelo previsto distinto del usado | 0 | 4 | Campos *Modelo* y *Modelo usado* |
+  | Modelo usado leído de transcripción | 4 | 4 | #77 a #79: transcripción de cada subagente, `claude-sonnet-5-5` en todos sus mensajes; #76: transcripción de la sesión del orquestador |
+  | Modelo previsto sobrescrito | 0 | 4 | Campo *Modelo* igual al de la «Estimación v1» de cada issue |
+  | Rondas de corrección del orquestador | 3 | 4 | Una ronda en #77, #78 y #79; ninguna en #76, que implementó el propio orquestador. Todas fueron de documentos o del episodio, ninguna de código |
+  | Discrepancia entre suma y ancla | 1 | 4 | #77: la suma daba S y el ancla M |
+
+- **Pasos fallidos de los episodios, por talla (autoinformado):** XS, 3 de 11 (#76); S, 2 de 10 (#78) y 2
+  de 7 (#79); M, 2 de 10 (#77). Con un issue por talla, o dos, no hay nada que comparar.
+- **Tokens (solo donde un subagente equivale a un issue; transcripciones locales):**
+
+  | Issue | Talla | Entrada | Escritura de caché | Lectura de caché | Salida |
+  |---|---|---|---|---|---|
+  | #77 | M | 70 | 205 985 | 3 084 359 | 31 235 |
+  | #78 | S | 62 | 199 466 | 2 657 709 | 34 631 |
+  | #79 | S | 68 | 164 192 | 2 360 600 | 14 670 |
+
+  #76 no se mide: se hizo en la sesión del orquestador, que cubre varios issues. Las cifras no incluyen
+  la revisión del orquestador. Cada subagente ejecutó además la comprobación de mutaciones, que tarda más
+  de diez minutos y no depende del tamaño del cambio.
+- **Criterios de éxito (parcial, 4 de 8):** 4 de 4 con estimación previa; 0 *Done* sin evidencia al cerrar
+  el ciclo, aunque 3 de 4 pasaron por *Done* antes de verificarse; modelo previsto y usado registrados en
+  los 4; ninguno sobrescrito. No se declara éxito: faltan cuatro issues.
+- **Condiciones de parada:** ninguna activada, con dos reservas.
+  - «Más de una corrección manual por issue»: hubo como máximo una ronda por issue; «corrección manual»
+    no estaba definida y aquí se cuenta como ronda de commits del orquestador en la rama del implementador,
+    sin contar la integración de main.
+  - «Dos agentes pisan el mismo campo»: ningún agente lo hizo, pero la automatización del tablero escribió
+    *Status* por delante del orquestador.
+  - «Nadie consultó los campos nuevos»: el chequeo de #78 los lee; su regla 3 señaló #77 en *Done* sin
+    verificar.
+- **Límites de esta lectura:** cuatro issues, tres de ellos de documentación, diseñados y revisados por la
+  misma sesión que escribe esta lectura. El M y un S consumieron tokens de salida parecidos (31 235 y
+  34 631): con tres mediciones eso no dice nada sobre las tallas. No hubo ningún issue con Haiku 4.5, así
+  que el brazo Haiku sigue sin datos.
+- **Decisiones tomadas:**
+  1. *Done* deja de significar cierre confirmado; lo es *Verificación* = *Verificada*, y CONFIRMAR termina
+     con el chequeo del tablero (#84).
+  2. El chequeo gana reglas para el modelo previsto sobrescrito, el resultado incoherente y los issues sin
+     tarjeta (#85, primer issue del brazo Haiku).
+  3. El arranque del implementador pasa a definiciones versionadas, porque los tres subagentes repitieron
+     el mismo fallo de arranque (#86).
+  4. La lectura se calculará con un comando (#87) y se comparará con esta, hecha a mano.
+  5. La talla se copia en una etiqueta `talla:*` del issue, porque la vista del tablero no muestra los
+     campos (#88).
+
+### Ciclo 2
 
 - **Fecha de la lectura:**
 - **Issues incluidos (n):**
 - **Medidas y denominadores:**
-
-  | Medida | Numerador | Denominador | Observaciones |
-  |---|---|---|---|
-  | | | | |
-
 - **Criterios de éxito (8 de 8; 0 *Done* sin evidencia; modelos registrados; ninguno sobrescrito):**
 - **Condiciones de parada (activadas o no):**
 - **Límites de esta lectura:**

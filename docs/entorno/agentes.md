@@ -19,7 +19,8 @@ Coordina el trabajo sobre los issues. Es la regla 4 de [`docs/estimation.md`](..
 3. **Revisa** cada entrega con medios propios, independientes del agente que la produjo.
 4. Es el **único que hace merge**, después de verificar `mergedAt`.
 5. **Confirma** el cierre según el tipo de trabajo ([criterios](harness.md#criterios-de-cierre-por-tipo-de-trabajo)),
-   registra *Verificación*, *Modelo usado* y *Escaló* y es el único que mueve la tarjeta a *Done*; skill
+   registra *Verificación*, *Modelo usado* y *Escaló* y es el único que mueve una tarjeta a *Done* a mano
+   (la automatización del tablero también la mueve al mergear: *Done* sin *Verificada* no está confirmado); skill
    [`confirmar-cierre`](../../skills/confirmar-cierre/SKILL.md). Flujo canónico:
    [`CONTRIBUTING.md`](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto).
 
