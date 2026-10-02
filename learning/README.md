@@ -110,7 +110,7 @@ python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: b
 # 3. escribir learning/episodes/NNN-issue-<n>.json (con estimate y outcome)
 python -m scripts.devlog rebuild                     # 4. CONSOLIDATE
 # 5. commit del episodio y dev_memory.json dentro del mismo PR
-# 6. tras el merge verificado (mergedAt): CONFIRMAR (orquestador) y mover a Done
+# 6. tras el merge verificado (mergedAt): CONFIRMAR (orquestador): Verificación = Verificada
 ```
 
 Los pasos, responsables y reglas del registro están en
