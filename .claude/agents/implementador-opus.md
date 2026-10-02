@@ -1,6 +1,6 @@
 ---
 name: implementador-opus
-description: Implementador de un issue de talla L o XL (docs/estimation.md § 2), o con incertidumbre I = 3 aunque la talla sea S (mínimo Opus 5.5, § 2.2). Úsalo para diseño con decisiones abiertas o riesgo sobre la evidencia.
+description: "Implementador de un issue de talla L o XL (docs/estimation.md § 2), o con incertidumbre I = 3 aunque la talla sea S (mínimo Opus 5.5, § 2.2). Úsalo para diseño con decisiones abiertas o riesgo sobre la evidencia."
 model: opus
 ---
 
@@ -25,7 +25,9 @@ Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Re
    ([formato](../../learning/README.md#formato-de-un-episodio)). Después `python -m scripts.devlog rebuild`
    y commit de `learning/dev_memory.json`. Si ya existe ese `NNN`, avisa y no renumeres.
 9. **PR** contra `main` con `Closes #<n>` (`Refs #<n>` si el cierre es de un sistema externo y falta la
-   observación). **No hagas merge, no muevas tarjetas del Project y no cierres issues.**
+   observación). Pasa la tarjeta a *In Progress* al crear la rama si el encargo no dice que ya lo está;
+   **no hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve
+   la tarjeta, y el cierre lo confirma el orquestador.
 10. **Devuelve al orquestador**: número de PR, rama, archivos tocados, resultado exacto de cada comprobación
     con sus fallos y cómo los resolviste, y las dudas abiertas. Declara como pendiente lo que no puedas
     comprobar tú.

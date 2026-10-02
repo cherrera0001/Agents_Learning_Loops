@@ -200,7 +200,8 @@ previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la 
   ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
   fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
   `.claude/agents/<rol>.md`; el repositorio versiona `implementador-haiku`, `implementador-sonnet` e
-  `implementador-opus`, que fijan el modelo pero no el esfuerzo. En Cursor, la persona elige el modelo del chat
+  `implementador-opus`, que declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se
+  comprueba en la transcripción). En Cursor, la persona elige el modelo del chat
   en el selector, y un subagente usa el ID de la tabla solo si quien lo lanza lo copia desde
   `docs/estimation.md`.
 
@@ -842,7 +843,7 @@ implementador abre el PR y no hace merge: el merge lo hace el orquestador, despu
 | H4 no se sostiene en este diseño: con tareas engañosas, C y B aciertan 0/18 al primer intento frente a 6/18 sin memoria | La pregunta general (si alguna memoria asociativa aporta más que el historial) sigue abierta; solo se evaluó recuperación léxica | [`docs/results/h4-associative-vs-history.md`](docs/results/h4-associative-vs-history.md) (*Alcance*) |
 | Los recibos históricos de `evidence/runs/` usan hashes v1 (`checkout-bytes/v0`) | No son comparables por hash con los v2; la dependencia CRLF/LF quedó resuelta en los recibos v2 (`lf/v1`, #42) | Se conservan como evidencia histórica; véase [§ 7.2](#72-experimento-1-transferencia-entre-tareas-de-software) |
 | El solver acotado es código local auditado y el harness de experimento no es un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
-| Un Markdown no cambia el modelo de la sesión ya abierta | La política de `docs/estimation.md` no se aplica sola; el ID solo viaja al crear el subagente | La regla de `AGENTS.md` obliga a leer la política antes de delegar; el frontmatter `model:` de `.claude/agents/implementador-<modelo>.md` fija el modelo del subagente (no el esfuerzo ni el de la sesión abierta; [enrutamiento](docs/entorno/enrutamiento.md)) ([§ 3.2](#32-modelo-de-construcción)) |
+| Un Markdown no cambia el modelo de la sesión ya abierta | La política de `docs/estimation.md` no se aplica sola; el ID solo viaja al crear el subagente | La regla de `AGENTS.md` obliga a leer la política antes de delegar; el frontmatter `model:` de `.claude/agents/implementador-<modelo>.md` declara el alias del modelo del subagente (no el esfuerzo ni el modelo de la sesión abierta; lo que ejecuta se comprueba en la transcripción; [enrutamiento](docs/entorno/enrutamiento.md)) ([§ 3.2](#32-modelo-de-construcción)) |
 | No existía un contrato explícito para quien edita el repositorio | Reglas de trabajo repartidas entre `CONTRIBUTING.md`, `learning/README.md` y el protocolo | Cubierto por la base documental de [`docs/entorno/`](docs/entorno/README.md); es documentación, no cambia el algoritmo |
 | Valencia global saturable (`tanh`) | Varias acciones pueden empatar en +1.00 en historiales largos | La valencia contextual domina cuando hay evidencia |
 | Asociación `Outcome` → `Goal` por convención de identificadores (`goal:{episode}`) | Acopla la valencia contextual al esquema de ids | Relación explícita en el grafo tipado (#34) |

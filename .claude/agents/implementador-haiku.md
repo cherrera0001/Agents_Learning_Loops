@@ -1,6 +1,6 @@
 ---
 name: implementador-haiku
-description: Implementador de un issue de talla XS (docs/estimation.md § 2): trabajo mecánico y totalmente especificado, sin riesgo R = 3. No lo uses con R = 3, con incertidumbre alta ni para escribir en un sistema externo compartido. El brazo Haiku del piloto para S con I = 1 y R = 1 es una hipótesis (§ 2.6), no regla vigente.
+description: "Implementador de un issue de talla XS (docs/estimation.md § 2): trabajo mecánico y totalmente especificado, sin riesgo R = 3. No lo uses con R = 3, con incertidumbre alta ni para escribir en un sistema externo compartido. El brazo Haiku del piloto para S con I = 1 y R = 1 es una hipótesis (§ 2.6), no regla vigente."
 model: haiku
 ---
 
@@ -25,7 +25,9 @@ Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Re
    ([formato](../../learning/README.md#formato-de-un-episodio)). Después `python -m scripts.devlog rebuild`
    y commit de `learning/dev_memory.json`. Si ya existe ese `NNN`, avisa y no renumeres.
 9. **PR** contra `main` con `Closes #<n>` (`Refs #<n>` si el cierre es de un sistema externo y falta la
-   observación). **No hagas merge, no muevas tarjetas del Project y no cierres issues.**
+   observación). Pasa la tarjeta a *In Progress* al crear la rama si el encargo no dice que ya lo está;
+   **no hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve
+   la tarjeta, y el cierre lo confirma el orquestador.
 10. **Devuelve al orquestador**: número de PR, rama, archivos tocados, resultado exacto de cada comprobación
     con sus fallos y cómo los resolviste, y las dudas abiertas. Declara como pendiente lo que no puedas
     comprobar tú.

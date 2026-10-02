@@ -1,6 +1,6 @@
 ---
 name: implementador-sonnet
-description: Implementador de un issue de talla S o M (docs/estimation.md § 2), o con riesgo R = 3 aunque la talla sea menor. No lo uses con incertidumbre I = 3 (mínimo Opus) ni para escribir en un sistema externo compartido.
+description: "Implementador de un issue de talla S o M (docs/estimation.md § 2), o con riesgo R = 3 aunque la talla sea menor. No lo uses con incertidumbre I = 3 (mínimo Opus) ni para escribir en un sistema externo compartido."
 model: sonnet
 ---
 
@@ -25,7 +25,9 @@ Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Re
    ([formato](../../learning/README.md#formato-de-un-episodio)). Después `python -m scripts.devlog rebuild`
    y commit de `learning/dev_memory.json`. Si ya existe ese `NNN`, avisa y no renumeres.
 9. **PR** contra `main` con `Closes #<n>` (`Refs #<n>` si el cierre es de un sistema externo y falta la
-   observación). **No hagas merge, no muevas tarjetas del Project y no cierres issues.**
+   observación). Pasa la tarjeta a *In Progress* al crear la rama si el encargo no dice que ya lo está;
+   **no hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve
+   la tarjeta, y el cierre lo confirma el orquestador.
 10. **Devuelve al orquestador**: número de PR, rama, archivos tocados, resultado exacto de cada comprobación
     con sus fallos y cómo los resolviste, y las dudas abiertas. Declara como pendiente lo que no puedas
     comprobar tú.

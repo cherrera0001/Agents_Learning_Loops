@@ -3,8 +3,23 @@
   "id": "issue-86",
   "goal": "Definiciones de subagente implementador por modelo (.claude/agents) y .gitignore que versiona solo esa carpeta",
   "ref": "#86",
-  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
-  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "transcript",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
   "steps": [
     {
       "action": "recall_memory",
@@ -15,6 +30,11 @@
       "action": "update_docs",
       "success": false,
       "error": "una orden de búsqueda con grep se lanzó en PowerShell, donde grep no existe; la lectura de los mismos archivos con las herramientas Grep y Read resolvió la búsqueda"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "búsqueda de «no existen» y de .claude/agents con las herramientas Grep y Read: localizadas la § 4 de enrutamiento.md y dos menciones del README"
     },
     {
       "action": "update_docs",
@@ -30,6 +50,16 @@
       "action": "update_docs",
       "success": true,
       "note": "enrutamiento.md § 4 y README (§ 3.2 y tabla de límites) dejan de decir que los archivos no existen; el límite del esfuerzo y de la sesión abierta se conserva; la carga tras reiniciar la sesión se declara no comprobada"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "la description de implementador-haiku contenía «: » sin comillas y el frontmatter no era YAML válido; el cuerpo prohibía mover tarjetas, contra el paso In Progress de CONTRIBUTING.md; enrutamiento.md y README afirmaban que los alias corresponden a los IDs sin haberlo observado"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "revisión con la definición revisor-docs y corrección del orquestador: descriptions entrecomilladas y los tres frontmatter parseados, cuerpo alineado con el flujo canónico, afirmaciones sobre el modelo marcadas como pendientes de transcripción; la transcripción del implementador registra claude-sonnet-5-5"
     },
     {
       "action": "rebuild_memory",
