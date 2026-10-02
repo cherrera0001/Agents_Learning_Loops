@@ -14,8 +14,8 @@
 recuperarlas por activación propagada** para condicionar decisiones futuras. El objetivo operativo
 es: *el agente no debe repetir un error cuya causa ya observó*, y la experiencia adquirida en un
 contexto no debe contaminar decisiones en contextos no relacionados. **Ese objetivo está evaluado solo
-en parte**: se cumple en escenarios simulados y no se cumple en tareas de software con señuelo
-([qué presenta este experimento](#qué-presenta-este-experimento)).
+en parte**: se cumple en tres de los cuatro escenarios simulados y no se cumple en tareas de software con
+señuelo ([qué presenta este experimento](#qué-presenta-este-experimento)).
 
 El propio repositorio registra su desarrollo con este mecanismo: cada issue se guarda como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
@@ -42,15 +42,16 @@ Son conteos exactos de un diseño exhaustivo: no hay muestra ni inferencia estad
 | Simulado: con memoria, 0 fallos repetidos en tres de los cuatro escenarios y 1 en el de dominio cruzado; éxito al primer intento 2/20 → 19/20 con errores intermitentes | A favor, solo en simulación | [`evidence/baseline/`](evidence/baseline/) |
 | Software, tareas originales: éxito final igual en las tres condiciones; intentos por tarea 2.0 sin memoria y 1.0 con cualquiera de las dos memorias | Tener memoria ayudó; las dos memorias empataron | [`results/`](results/README.md), [`results/reference-v2/`](results/reference-v2/README.md) |
 | La asociativa expone una lección y es la relevante (18/18); el historial expone todas (18/54 relevantes) | Diferencia de precisión, no de resultado | [`results/`](results/README.md) |
-| H4, tareas con señuelo: éxito al primer intento 6/18 sin memoria y 0/18 con historial y con asociativa; 2.5 intentos frente a 2.0 | **En contra**: las dos memorias empeoraron | [`h4`](docs/results/h4-associative-vs-history.md) |
+| H4, tareas con señuelo y agente por defecto: éxito al primer intento 6/18 sin memoria y 0/18 con historial y con asociativa; 2.5 intentos frente a 2.0 | **En contra**: las dos memorias empeoraron | [`h4`](docs/results/h4-associative-vs-history.md) |
 | Campaña de 9 tareas: el proxy `RepeatedFailureRate` vale 1.0 en las tres condiciones (54/54 con cada memoria, 72/72 sin memoria); cuenta intentos fallidos cuya causa ya se resolvió en el entrenamiento de esa condición, también sin memoria | Las dos memorias no eliminaron los fallos de causa ya resuelta; la métrica es un proxy | [`results/reference-v2/`](results/reference-v2/README.md) (`RepeatedFailureRate`) |
 | #58, con un diagnóstico público común: +6/18 al primer intento en las originales y −2/18 en las engañosas | A favor en las originales; sin diferencia en las engañosas según el criterio pre-registrado | [`diagnostic-baseline`](docs/results/diagnostic-baseline.md) |
 | H6, memoria de fallos: no repite la estrategia fallida al repetir la **misma** tarea; ningún registro de otra tarea llegó a aplicarse (`applied_records.other_task` = 0 en `python -m scripts.analyze_failure_memory --evidence evidence/failure-memory-v1`) | Aprendizaje por repetición; la contaminación no se puso a prueba | [`failure-memory`](docs/results/failure-memory.md) |
 | H7, memoria de fallos entre tareas: con τ = 0.1 quita el primer intento correcto en 3 de 18 pares; ningún umbral separa lo que ayuda de lo que daña | **En contra**: «contamina» | [`failure-transfer`](docs/results/failure-transfer.md) |
 
 **Qué aporta.** Un resultado negativo, pre-registrado y reproducible: la asociación sobre las mismas señales
-léxicas que usa el historial no lo supera, y con un señuelo las dos memorias perjudican. Aporta también el
-método: tareas con señuelo que permiten que la memoria pierda, recibos inmutables de cada ejecución, una
+léxicas que usa el historial no lo supera, y con un señuelo las dos memorias empeoraron el primer intento con
+el agente por defecto (H4, 0/18 frente a 6/18); con un diagnóstico público común la diferencia fue de −2/18,
+sin diferencia según el criterio pre-registrado (#58). Aporta también el método: tareas con señuelo que permiten que la memoria pierda, recibos inmutables de cada ejecución, una
 verificación independiente y análisis escritos antes de ver los datos.
 
 **Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
@@ -59,7 +60,7 @@ lecciones a skills, que el esquema declara y el [protocolo](specs/software_learn
 trabajo futuro.
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
-componente inspeccionado o el embedding del código) evita el señuelo. Es la prueba que distinguiría al grafo
+componente inspeccionado o el embedding del código) evita el señuelo. Es una prueba que podría distinguir al grafo
 del historial. La describió el
 [informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto), cuando aún no
 tenía issue, y hoy es H8, el issue
@@ -719,8 +720,9 @@ Evidencia en [`evidence/`](evidence/README.md) y agregados en [`results/`](resul
 por campaña.
 
 El objetivo operativo del encabezado queda así. «No repetir» se cumple en simulación (tres de los cuatro
-escenarios) y, en software, solo al repetir la misma tarea (H6), por construcción y sin transferencia; con
-señuelo, las dos memorias empeoran el primer intento (H4). «No contaminar» no se puso a prueba con el alcance
+escenarios) y, en software, en las tareas originales con pista léxica (18/18 al primer intento con memoria
+frente a 6/18 sin ella, campaña histórica) y, con memoria de fallos, al repetir la misma tarea (H6), por
+construcción y sin transferencia; con señuelo, las dos memorias empeoran el primer intento (H4). «No contaminar» no se puso a prueba con el alcance
 de H6 y no se cumple cuando el alcance deja pasar fallos de otra tarea (H7, base C, τ = 0.1).
 
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
