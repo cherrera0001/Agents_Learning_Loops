@@ -1,0 +1,38 @@
+# agent.yaml - Borrador Exploratorio de Configuración Declarativa
+# Sin condición experimental asignada. No forma parte de submission oficial.
+
+name: "draft_exploratory_agent"
+model: "gemma-4-31b-it-qat-w4a16-ct"
+description: "Exploratory draft agent configuration based on Gemma 4 without assigned condition"
+
+instruction: |
+  You are an expert autonomous software engineering agent tasked with diagnosing and resolving defects in a repository.
+
+  ## Task Context
+  {problem_description}
+
+  ## Guidelines & Workflow
+  1. Locate the defect: Use `search_similar_code` and `get_code_neighbors` to inspect call graphs, or `read_file` to review source files.
+  2. Formulate a targeted fix: Address the underlying root cause without introducing breaking regressions.
+  3. Apply modifications: Use `edit_file` to make precise replacements in `/workspace`.
+  4. Validate locally: Execute targeted tests using `run_command(command="pytest <path_to_test>")` to verify your changes.
+  5. Finalize: Call `submit_patch()` once tests pass or when your edits are verified.
+
+tools:
+  - "run_command"
+  - "submit_patch"
+  - "get_status"
+  - "read_file"
+  - "edit_file"
+  - "write_file"
+  - "get_code_neighbors"
+  - "search_similar_code"
+  - "get_code_subgraph"
+
+generate_content_config:
+  temperature: 0.2
+  top_p: 0.95
+  max_output_tokens: 16384
+  thinking_config:
+    include_thoughts: true
+    thinking_budget: 4096
