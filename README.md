@@ -17,7 +17,7 @@ contexto no debe contaminar decisiones en contextos no relacionados. **Ese objet
 en parte**: se cumple en escenarios simulados y no se cumple en tareas de software con señuelo
 ([qué presenta este experimento](#qué-presenta-este-experimento)).
 
-El propio repositorio se desarrolla con este mecanismo: cada issue se registra como un episodio de
+El propio repositorio registra su desarrollo con este mecanismo: cada issue se guarda como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
 
 > **Terminología.** «Agente», «skill» y «harness» tienen significados distintos según la capa (agente de
@@ -60,8 +60,8 @@ trabajo futuro.
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
 componente inspeccionado o el embedding del código) evita el señuelo. Es la prueba que distinguiría al grafo
-del historial y está descrita, sin issue abierto, en el
-[informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto).
+del historial. La describió el [informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto)
+y hoy es el issue [#98](https://github.com/cherrera0001/Agents_Learning_Loops/issues/98) (H8), todavía sin empezar.
 
 ---
 
@@ -640,11 +640,11 @@ transferencia, 18 ejecuciones por condición). Es la campaña de [`results/`](re
 
 | Métrica | A · Sin memoria | B · Historial | C · Asociativa |
 |---|---|---|---|
-| Éxito final | 100 % | 100 % | 100 % |
-| Éxito al primer intento | 33 % | 100 % | 100 % |
+| Éxito final | 100 % (18/18) | 100 % (18/18) | 100 % (18/18) |
+| Éxito al primer intento | 33 % (6/18) | 100 % (18/18) | 100 % (18/18) |
 | Intentos por tarea | 2.0 | 1.0 | 1.0 |
-| Precisión de recuperación | — | 33 % | **100 %** |
-| Recuperaciones falsas | — | 67 % | **0 %** |
+| Precisión de recuperación | — | 33 % (18/54) | **100 %** (18/18) |
+| Recuperaciones falsas | — | 67 % (36/54) | **0 %** (0/18) |
 
 Una [verificación independiente](docs/verification/experiment1.md) reconstruyó las 27 métricas,
 verificó los 144 recibos y replicó la campaña (54/54 comportamientos idénticos). Hallazgos:
@@ -693,6 +693,30 @@ diferencia) y H4b no apoyada:
 La diferencia en el conteo bruto de transferencia negativa (4 frente a 2) no es diferencia de tasa: los
 denominadores son distintos y las tasas son iguales. Ninguna regla pre-registrada apoya una ventaja de C.
 
+**Campañas posteriores a H4 (#58, H6 y H7).** Cada una nace del resultado anterior, con su pre-registro, su
+agente opt-in y sus recibos propios; el agente por defecto y las campañas ya publicadas no cambian.
+
+```mermaid
+flowchart LR
+    H4["H4 · #46<br/>la asociativa no supera al historial<br/>con señuelo, peor con memoria"]
+    D58["#58 · diagnóstico público común<br/>originales +6/18<br/>engañosas −2/18"]
+    H6["H6 · #63 · memoria de fallos<br/>no repite en la misma tarea<br/>contaminación sin poner a prueba"]
+    H7["H7 · #65 · fallos entre tareas<br/>«contamina» con τ = 0.1<br/>3 de 18 pares"]
+    H8["H8 · #98 · abierto<br/>siembra con señales no léxicas"]
+    H4 --> D58 --> H6 --> H7
+    H4 -.-> H8
+```
+
+| Campaña | Pregunta | Recibos | Lectura | Informe |
+|---|---|---|---|---|
+| `diagnostic-baseline-v1` (#58) | Con el mismo diagnóstico público en las tres condiciones, ¿la experiencia previa sigue aportando? | 396 | Exploratoria: +6/18 al primer intento en las originales, en B y en C; −2/18 en las engañosas, sin diferencia según el criterio pre-registrado | [`diagnostic-baseline`](docs/results/diagnostic-baseline.md) |
+| `failure-memory-v1` (H6, #63) | ¿Una memoria de fallos evita repetir una estrategia que ya falló, sin contaminar otro contexto? | 860 | Las tres reglas salen favorables, pero miden menos de lo que su nombre sugiere: no repite porque la **misma** tarea se repite, y ningún registro de otra tarea llegó a aplicarse | [`failure-memory`](docs/results/failure-memory.md) |
+| `failure-transfer-v1` (H7, #65) | Si el alcance deja pasar fallos de otra tarea, ¿ayudan o dañan? | 2 830 | Veredicto pre-registrado sobre la base asociativa: «contamina» (τ = 0.1, 3 de 18 pares). Con lecciones presentes la memoria de fallos entre tareas nunca ayudó, y ningún umbral separa lo que ayuda de lo que daña | [`failure-transfer`](docs/results/failure-transfer.md) |
+
+Evidencia en [`evidence/`](evidence/README.md) y agregados en [`results/`](results/README.md), un directorio por
+campaña. El objetivo operativo del encabezado queda así: «no repetir» se cumple al repetir la misma tarea (H6) y,
+en simulación, en tres de los cuatro escenarios; «no contaminar» no se cumple cuando la memoria de fallos cruza tareas (H7).
+
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
 > superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. Tampoco se
 > demuestra que una pista léxica sea la causa de la ganancia observada. El solver acotado tiene tres
@@ -727,7 +751,7 @@ python -m scripts.verify_experiment1 --root .   # verificación independiente
 flowchart LR
     PR["Pull request"] --> LINT["lint · tipos · spec<br/>ruff · mypy --strict<br/>export_schema --check"]
     PR --> TEST["tests · matriz 2 × 4<br/>Linux / Windows<br/>Python 3.11 – 3.14"]
-    PR --> MUT["mutaciones<br/>5 defectos inyectados"]
+    PR --> MUT["mutaciones<br/>88 defectos inyectados"]
     PR --> EMBJ["embeddings<br/>fastembed + caché del modelo"]
     TEST --> COV["cobertura ≥ 90 %<br/>(98.7 % el 2026-10-02)"]
     TEST --> BENCH["benchmark --json"]
@@ -745,6 +769,18 @@ flowchart LR
 | Propiedades | Invariantes sobre entradas aleatorias con `hypothesis` | `tests/unit/test_properties.py` |
 | Integración | Agente de biblioteca completo, benchmark, CLI, bitácora de desarrollo, valencia entre dominios | `tests/integration/` |
 | Mutación | Cada propiedad debe detectar un defecto inyectado deliberadamente | `scripts/mutation_check.py` |
+
+`scripts/mutation_check.py` inyecta hoy 88 defectos, uno por uno, y exige que algún test falle con cada uno:
+
+| Grupo | Defectos | Qué protege |
+|---|---|---|
+| Experimento 0 | 5 | Las propiedades del grafo y de la recuperación (tabla siguiente) |
+| Experimento 1 | 8 | Esquema de memoria, integridad de recibos y rechazo de UPDATE, MERGE y DEPRECATE |
+| Diagnóstico público (#58) | 20 | El orden entre diagnóstico y memoria, y las verificaciones del evaluador y del análisis |
+| H6 (#63) | 24 | El alcance de la memoria de fallos, sus registros y las reglas de decisión |
+| H7 (#65) | 31 | El umbral τ, el placebo y la lectura pareada contra la base |
+
+Las cinco del Experimento 0:
 
 | Mutación inyectada | Propiedad que la detecta |
 |---|---|
@@ -863,7 +899,9 @@ hay 43 episodios, 438 pasos, 110 fallos y 191 lecciones; las dos tablas siguient
 | Lecciones *fallback* sin sentido | Todo éxito posterior a un fallo se registraba como su resolución | Solo el primer éxito resuelve (#13) |
 | Una herramienta válida se evitaba en otro dominio | Valencia global | Valencia contextual (#8) |
 
-**Valencia aprendida de las acciones de desarrollo** (señal para el proceso):
+**Valencia aprendida de las acciones de desarrollo** (señal para el proceso). Son lecturas de `devlog recall`
+al cierre de v0.2 y dependen de la consulta: el episodio 014 anota +0.39 para `write_tests` en su consulta
+previa, y la tabla, +0.37. No se han recalculado:
 
 | Acción | Valencia | Lectura |
 |---|---|---|
@@ -894,7 +932,7 @@ implementador abre el PR y no hace merge: el merge lo hace el orquestador, despu
 | Búsqueda vectorial por fuerza bruta en Python | Coste O(N) por consulta; adecuado hasta miles de nodos | Índice ANN (FAISS, hnswlib) detrás de `Embedder`/`Retriever` |
 | Episodios de un solo nivel | El agente de biblioteca ordena herramientas; no descompone metas en subobjetivos | `Planner` basado en LLM |
 | Experimento 1 acotado: un proyecto, 3 operadores escritos a mano; 6 tareas en la campaña histórica y 9 en la referencia v2 | No sustenta generalización ni significancia estadística | Sin línea de trabajo abierta en este issue |
-| H4 no se sostiene en este diseño: con tareas engañosas, C y B aciertan 0/18 al primer intento frente a 6/18 sin memoria | La pregunta general (si alguna memoria asociativa aporta más que el historial) sigue abierta; solo se evaluó recuperación léxica | [`docs/results/h4-associative-vs-history.md`](docs/results/h4-associative-vs-history.md) (*Alcance*) |
+| H4 no se sostiene en este diseño: con tareas engañosas, C y B aciertan 0/18 al primer intento frente a 6/18 sin memoria | La pregunta general (si alguna memoria asociativa aporta más que el historial) sigue abierta; solo se evaluó recuperación léxica | [`docs/results/h4-associative-vs-history.md`](docs/results/h4-associative-vs-history.md) (*Alcance*); H8 abierta en [#98](https://github.com/cherrera0001/Agents_Learning_Loops/issues/98) |
 | Los recibos históricos de `evidence/runs/` usan hashes v1 (`checkout-bytes/v0`) | No son comparables por hash con los v2; la dependencia CRLF/LF quedó resuelta en los recibos v2 (`lf/v1`, #42) | Se conservan como evidencia histórica; véase [§ 7.2](#72-experimento-1-transferencia-entre-tareas-de-software) |
 | El solver acotado es código local auditado y el harness de experimento no es un sandbox | Un adaptador LLM no confiable no debe recibir el repositorio completo | Aislamiento de proceso/contenedor antes de integrar un LLM |
 | Un Markdown no cambia el modelo de la sesión ya abierta | La política de `docs/estimation.md` no se aplica sola; el ID solo viaja al crear el subagente | La regla de `AGENTS.md` obliga a leer la política antes de delegar; el frontmatter `model:` de `.claude/agents/implementador-<modelo>.md` declara el alias del modelo del subagente (no el esfuerzo ni el modelo de la sesión abierta; lo que ejecuta se comprueba en la transcripción; [enrutamiento](docs/entorno/enrutamiento.md)) ([§ 3.2](#32-modelo-de-construcción)) |
@@ -907,8 +945,10 @@ implementador abre el PR y no hace merge: el merge lo hace el orquestador, despu
 
 La versión 0.2.0 estableció el mecanismo y el Experimento 1 lo llevó a tareas reales de software con
 evidencia auditable (#24–#36). La fase posterior endureció esa evidencia (#42–#45) y evaluó H4 (#46): en
-este diseño, la memoria asociativa no supera al historial textual. La pregunta general sigue abierta; esta
-sección no propone trabajo nuevo.
+este diseño, la memoria asociativa no supera al historial textual. Después se midió una línea base con
+diagnóstico público (#58) y una memoria de fallos, dentro de una tarea (H6, #63) y entre tareas (H7, #65). La
+pregunta general sigue abierta y tiene un issue: H8 (#98) propone sembrar la recuperación con señales no
+léxicas y repetir la prueba con las mismas tareas con señuelo.
 
 ```mermaid
 flowchart TB
@@ -920,6 +960,10 @@ flowchart TB
     H44["#44 Baseline de 6 permutaciones"]
     H45["#45 Par engañoso sin pistas léxicas"]
     H46["#46 Asociativa vs historial<br/>con distractores"]
+    H58["#58 Línea base con diagnóstico público"]
+    H63["#63 H6 · memoria de fallos"]
+    H65["#65 H7 · transferencia y contaminación"]
+    H98["#98 H8 · siembra no léxica<br/>(abierto)"]
 
     E0 --> E1 --> V
     V --> H42 --> H44
@@ -927,6 +971,8 @@ flowchart TB
     V --> H45
     H44 --> H46
     H45 --> H46
+    H46 --> H58 --> H63 --> H65
+    H46 -.-> H98
 ```
 
 La estimación por tallas y el modelo asignado a cada issue están en [`docs/estimation.md`](docs/estimation.md); cómo
