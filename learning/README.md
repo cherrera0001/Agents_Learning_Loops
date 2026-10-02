@@ -110,8 +110,38 @@ python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: b
 # 3. escribir learning/episodes/NNN-issue-<n>.json (con estimate y outcome)
 python -m scripts.devlog rebuild                     # 4. CONSOLIDATE
 # 5. commit del episodio y dev_memory.json dentro del mismo PR
-# 6. tras el merge verificado (mergedAt): CONFIRMAR (orquestador) y mover a Done
+# 6. tras el merge verificado (mergedAt): CONFIRMAR (orquestador): Verificación = Verificada
 ```
 
 Los pasos, responsables y reglas del registro están en
 [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto); aquí no se repiten.
+
+## Chequeo del tablero
+
+`python -m scripts.devlog board` cruza issues, tarjetas del Project #5 y episodios, sin escribir nada:
+
+```bash
+python -m scripts.devlog board --since 76            # lee GitHub con gh (--since es obligatorio)
+python -m scripts.devlog board --snapshot <dir>      # lee <dir>/items.json e issues.json
+```
+
+Con `gh` hace falta `GH_TOKEN` de la cuenta dueña del Project (`cherrera0001`): otra cuenta no ve el
+Project y el comando lo dice. La instantánea es la salida de
+`gh project item-list 5 --owner cherrera0001 --limit 300 --format json` (`items.json`) y de
+`gh issue list --repo cherrera0001/Agents_Learning_Loops --state all --json number,state,stateReason,title,labels,closedAt`
+(`issues.json`); `subissues.json` es opcional: `{"<épica>": [{"number": 1, "state": "OPEN"}]}`. Sin
+`--since` (solo con instantánea) las reglas 2 a 4 no se evalúan, y sin `subissues.json` tampoco la 6; ambos
+casos se avisan por stderr. Una línea por hallazgo: `R<regla> #<issue>: <mensaje>`.
+
+| Regla | Hallazgo | Alcance |
+|---|---|---|
+| 1 | Issue cerrado con tarjeta fuera de *Done*, o tarjeta en *Done* con issue abierto | todos |
+| 2 | Tarjeta en *In Progress* o *Done* sin *Talla*, *Puntos*, *Incertidumbre* o *Riesgo* | `>= --since`; sin épicas |
+| 3 | Tarjeta en *Done* sin *Verificación* = Verificada, *Modelo usado* o *Escaló* | `>= --since`; épicas: solo *Verificación* |
+| 4 | Issue cerrado como completado sin episodio cuyo `ref` cite `#n` exacto (ni `PR #n`, ni `otro/repo#n`) | `>= --since`; sin épicas |
+| 5 | Episodio con `estimate.size` distinta de la *Talla* del tablero del issue que cita | todos |
+| 6 | Épica cerrada con subissues abiertos | épicas |
+
+Códigos de salida: `0` sin hallazgos, `1` con hallazgos, `2` si no se pudo leer la fuente (`gh` ausente,
+cuenta que no ve el Project, lectura incompleta o instantánea incompleta); un `2` nunca se informa como
+«sin hallazgos». No corre en CI: el token de CI no ve Projects de usuario.

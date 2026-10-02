@@ -1,0 +1,25 @@
+{
+  "seq": 41,
+  "id": "issue-84",
+  "goal": "Lectura del ciclo 1 del piloto de estimación y regla del Done automático del tablero",
+  "ref": "#84, épica #75",
+  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 1, "risk": 2, "planned_model": "Opus 5.5", "planned_effort": "xhigh"},
+  "outcome": {"used_model": "Opus 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "lecciones del episodio 035 sobre afirmar sin leer y sobre la cuenta que no ve el Project"},
+    {"action": "confirm_closure", "success": false, "error": "el flujo decía que solo el orquestador mueve a Done, pero la automatización del tablero movió #77, #78 y #79 a Done al mergear, antes de CONFIRMAR; el chequeo lo señaló en #77 (regla 3)"},
+    {"action": "update_docs", "success": true, "note": "Done deja de ser el cierre confirmado en CONTRIBUTING.md, harness.md, agentes.md, AGENTS.md, learning/README.md y la skill confirmar-cierre: lo es Verificación = Verificada, y CONFIRMAR termina con el chequeo del tablero"},
+    {"action": "gh_project_update", "success": false, "error": "GraphQL: API rate limit exceeded: el guion que fija campos listaba el tablero entero por cada llamada y la cuota de 5000 puntos por hora es compartida con los subagentes y con los sondeos de CI"},
+    {"action": "gh_project_update", "success": true, "note": "ids de campos y tarjetas en caché local, sondeo de CI por REST (check-runs) en vez de gh pr view; escrituras repetidas tras el reinicio de la cuota"},
+    {"action": "confirm_closure", "success": false, "error": "el comentario de cierre de #79 citó los tokens de la transcripción antes de que el subagente terminara: 14 563 de salida frente a 14 670 finales"},
+    {"action": "confirm_closure", "success": true, "note": "#77, #78 y #79 confirmados con mergedAt, 12/12 en main y evidencia enlazada; devlog board --since 76 sin hallazgos; la lectura usa las cifras finales de las transcripciones"},
+    {"action": "update_docs", "success": true, "note": "lectura del ciclo 1 en docs/piloto-estimacion.md: cada medida con numerador, denominador y fuente; éxito parcial 4 de 8, sin declarar validado el piloto"},
+    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+  ],
+  "lessons": [
+    "Una regla sobre quién cambia un estado debe comprobarse contra las automatizaciones del sistema: en el Project #5 el merge mueve la tarjeta a Done, así que el cierre confirmado tiene que ser otro campo",
+    "La cuota de GraphQL de GitHub es por usuario y la comparten el orquestador, los subagentes y los sondeos: cachear ids, sondear CI por REST y no listar el tablero entero por cada escritura",
+    "Los tokens de una transcripción se leen cuando el subagente ya terminó; una cifra tomada antes es provisional y hay que decirlo",
+    "Una lectura de piloto escrita por quien lo diseñó solo vale si cada cifra lleva su fuente y lo que no estaba pre-registrado se marca como tal"
+  ]
+}

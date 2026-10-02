@@ -48,13 +48,17 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
 7. **CONFIRMAR** (orquestador), después del merge squash **verificado** (`mergedAt`) y no antes. Se
    comprueba el criterio de cierre según el tipo de trabajo y se escribe en el tablero y en el issue:
    *Verificación* = *Verificada* con la evidencia enlazada, *Modelo usado* y *Escaló*. Si falla,
-   *Verificación* = *Fallida* y el issue sigue abierto. Procedimiento: skill
+   *Verificación* = *Fallida* y el issue se reabre si el merge lo cerró. Procedimiento: skill
    [`confirmar-cierre`](skills/confirmar-cierre/SKILL.md).
-8. **Done**: solo el orquestador mueve la tarjeta. En el Project #5, *Done* cierra el issue
-   automáticamente: por eso no se mueve antes de CONFIRMAR.
+8. **Done**: una tarjeta en *Done* **no es un cierre confirmado**; el cierre confirmado es
+   *Verificación* = *Verificada*. Las automatizaciones del Project #5 actúan en los dos sentidos: al
+   mergear un PR con `Closes #<n>` mueven la tarjeta a *Done* antes de CONFIRMAR, y mover una tarjeta a
+   *Done* a mano cierra el issue. Por eso nadie mueve a mano antes de CONFIRMAR, y CONFIRMAR termina con
+   `python -m scripts.devlog board --since <n>` sin hallazgos: su regla 3 señala toda tarjeta en *Done*
+   sin verificar.
 
-Responsables: el **orquestador** estima, confirma y mueve a *Done*; el **implementador** pasa a
-*In Progress*, implementa y registra el episodio ([roles](docs/entorno/agentes.md)).
+Responsables: el **orquestador** estima y confirma; el **implementador** pasa a *In Progress*,
+implementa y registra el episodio ([roles](docs/entorno/agentes.md)).
 
 ### Reglas del registro
 
@@ -66,7 +70,8 @@ Responsables: el **orquestador** estima, confirma y mueve a *Done*; el **impleme
 - **La verificación del cierre no va en el episodio.** El episodio se escribe antes del merge y
   quedaría obsoleto; la verificación vive en el tablero y en el issue.
 - Campos, métricas y límites del piloto: [`docs/piloto-estimacion.md`](docs/piloto-estimacion.md).
-  El chequeo de coherencia del tablero llegará con `python -m scripts.devlog board` (otro issue).
+  Chequeo de coherencia entre issues, tablero y episodios, de solo lectura:
+  `python -m scripts.devlog board --since <n>` ([reglas](learning/README.md#chequeo-del-tablero)).
 
 ## Jerarquía: épica, issue, tareas
 
