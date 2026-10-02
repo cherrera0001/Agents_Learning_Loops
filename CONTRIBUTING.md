@@ -22,7 +22,7 @@ diagrama:
 
 ```text
 Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar (rama + PR) → episodio
-→ CONSOLIDATE → CONFIRMAR → Done
+→ CONSOLIDATE → REVISAR → merge → CONFIRMAR → Done
 ```
 
 0. **Issue listo**: escrito con la plantilla [`issue.md`](.github/ISSUE_TEMPLATE/issue.md) (o
@@ -48,7 +48,8 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
    ([formato](learning/README.md#formato-de-un-episodio)).
 6. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
 
-   Antes del merge, el orquestador encarga la **revisión** del PR a un revisor independiente del autor
+   **REVISAR** (antes del merge): el orquestador encarga la revisión del PR a un revisor independiente
+   del autor
    ([`revisor-codigo`](.claude/agents/revisor-codigo.md) o [`revisor-docs`](.claude/agents/revisor-docs.md),
    según lo que toque; ambos si toca código y documentos), y decide el merge con su informe y con el CI en
    verde. El revisor informa y no edita; las correcciones vuelven al implementador o las hace el
@@ -103,6 +104,9 @@ pytest --cov                                # unit + integration, cobertura ≥ 
 python -m scripts.export_schema --check     # specs/memory_schema.json sincronizado
 python -m scripts.mutation_check            # cada propiedad detecta su defecto inyectado
 ```
+
+`mutation_check` tarda más de diez minutos. Un subagente implementador o revisor no la lanza en local
+salvo que el encargo lo pida: lee su resultado en el CI del PR.
 
 ## Tests
 

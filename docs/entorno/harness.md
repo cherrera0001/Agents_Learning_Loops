@@ -50,7 +50,8 @@ flowchart LR
     I --> PR["PR con<br/>Closes #&lt;n&gt;"]
     PR --> E["episodio<br/>learning/episodes/"]
     E --> RB["rebuild<br/>devlog rebuild"]
-    RB --> M["merge del orquestador<br/>verificado por mergedAt"]
+    RB --> RV["REVISAR<br/>revisor independiente"]
+    RV --> M["merge del orquestador<br/>verificado por mergedAt"]
     M --> CF["CONFIRMAR<br/>criterio de cierre"]
     CF --> D["Done"]
 ```
@@ -61,8 +62,10 @@ flowchart LR
 4. Rama `issue-<n>-<tema>`; implementar con tests y abrir el PR.
 5. Registrar el episodio `learning/episodes/NNN-issue-<n>.json` (con `estimate` y `outcome`).
 6. `python -m scripts.devlog rebuild`.
-7. El orquestador hace el merge **verificado** por `mergedAt` y CONFIRMAR: comprueba el criterio de cierre
-   de la tabla siguiente y registra *Verificación*, *Modelo usado* y *Escaló*.
+7. REVISAR: el orquestador encarga la revisión a un revisor independiente ([roles](agentes.md#revisor)) y,
+   con su informe y el CI en verde, hace el merge **verificado** por `mergedAt`. Después, CONFIRMAR:
+   comprueba el criterio de cierre de la tabla siguiente y registra *Verificación*, *Modelo usado* y
+   *Escaló*.
 8. *Done* no es el cierre confirmado: la automatización del tablero ya pone la tarjeta en *Done* al mergear
    un PR con `Closes`. El cierre confirmado es *Verificación* = *Verificada*, y CONFIRMAR termina con
    `python -m scripts.devlog board --since <n>` sin hallazgos.

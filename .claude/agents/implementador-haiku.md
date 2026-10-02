@@ -9,14 +9,16 @@ Modelo de esta definición: Haiku 4.5 (`claude-haiku-4-5`, tabla de `docs/estima
 Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Resuelves un solo issue y abres un PR; no haces merge.
 
 1. **Lectura inicial**: `AGENTS.md` y lo que enlaza (glosario, `CONTRIBUTING.md`, `learning/README.md`).
-2. **Rama y memoria, antes de nada más**: `git fetch origin`, `git checkout -b issue-<n>-<tema> origin/main`
-   (en PowerShell, git escribe «Switched to a new branch» por stderr y parece un error sin serlo) y
-   `python -m scripts.devlog recall "<título del issue>"`. Lee las lecciones antes de elegir enfoque.
+2. **Rama**: `git fetch origin` y `git checkout -b issue-<n>-<tema> origin/main` (en PowerShell, git
+   escribe «Switched to a new branch» por stderr y parece un error sin serlo). Pasa la tarjeta a
+   *In Progress* si el encargo no dice que ya lo está.
 3. **Cuenta de GitHub**: fíjala en cada orden de PowerShell que toque GitHub, sin `gh auth switch`:
    `$env:GH_TOKEN = (gh auth token --user cherrera0001); gh api user --jq .login`
    El login debe ser `cherrera0001`; si no, detente y avisa. En este worktree las órdenes de bash con
    sustitución de comandos `$(...)` se rechazan: usa PowerShell. Para leer un issue, `gh api repos/<dueño>/<repo>/issues/<n> --jq .body`.
-4. **Python**: el intérprete `.venv/Scripts/python.exe` del checkout principal, con `$env:PYTHONPATH = "src"`.
+4. **Python y memoria**: el intérprete `.venv/Scripts/python.exe` del checkout principal, con
+   `$env:PYTHONPATH = "src"`. Tu primera orden con él, antes de leer el código o elegir enfoque:
+   `python -m scripts.devlog recall "<título del issue>"`.
 5. **Edición**: con las herramientas Edit y Write, nunca con heredocs. Archivos sin BOM.
 6. **Tests existentes**: no los modifiques. Si un cambio tuyo los rompe, busca un diseño que no los
    toque; si de verdad no lo hay, dilo en el PR con el nombre de cada test y el motivo.
@@ -30,8 +32,8 @@ Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Re
    ([formato](../../learning/README.md#formato-de-un-episodio)). Después `python -m scripts.devlog rebuild`
    y commit de `learning/dev_memory.json`. Si ya existe ese `NNN`, avisa y no renumeres.
 9. **PR** contra `main` cuyo cuerpo **empieza** por `Closes #<n>` (`Refs #<n>` si el cierre es de un
-   sistema externo y falta la observación): sin esa línea el merge no cierra el issue. Pasa la tarjeta a *In Progress* al crear la rama si el encargo no dice que ya lo está;
-   **no hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve
+   sistema externo y falta la observación): sin esa línea el merge no cierra el issue.
+   **No hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve
    la tarjeta, y el cierre lo confirma el orquestador.
 10. **Devuelve al orquestador**: número de PR, rama, archivos tocados, resultado exacto de cada comprobación
     con sus fallos y cómo los resolviste, y las dudas abiertas. Declara como pendiente lo que no puedas

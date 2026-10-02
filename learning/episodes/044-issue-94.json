@@ -3,21 +3,76 @@
   "id": "issue-94",
   "goal": "Lectura del ciclo 2 y lectura final de los 8 issues del piloto de estimación; cierre del piloto",
   "ref": "#94, épica #75",
-  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 1, "risk": 2, "planned_model": "Opus 5.5", "planned_effort": "no declarado"},
-  "outcome": {"used_model": "Opus 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "transcript",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
   "steps": [
-    {"action": "recall_memory", "success": true, "note": "lecciones de los episodios 035 y 041: cada cifra con su fuente, tokens solo de subagentes ya terminados, cuota de GraphQL compartida"},
-    {"action": "confirm_closure", "success": false, "error": "#85 seguía abierto tras el merge de su PR: la entrega no llevaba Closes en el cuerpo y nadie lo comprobó antes de mergear"},
-    {"action": "confirm_closure", "success": true, "note": "con Verificación = Verificada ya registrada, la tarjeta de #85 pasó a Done y eso cerró el issue; #84 a #87 confirmados con mergedAt, 12/12 en main y evidencia enlazada"},
-    {"action": "run_demo", "success": true, "note": "una sola instantánea del tablero; devlog pilot --since 76 --until 87 sobre ella da 8 de 8 con estimación y verificación, 1 de 8 escalado; devlog board --since 76 sin hallazgos"},
-    {"action": "update_docs", "success": true, "note": "lectura del ciclo 2 y lectura final en docs/piloto-estimacion.md: lo que calcula el comando separado de lo contado a mano; criterios de éxito y condiciones de parada con veredicto uno por uno; brazo Haiku con una entrega y una verificación fallida"},
-    {"action": "update_docs", "success": true, "note": "definiciones de implementador: recall como primera orden, Closes al principio del PR, mutaciones leídas en el CI, tests existentes intactos; CONTRIBUTING.md: revisión independiente antes del merge; § 2.6 con el estado del brazo Haiku"},
-    {"action": "rebuild_memory", "success": true, "note": "dev_memory.json regenerado"}
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "lecciones de los episodios 035 y 041: cada cifra con su fuente, tokens solo de subagentes ya terminados, cuota de GraphQL compartida"
+    },
+    {
+      "action": "merge_pr",
+      "success": false,
+      "error": "el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado"
+    },
+    {
+      "action": "confirm_closure",
+      "success": true,
+      "note": "con Verificación = Verificada ya registrada, la tarjeta de #85 pasó a Done y eso cerró el issue; #84 a #87 confirmados con mergedAt, 12/12 en main y evidencia enlazada"
+    },
+    {
+      "action": "confirm_closure",
+      "success": true,
+      "note": "una sola instantánea del tablero; devlog pilot --since 76 --until 87 sobre ella da 8 de 8 con estimación y verificación y 1 de 8 escalado; devlog board --since 76 sobre la misma instantánea, sin hallazgos y con la regla 6 sin evaluar por falta de subissues"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "lectura del ciclo 2 y lectura final en docs/piloto-estimacion.md: lo que calcula el comando separado de lo contado a mano; criterios de éxito y condiciones de parada con veredicto uno por uno; brazo Haiku con una entrega y una verificación fallida"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "definiciones de implementador: recall como primera orden, Closes al principio del PR, mutaciones leídas en el CI, tests existentes intactos; CONTRIBUTING.md: revisión independiente antes del merge; § 2.6 con el estado del brazo Haiku"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "la lectura final daba por cumplidos dos criterios sin fuente fechada, declaraba no activada una condición de parada que lo está con la lectura literal, contaba 4 de 8 Done adelantados cuando son 6, y atribuía al modelo Haiku fallos que en parte eran del encargo; el flujo añadía la revisión sin tocar diagramas ni listas"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "revisión del PR #95 con el procedimiento de revisor-docs (subagente Sonnet): unas 80 afirmaciones comprobadas, 71 coinciden; las cifras del comando y los tokens, al dígito; corregidos los veredictos, el recuento, el texto del brazo Haiku, los tres diagramas, harness.md, AGENTS.md y las definiciones de implementador"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "dev_memory.json regenerado"
+    }
   ],
   "lessons": [
     "Antes de mergear un PR, comprobar que su cuerpo lleva Closes #n: sin esa línea el issue queda abierto aunque el trabajo esté verificado",
     "Una lectura final separa lo que calcula un comando de lo que se contó a mano, y da un veredicto explícito a cada criterio pre-registrado, también a los que se cumplen con reservas",
-    "Un archivo derivado versionado en cada PR convierte los PR paralelos en una cola: seis PR del piloto necesitaron integrar main y regenerar dev_memory.json a mano",
-    "Un piloto que solo mide si el registro se sostiene no dice nada sobre la calidad de las tallas: dejarlo escrito para que nadie lea «criterios cumplidos» como «tallas validadas»"
+    "Un archivo derivado versionado en cada PR convierte los PR paralelos en una cola: siete PR del piloto necesitaron integrar main y regenerar dev_memory.json a mano",
+    "Un piloto que solo mide si el registro se sostiene no dice nada sobre la calidad de las tallas: dejarlo escrito para que nadie lea «criterios cumplidos» como «tallas validadas»",
+    "Una condición de parada sin definición operativa no detiene nada: definir cómo se cuenta y contarla issue a issue, no al final",
+    "Un veredicto «cumplido» necesita una fuente fechada que no sea la palabra del autor; si solo existe para parte de los casos, se dice cuántos"
   ]
 }

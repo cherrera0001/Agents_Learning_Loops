@@ -134,7 +134,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 1,
-      "last_accessed_at": 43,
+      "last_accessed_at": 28,
       "activation_level": 0.0
     },
     {
@@ -870,7 +870,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 3,
-      "last_accessed_at": 42,
+      "last_accessed_at": 43,
       "activation_level": 0.0
     },
     {
@@ -2063,7 +2063,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 6,
-      "last_accessed_at": 32,
+      "last_accessed_at": 43,
       "activation_level": 0.0
     },
     {
@@ -5320,7 +5320,7 @@
         "kind": "lesson"
       },
       "created_at": 15,
-      "last_accessed_at": 42,
+      "last_accessed_at": 43,
       "activation_level": 0.0
     },
     {
@@ -13525,7 +13525,7 @@
         "kind": "lesson"
       },
       "created_at": 34,
-      "last_accessed_at": 43,
+      "last_accessed_at": 40,
       "activation_level": 0.0
     },
     {
@@ -16736,12 +16736,12 @@
     {
       "id": "outcome:43:1",
       "type": "Outcome",
-      "label": "failure: #85 seguía abierto tras el merge de su PR: la entrega no llevaba Closes en el cuerpo y nadie lo comprobó antes de mergear",
+      "label": "failure: el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado",
       "embedding": null,
       "metadata": {
         "success": false,
         "latency_ms": 0.0,
-        "error": "#85 seguía abierto tras el merge de su PR: la entrega no llevaba Closes en el cuerpo y nadie lo comprobó antes de mergear",
+        "error": "el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado",
         "episode": 43,
         "step": 1
       },
@@ -16750,9 +16750,9 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:error:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "id": "concept:error:el_pr_90_se_merge_sin_closes_en_su_cuerp",
       "type": "Concept",
-      "label": "#85 seguía abierto tras el merge de su PR: la entrega no llevaba Closes en el cuerpo y nadie lo comprobó antes de mergear",
+      "label": "el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado",
       "embedding": null,
       "metadata": {
         "kind": "error"
@@ -16828,12 +16828,12 @@
     {
       "id": "outcome:43:6",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: la lectura final daba por cumplidos dos criterios sin fuente fechada, declaraba no activada una condición de parada que lo está con la lectura literal, contaba 4 de 8 Done adelantados cuando son 6, y atribuía al modelo Haiku fallos que en parte eran del encargo; el flujo añadía la revisión sin tocar diagramas ni listas",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
-        "error": null,
+        "error": "la lectura final daba por cumplidos dos criterios sin fuente fechada, declaraba no activada una condición de parada que lo está con la lectura literal, contaba 4 de 8 Done adelantados cuando son 6, y atribuía al modelo Haiku fallos que en parte eran del encargo; el flujo añadía la revisión sin tocar diagramas ni listas",
         "episode": 43,
         "step": 6
       },
@@ -16842,9 +16842,77 @@
       "activation_level": 0.0
     },
     {
-      "id": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "id": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
       "type": "Concept",
-      "label": "'confirm_closure' falló con '#85 seguía abierto tras el merge de su PR: la entrega no llevaba Closes en el cuerpo y nadie lo comprobó antes de mergear'",
+      "label": "la lectura final daba por cumplidos dos criterios sin fuente fechada, declaraba no activada una condición de parada que lo está con la lectura literal, contaba 4 de 8 Done adelantados cuando son 6, y atribuía al modelo Haiku fallos que en parte eran del encargo; el flujo añadía la revisión sin tocar diagramas ni listas",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:43:7",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 43,
+        "step": 7
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:43:8",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 43,
+        "step": 8
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "type": "Concept",
+      "label": "'merge_pr' falló con 'el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:merge_pr:confirm_closure",
+      "type": "Concept",
+      "label": "Si 'merge_pr' falla con 'el PR #90 se mergeó sin Closes en su cuerpo y nadie lo comprobó antes: #85 siguió abierto con el trabajo ya verificado', usar 'confirm_closure'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "type": "Concept",
+      "label": "'update_docs' falló con 'la lectura final daba por cumplidos dos criterios sin fuente fechada, declaraba no activada una condición de parada que lo está con la lectura literal, contaba 4 de 8 Done adelantados cuando son 6, y atribuía al modelo Haiku fallos que en parte eran del encargo; el flujo añadía la revisión sin tocar diagramas ni listas'",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -16880,7 +16948,7 @@
     {
       "id": "concept:lesson:note:un_archivo_derivado_versionado_en_cada_pr_convierte_los_pr_p",
       "type": "Concept",
-      "label": "Un archivo derivado versionado en cada PR convierte los PR paralelos en una cola: seis PR del piloto necesitaron integrar main y regenerar dev_memory.json a mano",
+      "label": "Un archivo derivado versionado en cada PR convierte los PR paralelos en una cola: siete PR del piloto necesitaron integrar main y regenerar dev_memory.json a mano",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -16893,6 +16961,30 @@
       "id": "concept:lesson:note:un_piloto_que_solo_mide_si_el_registro_se_sostiene_no_dice_n",
       "type": "Concept",
       "label": "Un piloto que solo mide si el registro se sostiene no dice nada sobre la calidad de las tallas: dejarlo escrito para que nadie lea «criterios cumplidos» como «tallas validadas»",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "type": "Concept",
+      "label": "Una condición de parada sin definición operativa no detiene nada: definir cómo se cuenta y contarla issue a issue, no al final",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 43,
+      "last_accessed_at": 43,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "type": "Concept",
+      "label": "Un veredicto «cumplido» necesita una fuente fechada que no sea la palabra del autor; si solo existe para parte de los casos, se dice cuántos",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -17788,12 +17880,12 @@
       "source": "action:run_demo",
       "target": "concept:error:r_plica_54_54_grupos_distintos_en_la_pro",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.10485760000000002,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 8,
+      "last_updated": 28,
+      "count": 7,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.472367
     },
     {
       "source": "action:run_demo",
@@ -17832,12 +17924,12 @@
       "source": "action:run_demo",
       "target": "concept:error:pagespeed_insights_sin_api_key_respondi_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.13107200000000002,
+      "weight": 0.16384,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 6,
+      "last_updated": 28,
+      "count": 5,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.472367
     },
     {
       "source": "action:run_demo",
@@ -17871,17 +17963,6 @@
       "count": 0,
       "metadata": {},
       "recency_factor": 0.472367
-    },
-    {
-      "source": "action:run_demo",
-      "target": "outcome:43:3",
-      "relation": "LEADS_TO",
-      "weight": 1.0,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 0,
-      "metadata": {},
-      "recency_factor": 1.0
     },
     {
       "source": "action:run_tests",
@@ -23266,12 +23347,12 @@
       "source": "action:review_code",
       "target": "concept:error:la_auditor_a_afirm_que_la_talla_y_el_tab",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.053687091200000016,
+      "weight": 0.04294967296000001,
       "decay_factor": 0.05,
-      "last_updated": 42,
-      "count": 10,
+      "last_updated": 43,
+      "count": 11,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "action:review_code",
@@ -23360,6 +23441,17 @@
       "count": 0,
       "metadata": {},
       "recency_factor": 0.951229
+    },
+    {
+      "source": "action:review_code",
+      "target": "outcome:43:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "action:rebuild_memory",
@@ -23583,7 +23675,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:43:6",
+      "target": "outcome:43:8",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -25539,6 +25631,28 @@
       "decay_factor": 0.05,
       "last_updated": 43,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:43:6",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -28677,6 +28791,28 @@
       "count": 0,
       "metadata": {},
       "recency_factor": 0.57695
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "outcome:43:1",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:merge_pr",
+      "target": "concept:error:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "outcome:6:11",
@@ -41602,12 +41738,12 @@
       "source": "concept:lesson:fallback:update_docs:review_code",
       "target": "action:review_code",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.784,
+      "weight": 0.8704000000000001,
       "decay_factor": 0.05,
-      "last_updated": 42,
-      "count": 3,
+      "last_updated": 43,
+      "count": 4,
       "metadata": {},
-      "recency_factor": 0.951229
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:review_code",
@@ -41712,12 +41848,12 @@
       "source": "concept:lesson:fallback:update_docs:review_code",
       "target": "concept:topic:ciclo",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 35,
-      "count": 1,
+      "last_updated": 43,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.67032
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:update_docs:review_code",
@@ -41883,6 +42019,72 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.951229
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:final",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:issues",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:update_docs:review_code",
+      "target": "concept:topic:cierre",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:note:los_n_meros_citados_en_la_documentaci_n_divergen_del_c_digo_",
@@ -75789,10 +75991,10 @@
       "source": "action:confirm_closure",
       "target": "concept:error:la_cuenta_activa_del_llavero_de_gh_vincu",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.16384,
+      "weight": 0.13107200000000002,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 5,
+      "count": 6,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -75800,10 +76002,10 @@
       "source": "action:confirm_closure",
       "target": "concept:error:se_dej_en_duda_el_cierre_de_vt_landing_1",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 4,
+      "count": 5,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -75844,10 +76046,10 @@
       "source": "action:confirm_closure",
       "target": "concept:error:el_flujo_dec_a_que_solo_el_orquestador_m",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.256,
+      "weight": 0.2048,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 3,
+      "count": 4,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -75855,21 +76057,10 @@
       "source": "action:confirm_closure",
       "target": "concept:error:el_comentario_de_cierre_de_79_cit_los_to",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.256,
+      "weight": 0.2048,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 3,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "action:confirm_closure",
-      "target": "outcome:43:1",
-      "relation": "LEADS_TO",
-      "weight": 1.0,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 0,
+      "count": 4,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -75886,12 +76077,12 @@
     },
     {
       "source": "action:confirm_closure",
-      "target": "concept:error:85_segu_a_abierto_tras_el_merge_de_su_pr",
-      "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "target": "outcome:43:3",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 2,
+      "count": 0,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -76460,12 +76651,12 @@
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "action:confirm_closure",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.784,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 3,
+      "last_updated": 40,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
@@ -76504,23 +76695,23 @@
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "concept:topic:piloto",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.784,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 3,
+      "last_updated": 40,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "concept:topic:estimacion",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.784,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 3,
+      "last_updated": 40,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
@@ -76559,12 +76750,12 @@
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "concept:topic:issues",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.4,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 2,
+      "last_updated": 34,
+      "count": 1,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.637628
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
@@ -76592,23 +76783,23 @@
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "concept:topic:lectura",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.4,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 2,
+      "last_updated": 40,
+      "count": 1,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
       "target": "concept:topic:ciclo",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.4,
       "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 2,
+      "last_updated": 40,
+      "count": 1,
       "metadata": {},
-      "recency_factor": 1.0
+      "recency_factor": 0.860708
     },
     {
       "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
@@ -76642,28 +76833,6 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.860708
-    },
-    {
-      "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
-      "target": "concept:topic:final",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:fallback:confirm_closure:confirm_closure",
-      "target": "concept:topic:cierre",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:confirm_closure:se_dej_en_duda_el_cierre_de_vt_landing_1",
@@ -89207,36 +89376,25 @@
     },
     {
       "source": "goal:43",
-      "target": "action:confirm_closure",
+      "target": "action:merge_pr",
       "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
+      "weight": 0.35,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 2,
+      "count": 1,
       "metadata": {
-        "step": 2
+        "step": 1
       },
       "recency_factor": 1.0
     },
     {
       "source": "goal:43",
       "target": "action:confirm_closure",
-      "relation": "RESOLVED_BY",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "goal:43",
-      "target": "action:run_demo",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.755,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 1,
+      "count": 2,
       "metadata": {
         "step": 3
       },
@@ -89244,12 +89402,12 @@
     },
     {
       "source": "goal:43",
-      "target": "action:run_demo",
+      "target": "action:confirm_closure",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -89257,12 +89415,12 @@
       "source": "goal:43",
       "target": "action:update_docs",
       "relation": "LEADS_TO",
-      "weight": 0.755,
+      "weight": 0.5285,
       "decay_factor": 0.05,
       "last_updated": 43,
-      "count": 2,
+      "count": 3,
       "metadata": {
-        "step": 5
+        "step": 6
       },
       "recency_factor": 1.0
     },
@@ -89279,6 +89437,30 @@
     },
     {
       "source": "goal:43",
+      "target": "action:review_code",
+      "relation": "LEADS_TO",
+      "weight": 0.65,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {
+        "step": 7
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:43",
+      "target": "action:review_code",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:43",
       "target": "action:rebuild_memory",
       "relation": "LEADS_TO",
       "weight": 0.65,
@@ -89286,7 +89468,7 @@
       "last_updated": 43,
       "count": 1,
       "metadata": {
-        "step": 6
+        "step": 8
       },
       "recency_factor": 1.0
     },
@@ -89303,7 +89485,7 @@
     },
     {
       "source": "outcome:43:1",
-      "target": "concept:error:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "target": "concept:error:el_pr_90_se_merge_sin_closes_en_su_cuerp",
       "relation": "FAILED_DUE_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -89313,7 +89495,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:error:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:error:el_pr_90_se_merge_sin_closes_en_su_cuerp",
       "target": "action:confirm_closure",
       "relation": "RESOLVED_BY",
       "weight": 0.4,
@@ -89324,7 +89506,128 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "outcome:43:6",
+      "target": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "action:review_code",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "action:merge_pr",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:error:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:ciclo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:final",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:issues",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:merge_pr:el_pr_90_se_merge_sin_closes_en_su_cuerp",
+      "target": "concept:topic:cierre",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "action:confirm_closure",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89335,18 +89638,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
-      "target": "concept:error:85_segu_a_abierto_tras_el_merge_de_su_pr",
-      "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
-      "decay_factor": 0.05,
-      "last_updated": 43,
-      "count": 1,
-      "metadata": {},
-      "recency_factor": 1.0
-    },
-    {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:lectura",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89357,7 +89649,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:ciclo",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89368,7 +89660,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:final",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89379,7 +89671,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:issues",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89390,7 +89682,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:piloto",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89401,7 +89693,7 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
       "target": "concept:topic:estimacion",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89412,7 +89704,106 @@
       "recency_factor": 1.0
     },
     {
-      "source": "concept:lesson:avoid:confirm_closure:85_segu_a_abierto_tras_el_merge_de_su_pr",
+      "source": "concept:lesson:fallback:merge_pr:confirm_closure",
+      "target": "concept:topic:cierre",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:ciclo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:final",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:issues",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:la_lectura_final_daba_por_cumplidos_dos_",
       "target": "concept:topic:cierre",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
@@ -89765,6 +90156,182 @@
     },
     {
       "source": "concept:lesson:note:un_piloto_que_solo_mide_si_el_registro_se_sostiene_no_dice_n",
+      "target": "concept:topic:cierre",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "goal:43",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:ciclo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:final",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:issues",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:una_condici_n_de_parada_sin_definici_n_operativa_no_detiene_",
+      "target": "concept:topic:cierre",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "goal:43",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:lectura",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:ciclo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:final",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:issues",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:piloto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
+      "target": "concept:topic:estimacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 43,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:un_veredicto_cumplido_necesita_una_fuente_fechada_que_no_sea",
       "target": "concept:topic:cierre",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
