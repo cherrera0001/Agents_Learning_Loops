@@ -45,16 +45,10 @@ o que cite una obra.
 6. **Veto.** Se veta toda cita sin identificador abierto, toda cita cuyo mecanismo no esté en el código y
    toda frase que use el paper como prueba de un resultado propio.
 
-## Fichas abiertas el 2026-10-02
+## Fichas
 
-| Mecanismo en el código | Obra | Identificador abierto | Estado |
-|---|---|---|---|
-| Regla hebbiana (`consolidation.py`, `hebbian`) | D. O. Hebb, *The Organization of Behavior*. La edición abierta es la de Psychology Press, 2005; el año de la primera edición no figura en la página abierta | DOI `10.4324/9781410612403`, ISBN 9781410612403 (página del editor y registro de Crossref) | citable como edición de 2005 |
-| Activación propagada (`associative.py`) | A. M. Collins y E. F. Loftus (1975), «A spreading-activation theory of semantic processing», *Psychological Review* 82(6), 407-428 | DOI `10.1037/0033-295X.82.6.407` (registro de Crossref; la página de APA no cargó) | citable |
-| Aprendizaje experiencial (el código no usa el término; la cadena experiencia → reflexión está en README § 7.2) | D. A. Kolb, *Experiential Learning: Experience as the Source of Learning and Development*, 2.ª ed., Pearson FT Press, 2014 | ISBN 9780133892406 (página del editor) | citable solo como origen del término |
-| Transferencia negativa (`docs/results/h4-associative-vs-history.md`) | S. J. Pan y Q. Yang (2010), «A Survey on Transfer Learning», *IEEE TKDE* 22(10), 1345-1359 | DOI `10.1109/TKDE.2009.191` (registro de Crossref, sin resumen; la página de IEEE llegó vacía) | **pendiente**: no se leyó que trate la transferencia negativa |
-| Selección de casos (condición C: top-1 de lecciones) | A. Aamodt y E. Plaza (1994), «Case-Based Reasoning: Foundational Issues, Methodological Variations, and System Approaches», *AI Communications* 7(1), 39-59 | DOI `10.3233/AIC-1994-7104` (registro de Crossref; el editor respondió 403) | citable |
-| Ninguno: el repositorio no nombra HippoRAG | B. Jiménez Gutiérrez, Y. Shu, Y. Gu, M. Yasunaga e Y. Su (2024), «HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models», NeurIPS 2024 | arXiv `2405.14831` (página de arXiv) | solo como inspiración declarada; su resumen describe Personalized PageRank, que este código no implementa |
+Las fichas no viven en esta skill: van al registro fechado de cada revisión. El primero es
+[`docs/entorno/revision-texto-publico-2026-10-02.md`](../../docs/entorno/revision-texto-publico-2026-10-02.md).
 
 ## Informe
 

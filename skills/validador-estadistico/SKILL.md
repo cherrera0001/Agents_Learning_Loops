@@ -55,24 +55,16 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
    historial textual empató con la asociativa. En H4 las dos condiciones con memoria empeoraron el primer
    intento frente a no tener memoria (0/18 frente a 6/18).
 9. **Tokens y costo no están en los recibos.** Prometidos como métrica ya medida, veto.
-   **Firma.** Un texto solo está firmado si el validador lo leyó entero en esa versión exacta y su
-   respuesta cita el conteo de caracteres sin vetar nada.
 10. Una cifra vigente que ya no coincide con su fuente es falsa, aunque fuera cierta en una versión
-   anterior; una cifra fechada («tras el ciclo v0.2») se comprueba contra esa fecha.
+    anterior; una cifra fechada («tras el ciclo v0.2») se comprueba contra esa fecha.
+11. **Firma.** Un texto solo está firmado si el validador lo leyó entero en esa versión exacta y su
+    respuesta cita el conteo de caracteres sin vetar nada.
 
-## Vetos de contenido
+## Vetos obligatorios
 
-Obligatorios si aparecen, para los tres roles:
-
-| Frase | Por qué | Fuente |
-|---|---|---|
-| Una lección se promueve a skill, como si ya ocurriera | `promoted_to_skill` sigue sin implementarse | Protocolo: «Skill promotion and contradiction resolution remain future work»; [glosario](../../docs/entorno/glosario.md), término 4 |
-| El siguiente paso es probar transferencia en software real | El Experimento 1 ya la probó, y H4 no se sostiene | README § 7.2; [`h4`](../../docs/results/h4-associative-vs-history.md) |
-| «El MemoryGraph resuelve» la falta de coincidencia léxica en L3–L5 | En las tareas con señuelo la clave era léxica y el grafo citó el señuelo igual que el historial | `h4`, *Datos* e *Interpretación* 1 |
-| «El aprendizaje altera positivamente las decisiones», como hecho general | En los señuelos las empeoró | `h4`, *Interpretación* 2 |
-| DEPRECATED o SUPERSEDED como protocolo ya activo | El protocolo sí representa la acción: «UPDATE, MERGE and DEPRECATE are representable but explicitly rejected until implemented». Se puede escribir y se rechaza; no está activa. SUPERSEDED no figura en el protocolo | [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md), párrafo de las acciones de memoria (ADD, IGNORE) |
-| KV prefix caching, NRNE o un contexto partido en prefijo y sufijo, como arquitectura del repositorio | No están en este código. Como debate, se marcan «pregunta abierta» | Grep sin resultados en `src/` y `specs/` |
-| LG como diferencia de probabilidades de éxito | Ver la regla 7 | Protocolo, *Metrics and falsification* |
+Son los cinco de `CONTRIBUTING.md` ([vetos obligatorios](../../CONTRIBUTING.md#revisión-de-un-texto-público)). Los vetos concretos de
+cada revisión, con la frase y su fuente, van al registro fechado; el primero es
+[`docs/entorno/revision-texto-publico-2026-10-02.md`](../../docs/entorno/revision-texto-publico-2026-10-02.md).
 
 ## Informe
 

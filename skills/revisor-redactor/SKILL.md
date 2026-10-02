@@ -40,8 +40,8 @@ encabezado del README, un post o un artículo.
    «memoria humana».
 6. **Usa los nombres del glosario**: agente de biblioteca, solver acotado, agente de entorno.
 7. **No añade.** No inventa cifras ni enlaces; un enlace solo entra si ya está en el README.
-8. **Lo vetado no sobrevive.** Una frase que el validador estadístico vetó, o que cae en sus
-   [vetos de contenido](../validador-estadistico/SKILL.md#vetos-de-contenido), no queda en el texto
+8. **Lo vetado no sobrevive.** Una frase que el validador estadístico vetó, o que cae en los
+   [vetos obligatorios](../../CONTRIBUTING.md#revisión-de-un-texto-público), no queda en el texto
    reescrito, ni entera ni parafraseada.
 9. **No completa.** Un texto cortado se revisa hasta donde llega; lo que falta no se rellena. No añade
    hashtags nuevos.

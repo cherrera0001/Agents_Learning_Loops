@@ -100,18 +100,61 @@ usuario».
 Un texto que explica el proyecto hacia fuera (el README, un post, un artículo) pasa por tres roles antes de
 publicarse. Cada uno tiene veto y solo informa: ninguno publica.
 
-1. El **investigador de papers** comprueba cada obra citada. Solo se cita una obra cuyo DOI, ISBN o URL del
-   editor se abrió, y una cita no hereda la conclusión del paper.
+1. El **investigador de papers** comprueba cada obra citada.
 2. El **validador estadístico** da un veto o un visto bueno a cada número y a cada verbo de resultado, con el
-   archivo que lo sostiene. Lo que no tiene fuente se marca «no está en el repo».
-3. El **revisor redactor** reescribe en español, con frases completas, sin anuncio y sin ninguna frase vetada,
-   y conserva qué se midió, en qué diseño y qué salió peor.
+   archivo que lo sostiene.
+3. El **revisor redactor** reescribe el texto sin ninguna frase vetada y conserva qué se midió, en qué diseño
+   y qué salió peor.
 4. El validador lee el texto reescrito **entero y en su versión exacta**. Un texto solo está firmado si su
    última respuesta cita el conteo de caracteres y no veta nada; cualquier cambio posterior exige otra lectura.
 
-**Veto obligatorio:** no se publica una ventaja de la memoria asociativa sobre el historial textual.
-[H4](docs/results/h4-associative-vs-history.md) no la sostiene. Tampoco se publica como hecho lo que el
-protocolo deja sin implementar, ni una métrica que los recibos no registran.
+**Citas.**
+
+- Solo se cita una obra cuyo DOI, ISBN o URL del editor se abrió en esa revisión. El registro de Crossref de
+  un DOI cuenta como abierto y se anota como tal. Lo que la página abierta no muestra no se completa de
+  memoria.
+- Se parte del código: una obra acompaña a un mecanismo que el repositorio nombra. Si el texto nombra una
+  obra que el código no nombra, se dice si el código la implementa o solo comparte la idea.
+- Una cita no hereda la conclusión del paper ni prueba un resultado propio.
+
+**Números y verbos de resultado.**
+
+- Cada número lleva su fuente: archivo y, si existe, recibo o comando. Sin fuente, «no está en el repo» y
+  veto. Un porcentaje va con su numerador y su denominador.
+- No hay inferencia estadística: seis o nueve tareas, un proyecto, tres operadores y réplicas de la misma
+  semilla no son una muestra. Las réplicas verifican determinismo.
+- `LearningGain` es `metric(memoria) − metric(sin memoria)`, como lo define el
+  [protocolo](specs/software_learning_protocol.md) (*Metrics and falsification*), no una diferencia de
+  probabilidades de éxito. `LearningGain` y `MemoryUtilityRate` son métricas de este laboratorio, no un ensayo.
+- Una medida no se lee como otra: la cobertura de tests no es una tasa de aprendizaje, un `delivered` no es
+  bandeja de entrada y un LCP de laboratorio no es un dato de campo. Los recibos no registran tokens ni costo.
+- Una cifra vigente que ya no coincide con su fuente es falsa; una cifra fechada se comprueba contra su fecha.
+- Cada «resuelve», «aprende» o «significativo» recibe su fuente o un veto. «Aprende de verdad» y «memoria
+  humana» no se usan sin la firma del validador.
+
+**Redacción.**
+
+- Español, frases completas, para alguien técnico que no vive en el repositorio, con los nombres del
+  [glosario](docs/entorno/glosario.md). Sin anuncio: sin preguntas retóricas, cifras de gancho ni adjetivos
+  de venta.
+- No se inventan cifras ni enlaces; un enlace solo entra si ya está en el README. Un texto cortado se revisa
+  hasta donde llega y no se completa. No se añaden hashtags.
+- Una frase vetada no queda en el texto reescrito, ni entera ni parafraseada. Lo que un texto propone como
+  debate se marca «pregunta abierta», no arquitectura del repositorio.
+
+**Vetos obligatorios.** No se publica:
+
+1. una ventaja de la memoria asociativa sobre el historial textual:
+   [H4](docs/results/h4-associative-vs-history.md) no la sostiene;
+2. como hecho, lo que el protocolo deja sin implementar: la promoción de una lección a skill, y UPDATE, MERGE
+   y DEPRECATE, que se pueden representar y se rechazan;
+3. como siguiente paso, algo que el repositorio ya probó;
+4. como arquitectura del repositorio, algo que su código no tiene;
+5. una afirmación general que un resultado negativo publicado contradice.
+
+Las fichas de las obras y los vetos concretos de cada revisión se guardan en un registro fechado en
+`docs/entorno/` (el primero: [2026-10-02](docs/entorno/revision-texto-publico-2026-10-02.md)), no en las
+skills.
 
 Roles: [`docs/entorno/agentes.md`](docs/entorno/agentes.md#staff-de-texto-público). Skills de entorno:
 [`investigador-papers`](skills/investigador-papers/SKILL.md),

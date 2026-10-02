@@ -43,7 +43,7 @@ Son conteos exactos de un diseño exhaustivo: no hay muestra ni inferencia estad
 | Software, tareas originales: éxito final igual en las tres condiciones; intentos por tarea 2.0 sin memoria y 1.0 con cualquiera de las dos memorias | Tener memoria ayudó; las dos memorias empataron | [`results/`](results/README.md), [`results/reference-v2/`](results/reference-v2/README.md) |
 | La asociativa expone una lección y es la relevante (18/18); el historial expone todas (18/54 relevantes) | Diferencia de precisión, no de resultado | [`results/`](results/README.md) |
 | H4, tareas con señuelo: éxito al primer intento 6/18 sin memoria y 0/18 con historial y con asociativa; 2.5 intentos frente a 2.0 | **En contra**: las dos memorias empeoraron | [`h4`](docs/results/h4-associative-vs-history.md) |
-| Campaña de 9 tareas: todos los intentos fallidos fueron de una causa ya conocida, con cada memoria (54/54) y sin memoria (72/72) | **En contra** del objetivo de no repetir | [`results/reference-v2/`](results/reference-v2/README.md) (`RepeatedFailureRate`) |
+| Campaña de 9 tareas: el proxy `RepeatedFailureRate` vale 1.0 en las tres condiciones (54/54 con cada memoria, 72/72 sin memoria); cuenta intentos fallidos cuya causa ya se resolvió en el entrenamiento de esa condición, también sin memoria | Las dos memorias no eliminaron los fallos de causa ya resuelta; la métrica es un proxy | [`results/reference-v2/`](results/reference-v2/README.md) (`RepeatedFailureRate`) |
 | #58, con un diagnóstico público común: +6/18 al primer intento en las originales y −2/18 en las engañosas | A favor en las originales; sin diferencia en las engañosas según el criterio pre-registrado | [`diagnostic-baseline`](docs/results/diagnostic-baseline.md) |
 | H6, memoria de fallos: no repite la estrategia fallida al repetir la **misma** tarea; ningún registro de otra tarea llegó a aplicarse (`applied_records.other_task` = 0 en `python -m scripts.analyze_failure_memory --evidence evidence/failure-memory-v1`) | Aprendizaje por repetición; la contaminación no se puso a prueba | [`failure-memory`](docs/results/failure-memory.md) |
 | H7, memoria de fallos entre tareas: con τ = 0.1 quita el primer intento correcto en 3 de 18 pares; ningún umbral separa lo que ayuda de lo que daña | **En contra**: «contamina» | [`failure-transfer`](docs/results/failure-transfer.md) |
@@ -55,8 +55,8 @@ verificación independiente y análisis escritos antes de ver los datos.
 
 **Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
 operadores ya escritos), resultados con agentes LLM, mediciones de tokens o de costo, ni la promoción de
-lecciones a skills, que el esquema declara y el código no implementa
-([§ 7.2](#72-experimento-1-transferencia-entre-tareas-de-software)).
+lecciones a skills, que el esquema declara y el [protocolo](specs/software_learning_protocol.md) deja como
+trabajo futuro.
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
 componente inspeccionado o el embedding del código) evita el señuelo. Es la prueba que distinguiría al grafo
@@ -243,7 +243,8 @@ previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la 
   ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
   fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
   `.claude/agents/<rol>.md`; el repositorio versiona `implementador-haiku`, `implementador-sonnet` e
-  `implementador-opus`, y tres que no construyen (`revisor-codigo`, `revisor-docs` y `gestor-proyecto`);
+  `implementador-opus`, y seis que no construyen (`revisor-codigo`, `revisor-docs`, `gestor-proyecto` y el
+  staff de texto público: `investigador-papers`, `revisor-redactor` y `validador-estadistico`);
   todas declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se comprueba en la
   transcripción). En Cursor, la persona elige el modelo del chat
   en el selector, y un subagente usa el ID de la tabla solo si quien lo lanza lo copia desde
@@ -670,9 +671,11 @@ tarea y condición:
 | Engañosas (EXP-07..09) | 2.0 | 2.5 | 2.5 |
 
 En las tareas engañosas el texto del issue apunta a otra familia de causa; ninguna de las dos memorias
-mejora a la ausencia de memoria y ambas necesitan más intentos. En esta campaña `RepeatedFailureRate` es 1.0
-en las tres condiciones: todos los intentos fallidos fueron de una causa ya conocida (54/54 con cada memoria
-y 72/72 sin memoria). Una lectura consistente con los datos es que
+mejora a la ausencia de memoria y ambas necesitan más intentos. En esta campaña el proxy
+`RepeatedFailureRate` es 1.0 en las tres condiciones (54/54 con cada memoria y 72/72 sin memoria). El protocolo
+llama «conocida» a una causa que una ejecución de entrenamiento de esa condición ya resolvió, y eso también
+ocurre sin memoria: la cifra dice que las memorias no eliminaron esos fallos, no que el solver recordara la
+causa. Una lectura consistente con los datos es que
 el beneficio de las tareas originales depende de las pistas léxicas del texto del issue, pero el diseño no
 aísla esa causa, así que no se trata como demostrada.
 
@@ -873,8 +876,8 @@ Lecciones de proceso incorporadas como mecanismos, no solo como recordatorios: v
 `mergedAt` antes de cerrar una tarjeta, verificación por mutación en CI y chequeo de sincronización
 del esquema. Formato y vocabulario de acciones: [`learning/README.md`](learning/README.md).
 
-Los procedimientos ya fijados de este ciclo (recuperar antes de un issue, registrar un episodio, proteger
-la evidencia) también están escritos como **skills de entorno** en [`skills/`](skills/README.md). Son una
+Los procedimientos ya fijados de este ciclo (entre ellos recuperar antes de un issue, registrar un
+episodio, proteger la evidencia y revisar un texto público) también están escritos como **skills de entorno** en [`skills/`](skills/README.md). Son una
 proyección legible: los episodios de `learning/episodes/` siguen siendo la fuente de verdad y
 `learning/dev_memory.json` sigue siendo derivado. El rol que ejecuta `recall` y `rebuild` es la
 **bitácora** ([`docs/entorno/agentes.md`](docs/entorno/agentes.md)).
