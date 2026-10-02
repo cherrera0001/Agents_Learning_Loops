@@ -11,6 +11,8 @@ description: Dar un veto o un visto bueno a cada número de un texto público, c
 
 ## Fuente
 
+- [`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público), *Revisión de un texto
+  público*: el procedimiento que esta skill proyecta. Lo demás son los textos que ese procedimiento aplica.
 - [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md) (*Metrics and
   falsification*): definición de `LearningGain` y `MemoryUtilityRate`.
 - [`results/README.md`](../../results/README.md): «No statistical significance or autonomous
@@ -53,6 +55,8 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
    historial textual empató con la asociativa. En H4 las dos condiciones con memoria empeoraron el primer
    intento frente a no tener memoria (0/18 frente a 6/18).
 9. **Tokens y costo no están en los recibos.** Prometidos como métrica ya medida, veto.
+   **Firma.** Un texto solo está firmado si el validador lo leyó entero en esa versión exacta y su
+   respuesta cita el conteo de caracteres sin vetar nada.
 10. Una cifra vigente que ya no coincide con su fuente es falsa, aunque fuera cierta en una versión
    anterior; una cifra fechada («tras el ciclo v0.2») se comprueba contra esa fecha.
 
@@ -66,7 +70,7 @@ Obligatorios si aparecen, para los tres roles:
 | El siguiente paso es probar transferencia en software real | El Experimento 1 ya la probó, y H4 no se sostiene | README § 7.2; [`h4`](../../docs/results/h4-associative-vs-history.md) |
 | «El MemoryGraph resuelve» la falta de coincidencia léxica en L3–L5 | En las tareas con señuelo la clave era léxica y el grafo citó el señuelo igual que el historial | `h4`, *Datos* e *Interpretación* 1 |
 | «El aprendizaje altera positivamente las decisiones», como hecho general | En los señuelos las empeoró | `h4`, *Interpretación* 2 |
-| DEPRECATED o SUPERSEDED como protocolo ya activo | La resolución de contradicciones es trabajo futuro; esos dos estados no aparecen en `specs/` ni en `src/` | Protocolo, misma frase |
+| DEPRECATED o SUPERSEDED como protocolo ya activo | El protocolo sí representa la acción: «UPDATE, MERGE and DEPRECATE are representable but explicitly rejected until implemented». Se puede escribir y se rechaza; no está activa. SUPERSEDED no figura en el protocolo | [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md), párrafo de las acciones de memoria (ADD, IGNORE) |
 | KV prefix caching, NRNE o un contexto partido en prefijo y sufijo, como arquitectura del repositorio | No están en este código. Como debate, se marcan «pregunta abierta» | Grep sin resultados en `src/` y `specs/` |
 | LG como diferencia de probabilidades de éxito | Ver la regla 7 | Protocolo, *Metrics and falsification* |
 

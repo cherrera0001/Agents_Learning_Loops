@@ -95,6 +95,29 @@ Tres niveles, definidos aquí y en ningún otro sitio:
 Si un issue necesita subissues, se convierte en épica y deja de estimarse. No hay nivel «historia de
 usuario».
 
+## Revisión de un texto público
+
+Un texto que explica el proyecto hacia fuera (el README, un post, un artículo) pasa por tres roles antes de
+publicarse. Cada uno tiene veto y solo informa: ninguno publica.
+
+1. El **investigador de papers** comprueba cada obra citada. Solo se cita una obra cuyo DOI, ISBN o URL del
+   editor se abrió, y una cita no hereda la conclusión del paper.
+2. El **validador estadístico** da un veto o un visto bueno a cada número y a cada verbo de resultado, con el
+   archivo que lo sostiene. Lo que no tiene fuente se marca «no está en el repo».
+3. El **revisor redactor** reescribe en español, con frases completas, sin anuncio y sin ninguna frase vetada,
+   y conserva qué se midió, en qué diseño y qué salió peor.
+4. El validador lee el texto reescrito **entero y en su versión exacta**. Un texto solo está firmado si su
+   última respuesta cita el conteo de caracteres y no veta nada; cualquier cambio posterior exige otra lectura.
+
+**Veto obligatorio:** no se publica una ventaja de la memoria asociativa sobre el historial textual.
+[H4](docs/results/h4-associative-vs-history.md) no la sostiene. Tampoco se publica como hecho lo que el
+protocolo deja sin implementar, ni una métrica que los recibos no registran.
+
+Roles: [`docs/entorno/agentes.md`](docs/entorno/agentes.md#staff-de-texto-público). Skills de entorno:
+[`investigador-papers`](skills/investigador-papers/SKILL.md),
+[`revisor-redactor`](skills/revisor-redactor/SKILL.md) y
+[`validador-estadistico`](skills/validador-estadistico/SKILL.md).
+
 ## Comprobaciones (las mismas que CI)
 
 ```bash

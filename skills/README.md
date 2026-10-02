@@ -16,6 +16,8 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`registrar-episodio`](registrar-episodio/SKILL.md) | Al cerrar un issue, antes del PR | `learning/README.md` |
 | [`confirmar-cierre`](confirmar-cierre/SKILL.md) | Tras el merge verificado y antes de mover a *Done* | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`proteger-evidencia`](proteger-evidencia/SKILL.md) | Al tocar evidencia, benchmark o el solver acotado | `evidence/README.md`, *Leakage boundary* |
-| [`investigador-papers`](investigador-papers/SKILL.md) | Antes de publicar un texto que cite una obra o nombre un mecanismo | README § 7.2, informe de H4 |
-| [`revisor-redactor`](revisor-redactor/SKILL.md) | Antes de publicar un texto público del proyecto | README § 7.2 y § 12, informe de H4 |
-| [`validador-estadistico`](validador-estadistico/SKILL.md) | Antes de publicar un texto con cifras o verbos de resultado | Protocolo (*Metrics and falsification*), `results/README.md`, informe de H4 |
+| [`investigador-papers`](investigador-papers/SKILL.md) | Antes de publicar un texto que cite una obra o nombre un mecanismo | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`revisor-redactor`](revisor-redactor/SKILL.md) | Antes de publicar un texto público del proyecto | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`validador-estadistico`](validador-estadistico/SKILL.md) | Antes de publicar un texto con cifras o verbos de resultado | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+
+Las tres últimas forman el staff de texto público. Ninguna es un nodo Skill de la memoria.

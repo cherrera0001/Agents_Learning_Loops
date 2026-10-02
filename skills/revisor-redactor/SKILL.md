@@ -11,6 +11,8 @@ description: Reescribir un texto público del proyecto en español llano, sin an
 
 ## Fuente
 
+- [`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público), *Revisión de un texto
+  público*: el procedimiento que esta skill proyecta. Lo demás son los textos que ese procedimiento aplica.
 - [`README.md`](../../README.md) § 7.2, bloque «Qué no se demuestra», y § 12 (limitaciones).
 - [`docs/results/h4-associative-vs-history.md`](../../docs/results/h4-associative-vs-history.md)
   (*Interpretación* y *Alcance*).

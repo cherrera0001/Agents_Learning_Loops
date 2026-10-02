@@ -11,6 +11,8 @@ description: Localizar la obra que corresponde a un mecanismo que el código ya 
 
 ## Fuente
 
+- [`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público), *Revisión de un texto
+  público*: el procedimiento que esta skill proyecta. Lo demás son los textos que ese procedimiento aplica.
 - [`README.md`](../../README.md) § 7.2, bloque «Qué no se demuestra», y
   [`docs/results/h4-associative-vs-history.md`](../../docs/results/h4-associative-vs-history.md)
   (*Alcance*): el límite de lo que una cita puede acompañar.

@@ -89,7 +89,8 @@ ejecutable: [`.claude/agents/gestor-proyecto.md`](../../.claude/agents/gestor-pr
 
 Tres roles revisan un texto que explica el proyecto hacia fuera (el README, un post, un artículo) antes de
 publicarlo. Son personal de entorno: no son el agente de biblioteca ni el solver acotado. Cada uno tiene
-veto, solo informa y no publica en ninguna red.
+veto, solo informa y no publica en ninguna red. El procedimiento está en
+[`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público).
 
 ### Investigador de papers
 
