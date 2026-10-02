@@ -4,7 +4,7 @@
   "goal": "Lectura del piloto por comando: devlog pilot calcula las medidas de docs/piloto-estimacion.md con numerador y denominador, y los tokens por issue desde transcripciones locales",
   "ref": "#87",
   "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
-  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1, "transcript": "agent-a2acb6858a8b48c10.jsonl"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "transcript", "escalated": false, "estimate_revisions": 0, "prs": 1, "transcript": "agent-a2acb6858a8b48c10.jsonl"},
   "steps": [
     {
       "action": "recall_memory",
