@@ -142,9 +142,9 @@ casos se avisan por stderr. Una línea por hallazgo: `R<regla> #<issue>: <mensaj
 | 5 | Episodio con `estimate.size` distinta de la *Talla* del tablero del issue que cita | todos |
 | 6 | Épica cerrada con subissues abiertos | épicas |
 | 7 | Episodio con `estimate.planned_model` distinto del campo *Modelo* de la tarjeta del issue principal | todos |
-| 8 | Episodio con `outcome.used_model` o `outcome.escalated` distinto de *Modelo usado* o *Escaló* en la tarjeta del issue principal | todos |
+| 8 | Episodio con `outcome.used_model` o `outcome.escalated` distinto de *Modelo usado* o *Escaló* en la tarjeta del issue principal (una clave ausente en el episodio no se compara) | todos |
 | 9 | Issue con número `>= --since` sin tarjeta en el tablero | `>= --since`; incluye épicas |
-| 10 | Lectura truncada de subissues: épica con ≥ 50 subissues → código 2 | épicas |
+| 10 | Lectura truncada de subissues: épica con ≥ 50 subissues → código 2. Solo aplica a la lectura por `gh`, no a `--snapshot` | épicas |
 
 Códigos de salida: `0` sin hallazgos, `1` con hallazgos, `2` si no se pudo leer la fuente (`gh` ausente,
 cuenta que no ve el Project, lectura incompleta o instantánea incompleta, o subissues truncados en R10); un `2` nunca se informa como

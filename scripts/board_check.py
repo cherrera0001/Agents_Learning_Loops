@@ -27,7 +27,11 @@ Reglas (``--since`` limita las reglas 2 a 4 a los issues con número >= ``since`
    Campo vacío o sin tarjeta: no hay hallazgo.
 9. Issue con número >= ``since`` sin tarjeta en el tablero (incluye épicas).
 10. Lectura truncada de subissues: si alguna épica devuelve el tope (50 subissues),
-   el comando sale con código 2 en vez de evaluar la regla 6.
+   el comando sale con código 2 en vez de evaluar la regla 6. Solo aplica a la lectura
+   por ``gh``; ``--snapshot`` no consulta subissues y no la evalúa.
+
+Las reglas 1 a 8 y 10 salen de :func:`check_board`; la 9 es la función pura aparte
+:func:`check_missing_cards`, que :func:`run_board` suma a los hallazgos.
 
 Códigos de salida: 0 sin hallazgos, 1 con hallazgos, 2 si no se pudo leer la fuente.
 Nunca se informa «sin hallazgos» si la lectura falló.
@@ -82,18 +86,11 @@ _PR_BEFORE = re.compile(r"\bPR[\s:]*$", re.IGNORECASE)
 
 def cited_issues(ref: str) -> set[int]:
     """Números de issue citados como ``#n`` suelto en el texto libre de ``ref``."""
-    found: set[int] = set()
-    for m in _CITE.finditer(ref):
-        if m["pre"].strip("-"):  # otro/repo#7, word#7
-            continue
-        if _PR_BEFORE.search(ref[: m.start()]):  # PR #66 no es el issue 66
-            continue
-        found.add(int(m["n"]))
-    return found
+    return set(cited_issues_ordered(ref))
 
 
 def cited_issues_ordered(ref: str) -> list[int]:
-    """Números de issue citados en orden de aparición, sin duplicados."""
+    """Números de issue citados como ``#n`` suelto, en orden de aparición y sin duplicados."""
     found: list[int] = []
     seen: set[int] = set()
     for m in _CITE.finditer(ref):
@@ -116,20 +113,8 @@ def _blank(value: Any) -> bool:
     return value is None or value == ""
 
 
-def check_board(
-    issues: Sequence[Mapping[str, Any]],
-    cards: Sequence[Mapping[str, Any]],
-    episodes: Sequence[Mapping[str, Any]],
-    subissues: Mapping[int, Sequence[Mapping[str, Any]]] | None = None,
-    since: int | None = None,
-    repo: str | None = REPO,
-) -> list[Finding]:
-    """Aplica las diez reglas; devuelve los hallazgos ordenados por (regla, issue, mensaje).
-
-    ``since=None`` desactiva las reglas 2 a 4 y 9. ``subissues=None`` desactiva la regla 6.
-    """
-    by_number = {int(i["number"]): i for i in issues}
-    epics = {n for n, i in by_number.items() if EPIC_LABEL in _label_names(i.get("labels"))}
+def _index_cards(cards: Sequence[Mapping[str, Any]], repo: str | None) -> dict[int, Mapping[str, Any]]:
+    """Tarjetas de issues de ``repo`` indexadas por número de issue."""
     board: dict[int, Mapping[str, Any]] = {}
     for card in cards:
         content = card.get("content") or {}
@@ -139,8 +124,26 @@ def check_board(
         if repo is not None and content.get("repository", repo) != repo:
             continue
         board[int(number)] = card
-        if EPIC_LABEL in _label_names(card.get("labels")):
-            epics.add(int(number))
+    return board
+
+
+def check_board(
+    issues: Sequence[Mapping[str, Any]],
+    cards: Sequence[Mapping[str, Any]],
+    episodes: Sequence[Mapping[str, Any]],
+    subissues: Mapping[int, Sequence[Mapping[str, Any]]] | None = None,
+    since: int | None = None,
+    repo: str | None = REPO,
+) -> list[Finding]:
+    """Aplica las reglas 1 a 8; devuelve los hallazgos ordenados por (regla, issue, mensaje).
+
+    ``since=None`` desactiva las reglas 2 a 4. ``subissues=None`` desactiva la regla 6.
+    La regla 9 vive en :func:`check_missing_cards`.
+    """
+    by_number = {int(i["number"]): i for i in issues}
+    epics = {n for n, i in by_number.items() if EPIC_LABEL in _label_names(i.get("labels"))}
+    board = _index_cards(cards, repo)
+    epics |= {n for n, card in board.items() if EPIC_LABEL in _label_names(card.get("labels"))}
 
     def in_scope(n: int) -> bool:
         return since is not None and n >= since
@@ -238,32 +241,42 @@ def check_board(
         if card is None:
             continue
         problems = []
-        used_model = outcome.get("used_model")
+        used_model = outcome.get("used_model")  # clave ausente: el episodio no declara, no se compara
         modelo_usado = card.get("modelo usado")
-        if not _blank(modelo_usado) and modelo_usado != used_model:
+        if not _blank(used_model) and not _blank(modelo_usado) and modelo_usado != used_model:
             problems.append(f"Modelo usado: episodio {used_model}, tablero {modelo_usado}")
         escalated = outcome.get("escalated")
         escaló = card.get("escaló")
         escalated_str = "Sí" if escalated is True else "No" if escalated is False else None
-        if not _blank(escaló) and escaló != escalated_str:
+        if escalated_str is not None and not _blank(escaló) and escaló != escalated_str:
             problems.append(f"Escaló: episodio {escalated_str}, tablero {escaló}")
         if problems:
             out.append(Finding(8, principal, "resultado incoherente: " + "; ".join(problems)))
 
-    # Regla 9: Issue sin tarjeta
-    if since is not None:
-        for n in sorted(by_number.keys()):
-            if n >= since and n not in board:
-                out.append(Finding(9, n, "issue sin tarjeta en el tablero"))
-
     return sorted(out)
+
+
+def check_missing_cards(
+    issues: Sequence[Mapping[str, Any]],
+    cards: Sequence[Mapping[str, Any]],
+    since: int | None,
+    repo: str | None = REPO,
+) -> list[Finding]:
+    """Regla 9: issues con número >= ``since`` sin tarjeta (incluye épicas). ``since=None``: ninguno."""
+    if since is None:
+        return []
+    board = _index_cards(cards, repo)
+    numbers = sorted({int(i["number"]) for i in issues})
+    return [
+        Finding(9, n, "issue sin tarjeta en el tablero") for n in numbers if n >= since and n not in board
+    ]
 
 
 def not_evaluated(since: int | None, subissues: object | None) -> list[str]:
     """Reglas que no se pudieron evaluar con los datos recibidos (para avisarlo)."""
     notes = []
     if since is None:
-        notes.append("reglas 2, 3, 4 y 9 no evaluadas: falta --since")
+        notes.append("reglas 2, 3 y 4 no evaluadas: falta --since")
     if subissues is None:
         notes.append("regla 6 no evaluada: no hay datos de subissues")
     return notes
@@ -395,9 +408,13 @@ def run_board(
     except BoardReadError as exc:
         print(f"error: no se pudo leer la fuente: {exc}", file=err)
         return 2
-    findings = check_board(issues, items, episodes, subs, since)
+    findings = sorted(
+        check_board(issues, items, episodes, subs, since) + check_missing_cards(issues, items, since)
+    )
     for note in not_evaluated(since, subs):
         print(f"aviso: {note}", file=err)
+    if since is None:
+        print("aviso: regla 9 no evaluada: falta --since", file=err)
     for f in findings:
         print(f.line(), file=out)
     if not findings:
