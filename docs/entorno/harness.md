@@ -43,21 +43,46 @@ Es el flujo ya documentado en [`CONTRIBUTING.md`](../../CONTRIBUTING.md) y
 
 ```mermaid
 flowchart LR
-    R["recall<br/>devlog recall"] --> B["rama<br/>issue-&lt;n&gt;-&lt;tema&gt;"]
+    ES["ESTIMAR<br/>orquestador"] --> IP["In Progress"]
+    IP --> R["recall<br/>devlog recall"]
+    R --> B["rama<br/>issue-&lt;n&gt;-&lt;tema&gt;"]
     B --> I["implementar<br/>+ tests"]
-    I --> E["episodio<br/>learning/episodes/"]
+    I --> PR["PR con<br/>Closes #&lt;n&gt;"]
+    PR --> E["episodio<br/>learning/episodes/"]
     E --> RB["rebuild<br/>devlog rebuild"]
-    RB --> PR["PR con<br/>Closes #&lt;n&gt;"]
-    PR --> M["merge del orquestador<br/>verificado por mergedAt"]
+    RB --> M["merge del orquestador<br/>verificado por mergedAt"]
+    M --> CF["CONFIRMAR<br/>criterio de cierre"]
+    CF --> D["Done"]
 ```
 
-1. `python -m scripts.devlog recall "<título del issue>"`.
-2. Rama `issue-<n>-<tema>`.
-3. Implementar con tests.
-4. Registrar el episodio `learning/episodes/NNN-issue-<n>.json`.
-5. `python -m scripts.devlog rebuild`.
-6. El implementador abre el PR con `Closes #<n>`; el orquestador hace el merge **verificado** por `mergedAt`
-   antes de mover la tarjeta a *Done*.
+1. ESTIMAR (orquestador): «Estimación v1» en el issue y campos del Project #5.
+2. In Progress (implementador).
+3. `python -m scripts.devlog recall "<título del issue>"`.
+4. Rama `issue-<n>-<tema>`; implementar con tests y abrir el PR.
+5. Registrar el episodio `learning/episodes/NNN-issue-<n>.json` (con `estimate` y `outcome`).
+6. `python -m scripts.devlog rebuild`.
+7. El orquestador hace el merge **verificado** por `mergedAt` y CONFIRMAR: comprueba el criterio de cierre
+   de la tabla siguiente y registra *Verificación*, *Modelo usado* y *Escaló*.
+8. Solo entonces mueve la tarjeta a *Done*.
+
+El texto canónico, los responsables y las reglas del registro están en
+[`CONTRIBUTING.md`](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto).
+
+### Criterios de cierre por tipo de trabajo
+
+Cada issue declara su *Tipo de cierre* y su *Evidencia requerida* en la plantilla
+([`issue.md`](../../.github/ISSUE_TEMPLATE/issue.md)). *Verificación* = *Verificada* solo cuando el criterio
+de su tipo se cumple y la evidencia está enlazada en el issue.
+
+| Tipo de trabajo | Criterio de cierre | Evidencia que se enlaza |
+|---|---|---|
+| Código | PR mergeado (`mergedAt`) y CI verde en main | PR y ejecución de CI en main |
+| Experimento | Recibos, verificación independiente y lectura publicada | Recibos de `evidence/`, verificación hecha por un medio distinto del agente que ejecutó, y la lectura en `docs/` |
+| Docs | PR mergeado (`mergedAt`) y CI verde en main | PR y ejecución de CI en main |
+| Sistema externo | Observación en el sistema real, con comando y fecha | Comando, salida y fecha de la observación |
+
+En un issue de **sistema externo**, mientras falte la observación el issue sigue abierto, el PR usa
+`Refs #<n>` y no `Closes #<n>`, y *Verificación* = *Pendiente* ([rol Cierre](agentes.md#cierre)).
 
 ## 2. Harness de experimento
 

@@ -34,6 +34,8 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 
 | Skill | Fuente |
 |---|---|
+| [`estimar-issue`](../../skills/estimar-issue/SKILL.md) | `CONTRIBUTING.md`, `learning/README.md` |
 | [`recall-antes-de-issue`](../../skills/recall-antes-de-issue/SKILL.md) | `learning/README.md`, `CONTRIBUTING.md` |
+| [`confirmar-cierre`](../../skills/confirmar-cierre/SKILL.md) | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md) | `learning/README.md` |
 | [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md) | `evidence/README.md`, *Leakage boundary* del protocolo |

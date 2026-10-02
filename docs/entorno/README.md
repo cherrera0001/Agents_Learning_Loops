@@ -39,6 +39,7 @@ flowchart TB
 | Entorno | Regla de admisión de skills | [`skills.md`](skills.md) y [`skills/`](../../skills/README.md) |
 | Entorno | Flujo por issue y comprobaciones de CI | [`CONTRIBUTING.md`](../../CONTRIBUTING.md) |
 | Entorno | Bitácora de desarrollo (fuente de verdad) | [`learning/README.md`](../../learning/README.md) y `learning/episodes/` |
+| Entorno | Piloto de estimación y cierre verificado: pre-registro, campos del tablero, métricas y lecturas | [`docs/piloto-estimacion.md`](../piloto-estimacion.md) |
 | Entorno | Caso real del sitio público (observacional; **no es evidencia del Experimento 1**) | [`caso-real-contacto-vt.md`](caso-real-contacto-vt.md) |
 | Entorno | Registro visible de ese caso: resultados por clase y diagrama causa → desenlace | [`caso-real-contacto-vt.md#registro-visible`](caso-real-contacto-vt.md#registro-visible) |
 | Experimento | Protocolo, frontera de fuga y recibos | [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md) |

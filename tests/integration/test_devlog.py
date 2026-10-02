@@ -43,6 +43,44 @@ def test_rebuild_maps_episode_to_graph():
     assert "Instalar el extra dev antes de correr los tests" in lessons
 
 
+ESTIMATE = {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 1,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium",
+}
+OUTCOME = {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": False,
+    "estimate_revisions": 0,
+    "prs": 1,
+}
+
+
+def _dump(episodes):
+    return json.dumps(rebuild(episodes).to_dict(), sort_keys=True)
+
+
+def test_estimate_and_outcome_blocks_do_not_change_the_graph():
+    annotated = [dict(ep, estimate=ESTIMATE, outcome=OUTCOME) for ep in EPISODES]
+    assert annotated != EPISODES  # los episodios de entrada sí difieren
+    assert _dump(annotated) == _dump(EPISODES)
+    # un episodio con los bloques y otro sin ellos conviven en el mismo historial
+    mixed = [dict(EPISODES[0], estimate=ESTIMATE, outcome=OUTCOME), EPISODES[1]]
+    assert _dump(mixed) == _dump(EPISODES)
+
+
+def test_changing_a_step_does_change_the_graph():
+    """Control: si `rebuild` ignorara todo, la prueba anterior sería tautológica."""
+    changed = [dict(EPISODES[0], steps=EPISODES[0]["steps"][:-1]), EPISODES[1]]
+    assert _dump(changed) != _dump(EPISODES)
+
+
 def test_recall_returns_related_lessons_and_actions():
     out = recall(rebuild(EPISODES), "agregar dependencia hypothesis")
     assert "add_dependency" in out
@@ -58,3 +96,8 @@ def test_committed_episodes_are_valid_and_ordered():
     for ep in episodes:
         assert ep["goal"] and ep["steps"]
         assert all({"action", "success"} <= set(s) for s in ep["steps"])
+        if "estimate" in ep:
+            assert set(ep["estimate"]) == set(ESTIMATE)
+        if "outcome" in ep:
+            assert set(ep["outcome"]) == set(OUTCOME)
+            assert ep["outcome"]["model_source"] in {"self-reported", "transcript"}
