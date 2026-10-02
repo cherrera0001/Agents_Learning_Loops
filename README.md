@@ -5,15 +5,17 @@
 [![CI](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml/badge.svg)](https://github.com/cherrera0001/Agents_Learning_Loops/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/cherrera0001/Agents_Learning_Loops)](https://github.com/cherrera0001/Agents_Learning_Loops/releases)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)
-![Coverage](https://img.shields.io/badge/coverage-98.5%25-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-98.7%25-brightgreen)
 ![Types](https://img.shields.io/badge/mypy-strict-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 `associative-agent-loop` implementa una memoria episódica y semántica que permite a un agente
 **capturar trayectorias de ejecución, extraer lecciones, enlazarlas en un grafo asociativo y
 recuperarlas por activación propagada** para condicionar decisiones futuras. El objetivo operativo
-es concreto y medible: *el agente no debe repetir un error cuya causa ya observó*, y la experiencia
-adquirida en un contexto no debe contaminar decisiones en contextos no relacionados.
+es: *el agente no debe repetir un error cuya causa ya observó*, y la experiencia adquirida en un
+contexto no debe contaminar decisiones en contextos no relacionados. **Ese objetivo está evaluado solo
+en parte**: se cumple en escenarios simulados y no se cumple en tareas de software con señuelo
+([qué presenta este experimento](#qué-presenta-este-experimento)).
 
 El propio repositorio se desarrolla con este mecanismo: cada issue se registra como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
@@ -23,9 +25,49 @@ aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-
 > [glosario](docs/entorno/glosario.md); el contrato para quien edita el repositorio está en [`docs/entorno/`](docs/entorno/README.md).
 > «Modelo» también tiene tres usos (de datos, de embedding y de construcción): ver [§ 3.2](#32-modelo-de-construcción).
 
+## Qué presenta este experimento
+
+**Pregunta.** ¿La experiencia de tareas previas, guardada en una memoria, cambia la primera decisión de un
+agente en una tarea nueva y mejora su resultado? ¿Y un grafo asociativo aporta más que un historial de texto?
+
+**Diseño.** Dos experimentos deterministas. El Experimento 0 usa herramientas simuladas (semilla 7). El
+Experimento 1 repara defectos inyectados en una aplicación real ([Task Ledger](experiments/software_project/))
+con un solver acotado: tres operadores de reparación escritos a mano, sin modelos de lenguaje. Compara tres
+condiciones (sin memoria, historial textual y memoria asociativa) en 6 tareas y después en 9, tres de ellas
+con un señuelo. Las hipótesis posteriores (H4, #58, H6 y H7) se pre-registraron antes de generar los datos.
+Son conteos exactos de un diseño exhaustivo: no hay muestra ni inferencia estadística.
+
+| Qué se observó | Lectura | Fuente |
+|---|---|---|
+| Simulado: con memoria, 0 fallos repetidos en tres de los cuatro escenarios y 1 en el de dominio cruzado; éxito al primer intento 2/20 → 19/20 con errores intermitentes | A favor, solo en simulación | [`evidence/baseline/`](evidence/baseline/) |
+| Software, tareas originales: éxito final igual en las tres condiciones; intentos por tarea 2.0 sin memoria y 1.0 con cualquiera de las dos memorias | Tener memoria ayudó; las dos memorias empataron | [`results/`](results/README.md), [`results/reference-v2/`](results/reference-v2/README.md) |
+| La asociativa expone una lección y es la relevante (18/18); el historial expone todas (18/54 relevantes) | Diferencia de precisión, no de resultado | [`results/`](results/README.md) |
+| H4, tareas con señuelo: éxito al primer intento 6/18 sin memoria y 0/18 con historial y con asociativa; 2.5 intentos frente a 2.0 | **En contra**: las dos memorias empeoraron | [`h4`](docs/results/h4-associative-vs-history.md) |
+| Campaña de 9 tareas: todos los intentos fallidos fueron de una causa ya conocida, con cada memoria (54/54) y sin memoria (72/72) | **En contra** del objetivo de no repetir | [`results/reference-v2/`](results/reference-v2/README.md) (`RepeatedFailureRate`) |
+| #58, con un diagnóstico público común: +6/18 al primer intento en las originales y −2/18 en las engañosas | A favor en las originales; sin diferencia en las engañosas según el criterio pre-registrado | [`diagnostic-baseline`](docs/results/diagnostic-baseline.md) |
+| H6, memoria de fallos: no repite la estrategia fallida al repetir la **misma** tarea; ningún registro de otra tarea llegó a aplicarse (0 de 351) | Aprendizaje por repetición; la contaminación no se puso a prueba | [`failure-memory`](docs/results/failure-memory.md) |
+| H7, memoria de fallos entre tareas: con τ = 0.1 quita el primer intento correcto en 3 de 18 pares; ningún umbral separa lo que ayuda de lo que daña | **En contra**: «contamina» | [`failure-transfer`](docs/results/failure-transfer.md) |
+
+**Qué aporta.** Un resultado negativo, pre-registrado y reproducible: la asociación sobre las mismas señales
+léxicas que usa el historial no lo supera, y con un señuelo las dos memorias perjudican. Aporta también el
+método: tareas con señuelo que permiten que la memoria pierda, recibos inmutables de cada ejecución, una
+verificación independiente y análisis escritos antes de ver los datos.
+
+**Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
+operadores ya escritos), resultados con agentes LLM, mediciones de tokens o de costo, ni la promoción de
+lecciones a skills, que el esquema declara y el código no implementa
+([§ 7.2](#72-experimento-1-transferencia-entre-tareas-de-software)).
+
+**Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
+componente inspeccionado o el embedding del código) evita el señuelo. Es la prueba que distinguiría al grafo
+del historial y está descrita, sin issue abierto, en el
+[informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto).
+
 ---
 
 ## Contenido
+
+[Qué presenta este experimento](#qué-presenta-este-experimento)
 
 1. [Características](#1-características)
 2. [Inicio rápido](#2-inicio-rápido)
@@ -58,7 +100,7 @@ aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-
 | **Ciclo verificable** | Máquina de estados `PLAN → RETRIEVE → ACT → OBSERVE → CONSOLIDATE` con transiciones validadas |
 | **Determinismo** | Reloj lógico, hashing estable (`blake2b`) y semillas fijas: el benchmark produce el mismo JSON en cada ejecución |
 | **Operación** | Paquete instalable, CLI `aal-benchmark`, configuración TOML/entorno, escritura atómica, logging estructurado |
-| **Calidad** | 87 tests, cobertura 98.5 %, propiedades `hypothesis` con verificación por mutación, `mypy --strict`, CI multiplataforma |
+| **Calidad** | 614 tests, cobertura 98.7 % (medida el 2026-10-02; CI exige ≥ 90 %), propiedades `hypothesis` con verificación por mutación, `mypy --strict`, CI multiplataforma |
 
 ## 2. Inicio rápido
 
@@ -157,6 +199,7 @@ Claude, es un **agente de entorno** y trabaja bajo un contrato documental, sin c
 | Roles: orquestador, implementador, revisor (de código y de documentos), gestor del proyecto, cierre, evaluador del experimento, bitácora | [`docs/entorno/agentes.md`](docs/entorno/agentes.md) |
 | Harness de entorno (permisos, parada, evidencia) y resumen del harness de experimento | [`docs/entorno/harness.md`](docs/entorno/harness.md) |
 | Skills de entorno: procedimientos ya fijados, en Markdown | [`skills/`](skills/README.md) · regla de admisión en [`docs/entorno/skills.md`](docs/entorno/skills.md) |
+| Staff de texto público, con veto: investigador de papers, revisor redactor y validador estadístico | [`investigador-papers`](skills/investigador-papers/SKILL.md) · [`revisor-redactor`](skills/revisor-redactor/SKILL.md) · [`validador-estadistico`](skills/validador-estadistico/SKILL.md) · roles en [`docs/entorno/agentes.md`](docs/entorno/agentes.md#staff-de-texto-público) |
 
 Las skills de entorno no son la **skill de memoria** del esquema `software-learning-memory/v1`, que sigue
 sin implementarse.
@@ -518,7 +561,7 @@ exactamente los valores siguientes. La salida es idéntica a la línea base regi
 |---|---|---|---|
 | **Misma meta repetida** | Tras consolidar un fallo, el siguiente intento toma la ruta alternativa | Agente sin memoria¹ | **0** fallos repetidos; el control repite el fallo en cada episodio |
 | **Metas parafraseadas** | La experiencia se generaliza por asociación | Agente sin memoria¹ | **0** fallos repetidos |
-| **Errores intermitentes** (tasa de fallo 0.7, 20 episodios) | La valencia converge a la fiabilidad observada | Agente sin memoria | Éxito al primer intento **2/20 → 19/20**; llamadas **38 → 21** |
+| **Errores intermitentes** (tasa de fallo 0.7, 20 episodios) | Con memoria, la herramienta poco fiable deja de elegirse primero | Agente sin memoria | Éxito al primer intento **2/20 → 19/20**; llamadas **38 → 21** |
 | **Fallo en otro dominio** | La valencia contextual aísla dominios | Valencia global | Latencia **1540 → 1260 ms (−18 %)**; se conserva la herramienta rápida donde funciona |
 | **Paráfrasis sin solapamiento léxico** (extra `embeddings`) | Los embeddings semánticos recuperan experiencia por significado | Canal léxico | «temperatura prevista para Lima» elige la ruta correcta al primer intento; el canal léxico no activa nada |
 
@@ -543,8 +586,9 @@ Salida de referencia:
   valencia contextual  llamadas totales=7  latencia total=1260 ms
 ```
 
-> **Alcance de la evidencia.** Estos resultados demuestran reutilización asociativa de acciones bajo
-> condiciones simuladas y controladas. No demuestran aprendizaje en tareas reales de software; esa
+> **Alcance de la evidencia.** Estos resultados muestran reutilización asociativa de acciones bajo
+> condiciones simuladas y controladas, con una sola semilla (7). En el escenario de otro dominio queda 1
+> fallo repetido con las dos valencias. No demuestran aprendizaje en tareas reales de software; esa
 > pregunta la aborda el Experimento 1.
 
 ### 7.2 Experimento 1: transferencia entre tareas de software
@@ -626,7 +670,9 @@ tarea y condición:
 | Engañosas (EXP-07..09) | 2.0 | 2.5 | 2.5 |
 
 En las tareas engañosas el texto del issue apunta a otra familia de causa; ninguna de las dos memorias
-mejora a la ausencia de memoria y ambas necesitan más intentos. Una lectura consistente con los datos es que
+mejora a la ausencia de memoria y ambas necesitan más intentos. En esta campaña `RepeatedFailureRate` es 1.0
+en las tres condiciones: todos los intentos fallidos fueron de una causa ya conocida (54/54 con cada memoria
+y 72/72 sin memoria). Una lectura consistente con los datos es que
 el beneficio de las tareas originales depende de las pistas léxicas del texto del issue, pero el diseño no
 aísla esa causa, así que no se trata como demostrada.
 
@@ -680,7 +726,7 @@ flowchart LR
     PR --> TEST["tests · matriz 2 × 4<br/>Linux / Windows<br/>Python 3.11 – 3.14"]
     PR --> MUT["mutaciones<br/>5 defectos inyectados"]
     PR --> EMBJ["embeddings<br/>fastembed + caché del modelo"]
-    TEST --> COV["cobertura ≥ 90 %<br/>(actual 98.5 %)"]
+    TEST --> COV["cobertura ≥ 90 %<br/>(98.7 % el 2026-10-02)"]
     TEST --> BENCH["benchmark --json"]
     LINT --> OK{"12 jobs en verde"}
     COV --> OK
@@ -802,7 +848,8 @@ python -m scripts.devlog recall "título del issue" --embedder fastembed
 python -m scripts.devlog rebuild
 ```
 
-Estado tras el ciclo v0.2: **14 episodios, 126 pasos, 26 fallos registrados y 61 lecciones**.
+Estado tras el ciclo v0.2: **14 episodios, 126 pasos, 26 fallos registrados y 61 lecciones**. Al 2026-10-02
+hay 43 episodios, 438 pasos, 110 fallos y 191 lecciones; las dos tablas siguientes son del cierre de v0.2.
 
 **Defectos descubiertos al consultar la memoria real**, no visibles en los escenarios sintéticos:
 

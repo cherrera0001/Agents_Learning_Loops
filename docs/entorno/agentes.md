@@ -85,6 +85,38 @@ ejecutable: [`.claude/agents/gestor-proyecto.md`](../../.claude/agents/gestor-pr
 - Solo lee, salvo que el encargo ordene de forma explícita qué escribir. No mueve tarjetas a *Done* a
   mano, no sobrescribe *Modelo* y no cierra épicas.
 
+## Staff de texto público
+
+Tres roles revisan un texto que explica el proyecto hacia fuera (el README, un post, un artículo) antes de
+publicarlo. Son personal de entorno: no son el agente de biblioteca ni el solver acotado. Cada uno tiene
+veto, solo informa y no publica en ninguna red.
+
+### Investigador de papers
+
+Skill: [`investigador-papers`](../../skills/investigador-papers/SKILL.md). Definición ejecutable:
+[`.claude/agents/investigador-papers.md`](../../.claude/agents/investigador-papers.md).
+
+- Localiza la obra que corresponde a un mecanismo que el código ya nombra. Cada ficha lleva autor, año,
+  título y un identificador abierto (DOI, ISBN o URL del editor). Si no lo abre, no cita.
+- Una cita ilumina el mecanismo y no hereda la conclusión del paper.
+
+### Revisor redactor
+
+Skill: [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md). Definición ejecutable:
+[`.claude/agents/revisor-redactor.md`](../../.claude/agents/revisor-redactor.md).
+
+- Escribe en español, con frases completas, para alguien técnico que no vive en el repositorio. Quita el
+  anuncio y conserva el límite: qué se midió, en qué diseño y qué salió peor.
+
+### Validador estadístico
+
+Skill: [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md). Definición ejecutable:
+[`.claude/agents/validador-estadistico.md`](../../.claude/agents/validador-estadistico.md).
+
+- Su salida es un veto o un visto bueno por cada número, con su fuente. El protocolo no tiene inferencia
+  estadística. Si un texto afirma una ventaja de la memoria asociativa sobre el historial textual, el veto
+  es obligatorio: [H4](../results/h4-associative-vs-history.md) no la sostiene.
+
 ## Cierre
 
 Decide el estado final de un issue después de su comprobación.

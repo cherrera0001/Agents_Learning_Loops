@@ -14,6 +14,11 @@ fuentes:
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 - [`specs/software_learning_protocol.md`](../../specs/software_learning_protocol.md) (o [`evidence/README.md`](../../evidence/README.md), que lo aplica)
 
+- Para el **staff de texto público** ([`agentes.md`](agentes.md#staff-de-texto-público)): los límites ya
+  publicados de un resultado, en [`README.md`](../../README.md) § 7.2 («Qué no se demuestra»),
+  [`results/README.md`](../../results/README.md) o un informe de [`docs/results/`](../results/). Estas skills
+  aplican esos límites a un texto; no añaden ninguno al experimento.
+
 Una skill no crea reglas nuevas. Si hace falta una regla nueva, primero se incorpora a una de esas fuentes
 y después, si conviene, se escribe su skill.
 
@@ -39,3 +44,6 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`confirmar-cierre`](../../skills/confirmar-cierre/SKILL.md) | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md) | `learning/README.md` |
 | [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md) | `evidence/README.md`, *Leakage boundary* del protocolo |
+| [`investigador-papers`](../../skills/investigador-papers/SKILL.md) | README § 7.2, informe de H4 |
+| [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md) | README § 7.2 y § 12, informe de H4 |
+| [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md) | Protocolo (*Metrics and falsification*), `results/README.md`, informe de H4 |
