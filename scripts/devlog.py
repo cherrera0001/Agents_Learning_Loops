@@ -8,6 +8,7 @@ Uso::
 
     python -m scripts.devlog recall "texto del issue"
     python -m scripts.devlog rebuild
+    python -m scripts.devlog board --since 76        # chequeo de solo lectura (ver board_check)
 """
 
 from __future__ import annotations
@@ -82,10 +83,30 @@ def main() -> None:
         help="fastembed requiere el extra [embeddings]",
     )
     sub.add_parser("rebuild", help="reconstruye learning/dev_memory.json")
+    p_board = sub.add_parser(
+        "board",
+        help="chequeo de solo lectura: issues, tablero y episodios (salida 0, 1 hallazgos, 2 sin lectura)",
+    )
+    p_board.add_argument(
+        "--since",
+        type=int,
+        help="primer issue al que aplican las reglas 2 a 4 (obligatorio con gh; piloto: 76)",
+    )
+    p_board.add_argument(
+        "--snapshot",
+        type=Path,
+        help="directorio con items.json e issues.json (y subissues.json opcional) en vez de gh",
+    )
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):  # UTF-8 también al redirigir en Windows
         sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
 
+    if args.cmd == "board":
+        from scripts.board_check import run_board
+
+        sys.exit(run_board(since=args.since, snapshot=args.snapshot, episodes=load_episodes()))
     if args.cmd == "rebuild":
         mg = rebuild(load_episodes())
         mg.save(MEMORY_PATH)

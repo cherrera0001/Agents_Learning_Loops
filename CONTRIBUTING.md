@@ -66,7 +66,8 @@ Responsables: el **orquestador** estima, confirma y mueve a *Done*; el **impleme
 - **La verificación del cierre no va en el episodio.** El episodio se escribe antes del merge y
   quedaría obsoleto; la verificación vive en el tablero y en el issue.
 - Campos, métricas y límites del piloto: [`docs/piloto-estimacion.md`](docs/piloto-estimacion.md).
-  El chequeo de coherencia del tablero llegará con `python -m scripts.devlog board` (otro issue).
+  Chequeo de coherencia entre issues, tablero y episodios, de solo lectura:
+  `python -m scripts.devlog board --since <n>` ([reglas](learning/README.md#chequeo-del-tablero)).
 
 ## Jerarquía: épica, issue, tareas
 
