@@ -35,6 +35,12 @@ COMPLETE = {
     "modelo usado": "Sonnet 5.5",
     "escaló": "No",
 }
+ESTIMATED = {
+    "talla": "S",
+    "puntos": 2,
+    "incertidumbre": "2",
+    "riesgo": "1",
+}
 
 
 def issue(
@@ -130,21 +136,27 @@ def test_rule3_controls_complete_and_epic_only_needs_verification():
 
 
 def test_rule4_completed_issue_without_citing_episode():
-    assert rules(check_board([issue(80)], [], [], since=76)) == [(4, 80)]
+    # Pass a card to avoid triggering rule 9
+    assert rules(check_board([issue(80)], [card(80, "Done", **COMPLETE)], [], since=76)) == [(4, 80)]
 
 
 def test_rule4_exact_number_only():
     for ref in ("#8", "#800", "PR #80", "otro/repo#80", "vinculaterritorio/vt-landing#80"):
-        assert rules(check_board([issue(80)], [], [episode(ref)], since=76)) == [(4, 80)], ref
+        # Pass a card to avoid triggering rule 9
+        found = check_board([issue(80)], [card(80, "Done", **COMPLETE)], [episode(ref)], since=76)
+        assert rules(found) == [(4, 80)], ref
     for ref in ("#80", "#79, #80", "#80, PR #81", "(#80)"):
-        assert check_board([issue(80)], [], [episode(ref)], since=76) == [], ref
+        # Pass a card to avoid triggering rule 9
+        found = check_board([issue(80)], [card(80, "Done", **COMPLETE)], [episode(ref)], since=76)
+        assert found == [], ref
 
 
 def test_rule4_controls_not_planned_epic_below_since_open():
-    assert check_board([issue(80, reason="NOT_PLANNED")], [], [], since=76) == []
-    assert check_board([issue(80, labels=["epic"])], [], [], since=76) == []
-    assert check_board([issue(70)], [], [], since=76) == []
-    assert check_board([issue(80, "OPEN")], [], [], since=76) == []
+    assert check_board([issue(80, reason="NOT_PLANNED")], [card(80, "Done", **COMPLETE)], [], since=76) == []
+    assert check_board([issue(80, labels=["epic"])], [card(80, "Done", **COMPLETE)], [], since=76) == []
+    assert check_board([issue(70)], [card(70, "Done", **COMPLETE)], [], since=76) == []
+    card80 = card(80, "In Progress", **ESTIMATED)
+    assert check_board([issue(80, "OPEN")], [card80], [], since=76) == []
 
 
 @pytest.mark.parametrize(
@@ -196,7 +208,7 @@ def test_rule6_controls():
     assert check_board([open_epic], [], [], subissues={10: [{"number": 11, "state": "OPEN"}]}) == []
     assert check_board([epic_closed], [], [], subissues=None) == []
     assert not_evaluated(None, None) == [
-        "reglas 2, 3 y 4 no evaluadas: falta --since",
+        "reglas 2, 3, 4 y 9 no evaluadas: falta --since",
         "regla 6 no evaluada: no hay datos de subissues",
     ]
     assert not_evaluated(76, {}) == []
@@ -367,3 +379,194 @@ def test_run_board_defaults_to_standard_streams(monkeypatch):
     monkeypatch.setattr(sys, "stderr", err)
     assert run_board(since=None, snapshot=FIXTURE, episodes=[]) == 1
     assert "R1 #65" in out.getvalue()
+
+
+# --- Regla 7 -------------------------------------------------------------------------------
+
+
+def test_rule7_planned_model_mismatch():
+    ep = episode("#80", estimate={"version": 1, "planned_model": "Sonnet 5.5"})
+    found = check_board([issue(80)], [card(80, "Done", **{**COMPLETE, "modelo": "Haiku 4.5"})], [ep])
+    assert rules(found) == [(7, 80)]
+    assert "Sonnet 5.5" in found[0].message and "Haiku 4.5" in found[0].message
+
+
+def test_rule7_controls_empty_field_no_estimate_or_principal_only():
+    # Empty field: no finding
+    ep = episode("#80", estimate={"version": 1, "planned_model": "Sonnet 5.5"})
+    assert check_board([issue(80)], [card(80, "Done", **{**COMPLETE, "modelo": ""})], [ep]) == []
+    # No estimate: no finding
+    assert check_board([issue(80)], [card(80, "Done", **COMPLETE)], [episode("#80")]) == []
+    # No card: no finding
+    assert check_board([issue(80)], [], [ep]) == []
+    # Same model: no finding
+    assert check_board([issue(80)], [card(80, "Done", **{**COMPLETE, "modelo": "Sonnet 5.5"})], [ep]) == []
+    # Only principal issue is checked: #76, #75 but #75 is epic
+    ep_refs = episode("#76, épica #75", estimate={"version": 1, "planned_model": "Haiku 4.5"})
+    found = check_board(
+        [issue(76), issue(75, labels=["epic"])],
+        [card(76, "Done", **{**COMPLETE, "modelo": "Sonnet 5.5"}), card(75, "Done", modelo="Haiku 4.5")],
+        [ep_refs],
+    )
+    # Should find only on #76 (principal), not on #75
+    assert len(found) == 1 and found[0].issue == 76
+
+
+# --- Regla 8 -------------------------------------------------------------------------------
+
+
+def test_rule8_outcome_model_and_escalated_mismatch():
+    outcome_dict = {"used_model": "Sonnet 5.5", "escalated": True}
+    ep = episode("#80", outcome=outcome_dict)
+    found = check_board(
+        [issue(80)],
+        [card(80, "Done", **{**COMPLETE, "modelo usado": "Haiku 4.5", "escaló": "No"})],
+        [ep],
+    )
+    assert rules(found) == [(8, 80)]
+    msg = found[0].message
+    assert "Modelo usado" in msg and "Escaló" in msg
+
+
+def test_rule8_controls_empty_field_outcome_as_yes_no():
+    # Empty field: no finding
+    outcome_dict = {"used_model": "Sonnet 5.5", "escalated": False}
+    ep = episode("#80", outcome=outcome_dict)
+    assert (
+        check_board(
+            [issue(80)],
+            [card(80, "Done", **{**COMPLETE, "modelo usado": "", "escaló": ""})],
+            [ep],
+        )
+        == []
+    )
+    # Matching escalated: true -> "Sí", false -> "No"
+    assert (
+        check_board(
+            [issue(80)],
+            [card(80, "Done", **{**COMPLETE, "modelo usado": "Sonnet 5.5", "escaló": "No"})],
+            [ep],
+        )
+        == []
+    )
+    escalated_true = episode("#80", outcome={"used_model": "Sonnet 5.5", "escalated": True})
+    assert (
+        check_board(
+            [issue(80)],
+            [card(80, "Done", **{**COMPLETE, "modelo usado": "Sonnet 5.5", "escaló": "Sí"})],
+            [escalated_true],
+        )
+        == []
+    )
+    # No card: no finding
+    assert check_board([issue(80)], [], [ep]) == []
+    # Only principal: #65, PR #66
+    ep_refs = episode("#65, PR #66", outcome={"used_model": "Haiku 4.5", "escalated": False})
+    found = check_board(
+        [issue(65), issue(66)],
+        [card(65, "Done", **{**COMPLETE, "modelo usado": "Sonnet 5.5"}), card(66, "Done", **COMPLETE)],
+        [ep_refs],
+    )
+    # Should find only on #65 (principal), not on #66
+    assert len(found) == 1 and found[0].issue == 65
+
+
+# --- Regla 9 -------------------------------------------------------------------------------
+
+
+def test_rule9_issue_without_card():
+    card80 = card(80, "In Progress", **ESTIMATED)
+    found = check_board(
+        [issue(80, "OPEN"), issue(81, "OPEN")],
+        [card80],
+        [],
+        since=76,
+    )
+    assert rules(found) == [(9, 81)]
+
+
+def test_rule9_controls_since_none_or_below_since_or_on_board():
+    # since=None: no evaluation
+    assert check_board([issue(80, "OPEN")], [], [], since=None) == []
+    # Below since: not evaluated
+    assert check_board([issue(70)], [], [], since=76) == []
+    # On board: no finding
+    card80 = card(80, "In Progress", **ESTIMATED)
+    assert (
+        check_board(
+            [issue(80, "OPEN")],
+            [card80],
+            [],
+            since=76,
+        )
+        == []
+    )
+    # Applies to epics too
+    epic_issue = issue(80, "OPEN", labels=["epic"])
+    assert rules(check_board([epic_issue], [], [], since=76)) == [(9, 80)]
+
+
+# --- Regla 10 -------------------------------------------------------------------------------
+
+
+def test_rule10_truncated_subissues_exit_2(capsys):
+    def runner_with_max_subs(args: Sequence[str]) -> subprocess.CompletedProcess[str]:
+        if args[:2] == ["api", "user"]:
+            return done("cherrera0001\n")
+        if args[0] == "project":
+            return done((FIXTURE / "items.json").read_text("utf-8"))
+        if args[0] == "issue":
+            return done((FIXTURE / "issues.json").read_text("utf-8"))
+        if args[:2] == ["api", "graphql"]:
+            # Return an epic with exactly SUBISSUES_LIMIT subissues
+            from scripts.board_check import SUBISSUES_LIMIT
+
+            subs = [{"number": 100 + i, "state": "OPEN"} for i in range(SUBISSUES_LIMIT)]
+            graphql = json.dumps(
+                {
+                    "data": {
+                        "repository": {
+                            "issues": {
+                                "nodes": [{"number": 10, "state": "CLOSED", "subIssues": {"nodes": subs}}]
+                            }
+                        }
+                    }
+                }
+            )
+            return done(graphql)
+        raise AssertionError(args)
+
+    rc, out, err = run(capsys, since=76, snapshot=None, runner=runner_with_max_subs)
+    assert rc == 2 and "sin hallazgos" not in out
+    assert "épica #10" in err and "truncada" in err
+
+
+def test_rule10_control_with_fewer_subissues(capsys):
+    def runner_with_subs(args: Sequence[str]) -> subprocess.CompletedProcess[str]:
+        if args[:2] == ["api", "user"]:
+            return done("cherrera0001\n")
+        if args[0] == "project":
+            return done((FIXTURE / "items.json").read_text("utf-8"))
+        if args[0] == "issue":
+            return done((FIXTURE / "issues.json").read_text("utf-8"))
+        if args[:2] == ["api", "graphql"]:
+            from scripts.board_check import SUBISSUES_LIMIT
+
+            # Return exactly SUBISSUES_LIMIT - 1 subissues (should work)
+            subs = [{"number": 100 + i, "state": "OPEN"} for i in range(SUBISSUES_LIMIT - 1)]
+            graphql = json.dumps(
+                {
+                    "data": {
+                        "repository": {
+                            "issues": {
+                                "nodes": [{"number": 10, "state": "CLOSED", "subIssues": {"nodes": subs}}]
+                            }
+                        }
+                    }
+                }
+            )
+            return done(graphql)
+        raise AssertionError(args)
+
+    rc, _, err = run(capsys, since=76, snapshot=None, runner=runner_with_subs)
+    assert rc == 1 and "sin hallazgos" not in err

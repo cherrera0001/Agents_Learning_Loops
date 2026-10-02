@@ -20,6 +20,14 @@ Reglas (``--since`` limita las reglas 2 a 4 a los issues con número >= ``since`
    issue que cita su ``ref``.
 6. Épica cerrada con subissues abiertos (necesita los subissues; sin ellos se informa
    «no evaluada»).
+7. Episodio con ``estimate.planned_model`` distinto de *Modelo* de la tarjeta del issue
+   principal (primero citado en ``ref``). Campo vacío o sin tarjeta: no hay hallazgo.
+8. Episodio con ``outcome.used_model`` distinto de *Modelo usado*, o ``outcome.escalated``
+   distinto de *Escaló* (`true` ↔ `"Sí"`, `false` ↔ `"No"`), en el issue principal.
+   Campo vacío o sin tarjeta: no hay hallazgo.
+9. Issue con número >= ``since`` sin tarjeta en el tablero (incluye épicas).
+10. Lectura truncada de subissues: si alguna épica devuelve el tope (50 subissues),
+   el comando sale con código 2 en vez de evaluar la regla 6.
 
 Códigos de salida: 0 sin hallazgos, 1 con hallazgos, 2 si no se pudo leer la fuente.
 Nunca se informa «sin hallazgos» si la lectura falló.
@@ -49,6 +57,7 @@ LIMIT = ("--limit", str(ITEM_LIMIT))
 ISSUE_FIELDS = "number,state,stateReason,title,labels,closedAt"
 ESTIMATE_FIELDS = ("talla", "puntos", "incertidumbre", "riesgo")
 EPIC_LABEL = "epic"
+SUBISSUES_LIMIT = 50
 
 Runner = Callable[[Sequence[str]], "subprocess.CompletedProcess[str]"]
 
@@ -83,6 +92,22 @@ def cited_issues(ref: str) -> set[int]:
     return found
 
 
+def cited_issues_ordered(ref: str) -> list[int]:
+    """Números de issue citados en orden de aparición, sin duplicados."""
+    found: list[int] = []
+    seen: set[int] = set()
+    for m in _CITE.finditer(ref):
+        if m["pre"].strip("-"):  # otro/repo#7, word#7
+            continue
+        if _PR_BEFORE.search(ref[: m.start()]):  # PR #66 no es el issue 66
+            continue
+        n = int(m["n"])
+        if n not in seen:
+            found.append(n)
+            seen.add(n)
+    return found
+
+
 def _label_names(labels: Iterable[Any] | None) -> set[str]:
     return {x["name"] if isinstance(x, Mapping) else str(x) for x in labels or []}
 
@@ -99,9 +124,9 @@ def check_board(
     since: int | None = None,
     repo: str | None = REPO,
 ) -> list[Finding]:
-    """Aplica las seis reglas; devuelve los hallazgos ordenados por (regla, issue, mensaje).
+    """Aplica las diez reglas; devuelve los hallazgos ordenados por (regla, issue, mensaje).
 
-    ``since=None`` desactiva las reglas 2 a 4. ``subissues=None`` desactiva la regla 6.
+    ``since=None`` desactiva las reglas 2 a 4 y 9. ``subissues=None`` desactiva la regla 6.
     """
     by_number = {int(i["number"]): i for i in issues}
     epics = {n for n, i in by_number.items() if EPIC_LABEL in _label_names(i.get("labels"))}
@@ -181,6 +206,56 @@ def check_board(
             if open_subs:
                 listed = ", ".join(f"#{s}" for s in open_subs)
                 out.append(Finding(6, n, f"épica cerrada con subissues abiertos: {listed}"))
+
+    # Regla 7: Modelo previsto sobrescrito
+    for ep in episodes:
+        estimate = ep.get("estimate")
+        planned_model = estimate.get("planned_model") if isinstance(estimate, Mapping) else None
+        if planned_model is None:
+            continue
+        cited = cited_issues_ordered(str(ep.get("ref", "")))
+        if not cited:
+            continue
+        principal = cited[0]
+        card = board.get(principal)
+        if card is None:
+            continue
+        modelo = card.get("modelo")
+        if not _blank(modelo) and modelo != planned_model:
+            msg = f"episodio {ep.get('id')} preveía {planned_model}; el tablero dice {modelo}"
+            out.append(Finding(7, principal, msg))
+
+    # Regla 8: Resultado incoherente
+    for ep in episodes:
+        outcome = ep.get("outcome")
+        if not isinstance(outcome, Mapping):
+            continue
+        cited = cited_issues_ordered(str(ep.get("ref", "")))
+        if not cited:
+            continue
+        principal = cited[0]
+        card = board.get(principal)
+        if card is None:
+            continue
+        problems = []
+        used_model = outcome.get("used_model")
+        modelo_usado = card.get("modelo usado")
+        if not _blank(modelo_usado) and modelo_usado != used_model:
+            problems.append(f"Modelo usado: episodio {used_model}, tablero {modelo_usado}")
+        escalated = outcome.get("escalated")
+        escaló = card.get("escaló")
+        escalated_str = "Sí" if escalated is True else "No" if escalated is False else None
+        if not _blank(escaló) and escaló != escalated_str:
+            problems.append(f"Escaló: episodio {escalated_str}, tablero {escaló}")
+        if problems:
+            out.append(Finding(8, principal, "resultado incoherente: " + "; ".join(problems)))
+
+    # Regla 9: Issue sin tarjeta
+    if since is not None:
+        for n in sorted(by_number.keys()):
+            if n >= since and n not in board:
+                out.append(Finding(9, n, "issue sin tarjeta en el tablero"))
+
     return sorted(out)
 
 
@@ -188,7 +263,7 @@ def not_evaluated(since: int | None, subissues: object | None) -> list[str]:
     """Reglas que no se pudieron evaluar con los datos recibidos (para avisarlo)."""
     notes = []
     if since is None:
-        notes.append("reglas 2, 3 y 4 no evaluadas: falta --since")
+        notes.append("reglas 2, 3, 4 y 9 no evaluadas: falta --since")
     if subissues is None:
         notes.append("regla 6 no evaluada: no hay datos de subissues")
     return notes
@@ -236,9 +311,9 @@ def _subissues_payload(data: Any, what: str) -> dict[int, list[dict[str, Any]]]:
 
 
 _EPICS_QUERY = (
-    "query($o:String!,$r:String!){repository(owner:$o,name:$r){"
-    'issues(first:100,labels:["epic"]){nodes{number state '
-    "subIssues(first:50){nodes{number state}}}}}}"
+    f"query($o:String!,$r:String!){{repository(owner:$o,name:$r){{"
+    f'issues(first:100,labels:["epic"]){{nodes{{number state '
+    f"subIssues(first:{SUBISSUES_LIMIT}){{nodes{{number state}}}}}}}}}}}}"
 )
 
 
@@ -286,7 +361,15 @@ def read_github(runner: Runner = _run_gh) -> tuple[Any, Any, dict[int, list[dict
         "gh api graphql (subissues de las épicas)",
     )
     nodes = _json(raw_epics, "gh api graphql")["data"]["repository"]["issues"]["nodes"]
-    subs = {int(n["number"]): list(n["subIssues"]["nodes"]) for n in nodes}
+    subs = {}
+    for n in nodes:
+        epic_num = int(n["number"])
+        sub_list = list(n["subIssues"]["nodes"])
+        if len(sub_list) >= SUBISSUES_LIMIT:
+            raise BoardReadError(
+                f"épica #{epic_num}: lectura truncada ({len(sub_list)} subissues, límite {SUBISSUES_LIMIT})"
+            )
+        subs[epic_num] = sub_list
     return items, issues, subs
 
 

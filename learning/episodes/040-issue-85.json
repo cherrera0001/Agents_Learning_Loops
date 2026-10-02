@@ -1,0 +1,65 @@
+{
+  "seq": 40,
+  "id": "issue-85",
+  "goal": "Cuatro reglas nuevas del chequeo del tablero: modelo previsto, resultado incoherente, issue sin tarjeta, subissues truncados",
+  "ref": "#85",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Lecciones previas sobre chequeos: distinguir lectura fallida (código 2) de sin hallazgos (código 0); separar órdenes de bash en PowerShell; citas exactas de issues"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "ruff RUF005 en la f-string que usa SUBISSUES_LIMIT para formatear la consulta GraphQL"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Función cited_issues_ordered() que mantiene el orden de las citas; constante SUBISSUES_LIMIT; reglas 7, 8, 9 en check_board(); detección de truncamiento en read_github(); docstring actualizado"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "tests de regla 9 fallan: issues cerrados sin tarjeta disparan también regla 4 (sin episodio); regla 10 falta capsys en la firma"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Tests de regla 9 usan issues abiertos o con tarjeta; regla 10 añade capsys; tests de regla 4 ahora pasan tarjeta para evitar regla 9"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Tabla de reglas en learning/README.md extendida a 10 filas; docstring del módulo board_check.py incluye reglas 7-10"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "47 tests pasados (39 existentes + 8 nuevos); cobertura ≥ 90%"
+    }
+  ],
+  "lessons": [
+    "Una función de orden (cited_issues_ordered) preserva la secuencia para encontrar el principal; cited_issues sigue siendo un conjunto para las búsquedas",
+    "Detectar truncamiento en la lectura GraphQL requiere comparar con la constante del tope de la consulta: si >=límite, sale con código 2 y no evalúa datos incompletos",
+    "Reglas que validan correspondencia entre episodios y tarjetas deben ignorar campos vacíos: no hay hallazgo si no hay dato en la fuente"
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Haiku 4.5",
+    "planned_effort": "none"
+  },
+  "outcome": {
+    "used_model": "Haiku 4.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  }
+}
