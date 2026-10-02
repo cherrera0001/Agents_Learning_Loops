@@ -60,8 +60,10 @@ trabajo futuro.
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
 componente inspeccionado o el embedding del código) evita el señuelo. Es la prueba que distinguiría al grafo
-del historial. La describió el [informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto)
-y hoy es el issue [#98](https://github.com/cherrera0001/Agents_Learning_Loops/issues/98) (H8), todavía sin empezar.
+del historial. La describió el
+[informe de H4](docs/results/h4-associative-vs-history.md#trabajo-futuro-sin-issue-abierto), cuando aún no
+tenía issue, y hoy es H8, el issue
+[#98](https://github.com/cherrera0001/Agents_Learning_Loops/issues/98).
 
 ---
 
@@ -713,9 +715,13 @@ flowchart LR
 | `failure-memory-v1` (H6, #63) | ¿Una memoria de fallos evita repetir una estrategia que ya falló, sin contaminar otro contexto? | 860 | Las tres reglas salen favorables, pero miden menos de lo que su nombre sugiere: no repite porque la **misma** tarea se repite, y ningún registro de otra tarea llegó a aplicarse | [`failure-memory`](docs/results/failure-memory.md) |
 | `failure-transfer-v1` (H7, #65) | Si el alcance deja pasar fallos de otra tarea, ¿ayudan o dañan? | 2 830 | Veredicto pre-registrado sobre la base asociativa: «contamina» (τ = 0.1, 3 de 18 pares). Con lecciones presentes la memoria de fallos entre tareas nunca ayudó, y ningún umbral separa lo que ayuda de lo que daña | [`failure-transfer`](docs/results/failure-transfer.md) |
 
-Evidencia en [`evidence/`](evidence/README.md) y agregados en [`results/`](results/README.md), un directorio por
-campaña. El objetivo operativo del encabezado queda así: «no repetir» se cumple al repetir la misma tarea (H6) y,
-en simulación, en tres de los cuatro escenarios; «no contaminar» no se cumple cuando la memoria de fallos cruza tareas (H7).
+Evidencia en [`evidence/`](evidence/README.md) y agregados en [`results/`](results/README.md), un directorio
+por campaña.
+
+El objetivo operativo del encabezado queda así. «No repetir» se cumple en simulación (tres de los cuatro
+escenarios) y, en software, solo al repetir la misma tarea (H6), por construcción y sin transferencia; con
+señuelo, las dos memorias empeoran el primer intento (H4). «No contaminar» no se puso a prueba con el alcance
+de H6 y no se cumple cuando el alcance deja pasar fallos de otra tarea (H7, base C, τ = 0.1).
 
 > **Qué no se demuestra**: aprendizaje autónomo de ingeniería de software, significancia estadística,
 > superioridad de la memoria asociativa sobre el historial, ni transferencia con agentes LLM. Tampoco se

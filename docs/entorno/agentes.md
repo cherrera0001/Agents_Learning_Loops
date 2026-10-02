@@ -103,7 +103,8 @@ flowchart LR
     F -->|cita el conteo y no veta| OK["Firmado<br/>registro fechado en docs/entorno/"]
 ```
 
-El staff no publica: un texto firmado queda en el registro fechado y lo publica, si quiere, su autor.
+El investigador y el validador no dependen uno del otro. El staff no publica: un texto firmado queda en el
+registro fechado, y cualquier cambio posterior exige otra lectura del validador.
 
 ### Investigador de papers
 
