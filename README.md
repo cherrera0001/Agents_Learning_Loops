@@ -51,8 +51,9 @@ Son conteos exactos de un diseño exhaustivo: no hay muestra ni inferencia estad
 **Qué aporta.** Un resultado negativo, pre-registrado y reproducible: la asociación sobre las mismas señales
 léxicas que usa el historial no lo supera, y con un señuelo las dos memorias empeoraron el primer intento con
 el agente por defecto (H4, 0/18 frente a 6/18); con un diagnóstico público común la diferencia fue de −2/18,
-sin diferencia según el criterio pre-registrado (#58). Aporta también el método: tareas con señuelo que permiten que la memoria pierda, recibos inmutables de cada ejecución, una
-verificación independiente y análisis escritos antes de ver los datos.
+sin diferencia según el criterio pre-registrado (#58). Aporta también el método: tareas con señuelo que
+permiten que la memoria pierda, recibos inmutables de cada ejecución, una verificación independiente y
+análisis escritos antes de ver los datos.
 
 **Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
 operadores ya escritos), resultados con agentes LLM, mediciones de tokens o de costo, ni la promoción de
