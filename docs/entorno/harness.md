@@ -63,7 +63,9 @@ flowchart LR
 6. `python -m scripts.devlog rebuild`.
 7. El orquestador hace el merge **verificado** por `mergedAt` y CONFIRMAR: comprueba el criterio de cierre
    de la tabla siguiente y registra *Verificación*, *Modelo usado* y *Escaló*.
-8. Solo entonces mueve la tarjeta a *Done*.
+8. *Done* no es el cierre confirmado: la automatización del tablero ya pone la tarjeta en *Done* al mergear
+   un PR con `Closes`. El cierre confirmado es *Verificación* = *Verificada*, y CONFIRMAR termina con
+   `python -m scripts.devlog board --since <n>` sin hallazgos.
 
 El texto canónico, los responsables y las reglas del registro están en
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto).
