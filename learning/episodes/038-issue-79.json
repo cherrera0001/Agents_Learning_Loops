@@ -1,0 +1,47 @@
+{
+  "seq": 38,
+  "id": "issue-79",
+  "goal": "Politica de tallas y modelo de construccion: factores con anclas, excepciones que mandan sobre la talla, agentes que no son Claude, registro y brazo Haiku como hipotesis",
+  "ref": "#79",
+  "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Consulta antes de implementar: sin lecciones sobre politica de tallas; se leyeron estimation.md, enrutamiento.md, glosario y los issues #56, #68 y #73"
+    },
+    {
+      "action": "gh_create_issues",
+      "success": false,
+      "error": "gh issue view --comments no imprimio nada con exit 0 en PowerShell; el cuerpo y los comentarios solo se leyeron con gh api"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "estimation.md 2.1 a 2.6 sin tocar cifras de 1 y 2 ni reescribir 3 a 5; solo una nota historica bajo el titulo de 3"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Coherencia minima en enrutamiento.md, glosario.md y README 3.2: el registro ya no se describe como los campos Talla, Modelo y Puntos"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Diff contra origin/main: la unica linea eliminada en estimation.md es la frase de la introduccion sobre los campos del Project"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "devlog rebuild tras escribir el episodio"
+    }
+  ],
+  "lessons": [
+    "Una regla de escalamiento que sobrescribe el campo del modelo previsto destruye la evidencia de la estimacion: registrar previsto y usado en campos separados",
+    "Cuando suma y ancla discrepan, el ancla manda y la discrepancia se registra; la suma de factores ordinales supone pesos iguales y no esta calibrada",
+    "Una excepcion por incertidumbre alta evita que la suma oculte el factor que mas cambia el modelo necesario",
+    "Un campo autoinformado debe declararse como tal: solo las transcripciones locales de Claude Code acreditan modelo y tokens",
+    "En gh con PowerShell, leer issues con gh api cuando gh issue view devuelve salida vacia con exit 0"
+  ],
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1}
+}

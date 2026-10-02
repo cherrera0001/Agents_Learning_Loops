@@ -1,7 +1,7 @@
 # Estimación por tallas y enrutamiento de modelos
 
 Cada issue recibe una **talla** (XS · S · M · L · XL) que determina su esfuerzo relativo y **qué modelo de
-Claude lo construye**. La talla se registra en el Project #5 (campos *Talla*, *Modelo* y *Puntos*).
+Claude lo construye**. La talla se registra en el Project #5 y el registro por issue se describe en § 2.4.
 
 ## 1. Cómo se estima
 
@@ -41,7 +41,55 @@ Reglas:
 3. **Antes de sumar modelos, bajar el esfuerzo**: en tareas pequeñas, Opus 5.5 con esfuerzo bajo suele rendir igual que un modelo menor; la cascada solo se justifica si se mide un ahorro por tarea completada, no por solicitud.
 4. **Orquestación**: el orquestador (Opus 5.5) define las especificaciones, revisa cada entrega y es el único que hace merge. Los agentes ([agentes de entorno](entorno/glosario.md)) trabajan en worktrees aislados y abren PR, sin hacer merge.
 
+### 2.1 Qué decide cada factor
+
+La **talla se asigna por alcance**, por comparación con un issue ancla ya cerrado y con episodio:
+
+| Talla | Ancla | Criterio observable |
+|---|---|---|
+| XS | #24 | Sin código, o cierre con evidencia ya existente |
+| S | #43 | Un módulo o documento con sus tests |
+| M | #44 | Varios archivos, o campaña con diseño ya fijado |
+| L | #42 | Varios módulos con decisiones de diseño abiertas |
+| XL | #46 | Experimento nuevo con pre-registro y evidencia nueva |
+
+Incertidumbre y riesgo se registran aparte (campos *Incertidumbre* y *Riesgo* del Project #5) y activan las excepciones de § 2.2; V determina el tipo de criterio de cierre. La suma A+I+R+V de § 1 se conserva como referencia. Si suma y ancla discrepan, **manda el ancla** y la discrepancia se registra en la estimación (ejemplo: #77, suma 7 → S, ancla → M).
+Límites: los factores son ordinales, sumarlos supone pesos iguales y la escala **no está calibrada**: solo 5 issues tienen talla y episodio (un M y cuatro XL).
+
+### 2.2 Excepciones que mandan sobre la talla
+
+El modelo es el mayor entre el de la fila de la talla y el mínimo de la excepción.
+
+| Excepción | Regla | Estado | Caso |
+|---|---|---|---|
+| R = 3 | Mínimo Sonnet 5.5 (regla 1) | Vigente | #30 |
+| I = 3 | Mínimo Opus 5.5, aunque la talla sea S | **Nueva** | S con A1, I3, R1, V1: suma 6 → S → Sonnet `medium`, sin efecto de la incertidumbre |
+| Escritura en un sistema externo compartido (DNS, tablero, credenciales) | Nunca Haiku 4.5; la hace quien orquesta | **Nueva** | #76 |
+| El orquestador implementa él mismo | Declara el modelo de su sesión como previsto | **Nueva** | #68 |
+
+### 2.3 Agentes que no son Claude
+
+Para Codex, agy u otro agente que no es un modelo de Claude: *Modelo* (previsto) queda vacío y la estimación nombra al agente; *Modelo usado* = «Otro agente» (caso #73). La política de modelos no les aplica; sí aplican talla, verificación y cierre.
+
+### 2.4 Registro
+
+- **Estimación v1** en el cuerpo del issue, antes de pasar a *In Progress*. Cada cambio es un comentario «Estimación v2…» con fecha, motivo y evidencia.
+- *Modelo* es el modelo **previsto** y nunca se sobrescribe (en #56 se sobrescribió con el final y el previsto solo quedó en el cuerpo).
+- Al cerrar se completan *Modelo usado* y *Escaló*; el motivo del escalamiento va en un comentario (caso #56: Sonnet 5.5 `high` → Opus 5.5 por la regla 2).
+- *Modelo usado* es **autoinformado**, salvo que exista transcripción: solo las transcripciones locales de Claude Code registran modelo y tokens, y solo de esa máquina. No hay telemetría del proveedor accesible.
+- Límite: la herramienta que lanza subagentes permite fijar el modelo pero no el nivel de esfuerzo; el esfuerzo de la tabla hoy no es aplicable por esa vía.
+
+### 2.5 Regla 3 frente a XS → Haiku 4.5
+
+Ambas pueden contradecirse. **La tabla de § 2 manda como valor por defecto.** La regla 3 es una alternativa permitida (p. ej. Opus 5.5 con esfuerzo bajo en una tarea XS) que debe declararse en la estimación como desviación. Ninguna de las dos está respaldada todavía por una medición de costo por tarea completada en este repositorio: los 7 issues XS de § 5 fueron cierres sin código y no hay evidencia de Haiku 4.5 escribiendo código.
+
+### 2.6 Brazo Haiku del piloto (hipótesis en evaluación, no regla vigente)
+
+Los issues S con I = 1, R = 1 y criterios de aceptación claros empiezan con Haiku 4.5. Si la verificación falla, se escala un escalón (regla 2) y se registra. El brazo se detiene si dos entregas seguidas fallan la verificación. Diseño y medición: [`docs/piloto-estimacion.md`](piloto-estimacion.md).
+
 ## 3. Estimación de los issues abiertos (2026-09-29)
+
+> Desde el 2026-10-02 el registro por issue vive en el cuerpo del issue y en el Project #5 (§ 2.4). Las secciones 3 a 5 son registro histórico y no se reescriben.
 
 | Issue | A | I | R | V | Talla | Modelo | Depende de |
 |---|---|---|---|---|---|---|---|
