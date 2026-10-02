@@ -53,8 +53,18 @@ La elección del modelo **no es un interruptor automático**. Opera en tres nive
 Por herramienta:
 
 - **Claude Code**: el lugar que fija el modelo de un rol es el frontmatter `model:` de
-  `.claude/agents/<rol>.md`. **Esos archivos aún no existen** en este repositorio. Mientras no existan, el
-  ID se pasa al lanzar cada subagente.
+  `.claude/agents/<rol>.md`. El repositorio versiona tres definiciones de implementador:
+  [`implementador-haiku`](../../.claude/agents/implementador-haiku.md),
+  [`implementador-sonnet`](../../.claude/agents/implementador-sonnet.md) e
+  [`implementador-opus`](../../.claude/agents/implementador-opus.md). Comparten un cuerpo corto (arranque,
+  cuenta de GitHub por orden, comprobaciones, episodio, PR sin merge) y solo cambian el modelo y su
+  `description`. Qué **declaran**: el alias del modelo del subagente (`haiku`, `sonnet` u `opus`). A qué ID
+  resuelve cada alias lo decide Claude Code, no este repositorio: el 2026-10-02, en subagentes lanzados
+  pasando el alias a mano, las transcripciones registraron `claude-sonnet-5-5` para `sonnet` y
+  `claude-haiku-4-5-20251001` para `haiku`. Que un subagente lanzado **con la definición** corra con ese
+  modelo está pendiente de observar en una transcripción, y una definición nueva puede no cargarse hasta
+  reiniciar la sesión; tampoco está comprobado. Qué **no fijan**: el esfuerzo (la herramienta de subagentes
+  no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de `.claude/`.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 
