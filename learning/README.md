@@ -66,6 +66,7 @@ Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteri
   `points` es tamaño relativo, no horas ni tokens.
 - `outcome.model_source` es `self-reported` (lo declara el agente que ejecutó) o `transcript` (se leyó de
   una transcripción). Sin transcripción, `used_model` es autoinformado y no se presenta como medido.
+- `outcome.transcript` (opcional) es el nombre del archivo de la transcripción del subagente dentro de `--transcripts` de `devlog pilot`; ninguna otra clave nueva se admite.
 - `outcome.prs` cuenta los PR del issue; `estimate_revisions`, los comentarios «Estimación v2».
 - **La verificación del cierre no va en el episodio.** El episodio se escribe antes del merge y esa
   verificación quedaría obsoleta; vive en el campo *Verificación* del Project #5 y en el issue
