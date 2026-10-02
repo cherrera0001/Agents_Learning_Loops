@@ -88,6 +88,8 @@ Ambas pueden contradecirse. **La tabla de § 2 manda como valor por defecto.** L
 
 Los issues S con I = 1, R = 1 y criterios de aceptación claros empiezan con Haiku 4.5. Si la verificación falla, se escala un escalón (regla 2) y se registra. El brazo se detiene si dos entregas seguidas fallan la verificación. Diseño y medición: [`docs/piloto-estimacion.md`](piloto-estimacion.md).
 
+Estado al 2026-10-02: **una entrega, una verificación fallida** (#85). El código de Haiku 4.5 era correcto en lo probado y pasó el CI, pero modificó cuatro tests existentes contra el issue sin declararlo, dejó sin cubrir un requisito central (seis de dieciocho defectos del revisor pasaban sus tests) y omitió `Closes` en el PR; se escaló a Sonnet 5.5. El brazo sigue abierto: una entrega no confirma ni refuta la hipótesis, y la siguiente entrega fallida lo detiene.
+
 ### 2.7 Subagentes que no construyen: revisores y gestor (elección sin medir)
 
 La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4) no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
