@@ -1,0 +1,769 @@
+{
+ "items": [
+  {
+   "content": {
+    "number": 1,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Deps] Pydantic y embeddings locales (fastembed) como extra opcional",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/1"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fbZk",
+   "labels": [
+    "enhancement",
+    "area:infra",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/15"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Deps] Pydantic y embeddings locales (fastembed) como extra opcional"
+  },
+  {
+   "content": {
+    "number": 2,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Esquema] Modelos Pydantic para Node/Edge y JSON Schema generado",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/2"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fbgs",
+   "labels": [
+    "enhancement",
+    "area:memory",
+    "area:specs",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/16"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Esquema] Modelos Pydantic para Node/Edge y JSON Schema generado"
+  },
+  {
+   "content": {
+    "number": 3,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Memoria] Embeddings y búsqueda híbrida para la siembra de activación",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/3"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fbmQ",
+   "labels": [
+    "enhancement",
+    "area:memory",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/18"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Memoria] Embeddings y búsqueda híbrida para la siembra de activación"
+  },
+  {
+   "content": {
+    "number": 4,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Memoria] Spreading Activation: umbral de disparo, refracción y fan-out",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/4"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fbsM",
+   "labels": [
+    "enhancement",
+    "area:memory",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/17"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Memoria] Spreading Activation: umbral de disparo, refracción y fan-out"
+  },
+  {
+   "content": {
+    "number": 5,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Consolidación] Aprendizaje hebbiano, decaimiento explícito y poda",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/5"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fbxY",
+   "labels": [
+    "enhancement",
+    "area:memory",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/19"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Consolidación] Aprendizaje hebbiano, decaimiento explícito y poda"
+  },
+  {
+   "content": {
+    "number": 6,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Agente] Fase RETRIEVE explícita y benchmark con la misma meta",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/6"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fb3Q",
+   "labels": [
+    "enhancement",
+    "area:agent",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/20"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Agente] Fase RETRIEVE explícita y benchmark con la misma meta"
+  },
+  {
+   "content": {
+    "number": 7,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Tests] Suite rigurosa: misma meta, activación, decaimiento y propiedades",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/7"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fb9c",
+   "labels": [
+    "area:testing",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/23"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Tests] Suite rigurosa: misma meta, activación, decaimiento y propiedades"
+  },
+  {
+   "content": {
+    "number": 8,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Memoria] Valencia contextual de acciones",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/8"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fcDs",
+   "labels": [
+    "enhancement",
+    "area:memory"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/21"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Memoria] Valencia contextual de acciones"
+  },
+  {
+   "content": {
+    "number": 9,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Infra] Endurecimiento para producción: empaquetado, CI, tipado y logging",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/9"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fcO4",
+   "labels": [
+    "documentation",
+    "area:infra",
+    "evaluation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/22"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Infra] Endurecimiento para producción: empaquetado, CI, tipado y logging"
+  },
+  {
+   "content": {
+    "number": 10,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Epic] Madurez v0.2: implementación rigurosa según evaluación técnica",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/10"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fcjU",
+   "labels": [
+    "epic",
+    "evaluation"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Epic] Madurez v0.2: implementación rigurosa según evaluación técnica"
+  },
+  {
+   "content": {
+    "number": 11,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Aprendizaje] Registrar el desarrollo del repo como episodios en la memoria asociativa",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/11"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fhig",
+   "labels": [
+    "enhancement",
+    "area:agent"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/12"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Aprendizaje] Registrar el desarrollo del repo como episodios en la memoria asociativa"
+  },
+  {
+   "content": {
+    "number": 13,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Bug] Consolidación asocia como resolución todo éxito posterior a un fallo",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/13"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9fkdU",
+   "labels": [
+    "bug",
+    "area:memory"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/14"
+   ],
+   "milestone": {
+    "description": "Madurez: modelos Pydantic, embeddings, activación y consolidación hebbiana, CI",
+    "dueOn": "",
+    "title": "v0.2.0"
+   },
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Bug] Consolidación asocia como resolución todo éxito posterior a un fallo"
+  },
+  {
+   "content": {
+    "number": 24,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-01] API returns 500 instead of 401",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/24"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLcw",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-01] API returns 500 instead of 401"
+  },
+  {
+   "content": {
+    "number": 25,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-02] Clean environment fails to load application title",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/25"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLeg",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-02] Clean environment fails to load application title"
+  },
+  {
+   "content": {
+    "number": 26,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-03] Health endpoint fails immediately after startup",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/26"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLfQ",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-03] Health endpoint fails immediately after startup"
+  },
+  {
+   "content": {
+    "number": 27,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-04] Middleware crashes before returning 401",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/27"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLgY",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-04] Middleware crashes before returning 401"
+  },
+  {
+   "content": {
+    "number": 28,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-05] Report request raises AttributeError on None",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/28"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLiI",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-05] Report request raises AttributeError on None"
+  },
+  {
+   "content": {
+    "number": 29,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXP-06] Background summary fails before producing a report",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/29"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLj0",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXP-06] Background summary fails before producing a report"
+  },
+  {
+   "content": {
+    "number": 30,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[HYPOTHESIS] Does prior evidence reduce repeated failures across related tasks?",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/30"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLlw",
+   "modelo": "Sonnet 5.5",
+   "puntos": 3,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "M",
+   "title": "[HYPOTHESIS] Does prior evidence reduce repeated failures across related tasks?"
+  },
+  {
+   "content": {
+    "number": 31,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXPERIMENT] Establish synthetic associative-memory baseline",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/31"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLmU",
+   "modelo": "Haiku 4.5",
+   "puntos": 1,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XS",
+   "title": "[EXPERIMENT] Establish synthetic associative-memory baseline"
+  },
+  {
+   "content": {
+    "number": 32,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXPERIMENT] Cross-task learning in a real software project",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/32"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLnk",
+   "modelo": "Sonnet 5.5",
+   "puntos": 3,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "M",
+   "title": "[EXPERIMENT] Cross-task learning in a real software project"
+  },
+  {
+   "content": {
+    "number": 33,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[BENCHMARK] Build causal task families for transfer evaluation",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/33"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLpQ",
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[BENCHMARK] Build causal task families for transfer evaluation"
+  },
+  {
+   "content": {
+    "number": 34,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[DESIGN] Extend MemoryGraph from action ranking to evidence-grounded learning",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/34"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLqU",
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[DESIGN] Extend MemoryGraph from action ranking to evidence-grounded learning"
+  },
+  {
+   "content": {
+    "number": 35,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EVIDENCE] Introduce immutable run receipts",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/35"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLrY",
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[EVIDENCE] Introduce immutable run receipts"
+  },
+  {
+   "content": {
+    "number": 36,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EVALUATION] Define learning and retrieval metrics",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/36"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gLs8",
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[EVALUATION] Define learning and retrieval metrics"
+  },
+  {
+   "content": {
+    "number": 38,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[Docs] README técnico: arquitectura, algoritmos y diagramas",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/38"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gSPM",
+   "labels": [
+    "documentation"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/39"
+   ],
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "title": "[Docs] README técnico: arquitectura, algoritmos y diagramas"
+  },
+  {
+   "content": {
+    "number": 41,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[FINDING] Associative memory matches text history and leaves some transfer decisions unchanged",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/41"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gZkY",
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[FINDING] Associative memory matches text history and leaves some transfer decisions unchanged"
+  },
+  {
+   "content": {
+    "number": 42,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EVIDENCE] Los hashes de los recibos dependen del fin de línea del checkout",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/42"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gqlo",
+   "labels": [
+    "bug",
+    "research",
+    "verification"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 5,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "L",
+   "title": "[EVIDENCE] Los hashes de los recibos dependen del fin de línea del checkout"
+  },
+  {
+   "content": {
+    "number": 43,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[DESIGN] Tres salvaguardas del grafo tipado sin tests (detectado por mutación)",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/43"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gqpU",
+   "labels": [
+    "research",
+    "verification"
+   ],
+   "modelo": "Sonnet 5.5",
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "[DESIGN] Tres salvaguardas del grafo tipado sin tests (detectado por mutación)"
+  },
+  {
+   "content": {
+    "number": 44,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[BENCHMARK] El baseline sin memoria cubre 2 de 6 permutaciones del prior",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/44"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gqs0",
+   "labels": [
+    "research",
+    "verification"
+   ],
+   "modelo": "Sonnet 5.5",
+   "puntos": 3,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "M",
+   "title": "[BENCHMARK] El baseline sin memoria cubre 2 de 6 permutaciones del prior"
+  },
+  {
+   "content": {
+    "number": 45,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[BENCHMARK] El par engañoso EXP-05 no engaña: pistas léxicas desambiguan",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/45"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gqww",
+   "labels": [
+    "research",
+    "verification"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 5,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "L",
+   "title": "[BENCHMARK] El par engañoso EXP-05 no engaña: pistas léxicas desambiguan"
+  },
+  {
+   "content": {
+    "number": 46,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "[EXPERIMENT] Memoria asociativa vs historial textual y transferencia negativa",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/46"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9gqzs",
+   "labels": [
+    "research",
+    "verification"
+   ],
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/53"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 8,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XL",
+   "title": "[EXPERIMENT] Memoria asociativa vs historial textual y transferencia negativa"
+  },
+  {
+   "content": {
+    "number": 56,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "docs: alinear el README con H4, hashes v2 y rutas reales",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/56"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9jMNw",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/57"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 3,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "M",
+   "title": "docs: alinear el README con H4, hashes v2 y rutas reales"
+  },
+  {
+   "content": {
+    "number": 58,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "experimento: contraste exploratorio con base diagnóstica común",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/58"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9jkkM",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/61"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 8,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XL",
+   "title": "experimento: contraste exploratorio con base diagnóstica común"
+  },
+  {
+   "content": {
+    "number": 63,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "experimento: memoria de fallos con revisión (H6) — no repetir un error observado sin contaminar otro contexto",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/63"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9k62Y",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/64"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 8,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "XL",
+   "title": "experimento: memoria de fallos con revisión (H6) — no repetir un error observado sin contaminar otro contexto"
+  },
+  {
+   "content": {
+    "number": 65,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "experimento: transferencia y contaminación de la memoria de fallos entre tareas (H7)",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/65"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9qhBk",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/66"
+   ],
+   "modelo": "Opus 5.5",
+   "puntos": 8,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "In Progress",
+   "talla": "XL",
+   "title": "experimento: transferencia y contaminación de la memoria de fallos entre tareas (H7)"
+  },
+  {
+   "content": {
+    "number": 68,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "docs: incorporar el caso de campo de supervisión VT sin mezclarlo con campañas",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/68"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9sAxQ",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/69"
+   ],
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "In Progress",
+   "talla": "S",
+   "title": "docs: incorporar el caso de campo de supervisión VT sin mezclarlo con campañas"
+  },
+  {
+   "content": {
+    "number": 73,
+    "repository": "cherrera0001/Agents_Learning_Loops",
+    "title": "docs: registrar el proceso de supervisión agy/Gemini como caso de campo",
+    "type": "Issue",
+    "url": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/73"
+   },
+   "id": "PVTI_lAHOASvtSs4BlGyIzg9xoXI",
+   "linked pull requests": [
+    "https://github.com/cherrera0001/Agents_Learning_Loops/pull/74"
+   ],
+   "puntos": 2,
+   "repository": "https://github.com/cherrera0001/Agents_Learning_Loops",
+   "status": "Done",
+   "talla": "S",
+   "title": "docs: registrar el proceso de supervisión agy/Gemini como caso de campo"
+  }
+ ],
+ "totalCount": 38
+}

@@ -1,0 +1,73 @@
+{
+  "seq": 37,
+  "id": "issue-78",
+  "goal": "Chequeo de solo lectura que cruza issues, tablero y episodios (devlog board)",
+  "ref": "#78",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "el guardia del worktree rechazó las órdenes bash con sustitución de comandos ($(gh auth token ...)) y con el intérprete de Python en una variable"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Con PowerShell ($env:GH_TOKEN = (gh auth token --user ...)) en una orden sin construcciones opacas; las lecciones previas no cubrían este chequeo"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "ruff RUF005 (listas de argumentos de gh concatenadas) y RUF059 (variable desempaquetada sin usar en un test)"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Argumentos con desempaquetado y constantes; variables sin uso renombradas a _"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Caso rojo y control verde por regla, fixture real de 38 tarjetas con #65 y #68 y lecturas fallidas con el ejecutor de gh inyectado"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Sección «Chequeo del tablero» al final de learning/README.md, con reglas, códigos de salida y por qué no corre en CI"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Salida real: instantánea previa señala #65 y #68 (código 1); tablero real con --since 76 sin hallazgos; sin GH_TOKEN, código 2 y mensaje de que la cuenta no ve el Project"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true
+    },
+    {
+      "action": "open_pr",
+      "success": true
+    }
+  ],
+  "lessons": [
+    "Un chequeo que lee una fuente externa debe distinguir «no pude leer» (código 2) de «sin hallazgos» (código 0): comprueba la cuenta y la completitud antes de evaluar",
+    "En un worktree aislado, las órdenes con sustitución de comandos no se ejecutan: fija GH_TOKEN con PowerShell y separa las órdenes",
+    "La cita de un issue en un texto libre exige número exacto: #7 no es #77, PR #7 no es el issue 7 y otro/repo#7 es de otro repositorio"
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 1,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  }
+}
