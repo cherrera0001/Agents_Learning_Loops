@@ -47,8 +47,8 @@ encabezado del README, un post o un artículo.
 10. **Borrador de debate.** Lo que un artículo propone como pregunta se marca «pregunta abierta», no
     arquitectura del repositorio.
 11. **Veto.** Se veta el texto que omite un resultado negativo pertinente, que presenta lo previsto como
-   hecho o que usa una palabra vetada. El redactor entrega el texto al validador; sin su firma no hay
-   visto bueno.
+    hecho o que usa una palabra vetada. El redactor entrega el texto al validador; sin su firma no hay
+    visto bueno.
 
 ## Informe
 
