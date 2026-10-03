@@ -44,12 +44,22 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "Revisores independientes detectaron defectos concretos en el módulo y huecos en los tests. La suite inicial local había pasado (1952 passed, 7 skipped, 98.72%), pero no detectó esos defectos; CI encontró además la colisión de seq 53 contra main."
+      "note": "Revisores independientes detectaron defectos concretos en el módulo y huecos en los tests. La suite inicial local había pasado (1952 passed, 7 skipped, 98.72%), pero no detectó esos defectos."
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El episodio se entregó con seq 53, que ya estaba ocupado en origin/main; CI detectó la colisión."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Se renumeró el episodio a seq 55 tras comprobar los episodios existentes en origin/main; el archivo quedó con un identificador libre."
     },
     {
       "action": "edit_module",
       "success": true,
-      "note": "Codex corrigió el generador para escribir LF portable, escapar family/decoy_family en SVG y evitar textos recortados; también quitó la etiqueta factorial sin respaldo y renumeró el episodio a seq 55 para coordinar con #121/#122."
+      "note": "Codex corrigió el generador para escribir LF portable, escapar family/decoy_family en SVG y evitar textos recortados; también quitó la etiqueta factorial sin respaldo."
     },
     {
       "action": "write_tests",
