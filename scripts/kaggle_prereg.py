@@ -463,26 +463,64 @@ REQUISITOS: dict[str, tuple[str, ...]] = {
     "decisiones_dueno": (),  # una decision se puede versionar en cuanto se toma
 }
 
+
+def _o_nulo(ok: Validador) -> Validador:
+    """Validador que ademas admite ``null``: la medida no existe."""
+    return lambda v: v is None or ok(v)
+
+
+def _is_turnos(v: object) -> bool:
+    return isinstance(v, list) and bool(v) and all(_is_int(x, 0) for x in v)
+
+
+# Enmienda 1 del pre-registro. Los campos que admiten ``null`` son medidas que no existen cuando el
+# servidor no arranca o el envio no compila; ``ensayo_viable`` exige las de ``ENSAYO_SI_VIABLE``
+# cuando el ensayo llego al agente. ``informe_sha256`` cita el informe de sondas que acompana al
+# registro. ``turnos_por_tarea_repeticion`` es la lista de la repeticion con el segundo candidato.
 ENSAYO: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_ENSAYO,
     "fecha": _is_date,
     "notebook": _is_text,
-    "modelo": _is_text,
+    "modelo": _o_nulo(_is_text),
     "guion_servidor_sha256": _is_sha,
+    "informe_sha256": _is_sha,
     "docker_disponible": lambda v: isinstance(v, bool),
-    "backend": lambda v: v in BACKENDS,
+    "backend": _o_nulo(lambda v: v in BACKENDS),
     "servidor_arranca": lambda v: isinstance(v, bool),
     "envio_compila": lambda v: isinstance(v, bool),
-    "carga_modelo_segundos": lambda v: _is_num(v, 0),
+    "carga_modelo_segundos": _o_nulo(lambda v: _is_num(v, 0)),
     "sesion_max_horas": lambda v: _is_num(v, 0, strict=True),
-    "tokens_por_segundo": lambda v: _is_num(v, 0),
+    "tokens_por_segundo": _o_nulo(lambda v: _is_num(v, 0)),
     "max_time_minutes_ensayo": lambda v: _is_int(v, 1),
-    "turnos_por_tarea": lambda v: isinstance(v, list) and bool(v) and all(_is_int(x, 0) for x in v),
-    "peticiones_al_modelo": lambda v: _is_int(v, 0),
-    "rechazos_por_contexto": lambda v: (
-        isinstance(v, dict) and bool(v) and all(k.isdigit() and _is_int(n, 0) for k, n in v.items())
+    "turnos_por_tarea": _o_nulo(_is_turnos),
+    "turnos_por_tarea_repeticion": _o_nulo(_is_turnos),
+    "peticiones_al_modelo": _o_nulo(lambda v: _is_int(v, 0)),
+    "rechazos_por_contexto": _o_nulo(
+        lambda v: (
+            isinstance(v, dict)
+            and bool(v)
+            and all(isinstance(k, str) and k.isdigit() and _is_int(n, 0) for k, n in v.items())
+        )
     ),
 }
+ENSAYO_SI_VIABLE: tuple[str, ...] = (
+    "modelo",
+    "backend",
+    "carga_modelo_segundos",
+    "tokens_por_segundo",
+    "turnos_por_tarea",
+    "peticiones_al_modelo",
+    "rechazos_por_contexto",
+)
+# Medidas que no pueden existir si el servidor no arranca (o, las del agente, si el envio no compila).
+ENSAYO_DEL_SERVIDOR: tuple[str, ...] = ("modelo", "carga_modelo_segundos", "tokens_por_segundo")
+ENSAYO_DEL_AGENTE: tuple[str, ...] = (
+    "backend",
+    "turnos_por_tarea",
+    "turnos_por_tarea_repeticion",
+    "peticiones_al_modelo",
+    "rechazos_por_contexto",
+)
 ENTORNO: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_ENTORNO,
     "ensayo_sha256": _is_sha,
@@ -736,6 +774,50 @@ def output_tokens(fijos: dict[str, Any], ensayo: dict[str, Any]) -> int:
     )
 
 
+def ensayo_viable(fijos: dict[str, Any], ensayo: dict[str, Any]) -> int:
+    """Compuerta de viabilidad del ensayo (A.0, Enmienda 1). Devuelve ``max_output_tokens``.
+
+    Un ensayo en el que el servidor no arranca o el envio no compila no es viable, y sus medidas
+    que por eso no existen van nulas: traer un numero ahi es una contradiccion. Si llego al
+    agente, no puede faltar ninguna medida de ``ENSAYO_SI_VIABLE``, y la viabilidad se juzga con la
+    lista de turnos medida con el ``max_output_tokens`` que queda fijado: la del kit si no hubo
+    rechazos, la de la repeticion si los hubo.
+    """
+    minimo = fijos["viabilidad_turnos_minimos"]
+    no_viable = (
+        "ensayo_notebook: el ensayo no es viable (el servidor no arranca, el envio no compila o el "
+        f"agente no completa {minimo} turnos en al menos la mitad de las tareas): la compuerta "
+        "no se abre (decision 'ensayo_no_viable')."
+    )
+    if not (ensayo["servidor_arranca"] and ensayo["envio_compila"]):
+        imposibles = [k for k in ENSAYO_DEL_AGENTE if ensayo[k] is not None]
+        if not ensayo["servidor_arranca"]:
+            imposibles += [k for k in ENSAYO_DEL_SERVIDOR if ensayo[k] is not None]
+        if imposibles:
+            no_viable += f" Ademas trae medidas que no pueden existir en ese caso: {sorted(imposibles)}."
+        raise PreregError(no_viable)
+    faltan = [k for k in ENSAYO_SI_VIABLE if ensayo[k] is None]
+    if faltan:
+        raise PreregError(
+            f"ensayo_notebook: valores invalidos: con el servidor arrancado y el envio compilado no "
+            f"pueden faltar {faltan}."
+        )
+    tokens = output_tokens(fijos, ensayo)
+    del_kit = int(fijos["max_output_tokens_candidatos"][0])
+    repeticion = ensayo["turnos_por_tarea_repeticion"]
+    hubo_rechazos = ensayo["rechazos_por_contexto"][str(del_kit)] > 0
+    if hubo_rechazos != (repeticion is not None):
+        raise PreregError(
+            "ensayo_notebook: valores invalidos: 'turnos_por_tarea_repeticion' debe existir si y solo si "
+            f"hubo rechazos por contexto con {del_kit} tokens de salida."
+        )
+    turnos = ensayo["turnos_por_tarea"] if tokens == del_kit else repeticion
+    viables = sum(1 for t in turnos if t >= minimo)
+    if 2 * viables < len(turnos):
+        raise PreregError(no_viable)
+    return tokens
+
+
 def regenerated_subset(tasks_path: Path, repo: str, invalidas: set[str]) -> str:
     """Texto que escribiria ``scripts/kaggle_split.py`` para esa particion (mismo formato que su CLI)."""
     try:
@@ -878,18 +960,9 @@ def _contrastar(
         return
     ensayo = _read_record(raiz, valor["ensayo_notebook"], "ensayo_notebook", ENSAYO)
     en_orden("el ensayo de notebook", ensayo["fecha"])
-    turnos = ensayo["turnos_por_tarea"]
-    viables = sum(1 for t in turnos if t >= fijos["viabilidad_turnos_minimos"])
-    if not (ensayo["servidor_arranca"] and ensayo["envio_compila"]) or 2 * viables < len(turnos):
-        raise PreregError(
-            "ensayo_notebook: el ensayo no es viable (el servidor no arranca, el envio no compila o el "
-            "agente no completa "
-            f"{fijos['viabilidad_turnos_minimos']} turnos en al menos la mitad de las tareas): la compuerta "
-            "no se abre (decision 'ensayo_no_viable')."
-        )
+    tokens = ensayo_viable(fijos, ensayo)
     if ensayo["backend"] == "docker" and not ensayo["docker_disponible"]:
         raise PreregError("ensayo_notebook: el backend es docker pero el notebook no tiene Docker.")
-    tokens = output_tokens(fijos, ensayo)
 
     if valor["entorno_sandbox"] is None:
         return

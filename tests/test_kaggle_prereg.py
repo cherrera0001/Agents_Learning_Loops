@@ -438,6 +438,8 @@ class Arbol:
             "notebook": "cuenta/ensayo-inventado v1",
             "modelo": "modelo-inventado/1",
             "guion_servidor_sha256": "1" * 64,
+            "informe_sha256": "3" * 64,  # Enmienda 1: el registro cita su informe de sondas
+            "turnos_por_tarea_repeticion": None,  # Enmienda 1: sin rechazos no hay repeticion
             "docker_disponible": False,
             "backend": "subprocess",
             "servidor_arranca": True,
@@ -787,6 +789,7 @@ def test_ensayo_de_notebook_invalido_o_no_viable(arbol: Arbol, cambio: dict[str,
 def test_ensayo_viable_en_la_frontera_y_con_8192(arbol: Arbol) -> None:
     arbol.ensayo["turnos_por_tarea"] = [5, 4, 4, 5]  # justo la mitad con el minimo de turnos
     arbol.ensayo["rechazos_por_contexto"] = {"16384": 3, "8192": 0}
+    arbol.ensayo["turnos_por_tarea_repeticion"] = [5, 4, 4, 5]  # Enmienda 1: lista de la repeticion
     data = arbol.escribir()
     assert check_closed(data, arbol.raiz).problemas == []
     ensayo = json.loads((arbol.raiz / "ensayo.json").read_text(encoding="utf-8"))
@@ -1120,6 +1123,7 @@ def test_ni_la_linea_base_cabe_al_recalcular(arbol: Arbol) -> None:
 def test_max_output_tokens_del_envio_es_el_que_fija_el_ensayo(arbol: Arbol) -> None:
     """Ensayo con rechazos a 16384 y ninguno a 8192: el envio tiene que llevar 8192, y solo ese cambio."""
     arbol.ensayo["rechazos_por_contexto"] = {"16384": 3, "8192": 0}
+    arbol.ensayo["turnos_por_tarea_repeticion"] = [9, 4, 12, 5]  # Enmienda 1: lista de la repeticion
     assert "el ensayo fija max_output_tokens = 8192" in _problemas(arbol)  # el envio sigue con 16384
     arbol.sampling_envio = SAMPLING_KIT.replace(b"16384", b"8192")
     data = arbol.escribir()
