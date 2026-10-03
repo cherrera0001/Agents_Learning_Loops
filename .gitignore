@@ -12,3 +12,11 @@ dist/
 scratch/
 .claude/*
 !.claude/agents/
+.env
+.env.*
+
+# Gemma Developer Agent (Kaggle artifacts, weights & datasets)
+experiments/gemma_developer_agent/data/
+experiments/gemma_developer_agent/artifacts/
+experiments/gemma_developer_agent/checkpoints/
+*.ipynb_checkpoints

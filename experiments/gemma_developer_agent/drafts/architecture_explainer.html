@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALL (Agents Learning Loops) · Arquitectura & Kaggle Challenge</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-border: #30363d;
+      --text-main: #e6edf3;
+      --text-muted: #8b949e;
+      --primary: #58a6ff;
+      --primary-hover: #1f6feb;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --purple: #bc8cff;
+      --font-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--surface-border);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.75rem;
+    }
+    .badge-primary { background: rgba(88, 166, 255, 0.15); color: var(--primary); border: 1px solid var(--primary); }
+    .badge-success { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid var(--success); }
+    .badge-warning { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+
+    h1 { font-size: 2.3rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+    h2 { font-size: 1.5rem; font-weight: 700; margin: 2rem 0 1rem; color: var(--primary); border-bottom: 1px solid var(--surface-border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: #fff; }
+    p { margin-bottom: 1rem; color: var(--text-muted); }
+    p strong { color: var(--text-main); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+    @media (max-width: 850px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      position: relative;
+    }
+    .card-highlight {
+      border-left: 4px solid var(--primary);
+    }
+    .card-success { border-left: 4px solid var(--success); }
+    .card-warning { border-left: 4px solid var(--warning); }
+    .card-danger { border-left: 4px solid var(--danger); }
+
+    /* Diagram Styles */
+    .diagram-container {
+      background: #090d13;
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 2rem;
+      margin: 2rem 0;
+      overflow-x: auto;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Workflow Steps */
+    .timeline {
+      position: relative;
+      border-left: 2px solid var(--surface-border);
+      margin-left: 1.5rem;
+      padding-left: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .timeline-step {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+    .timeline-step::before {
+      content: "";
+      position: absolute;
+      left: -2.05rem;
+      top: 0.35rem;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--primary);
+    }
+    .timeline-step.active::before { background: var(--primary); }
+    .timeline-step.success::before { background: var(--success); border-color: var(--success); }
+    .timeline-step.warning::before { background: var(--warning); border-color: var(--warning); }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+    }
+    .step-meta {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      background: var(--surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+    }
+    th, td {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--surface-border);
+      font-size: 0.9rem;
+    }
+    th {
+      background: #1c2128;
+      color: #fff;
+      font-weight: 600;
+    }
+    tr:last-child td { border-bottom: none; }
+    code {
+      font-family: var(--font-mono);
+      background: rgba(110, 118, 129, 0.2);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--primary);
+    }
+
+    .metric-box {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--success);
+      margin-bottom: 0.25rem;
+    }
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div style="background-color: #3b2300; border: 2px solid #d29922; border-radius: 6px; padding: 1.25rem; margin-bottom: 2rem; color: #f0f6fc;">
+    <h2 style="color: #f2cc60; margin: 0 0 0.5rem 0; font-size: 1.2rem; border-bottom: none; padding-bottom: 0;">⚠️ AVISO DE GOBERNANZA · BORRADOR CONCEPTUAL</h2>
+    <p style="margin: 0; font-size: 0.95rem; color: #e6edf3;">
+      <strong>Diagrama de intención:</strong> nada de lo presentado en este documento gráfico está implementado ni medido en este repositorio. Representa exclusivamente esquemas preliminares de trabajo exploratorio para discusión conceptual.
+    </p>
+  </div>
+
+  <header>
+    <div class="badge badge-primary">Google Kaggle Challenge · Fall 2026</div>
+    <div class="badge badge-success">Gemma 4 Developer Agent</div>
+    <h1>Agents Learning Loops (ALL)</h1>
+    <p>Arquitectura de memoria episódica en grafo, estimación en tablero, arnés SWE-bench y consolidación de skills para agentes autónomos sin iteración infinita.</p>
+  </header>
+
+  <!-- SECCIÓN 1: EL DESAFÍO KAGGLE Y NUESTRA RESPUESTA -->
+  <section>
+    <h2>1. Alineación con el Desafío Kaggle (Dual Track)</h2>
+    <div class="grid-2">
+      <div class="card card-highlight">
+        <div class="badge badge-warning">Track 1 · Code Track</div>
+        <h3>Google - The Gemma 4 Developer Agent</h3>
+        <p><strong>Desafío Oficial:</strong> Resolver defectos en repositorios reales bajo evaluación binaria pass/fail (metodología SWE-bench), en hardware dedicado de 4x GPUs NVIDIA L4 (96 GB VRAM) con vLLM sirviendo exclusivamente <code>gemma-4-31b-it-qat-w4a16-ct</code>. Presupuesto por tarea: 60 minutos, 100 tool calls y 500 turnos máximos en sandboxes air-gapped.</p>
+        <p><strong>Respuesta de ALL:</strong></p>
+        <ul>
+          <li><strong>Aprendizaje Fuera de Línea (Offline Loop):</strong> Dado que cada contenedor se formatea tras evaluar una tarea (cero memoria inter-tarea en vivo), el bucle de ALL corre localmente sobre tareas de entrenamiento y compila los patrones validados en <code>skills/*/SKILL.md</code> declarativos para la submission.</li>
+          <li><strong>Anclaje Estructural H8 con Herramientas Nativas:</strong> El arnés de Kaggle provee herramientas sobre el grafo AST (<code>get_code_neighbors</code>, <code>search_similar_code</code>). ALL ancla la activación de skills a la topología del grafo y trazas de error, neutralizando señuelos léxicos (H8).</li>
+          <li><strong>Contrato Declarativo Estricto:</strong> Submission empaquetada como <code>submission.zip</code> con <code>agent.yaml</code> y skills, 100% compatible con <code>adk-submission</code> sin código de agente arbitrario.</li>
+        </ul>
+      </div>
+
+      <div class="card card-success">
+        <div class="badge badge-primary">Track 2 · Paper Track</div>
+        <h3>Gemma 4 Developer Agent Paper Track</h3>
+        <p><strong>Desafío:</strong> Artículo científico (cierre 12 de noviembre de 2026, premio 35 000 USD) que documente metodologías para avanzar el desarrollo de software autónomo con modelos abiertos.</p>
+        <p><strong>Respuesta de ALL:</strong></p>
+        <ul>
+          <li><strong>Aporte Teórico:</strong> Formalización del Dilema NRNE (L0–L5) y demostración de por qué la coincidencia superficial fracasa en distancias causales.</li>
+          <li><strong>Honestidad Empírica (H4 y H8):</strong> Publicación transparente de límites: la memoria léxica cayó en transferencia negativa (0/18 vs 6/18 en H4). Proponemos el anclaje estructural de H8 como solución verificable.</li>
+          <li><strong>Diseño Pre-registrado A/B/C/D:</strong> Comparación falsable entre línea base sin skills (A), placebo manual (B), skills offline de ALL (C) y ALL con navegación por grafo AST (D).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 2: DIAGRAMA MAESTRO DE ARQUITECTURA -->
+  <section>
+    <h2>2. Diagrama Maestro: Arquitectura de Flujo & Componentes</h2>
+    <div class="diagram-container">
+      <svg viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1f6feb" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#0d1117" stop-opacity="0.8"/>
+          </linearGradient>
+          <linearGradient id="grad-green" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#238636" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#0d1117" stop-opacity="0.8"/>
+          </linearGradient>
+          <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8957e5" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#0d1117" stop-opacity="0.8"/>
+          </linearGradient>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#58a6ff"/>
+          </marker>
+          <marker id="arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#3fb950"/>
+          </marker>
+          <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#f85149"/>
+          </marker>
+        </defs>
+
+        <!-- Bloque 1: GitHub Projects & Triage -->
+        <rect x="20" y="40" width="220" height="400" rx="8" fill="url(#grad-blue)" stroke="#388bfd" stroke-width="1.5"/>
+        <text x="35" y="70" fill="#58a6ff" font-weight="700" font-size="14" font-family="sans-serif">1. TRIAGE & ESTIMACIÓN</text>
+        <text x="35" y="90" fill="#8b949e" font-size="11" font-family="sans-serif">GitHub Projects (Tablero)</text>
+        
+        <rect x="35" y="110" width="190" height="70" rx="6" fill="#161b22" stroke="#30363d"/>
+        <text x="45" y="135" fill="#fff" font-weight="600" font-size="12">Issue SWE-bench</text>
+        <text x="45" y="155" fill="#8b949e" font-size="10">Síntoma, traceback, repo</text>
+
+        <rect x="35" y="200" width="190" height="90" rx="6" fill="#161b22" stroke="#388bfd"/>
+        <text x="45" y="222" fill="#58a6ff" font-weight="600" font-size="12">Matriz de 4 Factores</text>
+        <text x="45" y="242" fill="#e6edf3" font-size="10">Alcance (A) · Incertidumbre (I)</text>
+        <text x="45" y="258" fill="#e6edf3" font-size="10">Riesgo (R) · Verificación (V)</text>
+        <text x="45" y="278" fill="#3fb950" font-weight="600" font-size="11">Talla: XS · S · M · L · XL</text>
+
+        <rect x="35" y="310" width="190" height="100" rx="6" fill="#161b22" stroke="#30363d"/>
+        <text x="45" y="332" fill="#d29922" font-weight="600" font-size="12">Presupuesto Cognitivo</text>
+        <text x="45" y="352" fill="#8b949e" font-size="10">Techo de turnos: k_max</text>
+        <text x="45" y="372" fill="#8b949e" font-size="10">Thinking Budget (0-32k)</text>
+        <text x="45" y="392" fill="#8b949e" font-size="10">Tool Calls Budget (≤100)</text>
+
+        <!-- Bloque 2: Arnés SWE & Loop de ALL -->
+        <rect x="270" y="40" width="420" height="400" rx="8" fill="url(#grad-green)" stroke="#2ea043" stroke-width="1.5"/>
+        <text x="285" y="70" fill="#3fb950" font-weight="700" font-size="14" font-family="sans-serif">2. ARNÉS & LOOP OFFLINE (ALL)</text>
+        <text x="285" y="90" fill="#8b949e" font-size="11" font-family="sans-serif">Ciclo PLAN-RETRIEVE-ACT-OBSERVE sobre Train Set</text>
+
+        <rect x="290" y="110" width="180" height="70" rx="6" fill="#161b22" stroke="#30363d"/>
+        <text x="305" y="135" fill="#fff" font-weight="600" font-size="12">PLAN & RETRIEVE</text>
+        <text x="305" y="152" fill="#8b949e" font-size="10">Consulta al MemoryGraph</text>
+        <text x="305" y="168" fill="#58a6ff" font-size="10">Punteros quirúrgicos (sufijo)</text>
+
+        <rect x="495" y="110" width="180" height="70" rx="6" fill="#161b22" stroke="#30363d"/>
+        <text x="510" y="135" fill="#fff" font-weight="600" font-size="12">ACT (Gemma 4)</text>
+        <text x="510" y="152" fill="#8b949e" font-size="10">Generación de diff / parche</text>
+        <text x="510" y="168" fill="#8b949e" font-size="10">KV Prefix Caching estático</text>
+
+        <rect x="390" y="210" width="190" height="80" rx="6" fill="#161b22" stroke="#3fb950"/>
+        <text x="405" y="235" fill="#3fb950" font-weight="600" font-size="12">OBSERVE: Arnés SWE</text>
+        <text x="405" y="255" fill="#e6edf3" font-size="10">Ejecución aislada (pytest)</text>
+        <text x="405" y="272" fill="#8b949e" font-size="10">Recibo inmutable: evidence/</text>
+
+        <rect x="290" y="320" width="180" height="90" rx="6" fill="#161b22" stroke="#f85149"/>
+        <text x="305" y="342" fill="#f85149" font-weight="600" font-size="12">Evaluación de Error</text>
+        <text x="305" y="360" fill="#e6edf3" font-size="10">¿k &lt; k_max? Poda 'contradicts'</text>
+        <text x="305" y="376" fill="#f85149" font-size="10">¿k = k_max? CIRCUIT BREAKER</text>
+        <text x="305" y="392" fill="#8b949e" font-size="10">Detiene reintento ciego</text>
+
+        <rect x="495" y="320" width="180" height="90" rx="6" fill="#161b22" stroke="#3fb950"/>
+        <text x="510" y="342" fill="#3fb950" font-weight="600" font-size="12">Validación Cruzada</text>
+        <text x="510" y="360" fill="#e6edf3" font-size="10">Revisor independiente</text>
+        <text x="510" y="376" fill="#8b949e" font-size="10">Sin trampas ni sobreajuste</text>
+        <text x="510" y="392" fill="#3fb950" font-weight="600" font-size="10">Aprobación de parche</text>
+
+        <!-- Bloque 3: Memoria Asociativa & Skills -->
+        <rect x="720" y="40" width="260" height="400" rx="8" fill="url(#grad-purple)" stroke="#8957e5" stroke-width="1.5"/>
+        <text x="735" y="70" fill="#bc8cff" font-weight="700" font-size="14" font-family="sans-serif">3. CONSOLIDACIÓN & SKILLS</text>
+        <text x="735" y="90" fill="#8b949e" font-size="11" font-family="sans-serif">Evolución Epistémica en Grafo</text>
+
+        <rect x="735" y="110" width="230" height="120" rx="6" fill="#161b22" stroke="#bc8cff"/>
+        <text x="750" y="135" fill="#bc8cff" font-weight="600" font-size="12">MemoryGraph Asociativo</text>
+        <text x="750" y="155" fill="#e6edf3" font-size="10">Relaciones causales:</text>
+        <text x="750" y="172" fill="#8b949e" font-size="10">• caused_by / solved_by</text>
+        <text x="750" y="188" fill="#8b949e" font-size="10">• contradicts (podas de fallo)</text>
+        <text x="750" y="206" fill="#58a6ff" font-size="10">Spreading Activation (L0-L5)</text>
+
+        <rect x="735" y="250" width="230" height="160" rx="6" fill="#161b22" stroke="#3fb950"/>
+        <text x="750" y="275" fill="#3fb950" font-weight="600" font-size="12">Escala de Madurez ALL</text>
+        <text x="750" y="298" fill="#8b949e" font-size="10">Evento → Experiencia</text>
+        <text x="750" y="316" fill="#8b949e" font-size="10">Patrón → Regla Validada</text>
+        <text x="750" y="338" fill="#d29922" font-weight="600" font-size="11">¿Éxito recurrente ≥ 3 veces?</text>
+        <rect x="745" y="350" width="210" height="45" rx="4" fill="#238636" stroke="#2ea043"/>
+        <text x="755" y="370" fill="#fff" font-weight="700" font-size="11">PROMOTED_TO_SKILL</text>
+        <text x="755" y="386" fill="#e6edf3" font-size="9">Ejecución determinista: k → 1</text>
+
+        <!-- Conectores y Flechas -->
+        <path d="M 240 245 L 290 145" stroke="#58a6ff" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 470 145 L 495 145" stroke="#58a6ff" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 585 180 L 515 210" stroke="#58a6ff" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 430 290 L 380 320" stroke="#f85149" stroke-width="1.5" fill="none" marker-end="url(#arrow-red)"/>
+        <path d="M 530 290 L 560 320" stroke="#3fb950" stroke-width="1.5" fill="none" marker-end="url(#arrow-green)"/>
+        <path d="M 380 410 L 735 180" stroke="#f85149" stroke-width="1.5" stroke-dasharray="4" fill="none" marker-end="url(#arrow-red)"/>
+        <path d="M 675 365 L 735 300" stroke="#3fb950" stroke-width="1.5" fill="none" marker-end="url(#arrow-green)"/>
+        <path d="M 850 350 L 380 110" stroke="#bc8cff" stroke-width="1.5" stroke-dasharray="4" fill="none" marker-end="url(#arrow)"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3: WORKFLOW OPERATIVO PASO A PASO -->
+  <section>
+    <h2>3. El Workflow Operativo Paso a Paso</h2>
+    
+    <div class="timeline">
+      <div class="timeline-step active">
+        <div class="step-title">Fase 0 · Triage y Estimación por Tallas</div>
+        <div class="step-meta">Rol: Orquestador · Entorno: GitHub Projects</div>
+        <p>Se evalúa el issue según los 4 factores canónicos: <strong>Alcance (A)</strong>, <strong>Incertidumbre (I)</strong>, <strong>Riesgo (R)</strong> y <strong>Verificación (V)</strong>. Se asigna la talla (XS a XL) que define el presupuesto $k_{\max}$ de iteraciones y enruta la capacidad.</p>
+      </div>
+
+      <div class="timeline-step">
+        <div class="step-title">Fase 1 · Arnés de Experimento & Recuperación Mnemotécnica</div>
+        <div class="step-meta">Componente: Arnés SWE-bench + MemoryGraph</div>
+        <p>El arnés clona el repositorio bajo prueba en un sandbox aislado y aplica la <strong>frontera de fuga</strong> (oculta tests privados). Se consulta la memoria: si existe una <code>Skill</code> activa para este síntoma, se ejecuta en 1 paso ($k=1$); si no, se dispara <strong>activación propagada</strong> (Collins & Loftus) desde la traza de excepción cruda y los símbolos del AST.</p>
+      </div>
+
+      <div class="timeline-step">
+        <div class="step-title">Fase 2 · El Bucle Acotado de ALL (Solver Gemma 4)</div>
+        <div class="step-meta">Máquina de estados: PLAN → RETRIEVE → ACT → OBSERVE</div>
+        <p>Gemma 4 formula una hipótesis de reparación y emite el parche git. El arnés ejecuta los tests de validación local y captura un <strong>recibo inmutable</strong> en <code>evidence/</code>.</p>
+      </div>
+
+      <div class="timeline-step warning">
+        <div class="step-title">Fase 3 · Evaluación del Error y Poda Asociativa (Circuit Breaker)</div>
+        <div class="step-meta">Anti-bucle infinito · Poda de hipótesis</div>
+        <p>Si los tests fallan y $k &lt; k_{\max}$, se registra la relación <code>contradicts</code>: esa hipótesis queda podada del espacio de búsqueda para la siguiente vuelta. Si $k = k_{\max}$, el <strong>disyuntor aborta inmediatamente</strong>, registrando el episodio fallido para evitar que futuras sesiones tropiecen con la misma piedra.</p>
+      </div>
+
+      <div class="timeline-step success">
+        <div class="step-title">Fase 4 · Validación Cruzada y Consolidación Epistémica</div>
+        <div class="step-meta">Rol: Revisor Independiente + Curador de Memoria</div>
+        <p>Un revisor independiente audita el parche para descartar sobreajuste o trampas. Una vez aprobado, se actualiza el <code>MemoryGraph</code> conectando: <code>Síntoma -[caused_by]-> Causa -[solved_by]-> Solución</code>.</p>
+      </div>
+
+      <div class="timeline-step success">
+        <div class="step-title">Fase 5 · Madurez y Promoción a Skill</div>
+        <div class="step-meta">Resultado: k → 1 (Paso único determinista)</div>
+        <p>Si una solución resuelve con éxito $\ge 3$ instancias análogas sin contradicciones, se promueve a <strong><code>Skill</code> procedimental</strong> (<code>promoted_to_skill</code>). El issue se cierra en GitHub Projects con verificación confirmada.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 4: TAXONOMÍA L0-L5 Y DILEMA NRNE -->
+  <section>
+    <h2>4. La Taxonomía de Distancias Causales (L0 a L5) y el Dilema NRNE</h2>
+    <p>Por qué el RAG vectorial clásico colapsa y por qué la activación en grafo de ALL es necesaria:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Nivel</th>
+          <th>Distancia</th>
+          <th>Manifestación del Error</th>
+          <th>Comportamiento de RAG Vectorial</th>
+          <th>Solución con ALL (MemoryGraph)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>L0</code></td>
+          <td>Exacta</td>
+          <td>Misma traza sintáctica y texto idéntico.</td>
+          <td>Acierta por pura coincidencia léxica.</td>
+          <td>Recuperación directa inmediata.</td>
+        </tr>
+        <tr>
+          <td><code>L1</code></td>
+          <td>Paráfrasis</td>
+          <td>Mismo error con redacción léxica diferente.</td>
+          <td>Acierta por similitud semántica.</td>
+          <td>Embeddings semánticos locales.</td>
+        </tr>
+        <tr>
+          <td><code>L2</code></td>
+          <td>Semántica</td>
+          <td>Conceptos afines en la misma tecnología.</td>
+          <td>Acierto moderado con ruido.</td>
+          <td>Activación directa entre nodos tecnológicos.</td>
+        </tr>
+        <tr>
+          <td><code>L3</code></td>
+          <td><strong>Causal</strong></td>
+          <td>Síntomas completamente distintos con la misma causa raíz (Ej: <em>timeout</em> en test vs <em>ECONNREFUSED</em> en socket).</td>
+          <td><strong>COLAPSO TOTAL (NRNE):</strong> Coseno cercano a 0. Concluye que no hay solución previa.</td>
+          <td><strong>Activación Propagada:</strong> Salta de síntoma a causa raíz compartida mediante aristas <code>caused_by</code>.</td>
+        </tr>
+        <tr>
+          <td><code>L4</code></td>
+          <td>Multi-salto</td>
+          <td>Deducción a través de varios módulos o middlewares.</td>
+          <td>Incapaz de encadenar relaciones.</td>
+          <td>Camino asociativo multi-arista en el grafo.</td>
+        </tr>
+        <tr>
+          <td><code>L5</code></td>
+          <td>Transferencia</td>
+          <td>Patrón análogo entre ecosistemas distintos.</td>
+          <td>Colapso absoluto por vocabulario disjunto.</td>
+          <td>Skills abstractas desacopladas del lenguaje.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECCIÓN 5: MÉTRICAS CIENTÍFICAS -->
+  <section>
+    <h2>5. Métricas Científicas de Verificación</h2>
+    <div class="grid-3">
+      <div class="card metric-box">
+        <div class="metric-value">RFR → 0</div>
+        <div class="metric-label">Repeated Failure Rate</div>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Fracción de fallos cuyas causas raíz ya eran conocidas en el historial. Mide la erradicación del tropiezo repetido.</p>
+      </div>
+
+      <div class="card metric-box">
+        <div class="metric-value">LG &gt; 0</div>
+        <div class="metric-label">Learning Gain</div>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">P(Éxito | Memoria ALL) − P(Éxito | Sin memoria). Incremento neto medido con recibos inmutables.</p>
+      </div>
+
+      <div class="card metric-box">
+        <div class="metric-value">k → 1</div>
+        <div class="metric-label">Convergencia de Skill</div>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Transición de iteraciones múltiples a ejecución determinista de paso único sin gasto de tokens.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Agents Learning Loops (ALL) · <code>associative-agent-loop</code> v0.2.0</div>
+    <div>Repositorio: <code>cherrera0001/Agents_Learning_Loops</code></div>
+  </footer>
+</div>
+
+</body>
+</html>
