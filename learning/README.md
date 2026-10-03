@@ -89,7 +89,9 @@ lecciones que `recall` recupera: lo fija `tests/integration/test_devlog.py`.
 
 `recall` usa ese registro para decir, de los episodios más activados por la consulta, **cómo se estimaron y
 cómo salieron** (sección «Issues parecidos»): talla, puntos, incertidumbre, riesgo y modelo previsto; modelo
-usado, si escaló, PR y revisiones de la estimación; y pasos fallidos. Con `--snapshot <directorio>` (una
+usado, si escaló, PR y revisiones de la estimación; y pasos fallidos. Un dato que falta se muestra como
+`?`. Son episodios, no issues, y no hay umbral de parecido: cada línea muestra su activación, y `--issues N`
+cambia cuántos se listan (3 por defecto). Con `--snapshot <directorio>` (una
 instantánea del tablero con `items.json` e `issues.json`, la misma que acepta `devlog board`) añade el
 estado y la verificación de la tarjeta. Sin instantánea no consulta GitHub ni inventa ese estado. Son datos
 de una población chica y autoinformada: sirven para preguntar «¿cómo nos fue con algo parecido?», no para

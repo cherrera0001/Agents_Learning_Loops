@@ -11,6 +11,7 @@ import sys
 import pytest
 
 from scripts import devlog
+from scripts.board_check import REPO
 from scripts.devlog import board_record, rebuild, recall, similar_issues
 
 ESTIMATE = {
@@ -118,8 +119,8 @@ def test_similar_issues_orders_by_activation_then_id_and_honours_top():
 
 def _snapshot(tmp_path, cards):
     items = [
-        {"content": {"number": n, "type": "Issue", "repository": "o/r"}, "status": s, "verificación": v}
-        for n, s, v in cards
+        {"content": {"number": n, "type": "Issue", "repository": repo}, "status": s, "verificación": v}
+        for n, s, v, repo in [(*card, REPO)[:4] for card in cards]
     ]
     (tmp_path / "items.json").write_text(json.dumps({"items": items, "totalCount": len(items)}), "utf-8")
     (tmp_path / "issues.json").write_text("[]", "utf-8")

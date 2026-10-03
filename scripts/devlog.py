@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -40,6 +41,9 @@ def load_episodes(episodes_dir: Path = EPISODES_DIR) -> list[dict[str, Any]]:
     return sorted(episodes, key=lambda e: e["seq"])
 
 
+_FOREIGN_REF = re.compile(r"[\w.-]+/[\w.-]+#\d+")
+
+
 def board_record(ep: Mapping[str, Any]) -> dict[str, Any]:
     """Lo que el tablero registra del issue de un episodio: estimación, resultado y pasos.
 
@@ -48,7 +52,10 @@ def board_record(ep: Mapping[str, Any]) -> dict[str, Any]:
     cómo se estimó y cómo salió un issue parecido (#122).
     """
     steps = ep.get("steps", [])
-    issues = cited_issues_ordered(str(ep.get("ref", "")))
+    ref = str(ep.get("ref", ""))
+    # Un ``ref`` que cita otro repositorio (``dueño/repo#n``) no es de un issue de este tablero:
+    # sus ``#n`` sueltos pueden ser PR o issues ajenos, así que no se atribuye ninguno.
+    issues = [] if _FOREIGN_REF.search(ref) else cited_issues_ordered(ref)
     return {
         "issue": issues[0] if issues else None,
         "estimate": ep.get("estimate"),
@@ -78,26 +85,39 @@ def rebuild(episodes: list[dict[str, Any]]) -> MemoryGraph:
     return mg
 
 
-def _issue_line(mg: MemoryGraph, goal: str, cards: Mapping[int, Mapping[str, Any]] | None) -> str:
+def _shown(value: Any) -> str:
+    """Un dato del episodio tal cual, o ``?`` si falta: la línea no afirma lo que el dato no dice."""
+    return "?" if value is None or value == "" else str(value)
+
+
+def _issue_line(
+    mg: MemoryGraph, goal: str, activation: float, cards: Mapping[int, Mapping[str, Any]] | None
+) -> str:
     node = mg.node(goal)
     board = node.metadata["board"]
     issue = board.get("issue")
     estimate, outcome = board.get("estimate") or {}, board.get("outcome") or {}
-    parts = []
+    parts = [f"activación {activation:.2f}"]
     if estimate:
+        planned = estimate.get("planned_model")
         parts.append(
-            f"estimado {estimate.get('size', '?')} · {estimate.get('points', '?')} pts, "
-            f"I{estimate.get('uncertainty', '?')} R{estimate.get('risk', '?')}, "
-            f"previsto {estimate.get('planned_model') or 'ninguno'}"
+            f"estimado {_shown(estimate.get('size'))} · {_shown(estimate.get('points'))} pts, "
+            f"I{_shown(estimate.get('uncertainty'))} R{_shown(estimate.get('risk'))}, "
+            # la cadena vacía es un dato: issue de un agente que no es Claude, sin modelo previsto
+            f"previsto {'ninguno' if planned == '' else _shown(planned)}"
         )
     else:
         parts.append("sin estimación")
     if outcome:
+        escalated = outcome.get("escalated")
         parts.append(
-            f"usado {outcome.get('used_model') or '?'}, "
-            f"escaló: {'sí' if outcome.get('escalated') else 'no'}, PR: {outcome.get('prs', '?')}, "
-            f"revisiones de estimación: {outcome.get('estimate_revisions', '?')}"
+            f"usado {_shown(outcome.get('used_model'))}, "
+            f"escaló: {'sí' if escalated is True else 'no' if escalated is False else '?'}, "
+            f"PR: {_shown(outcome.get('prs'))}, "
+            f"revisiones de estimación: {_shown(outcome.get('estimate_revisions'))}"
         )
+    else:
+        parts.append("sin resultado")
     parts.append(f"pasos fallidos {board.get('failed_steps', 0)}/{board.get('steps', 0)}")
     if cards is not None and issue is not None:
         card = cards.get(int(issue))
@@ -116,13 +136,17 @@ def similar_issues(
     top: int = 3,
     cards: Mapping[int, Mapping[str, Any]] | None = None,
 ) -> list[str]:
-    """Líneas con la estimación y el resultado de los episodios más activados por la consulta."""
+    """Líneas con la estimación y el resultado de los episodios más activados por la consulta.
+
+    Son episodios, no issues: dos episodios del mismo issue salen en dos líneas. No hay umbral de
+    parecido; cada línea muestra su activación para que quien lee juzgue cuánto se parece.
+    """
     goals = set(mg.nodes_of_type(NodeType.GOAL))
     ranked = sorted(
         ((a, n) for n, a in activation.items() if n in goals and "board" in mg.node(n).metadata),
         key=lambda pair: (-pair[0], pair[1]),
     )
-    return [_issue_line(mg, goal, cards) for _a, goal in ranked[:top]]
+    return [_issue_line(mg, goal, a, cards) for a, goal in ranked[: max(top, 0)]]
 
 
 def recall(
@@ -168,6 +192,7 @@ def main() -> None:
         default=None,
         help="instantánea del tablero (items.json e issues.json): añade estado y verificación",
     )
+    p_recall.add_argument("--issues", type=int, default=3, help="máximo de episodios parecidos")
     sub.add_parser("rebuild", help="escribe learning/dev_memory.json (copia local, ignorada por git)")
     p_board = sub.add_parser(
         "board",
@@ -227,8 +252,10 @@ def main() -> None:
         # `dev_memory.json` local, que podría estar desactualizado tras un `git pull`.
         mg = rebuild(load_episodes())
         embedder = FastEmbedEmbedder() if args.embedder == "fastembed" else None
-        if args.snapshot is None:
+        if args.snapshot is None and args.issues == 3:
             print(recall(mg, args.query, args.n, embedder))
+        elif args.snapshot is None:
+            print(recall(mg, args.query, args.n, embedder, None, args.issues))
         else:
             from scripts.board_check import BoardReadError, cards_from_snapshot
 
@@ -237,7 +264,7 @@ def main() -> None:
             except BoardReadError as exc:
                 print(f"error: no se pudo leer la instantánea: {exc}", file=sys.stderr)
                 sys.exit(2)
-            print(recall(mg, args.query, args.n, embedder, cards))
+            print(recall(mg, args.query, args.n, embedder, cards, args.issues))
 
 
 if __name__ == "__main__":

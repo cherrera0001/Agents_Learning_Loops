@@ -70,12 +70,28 @@
       "action": "update_docs",
       "success": true,
       "note": "learning/README.md, skill recall-antes-de-issue y la sección 6.2 del documento de entrada del experimento: qué entra hoy del tablero en la memoria y qué sigue faltando"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente encontró que la línea afirmaba lo que el dato no dice (escaló: no sin el campo, None impreso) y que un ref de otro repositorio se atribuía a un issue de este tablero"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Valores ausentes como ?, sin resultado explícito, activación en cada línea, opción --issues, ref de otro repositorio sin issue, tarjetas filtradas por repositorio e instantánea mal formada con salida 2; tests de bordes"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall ejecutado con el título del issue, tarde: después de implementar, no antes"
     }
   ],
   "lessons": [
     "Ejecuta devlog recall antes de tocar scripts/devlog.py o el formato de los episodios: los contratos sobre qué entra en el grafo están fijados en tests y en learning/README.md",
     "Para cambiar un contrato fijado por un test, reescribe el test diciendo el contrato nuevo y añade un control que muestre que el viejo ya no vale; no lo relajes ni lo borres",
     "En Git Bash sobre Windows escribe los parches y los archivos con la herramienta de escritura o un guion en disco, nunca con un heredoc que contenga comillas",
-    "Un episodio de un tramo de un issue grande copia la estimación del issue entero y lo dice en la nota; la talla del tramo no tiene todavía dónde registrarse"
+    "Un episodio de un tramo de un issue grande copia la estimación del issue entero y lo dice en la nota; la talla del tramo no tiene todavía dónde registrarse",
+    "Una línea de informe muestra ? cuando falta el dato; nunca convierte una clave ausente en un no, un ninguno o un cero"
   ]
 }

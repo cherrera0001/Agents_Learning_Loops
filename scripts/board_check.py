@@ -349,9 +349,17 @@ def read_snapshot(directory: Path) -> tuple[Any, Any, dict[int, list[dict[str, A
 
 
 def cards_from_snapshot(directory: Path) -> dict[int, Mapping[str, Any]]:
-    """Tarjetas de una instantánea del tablero, indexadas por número de issue."""
-    items, _issues, _subs = read_snapshot(directory)
-    return _index_cards(items, None)
+    """Tarjetas de ``REPO`` en una instantánea del tablero, indexadas por número de issue.
+
+    Una instantánea ilegible o mal formada es :class:`BoardReadError`, nunca una traza.
+    """
+    try:
+        items, _issues, _subs = read_snapshot(directory)
+        return _index_cards(items, REPO)
+    except BoardReadError:
+        raise
+    except (UnicodeDecodeError, ValueError, TypeError, AttributeError, OSError) as exc:
+        raise BoardReadError(f"instantánea mal formada en {directory}: {type(exc).__name__}") from exc
 
 
 def read_github(runner: Runner = _run_gh) -> tuple[Any, Any, dict[int, list[dict[str, Any]]]]:
