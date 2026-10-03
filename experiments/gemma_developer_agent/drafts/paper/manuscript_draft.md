@@ -1,3 +1,11 @@
+> **Draft of 2026-10-02. Superseded in part; not rewritten.** It has no related work or citations, which the
+> Paper Track requires, and it states as fact claims that are not measured. It is superseded by the
+> [baseline pre-registration](../../../../docs/preregistration/kaggle-baseline-a.md), by the entry document
+> [`../../README.md`](../../README.md) and, for the final text, by issue #105. In particular: the 60-minute,
+> 100-call and 500-turn limits are defaults, not rules (the rule is 12 hours for all tasks); the tasks are
+> not SWE-bench tasks; condition A already has the graph tools; the agent does not run a test and read its
+> trace, because the hidden tests are not in the agent's container; and no result with the model exists.
+
 # Agents Learning Loops (ALL): Offline Bounded Memory Consolidation, Structural Anchors, and Declarative Skills for Open-Weights Software Engineering Agents
 
 **Track:** Kaggle Gemma 4 Developer Agent Paper Track  

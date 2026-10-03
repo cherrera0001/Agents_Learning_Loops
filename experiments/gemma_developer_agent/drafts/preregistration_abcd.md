@@ -1,5 +1,14 @@
 # Borrador de Pre-registro · Experimento Kaggle Gemma 4 (Diseño A/B/C/D)
 
+> **Borrador del 2026-10-02. Superado en parte por el
+> [pre-registro de la línea base A](../../../docs/preregistration/kaggle-baseline-a.md) y por el issue #104.**
+> No se reescribe. Está superado en: los 60 minutos por tarea (valor por defecto del arnés, no una regla);
+> el «split estratificado» (la regla es reservar un repositorio); que A no tenga «anclaje» (el kit ya
+> declara las herramientas de grafo); y las definiciones de B y D, que el issue #104 fija de otro modo. El
+> pre-registro de la campaña de #104 aún no existe, y las hipótesis de este borrador no son refutables ni
+> están pre-registradas. Las tareas no son «SWE-bench»: son el conjunto propio de la competencia. La línea
+> «No commiteado» de abajo es falsa: el borrador está en el repositorio. Mapa de documentos: [`../README.md`](../README.md#12-mapa-de-documentos).
+
 **Estado:** BORRADOR INCOMPLETO (No commiteado; pendiente de partición exacta por `instance_id`, hardware de cómputo y calibración de ruido).  
 **Fecha:** 2026-10-02.  
 **Tareas públicas disponibles:** 129 tareas en `data/tasks.jsonl` (fastapi: 67, rich: 48, requests: 13, httpx: 1).  

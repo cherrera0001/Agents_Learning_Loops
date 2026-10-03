@@ -1,5 +1,11 @@
 # Análisis de réplicas de la línea base A
 
+> **Estado del documento.** Vigente; describe el instrumento que fija el
+> [pre-registro](../../../docs/preregistration/kaggle-baseline-a.md) y manda este. Los directorios de envío
+> de los ejemplos son los del pre-registro: la línea base usa `conditions/a_linea_base/` (el kit verificado
+> más su `eval_config.yaml`), no `conditions/a_kit/`, que solo reconstruye el kit. Mapa de documentos:
+> [`README.md`](../README.md#12-mapa-de-documentos).
+
 Ficha del comando `scripts/kaggle_replicas.py` (issue #103, parte del análisis). Se escribe y se mergea
 **antes** de que exista ningún recibo real: fija cómo se leerá la evidencia. Este documento no afirma
 ningún resultado; no hay datos todavía.
@@ -57,9 +63,11 @@ imposible hacen fallar la lectura.
 
 Es el SHA-256 de las líneas `ruta<TAB>sha256_del_archivo`, ordenadas, con rutas relativas en formato POSIX.
 Entran todos los archivos regulares del directorio salvo `__pycache__`, `*.pyc`, `*.pyo`, `.DS_Store`,
-`Thumbs.db` y `desktop.ini`; un directorio inexistente o sin archivos es un error. `conditions/a_kit/` se
-reconstruye con `download_kit.py` desde `manifest.json`, así que el hash se calcula **sobre el kit
-descargado y verificado**, no sobre una copia cualquiera. `analizar --envio <dir>` recalcula ese hash,
+`Thumbs.db` y `desktop.ini`; un directorio inexistente o sin archivos es un error. El kit se reconstruye
+con `conditions/a_kit/download_kit.py` desde `manifest.json`, y el directorio del envío de la línea base
+(`conditions/a_linea_base/`) es esa copia verificada más su `eval_config.yaml`, así que el hash se calcula
+**sobre el kit descargado y verificado**, no sobre una copia cualquiera. `analizar --envio <dir>` recalcula
+ese hash,
 exige que coincida con los recibos y añade al reporte la lista de archivos con su hash, para contrastarla
 con el manifiesto.
 
@@ -109,22 +117,23 @@ redistribuir su contenido. `scripts/kaggle_replicas.py` rompe esa convención en
 para clasificar sin una categoría por defecto; no son tareas, parches ni pruebas de la competencia, y las
 pruebas del script solo usan cada prefijo seguido de un sufijo inventado. Los prefijos salen de la versión
 `swegemma` 0.2.7 del arnés instalado; con otra versión, un texto nuevo hará fallar el comando con 2 hasta
-revisar la lista. La licencia del wheel de `swegemma` no consta en sus metadatos: está pendiente de
-confirmar en la página del dataset de Kaggle, y la confirma el dueño del repositorio.
+revisar la lista. La licencia del wheel de `swegemma` no consta en sus metadatos: está **pendiente de
+confirmar** en la página del dataset de Kaggle, y la confirma el dueño del repositorio (igual que en
+[`entorno_local.md`](entorno_local.md)).
 
 ## Comandos
 
 ```bash
 # Arnés -> recibos (una vez por réplica; no sobrescribe; run_utc sale de la fecha del task_results.jsonl).
 python -m scripts.kaggle_replicas convertir --task-results <task_results.jsonl> --patches <dir_parches> \
-  --replica 1 --condicion A --envio experiments/gemma_developer_agent/conditions/a_kit \
+  --replica 1 --condicion A --envio experiments/gemma_developer_agent/conditions/a_linea_base \
   --tasks <tasks.jsonl> --subconjunto <subconjunto.json> \
   --version-arnes <versión> --imagen-sandbox <imagen> --salida evidence/<campaña>/replica_1.jsonl
 
 # Análisis
 python -m scripts.kaggle_replicas analizar --recibos evidence/<campaña> --subconjunto <subconjunto.json> \
   --descartadas evidence/<campaña>/descartadas \
-  --envio experiments/gemma_developer_agent/conditions/a_kit \
+  --envio experiments/gemma_developer_agent/conditions/a_linea_base \
   --salida-json analisis.json --salida-md analisis.md
 ```
 

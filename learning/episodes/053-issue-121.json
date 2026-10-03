@@ -1,0 +1,82 @@
+{
+  "seq": 53,
+  "id": "issue-121",
+  "goal": "Reescribir el documento de entrada del experimento Kaggle Gemma 4 Developer Agent con estado del área, reglas del concurso, hipótesis refutables, tablero y diagramas, y poner en orden su documentación",
+  "ref": "#121",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall desde PowerShell con PYTHONPATH=src; solo devolvió lecciones genéricas de bitácora, ninguna sobre documentos del experimento. El primer intento, con Bash y el intérprete del checkout principal entre comillas, lo rechazó la herramienta y no ejecutó nada"
+    },
+    {
+      "action": "write_issue_bodies",
+      "success": false,
+      "error": "La lectura de los comentarios de #100, #101, #103, #104 y #105 con gh api --jq falló tres veces porque PowerShell parte las expresiones jq con espacios en varios argumentos; se resolvió con --jq '.[].body' sin espacios y guardando el volcado en un archivo temporal"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "README del experimento reescrito en 14 secciones y seis diagramas Mermaid, con el tablero como punto de control; cada cifra con su comando y las hipótesis de la campaña rotuladas como propuesta no pre-registrada"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Ejecutados los comandos que el README documenta: kaggle_eda resumen, kaggle_split leave_one_repo_out, kaggle_prereg comprobar (salida 1), presupuesto, computo, ruido, verify_no_competition_data y devlog board y pilot con --since 100"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En la sección 6.2 escribí que de varios PR de #103 salieron defectos que los tests no habían detectado, un dato del encargo que yo no había leído en ningún archivo ni comentario; lo cambié antes del primer commit por lo que consta en los comentarios de #103"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La primera entrega citaba cifras y alcances de obras sin abrir su fuente completa y contenía errores de fondo que los cuatro revisores con veto encontraron: cuatro límites que cortan la sesión cuando son tres, la propuesta del tablero con una fuga de resultados de prueba hacia las skills, clases por tamaño de parche que el agente no ve, #120 como abierto y cifras del grafo de memoria fijadas en la prosa"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Segunda versión con los cuatro informes aplicados: dos tableros en D6, hipótesis sin solape, referencias completas, cifras del grafo sustituidas por un comando, #120 y la política de supervisión citadas; tercera ronda con M*, SWE-Bench+, Gloaguen (nombre del segundo benchmark leído en arXiv) y los venues no confirmados retirados"
+    },
+    {
+      "action": "merge_pr",
+      "success": true,
+      "note": "Integrado origin/main en la rama; el conflicto de learning/dev_memory.json se resolvió con el lado de main y se regeneró con devlog rebuild; episodio renumerado a 053"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov en verde sobre la rama integrada; seis bloques Mermaid válidos con mermaid.parse y un control negativo que falla"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "python -m scripts.devlog rebuild"
+    }
+  ],
+  "lessons": [
+    "Antes de afirmar en un texto público el contenido de un resumen o una tabla de una obra, abrir la fuente y copiar el nombre, la unidad y el alcance exactos; no completarlos de memoria",
+    "Al leer comentarios con gh api en PowerShell, usar --jq '.[].body' sin espacios y guardar el volcado en un archivo antes de leerlo",
+    "Al dibujar un flujo que alimenta una consolidación, comprobar contra el pre-registro que ningún resultado de tareas de prueba vuelve a las skills",
+    "Antes de escribir un estado de PR, issue o archivo en un texto público, consultarlo en el momento y fechar la consulta, o enlazar el comando que lo da, en vez de repetir un estado del encargo",
+    "No fijar en prosa conteos que cambian con cada episodio, como los nodos del grafo de memoria: dar el comando que los calcula"
+  ]
+}

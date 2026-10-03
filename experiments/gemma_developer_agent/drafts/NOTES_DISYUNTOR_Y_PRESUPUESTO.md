@@ -1,5 +1,11 @@
 # Apuntes sobre Circuit Breakers y Presupuesto por Tarea
 
+> **Apuntes del 2026-10-02. Superados en el presupuesto por el
+> [pre-registro de la línea base A](../../../docs/preregistration/kaggle-baseline-a.md), sección D.** Los
+> 60 minutos por tarea son el valor por defecto del arnés y el tope de la fórmula, no una regla: el límite
+> del concurso es de 12 horas para todas las tareas. No se reescriben. Mapa de documentos:
+> [`../README.md`](../README.md#12-mapa-de-documentos).
+
 Notas conceptuales preservadas tras la retirada del prototipo ejecutable no soportado por el compilador de
 Kaggle.
 

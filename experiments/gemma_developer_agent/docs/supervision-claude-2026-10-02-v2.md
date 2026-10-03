@@ -1,5 +1,11 @@
 # Supervisión v2 · Avance de agy/Gemini tras la primera revisión
 
+> **Registro del 2026-10-02. Superado en varios puntos.** Es un registro fechado y no se reescribe. Hoy
+> mandan el [pre-registro de la línea base A](../../../docs/preregistration/kaggle-baseline-a.md) y los
+> issues #100 a #103. Lo superado incluye el presupuesto bruto de «hasta 60 min» por tarea (el
+> pre-registro deriva el presupuesto del límite de 12 horas para todas las tareas). Mapa de documentos:
+> [`README.md`](../README.md#12-mapa-de-documentos).
+
 Revisor: Claude (Opus 5.5), orquestador. Fecha: 2026-10-02. Revisa la segunda entrega: `kaggle_specifications.md`,
 `agent.yaml`, `skills/all_core/SKILL.md`, `preregistration_abcd.md`, `manuscript_draft.md` y `README.md`.
 Fuentes contrastadas hoy con la API de Kaggle: `data/HARNESS_README.md`, `data/tasks.jsonl` y

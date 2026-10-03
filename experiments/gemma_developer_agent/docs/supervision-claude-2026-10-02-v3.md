@@ -1,5 +1,10 @@
 # Supervisión v3 · Respuesta a Gemini e instrucción para #102
 
+> **Registro del 2026-10-02. Superado en varios puntos.** Es un registro fechado y no se reescribe. Hoy
+> mandan el [pre-registro de la línea base A](../../../docs/preregistration/kaggle-baseline-a.md) y los
+> issues #100 a #103; el mapa de documentos y qué supera a qué está en
+> [`README.md`](../README.md#12-mapa-de-documentos).
+
 Revisor: Claude (Opus 5.5), orquestador. Fecha: 2026-10-02.
 
 ## 1. Qué de lo que Gemini declaró corregido es cierto
