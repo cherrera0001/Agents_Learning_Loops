@@ -1,0 +1,55 @@
+{
+  "seq": 51,
+  "id": "decision-computo-paper-track",
+  "goal": "Resolver la decision de computo (Kaggle L4x4, 30h semanales) y participacion en Paper Track para desbloquear Issue #101 y transferir parametros a la linea base A (#103)",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/101",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Gemini 3.8 Flash (High)",
+    "planned_effort": "sesión actual"
+  },
+  "outcome": {
+    "used_model": "Gemini 3.8 Flash (High)",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 0
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall de lecciones: evitar horas supuestas o inventadas; basar el presupuesto en mediciones del panel oficial y formalizar decisiones humanas como evidencia inmutable."
+    },
+    {
+      "action": "verify_api",
+      "success": true,
+      "note": "Verificar via Kaggle API la inscripcion formal en ambos tracks: Code Track (id 149921, userHasEntered: true) y Paper Track (id 163111, userHasEntered: true)."
+    },
+    {
+      "action": "human_decision",
+      "success": true,
+      "note": "El dueno confirma las tres respuestas oficiales: cuota semanal de 30.0 horas de GPU, disponibilidad verificada del acelerador 4x L4 en notebooks de Kaggle, y reinicio semanal los sabados UTC (dia ISO 6)."
+    },
+    {
+      "action": "calculate_budget",
+      "success": true,
+      "note": "Ejecutar python -m scripts.kaggle_prereg computo con 30h, factor 2.0 y reinicio sabado desde 2026-10-03: 5 reinicios hasta el corte (2026-11-05), 60.00 horas utilizables de L4x4. Selecciona Escalon 1: fastapi/fastapi con 3 replicas de A (requiere 54.27 h de L4x4)."
+    },
+    {
+      "action": "prepare_transfer",
+      "success": true,
+      "note": "Preparar bloque de cuota para linea_base_a.json (Seccion E.1 de #103) y redactar comentario de cierre y resolucion para #101."
+    }
+  ],
+  "lessons": [
+    "Las decisiones humanas sobre recursos fisicos y cuotas deben documentar fecha, fuente y canal de confirmacion para que la formula de presupuesto sea estrictamente determinista.",
+    "El factor de consumo del acelerador (2x en 4x L4) y el calendario de reinicios semanales son variables criticas que determinan matematicamente el escalon y numero de replicas posibles sin sesgo retrospectivo."
+  ]
+}
+

@@ -76,7 +76,13 @@
       "cierra": "El implementador del paso de validez, revisado por el orquestador con una repetición propia, en el commit C2."
     },
     "cuota": {
-      "valor": null,
+      "valor": {
+        "gpu_semanal_horas": 30.0,
+        "factor_l4x4": 2.0,
+        "dia_reinicio": 6,
+        "fuente": "Lectura del panel oficial de cuota de Kaggle por el dueño (cherrera0001), confirmada en el issue #101",
+        "fecha_lectura": "2026-10-03"
+      },
       "regla": "Sección E.1: cuota semanal de GPU de la cuenta, factor de consumo de L4×4 releído ese día, día de la semana en que se reinicia la cuota, fuente y fecha de la lectura.",
       "cierra": "El dueño la lee en Kaggle y la deja en un comentario de #101; el orquestador la versiona en el commit C3."
     },
