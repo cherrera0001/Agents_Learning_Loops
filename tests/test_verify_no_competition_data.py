@@ -366,3 +366,42 @@ def test_main_require_full_pasa_la_opcion(monkeypatch):
     assert seen == {"require_full": True}
     assert v.main([]) == 0
     assert seen == {"require_full": False}
+
+
+# ---------- directorio del envio de la linea base (pre-registro de #103) ----------
+
+
+def test_linea_base_solo_admite_sus_dos_archivos_propios(tmp_path, capsys):
+    base = v.LINEA_BASE_DIR
+    _manifest(tmp_path, [_sha(b"archivo del kit")])
+    _write(tmp_path, f"{base}/eval_config.yaml", b"evaluation:\n  max_time_minutes: 4\n")
+    _write(tmp_path, f"{base}/README.md", b"armado del envio")
+    propios = [f"{base}/eval_config.yaml", f"{base}/README.md", v.MANIFEST_REL]
+    assert v.run(tmp_path, fetch=_no_api, tracked=propios) == v.EXIT_OK
+    capsys.readouterr()
+    # una copia del kit modificada: su hash ya no coincide con el manifiesto, pero no puede versionarse ahi
+    _write(tmp_path, f"{base}/configs/sampling.yaml", b"copia del kit con un valor cambiado")
+    code = v.run(tmp_path, fetch=_no_api, tracked=[*propios, f"{base}/configs/sampling.yaml"])
+    out = capsys.readouterr().out
+    assert code == v.EXIT_COLLISION and "no permitido en conditions/a_linea_base" in out
+    assert f"{base}/configs/sampling.yaml" in out
+
+
+def test_linea_base_copia_exacta_del_kit_da_alerta_por_hash_y_por_lugar(tmp_path):
+    base = v.LINEA_BASE_DIR
+    kit = b"archivo del kit"
+    _manifest(tmp_path, [_sha(kit)])
+    _write(tmp_path, f"{base}/agent.yaml", kit)
+    ref = v.build_reference(tmp_path, _no_api)
+    por_ruta, por_hash = v.find_collisions(tmp_path, [f"{base}/agent.yaml"], ref)
+    assert len(por_ruta) == 1 and len(por_hash) == 1
+    # el eval_config propio con el contenido del kit tambien se detecta, por hash
+    _write(tmp_path, f"{base}/eval_config.yaml", kit)
+    por_ruta, por_hash = v.find_collisions(tmp_path, [f"{base}/eval_config.yaml"], ref)
+    assert por_ruta == [] and len(por_hash) == 1
+
+
+def test_regla_de_gitignore_de_la_linea_base():
+    reglas = (v.REPO_ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert f"{v.LINEA_BASE_DIR}/*" in reglas
+    assert {f"!{p}" for p in v.LINEA_BASE_OWN} <= set(reglas)

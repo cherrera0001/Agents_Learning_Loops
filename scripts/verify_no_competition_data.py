@@ -45,6 +45,12 @@ OWN_FILES = frozenset(
     }
 )
 
+# Directorio del envio de la linea base A (pre-registro de #103): es una copia del kit mas un
+# eval_config.yaml propio. Solo estos dos archivos propios pueden estar versionados ahi; cualquier
+# otro (una copia del kit, aunque este modificada y su hash ya no coincida) es una alerta.
+LINEA_BASE_DIR = f"{EXPERIMENT_DIR}/conditions/a_linea_base"
+LINEA_BASE_OWN = frozenset({f"{LINEA_BASE_DIR}/eval_config.yaml", f"{LINEA_BASE_DIR}/README.md"})
+
 EXIT_OK = 0
 EXIT_COLLISION = 1
 EXIT_UNVERIFIED = 2
@@ -226,6 +232,8 @@ def find_collisions(repo_root: Path, tracked: list[str], ref: Reference) -> tupl
         full_path = repo_root / rel_path
         if not full_path.is_file():
             continue
+        if rel_path.startswith(f"{LINEA_BASE_DIR}/") and rel_path not in LINEA_BASE_OWN:
+            path_collisions.append(f"Archivo no permitido en conditions/a_linea_base: {rel_path}")
         if rel_path not in OWN_FILES:
             sub_name = rel_path.removeprefix(f"{EXPERIMENT_DIR}/")
             if sub_name in ref.names or rel_path in ref.names:
