@@ -39,12 +39,17 @@
     {
       "action": "edit_module",
       "success": true,
-      "note": "El implementador-opus corrigió la salida de recall, las discrepancias de snapshot y el límite --issues negativo en worktree aislado; el modelo runtime exacto del subagente no estuvo expuesto"
+      "note": "El implementador-opus hizo la primera corrección de recall, discrepancias de snapshot y límite --issues negativo en un worktree aislado; el modelo runtime exacto no estuvo expuesto"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La primera salida atribuyó todo outcome a autoinforme aunque algunos episodios declaran model_source=transcript"
     },
     {
       "action": "review_code",
-      "success": false,
-      "error": "La revisión independiente detectó que la salida atribuía todo outcome a autoinforme, aunque algunos episodios declaran model_source=transcript"
+      "success": true,
+      "note": "La revisión independiente detectó la atribución de procedencia incorrecta"
     },
     {
       "action": "edit_module",
@@ -62,9 +67,14 @@
       "note": "README y D6 distinguen metadata del episodio, campos de tarjeta añadidos/comparados por la instantánea y capacidades aún pendientes; la arista implementada es sólida"
     },
     {
-      "action": "review_code",
+      "action": "write_tests",
       "success": false,
-      "error": "Mutaciones de prueba mostraron que podían sobrevivir defectos en las comparaciones de incertidumbre, modelo usado y escalated=True"
+      "error": "Las pruebas nuevas no cubrían diferencias en incertidumbre, modelo usado ni la rama escalated=True; las mutaciones de esos campos sobrevivían"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "La revisión independiente con mutaciones detectó los huecos en las pruebas de discrepancias"
     },
     {
       "action": "write_tests",
