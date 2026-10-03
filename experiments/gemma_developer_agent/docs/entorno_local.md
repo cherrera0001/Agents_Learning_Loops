@@ -103,7 +103,8 @@ docker build -t swebench-sandbox:latest experiments/gemma_developer_agent/data/b
 * **ID de la imagen construida:** `2eae82eab1fe` (manifest sha256:2eae82eab1fe, config sha256:35f1e24bbd02),
   según lo que este documento registró en su momento. **Sin recibo:** la imagen se identificó por un tag
   mutable (`latest`), y el orquestador señaló que la calibración cita una imagen Docker que no existe
-  (comentario de #103, 2026-10-03). El PR #120, abierto, propone un entorno con imagen identificada.
+  (comentario de #103, 2026-10-03). El PR #120 (fusionado el 2026-10-03) integró una variante local v2 del
+  entorno, con una imagen identificada por su resumen; es un ensayo, no el entorno del experimento.
 * **Tamaño en Docker:** 453 MB en disco (124 MB comprimido), con el mismo reparo.
 * **Imagen base:** `python:3.13-slim`.
 

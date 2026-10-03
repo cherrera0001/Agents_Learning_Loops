@@ -50,9 +50,9 @@ issue #101).
 - **Límite global:** 12 horas para entregar parches de todas las tareas, con el montaje del contenedor
   incluido y sin contar la validación de los parches (página `Evaluation`).
 - **Presupuesto por tarea:** opcional, en el archivo declarativo `eval_config.yaml` del envío (página
-  `Evaluation`; opciones en HARNESS § 7.1). Los valores por defecto del guion de puntuación son 60 minutos,
-  100 llamadas a herramientas, 500 turnos y 300 s por comando, y son configurables; la regla del concurso es
-  el límite global de 12 horas.
+  `Evaluation`; opciones en HARNESS § 7.1). Los valores por defecto del arnés son 60 minutos, 100 llamadas a
+  herramientas, 500 turnos y 300 s por comando, y son configurables; los 60 minutos son además el tope de la
+  fórmula del pre-registro. La regla del concurso es el límite global de 12 horas.
 - **Contexto del modelo:** 32 768 tokens; el guion de puntuación compacta el contexto a partir de unos 14 000
   (HARNESS § 3.1 y § 7.2).
 
@@ -61,13 +61,14 @@ issue #101).
 - **Composición:** unas 120 tareas, repartidas por mitades entre las tablas pública y privada (página
   `Data`). La tabla privada decide el resultado (Foundational § 7.a).
 - **Origen:** el conjunto de prueba se curó a partir de repositorios privados (página `Data`). Las 129 tareas
-  del paquete público (fastapi, rich, requests y httpx) son tareas de entrenamiento publicadas (HARNESS
-  § 9.1) y no corresponden a los repositorios con que se puntúa.
+  del paquete público (fastapi, rich, requests y httpx) salen de la página `Data`; HARNESS § 9.1 las llama
+  tareas de entrenamiento publicadas. No corresponden a los repositorios con que se puntúa.
 
 ### 2.4 Modelo, adaptadores y contenido del envío
 
 - **Modelo:** solo la variante
-  [`gemma-4-31b-it-qat-w4a16-ct`](https://www.kaggle.com/models/google/gemma-4/other/gemma-4-31b-it-qat-w4a16-ct)
+  `gemma-4-31b-it-qat-w4a16-ct`
+  ([página del modelo](https://www.kaggle.com/models/google/gemma-4/other/gemma-4-31b-it-qat-w4a16-ct))
   en todos los agentes y subagentes (página `Model Selection, Budget, and Harness Rules`; HARNESS § 3.2). Es
   un dato del reglamento, no una verificación de Google sobre esa variante.
 - **Adaptadores LoRA:** formato `.safetensors`, distintos por agente, hasta 8 y de rango máximo 128 (HARNESS

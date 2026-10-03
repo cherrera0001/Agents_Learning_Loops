@@ -4,9 +4,9 @@
 > mandan el [pre-registro de la línea base A](../../../docs/preregistration/kaggle-baseline-a.md) y los
 > issues #100 a #103. Ejemplos de lo superado: el presupuesto de 60 minutos por tarea como regla, que este
 > registro opone al límite de 12 horas (la página oficial *Evaluation* fija las 12 horas para todas las
-> tareas y el presupuesto por tarea se deriva de ellas); la rúbrica del Paper Track, que aquí consta como no verificada y luego se leyó en la
-> página oficial; y que la cuenta no estaba inscrita en el Paper Track (hoy lo está, #101). Mapa de
-> documentos: [`README.md`](../README.md#12-mapa-de-documentos).
+> tareas y el presupuesto por tarea se deriva de ellas); la rúbrica del Paper Track, que aquí consta como no
+> verificada y luego se leyó en la página oficial; y que la cuenta no estaba inscrita en el Paper Track (hoy
+> lo está, #101). Mapa de documentos: [`README.md`](../README.md#12-mapa-de-documentos).
 
 Revisor: Claude (Opus 5.5), orquestador. Fecha: 2026-10-02. Alcance: todo `experiments/gemma_developer_agent/`
 sin commitear, más el cambio de `.gitignore`. No se revisó `docs/entorno/revision-texto-publico-2026-10-02.md`.

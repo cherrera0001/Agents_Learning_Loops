@@ -6,8 +6,8 @@
 > el «split estratificado» (la regla es reservar un repositorio); que A no tenga «anclaje» (el kit ya
 > declara las herramientas de grafo); y las definiciones de B y D, que el issue #104 fija de otro modo. El
 > pre-registro de la campaña de #104 aún no existe, y las hipótesis de este borrador no son refutables ni
-> están pre-registradas. Las tareas no son «SWE-bench»: son el conjunto propio de la competencia. Mapa de
-> documentos: [`../README.md`](../README.md#12-mapa-de-documentos).
+> están pre-registradas. Las tareas no son «SWE-bench»: son el conjunto propio de la competencia. La línea
+> «No commiteado» de abajo es falsa: el borrador está en el repositorio. Mapa de documentos: [`../README.md`](../README.md#12-mapa-de-documentos).
 
 **Estado:** BORRADOR INCOMPLETO (No commiteado; pendiente de partición exacta por `instance_id`, hardware de cómputo y calibración de ruido).  
 **Fecha:** 2026-10-02.  
