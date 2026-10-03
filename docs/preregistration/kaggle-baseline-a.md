@@ -34,7 +34,7 @@ Los valores fijados están también en
 `fijos`. Su resumen SHA-256 es:
 
 ```text
-65afd0bc880a7314d874aeedf8712856038700ee93d6ae367e4754d484c2181c
+588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7
 ```
 
 `python -m scripts.kaggle_prereg comprobar` lo recalcula y sale con 2 si no coincide.
@@ -62,15 +62,24 @@ puede afirmar algo.
 
 ## Datos
 
-Agregados de `tasks.jsonl`, de `python -m scripts.kaggle_eda resumen --tasks <tasks.jsonl>`. El comando
-solo imprime agregados; ningún enunciado, parche ni dato por tarea entra en el repositorio.
+Agregados de `tasks.jsonl`, de `python -m scripts.kaggle_eda resumen --tasks <tasks.jsonl>`. Qué publica
+el comando y qué no:
+
+- no imprime enunciados, parches, pruebas ni identificadores de tarea;
+- de un grupo con **menos de 5 tareas** solo dice cuántas son, sin ningún estadístico;
+- no da mínimos ni máximos, que son el valor de una tarea concreta: da los percentiles 10, 25, 50, 75 y
+  90 y, para los extremos, conteos por umbral.
+
+Un cuantil sigue siendo un número derivado de los datos de la competencia; lo que estas reglas evitan es
+publicar el valor de una tarea identificable. Un conteo por umbral o por año puede ser pequeño: dice
+cuántas tareas hay, no cuál ni cuánto mide.
 
 - 129 tareas con 8 campos. `hints_text` está vacío en las 129. No hay listas de pruebas que deban fallar
   o pasar: **la validez de una tarea solo se puede medir** (sección A). Hay 127 `base_commit` distintos.
 - 86 de las 129 tareas son del cuarto trimestre de 2025 en adelante.
-- 60 de los 129 parches de referencia cambian 10 líneas o menos. El mayor cambia 12 714 líneas (rich); el
-  mayor de fastapi, 2 047. El enunciado más corto tiene 42 caracteres.
-- 91 de los 129 parches de referencia tocan un solo archivo; el que más, 26.
+- Parches de referencia: 60 cambian 10 líneas o menos; 16 cambian más de 100; 3, más de 1 000.
+- Parches de referencia: 91 tocan un solo archivo; 3 tocan más de 10.
+- Enunciados: 24 tienen 100 caracteres o menos; 2 tienen más de 5 000.
 
 Unidades y método de cada medida:
 
@@ -80,18 +89,17 @@ Unidades y método de cada medida:
 | Parche, en **líneas cambiadas** | Líneas añadidas más líneas quitadas **dentro de los bloques `@@`**, contadas con las longitudes que declara cada bloque. No entran las cabeceras `---` y `+++` ni las líneas de contexto |
 | Parche, en líneas totales | Todas las líneas del texto del diff. Es **otra variable**: su mediana es 32, frente a 12 de las líneas cambiadas. Este documento no la usa |
 | Archivos por parche | Cabeceras de archivo: una línea `--- ` seguida de una `+++ `. Los diffs de `tasks.jsonl` no traen la línea `diff --git`; contar esa línea da 0 en las 129 |
-| Mediana y cuartiles | `statistics.median` y `statistics.quantiles(n=4, method="inclusive")` de Python |
+| Percentiles | `statistics.quantiles(n=20, method="inclusive")` de Python |
 
-Toda cifra de «líneas» de este documento es de líneas cambiadas.
+Toda cifra de «líneas» de este documento es de líneas cambiadas. Percentiles 10 / 25 / 50 / 75 / 90:
 
-| Repositorio | Tareas | Mediana del enunciado (caracteres) | Mediana del parche de referencia (líneas) | Mediana del parche de pruebas (líneas) |
-|---|---|---|---|---|
-| fastapi | 67 | 677 | 18 | 76 |
-| rich | 48 | 138,5 | 9 | 20 |
-| requests | 13 | 406 | 4 | 11 |
-| httpx | 1 | 243 | 79 | 10 |
-
-El primer cuartil del enunciado en rich es de 79 caracteres.
+| Repositorio | Tareas | Por año | Enunciado (caracteres) | Parche de referencia (líneas) | Parche de pruebas (líneas) |
+|---|---|---|---|---|---|
+| fastapi | 67 | 2025: 41; 2026: 26 | 146,4 / 269,5 / 677 / 1 241,5 / 2 530,6 | 3 / 5,5 / 18 / 66,5 / 261,8 | 13,2 / 29,5 / 76 / 170,5 / 392,8 |
+| rich | 48 | 2023: 9; 2024: 17; 2025: 6; 2026: 16 | 67,4 / 79 / 138,5 / 695 / 1 218,4 | 2 / 2 / 9 / 34,25 / 76,3 | 6 / 14 / 20 / 31,25 / 71,7 |
+| requests | 13 | 2023: 1; 2024: 4; 2026: 8 | 237,4 / 268 / 406 / 580 / 677 | 2 / 3 / 4 / 10 / 15,8 | 8 / 8 / 11 / 15 / 21,8 |
+| httpx | 1 | — | 1 tarea, sin estadísticos | — | — |
+| Las 129 | 129 | — | 75 / 146 / 418 / 1 000 / 1 801,4 | 2 / 4 / 12 / 44 / 127,2 | 8 / 15 / 31 / 92 / 238,6 |
 
 **No se excluye ninguna tarea por tamaño ni por longitud del enunciado.** Excluir por una propiedad del
 parche de referencia modificaría el benchmark con información que el agente no tiene. En su lugar, la
@@ -104,7 +112,8 @@ las 129 tareas:
 | Caracteres del enunciado | hasta 237 | de 238 a 739 | más de 739 |
 
 Es un análisis descriptivo declarado, sin regla de decisión. Los cortes son de las 129, así que dentro del
-subconjunto los tres grupos no tendrán el mismo tamaño. Los estadísticos del parche de referencia son del
+subconjunto los tres grupos no tendrán el mismo tamaño; un grupo con menos de 5 tareas se reporta sin
+su número de resueltas. Los estadísticos del parche de referencia son del
 evaluador: no entran en prompts ni en skills.
 
 ## A. Pasos previos: ensayo de notebook y validez de las tareas
@@ -131,7 +140,12 @@ clase por tarea, no el parche.
 
 Antes de medir la validez se hace un ensayo en un notebook de Kaggle con L4×4. **Solo mide cosas que no
 son resultados**: no se registra qué tareas se resuelven. Usa cuatro tareas que nunca serán de prueba: las
-tres primeras de requests por `instance_id` y la de httpx, con `--max-time-minutes 5`.
+tres primeras de requests por `instance_id` y la de httpx.
+
+El ensayo corre con el **kit original** (`conditions/a_kit/`, verificado contra el manifiesto), sin
+presupuesto propio: el `eval_config.yaml` de la línea base no existe hasta C5. Los límites se pasan por
+las opciones de la CLI: `--max-time-minutes 5 --max-tool-calls 100 --max-turns 500 --timeout-seconds
+300`.
 
 Deja un registro versionado (`preregistro/ensayo_notebook_v1.json`, esquema `kaggle-notebook-trial/1`):
 
@@ -139,7 +153,7 @@ Deja un registro versionado (`preregistro/ensayo_notebook_v1.json`, esquema `kag
 |---|---|
 | Si el notebook tiene Docker; backend que funciona (`docker` o `subprocess`, HARNESS § 4.1) | Fija el backend del entorno de A.1 |
 | Si el servidor del modelo arranca con los parámetros de HARNESS § 3.1; segundos de carga; hash del guion de arranque; identificador y versión del modelo | Viabilidad; carga del modelo |
-| Si el envío de `conditions/a_linea_base/` compila | Viabilidad |
+| Si el kit original compila | Viabilidad |
 | Duración máxima de una sesión | Partes por réplica (sección C) |
 | Tokens por segundo; turnos del modelo completados por tarea en 5 minutos | Viabilidad |
 | Peticiones al modelo y cuántas rechaza el servidor por exceder el contexto, con `max_output_tokens` del kit (16 384) | `max_output_tokens` |
@@ -150,10 +164,10 @@ llega como un error que empieza por `Sandbox execution error:` y contiene `Conte
 `maximum context length`. Si el ensayo muestra algún rechazo con 16 384, se repite con 8 192; si con
 8 192 no hay ninguno, la línea base usa 8 192 como **desviación declarada del kit**, decidida aquí y antes
 de la primera réplica. Si el texto real del rechazo es otro, la lista de marcadores de
-`scripts/kaggle_replicas.py` se corrige en un PR revisado antes del primer recibo. Un rechazo durante una
-réplica cuenta como no resuelta (`context_exceeded`), no como infraestructura.
+`scripts/kaggle_replicas.py` se corrige por **enmienda** (sección I.4) antes del primer recibo. Un
+rechazo durante una réplica cuenta como no resuelta (`context_exceeded`), no como infraestructura.
 
-**Compuerta de viabilidad.** El ensayo es viable si el servidor arranca, el envío compila y el agente
+**Compuerta de viabilidad.** El ensayo es viable si el servidor arranca, el kit compila y el agente
 completa al menos **5 turnos** del modelo en al menos la mitad de las tareas. Cinco turnos es una
 convención: lo mínimo para leer, editar y entregar. Si no es viable, o si hay rechazos también con 8 192,
 `comprobar` sale con 2 y no se sigue con este diseño. El dueño elige entre detener el experimento o una
@@ -256,10 +270,10 @@ Opciones que ofrece `scripts/kaggle_split.py`, con las 129 tareas antes de exclu
 | `temporal_stratified`, N = 24 | 24 | 0,250 | 105 | las más recientes de cada repositorio |
 | `temporal_stratified`, N = 32 | 32 | 0,188 | 97 | ídem |
 | `temporal_stratified`, N = 40 | 40 | 0,150 | 89 | ídem |
-| `leave_one_repo_out`, fastapi | 67 | 0,090 | 62 | 2025-09-16 a 2026-06-20 |
-| `leave_one_repo_out`, rich | 48 | 0,125 | 81 | 2023-07-29 a 2026-04-12; 26 de 48 son de 2023 o 2024 |
-| `leave_one_repo_out`, requests | 13 | 0,462 | 116 | 2023-12-16 a 2026-06-09 |
-| `leave_one_repo_out`, httpx | 1 | no alcanzable | 128 | 2025-09-19 |
+| `leave_one_repo_out`, fastapi | 67 | 0,090 | 62 | todas de 2025 o 2026 |
+| `leave_one_repo_out`, rich | 48 | 0,125 | 81 | 26 de 48 son de 2023 o 2024 |
+| `leave_one_repo_out`, requests | 13 | 0,462 | 116 | 5 de 13 son de 2023 o 2024 |
+| `leave_one_repo_out`, httpx | 1 | no alcanzable | 128 | 1 tarea, sin estadísticos |
 
 El suelo es la menor diferencia de tasa que la prueba de McNemar exacta puede declarar significativa con
 α = 0,05: 6 pares discordantes, todos a favor de una condición, sobre N tareas
@@ -275,7 +289,7 @@ Por qué un repositorio reservado y no la partición temporal:
 2. **Resolución.** Con N = 24 el suelo es 6/24: una mejora de 5 tareas de 24 no se podría declarar.
 3. **Entrenamiento para #104.** Quedan 62 tareas (rich, requests, httpx) u 81 (fastapi, requests, httpx).
 
-Por qué fastapi antes que rich: tiene 67 tareas frente a 48, y todas son de 2025-09-16 en adelante,
+Por qué fastapi antes que rich: tiene 67 tareas frente a 48, y todas son de 2025 o 2026,
 mientras que 26 de las 48 de rich son de 2023 o 2024. Los arreglos de las tareas antiguas pueden estar en
 los datos de entrenamiento del modelo. No se conoce la fecha de corte del modelo, así que ninguna de las
 dos opciones queda libre de ese riesgo.
@@ -430,6 +444,9 @@ Deja un registro versionado (`preregistro/piloto_v1.json`, esquema `kaggle-pilot
   redondeados hacia arriba.
 - La comprobación de que la sección de presupuesto del prompt, en la traza de una tarea (HARNESS § 5.2 y
   § 9.2), muestra los cuatro valores pasados.
+- El piloto es la primera corrida con el directorio `conditions/a_linea_base/`, que lleva un
+  `README.md` propio: si el arnés no compila el envío con ese archivo dentro, el piloto es degenerado y
+  el README se saca del directorio por enmienda.
 
 **s** no sale del piloto: es la media de la duración de la verificación sin parche de las tareas
 `discrimina`, tomada del archivo de validez y redondeada hacia arriba a 0,1 min. Es una **aproximación**
@@ -602,23 +619,36 @@ contexto, error de evaluación, fallo del worker, pruebas sin especificación, `
 el código −1 del paso de pruebas. Los códigos 124 y 137 del paso de pruebas, con el parche del agente
 aplicado sobre una tarea `discrimina`, cuentan como **no resuelta**: el parche puede causarlos.
 
-**Repetición.** Si una réplica tiene algún error de infraestructura o le faltan tareas, se **repite
-entera** con un número de réplica nuevo, y sus recibos se mueven sin editar a
-`evidence/kaggle-baseline-a-v1/descartadas/`. El motivo queda en los propios recibos, y el análisis lo
-lista y rechaza con 2 una réplica descartada que esté completa y sin errores de infraestructura: **una
-réplica nunca se descarta por su tasa**.
+**Repetición.** Si una réplica tiene algún error de infraestructura, se **repite entera** con el número
+de réplica siguiente, y el archivo de sus recibos se mueve sin editar a
+`evidence/kaggle-baseline-a-v1/descartadas/`. Si a una réplica solo le faltan recibos (la corrida se
+cortó), no se descarta: se corren las tareas que faltan y se convierten a otro archivo con el mismo número
+de réplica.
 
-**Topes.** Como mucho **2 réplicas extra** en total, ya cargadas al cómputo de la escalera; con más de 2
-descartadas el análisis sale con 2. Y por tarea: si la misma tarea cae en infraestructura en **2
-réplicas**, contando las descartadas, deja de repetirse; cuenta como no resuelta (motivo `infra_repetida`)
-y el reporte la lista. Así una tarea que rompe siempre el sandbox no impide terminar.
+**Qué comprueba el análisis**, y sale con 2 si no se cumple:
+
+- los números de réplica de vigentes y descartadas, juntos, son 1, 2, …, k **sin huecos**: una réplica
+  borrada en vez de movida deja un hueco;
+- cada réplica descartada tiene recibo de **todas** las tareas del subconjunto y **al menos un**
+  `infra_error`: una réplica no se descarta por su tasa, ni se le quitan recibos;
+- hay como mucho **2** descartadas (el tope de réplicas extra, ya cargado al cómputo de la escalera);
+- ningún número de réplica es a la vez vigente y descartado, no hay recibos duplicados ni tareas ajenas al
+  subconjunto, y los hashes, la versión del arnés y la imagen de las descartadas son los de las vigentes.
+
+**Qué no puede comprobar** y solo protege el historial de git: que no se haya borrado la réplica de número
+más alto, ni renumerado réplicas antes de commitear. Por eso los recibos de cada réplica se commitean al
+terminar esa réplica y antes de correr la siguiente.
+
+**Tope por tarea.** Si la misma tarea cae en infraestructura en **2 réplicas**, contando las descartadas,
+deja de repetirse; cuenta como no resuelta (motivo `infra_repetida`) y el reporte la lista. Así una tarea
+que rompe siempre el sandbox no impide terminar.
 
 | Salida de `analizar` | Qué significa | Qué se hace |
 |---|---|---|
 | 0 | Todas las tareas del subconjunto tienen resultado en todas las réplicas vigentes | **Corrida válida.** Solo sobre este reporte se leen las reglas de la sección G |
 | 1 | Faltan tareas o hay errores de infraestructura sin repetir | No es una corrida válida. Se descarta y se repite la réplica afectada, dentro del tope. El reporte con salida 1 se conserva y se menciona en la lectura |
 | 2 | Recibos ilegibles, incoherentes, mezclados o fuera del subconjunto; descartes inválidos o por encima del tope | No hay reporte. No se edita ningún recibo: se corrige el código o la conversión; si el defecto está en los recibos, se publica una campaña nueva en otro directorio |
-| 3 | Error del propio script | Se corrige el script en un PR revisado y se analiza otra vez sobre los mismos recibos |
+| 3 | Error del propio script | Se corrige el script por enmienda (sección I.4), en un PR revisado, y se analiza otra vez sobre los mismos recibos |
 
 Si se agota el tope sin 2 réplicas completas, la línea base no llegó a salida 0: la lectura publica el
 reporte con salida 1, no aplica ninguna regla de la sección G y la campaña no empieza hasta arreglar la
@@ -754,8 +784,19 @@ Las tasas de esta línea base **no predicen** el puntaje de la tabla de posicion
 - **Pruebas colgadas.** Un timeout o un proceso matado en las pruebas cuenta como fallo del agente. Si la
   causa fuera el sandbox y no el parche, A quedaría subestimada. La lectura lista esas tareas.
 - **Repetir réplicas enteras.** Una réplica repetida vuelve a muestrear todas sus tareas, no solo la que
-  falló. La regla no mira la tasa, pero quien repite ya la conoce: por eso el descarte solo depende de la
-  infraestructura y el análisis lo comprueba.
+  falló, y quien repite ya conoce la tasa de la descartada. El análisis comprueba que cada descartada
+  esté completa y tenga un error de infraestructura, y que no falte ningún número de réplica (F.3). No
+  puede comprobar que no se borró la última réplica ni que no se renumeró antes de commitear: eso solo
+  lo protege el historial de git.
+- **Marcador del rechazo por contexto.** Los dos marcadores son un supuesto hasta el ensayo, y se buscan
+  en cualquier punto del texto del error del sandbox. Un fallo real de infraestructura cuyo mensaje
+  contuviera una de esas frases se contaría como fallo del agente y no se repetiría. El ensayo fija el
+  texto exacto del rechazo y la lista se ajusta por enmienda antes del primer recibo.
+- **Fechas declaradas.** La fecha de la compuerta y las de los registros (ensayo, validez, lectura de
+  la cuota, piloto) son valores declarados, no firmados. `comprobar` exige que no retrocedan de un paso
+  al siguiente, que no sean anteriores al registro (2026-10-03) ni posteriores al corte, y que la
+  compuerta no sea anterior al 2026-10-12. Quien revisa las contrasta además con la fecha de los
+  commits C0.5 a C5 y con la versión de cada notebook, que tiene fecha del servidor de Kaggle.
 - **Supuesto de concurrencia.** Si `c` real es mayor que 1 y no se logra una fuente oficial, el
   presupuesto queda más corto que el que un participante podría usar, y la línea base subestima a A.
 - **Caso peor.** El presupuesto supone que todas las tareas agotan su tiempo. Un participante puede
@@ -780,9 +821,14 @@ Las tasas de esta línea base **no predicen** el puntaje de la tabla de posicion
 | **C3** | Cierra `cuota` | Lectura del dueño | — |
 | **C4** | `subconjunto_linea_base_a.json`; cierra `subconjunto` | C2 y C3 | — |
 | **C5** | Registro del piloto y `eval_config.yaml`; cierra `piloto`, `presupuesto`, `corrida` y `decisiones_dueno` | C4 | 2026-10-19 |
-| **Compuerta** | `comprobar --tasks <tasks.jsonl> --envio <directorio>` sale con **0** en `main` | Antes de la primera réplica | 2026-10-19 |
+| **Compuerta** | `comprobar --tasks <tasks.jsonl> --envio <directorio>` sale con **0** sobre un commit de `main` | Antes de la primera réplica | 2026-10-19 |
 | **C6** | Recibos y registro de cada réplica en `evidence/kaggle-baseline-a-v1/` | Después de la compuerta; antes de analizar | 2026-10-22 |
 | **C7** | Salidas del análisis y lectura en `docs/results/kaggle-baseline-a.md` | Verificación independiente | 2026-10-23 |
+
+Qué comprueba la compuerta sobre git: que el archivo de parámetros y cada archivo que cita estén
+commiteados y sin cambios locales, y que `HEAD` esté contenido en `origin/main`. Usa la referencia
+**local** de `origin/main` y no consulta la red: quien abre la compuerta hace antes `git fetch`. No
+comprueba firmas ni que el commit sea el último de `main`.
 
 Cómo se verifica: el orden de los commits en `main`; el resumen del bloque `fijos`; `run_utc` de cada
 recibo posterior a la fecha del commit C5; los hashes de los recibos iguales a los declarados en C4 y C5;
@@ -796,9 +842,11 @@ anterior a C5, o C0 si no hay ninguna. De C0.5 a C5, cada commit solo rellena `v
 `comprobar` sale con **1** mientras quede alguno o falte una comprobación (sin `--tasks`, sin `--envio` o
 con `--sin-git`), y con **2** si un valor cerrado contradice su regla. No acepta valores tecleados donde
 puede derivarlos: lee los registros, comprueba su hash y su esquema, deriva el presupuesto, el
-repositorio, las réplicas, las partes y `max_output_tokens`, regenera la partición, recalcula el hash del
-envío y exige que cada archivo citado esté commiteado, con una ruta relativa dentro del repositorio y sin
-citar un mismo archivo en dos papeles.
+repositorio, las réplicas, las partes y `max_output_tokens`, regenera la partición, cruza los
+identificadores de la validez con `tasks.jsonl`, recalcula el hash del envío, exige que el archivo de
+muestreo del envío sea el del kit con el `max_output_tokens` que fijó el ensayo, que las fechas
+declaradas estén en orden y que cada archivo citado esté commiteado, con una ruta relativa dentro del
+repositorio y sin citar un mismo archivo en dos papeles.
 
 | Parámetro | Regla | Quién lo cierra | Commit |
 |---|---|---|---|

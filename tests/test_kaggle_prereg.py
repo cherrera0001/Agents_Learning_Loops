@@ -48,6 +48,7 @@ VERSIONADO = kp.DEFAULT_PARAMS
 CANONICO_4 = (
     b"evaluation:\n  timeout_seconds: 300\n  max_tool_calls: 100\n  max_time_minutes: 4\n  max_turns: 500\n"
 )
+SAMPLING_KIT = b"temperature: 0.5\nmax_output_tokens: 16384\n"  # inventado: no es el del kit
 CONTEOS = {"fastapi/fastapi": 67, "Textualize/rich": 48, "psf/requests": 13, "encode/httpx": 1}
 
 
@@ -333,6 +334,8 @@ CORRIDA = {"replicas": 3, "partes": 1, "fecha_compuerta": "2026-10-15"}
         (("fijos", "fecha_corte_campana"), "2026-02-30", "fijos.fecha_corte_campana"),
         (("fijos", "fecha_corte_campana"), "2026-11-12", "fechas"),
         (("fijos", "fecha_minima_compuerta"), "2026-10-20", "fechas"),
+        (("fijos", "fecha_registro"), "2026-10-13", "fechas"),
+        (("fijos", "fecha_registro"), "ayer", "fijos.fecha_registro"),
         (("fijos", "terciles"), {"parche_lineas": [26, 5], "enunciado_caracteres": [1, 2]}, "fijos.terciles"),
         (("fijos", "decisiones"), {"x": []}, "fijos.decisiones"),
         (("abiertos", "corrida", "valor"), {**CORRIDA, "replicas": 1}, "abiertos.corrida"),
@@ -479,11 +482,28 @@ class Arbol:
             "prompt_muestra_presupuesto": True,
         }
         self.b = 4
+        self.sampling_envio = SAMPLING_KIT
+        self.eval_config_envio: bytes | None = None  # None: el canonico
+        self.citar_fuera = False  # citar un eval_config.yaml que no es el del directorio del envio
+        self.fecha_validez = "2026-10-08"
         self.corrida: dict[str, Any] = {"replicas": 3, "partes": 1, "fecha_compuerta": "2026-10-15"}
         self.decisiones: list[dict[str, str]] = []
         self.abrir: tuple[str, ...] = ()
         self.alterar_subconjunto: Callable[[dict[str, Any]], None] | None = None
         self.alterar_validez: Callable[[dict[str, Any]], None] | None = None
+
+    def fechar(self, **fechas: str) -> None:
+        """Cambia las fechas declaradas: ensayo, validez, cuota, piloto y compuerta."""
+        if "ensayo" in fechas:
+            self.ensayo["fecha"] = fechas["ensayo"]
+        if "validez" in fechas:
+            self.fecha_validez = fechas["validez"]
+        if "cuota" in fechas:
+            self.cuota["fecha_lectura"] = fechas["cuota"]
+        if "piloto" in fechas:
+            self.piloto["fecha"] = fechas["piloto"]
+        if "compuerta" in fechas:
+            self.corrida["fecha_compuerta"] = fechas["compuerta"]
 
     def _json(self, nombre: str, obj: Any) -> dict[str, str]:
         data = json.dumps(obj).encode("utf-8")
@@ -500,6 +520,7 @@ class Arbol:
         entorno = self._json("entorno.json", {"ensayo_sha256": ensayo["sha256"], **self.entorno})
         validez_obj: dict[str, Any] = {
             "schema_version": kp.ESQUEMA_VALIDEZ,
+            "fecha": self.fecha_validez,
             "sha256_tasks": self.fijos["tasks_sha256"],
             "entorno_sha256": entorno["sha256"],
             "tareas": [
@@ -534,7 +555,17 @@ class Arbol:
         envio = raiz / "envio"
         envio.mkdir(exist_ok=True)
         (envio / "agent.yaml").write_bytes(b"nombre: inventado\n")
-        (envio / "eval_config.yaml").write_bytes(eval_config_bytes(self.fijos, self.b))
+        canonico = eval_config_bytes(self.fijos, self.b)
+        (envio / "eval_config.yaml").write_bytes(self.eval_config_envio or canonico)
+        (envio / "configs").mkdir(exist_ok=True)
+        (envio / "configs" / "sampling.yaml").write_bytes(self.sampling_envio)
+        manifiesto = raiz / kp.MANIFEST_REL
+        manifiesto.parent.mkdir(parents=True, exist_ok=True)
+        entrada = {"path": kp.SAMPLING_REL, "size": len(SAMPLING_KIT), "sha256": _sha(SAMPLING_KIT)}
+        manifiesto.write_text(json.dumps({"files": [entrada]}), encoding="utf-8")
+        citado = "eval_config_citado.yaml" if self.citar_fuera else "envio/eval_config.yaml"
+        if self.citar_fuera:
+            (raiz / citado).write_bytes(canonico)
         data = copy.deepcopy(self.base)
         data["fijos"] = self.fijos
         cerrar: dict[str, Any] = {
@@ -545,8 +576,8 @@ class Arbol:
             "subconjunto": subconjunto,
             "piloto": piloto,
             "presupuesto": {
-                "eval_config_ruta": "envio/eval_config.yaml",
-                "eval_config_sha256": _sha((envio / "eval_config.yaml").read_bytes()),
+                "eval_config_ruta": citado,
+                "eval_config_sha256": _sha((raiz / citado).read_bytes()),
                 "envio_sha256": kaggle_replicas.sha256_directory(envio),
             },
             "corrida": self.corrida,
@@ -559,6 +590,7 @@ class Arbol:
             _git(raiz, "init", "-q")
             _git(raiz, "add", "-A")
             _git(raiz, "commit", "-q", "-m", "cierre sintetico")
+            _git(raiz, "update-ref", "refs/remotes/origin/main", "HEAD")
         return data
 
     def argv(self, *extra: str) -> list[str]:
@@ -1080,6 +1112,156 @@ def test_ni_la_linea_base_cabe_al_recalcular(arbol: Arbol) -> None:
     assert "ni la linea base sola" in "\n".join(check_closed(data, arbol.raiz).problemas)
 
 
+# --- ronda 3: contrastes anadidos tras la verificacion independiente ---
+
+
+def test_max_output_tokens_del_envio_es_el_que_fija_el_ensayo(arbol: Arbol) -> None:
+    """Ensayo con rechazos a 16384 y ninguno a 8192: el envio tiene que llevar 8192, y solo ese cambio."""
+    arbol.ensayo["rechazos_por_contexto"] = {"16384": 3, "8192": 0}
+    assert "el ensayo fija max_output_tokens = 8192" in _problemas(arbol)  # el envio sigue con 16384
+    arbol.sampling_envio = SAMPLING_KIT.replace(b"16384", b"8192")
+    data = arbol.escribir()
+    extra = {"tasks": arbol.raiz / "tasks.jsonl", "envio": arbol.raiz / "envio"}
+    assert check_closed(data, arbol.raiz, **extra).problemas == []
+    # el valor correcto, pero con otro cambio en el archivo de muestreo
+    arbol.sampling_envio = SAMPLING_KIT.replace(b"16384", b"8192").replace(b"0.5", b"0.9")
+    assert "no es el del kit con max_output_tokens = 8192" in _problemas(arbol)
+    # declarado dos veces
+    arbol.sampling_envio = SAMPLING_KIT.replace(b"16384", b"8192") + b"max_output_tokens: 8192\n"
+    assert "no lo declara exactamente una vez" in _problemas(arbol)
+
+
+def test_envio_con_8192_sin_que_el_ensayo_lo_pida(arbol: Arbol) -> None:
+    arbol.sampling_envio = SAMPLING_KIT.replace(b"16384", b"8192")
+    assert "no es el del kit con max_output_tokens = 16384" in _problemas(arbol)
+    arbol.sampling_envio = SAMPLING_KIT
+    data = arbol.escribir()
+    (arbol.raiz / kp.MANIFEST_REL).unlink()
+    problemas = check_closed(data, arbol.raiz, envio=arbol.raiz / "envio").problemas
+    assert "no se pudo contrastar" in "\n".join(problemas)
+    # sin --envio no se puede ver: queda como comprobacion pendiente, no como aprobada
+    assert any("--envio" in p for p in check_closed(data, arbol.raiz).pendientes)
+
+
+def test_eval_config_del_envio_distinto_del_citado(arbol: Arbol) -> None:
+    """El archivo citado es canonico, pero el que esta dentro del envio no."""
+    arbol.citar_fuera = True
+    extra = {"tasks": arbol.raiz / "tasks.jsonl", "envio": arbol.raiz / "envio"}
+    assert check_closed(arbol.escribir(), arbol.raiz, **extra).problemas == []
+    arbol.eval_config_envio = CANONICO_4.replace(b"minutes: 4", b"minutes: 60")
+    assert "el eval_config.yaml del envio no es el canonico" in _problemas(arbol)
+
+
+@pytest.mark.parametrize(
+    ("cambios", "texto"),
+    [
+        ({"ensayo": "2026-10-02"}, "el ensayo de notebook (2026-10-02) es anterior a la de el registro"),
+        ({"validez": "2026-10-04"}, "la validez de tareas (2026-10-04) es anterior a la de el ensayo"),
+        ({"cuota": "2026-10-07"}, "la lectura de la cuota (2026-10-07) es anterior a la de la validez"),
+        ({"piloto": "2026-10-09"}, "el piloto (2026-10-09) es anterior a la de la lectura de la cuota"),
+        ({"compuerta": "2026-10-13"}, "la compuerta (2026-10-13) es anterior a la de el piloto"),
+        ({"piloto": "2026-11-06", "compuerta": "2026-11-06"}, "el piloto (2026-11-06) es posterior al corte"),
+        (
+            {"cuota": "2026-10-10", "piloto": "2026-10-10", "compuerta": "2026-10-11"},
+            "anterior a la fecha minima",
+        ),
+    ],
+)
+def test_fechas_declaradas_fuera_de_orden(arbol: Arbol, cambios: dict[str, str], texto: str) -> None:
+    arbol.fechar(**cambios)
+    assert texto in _problemas(arbol)
+
+
+def test_fechas_iguales_y_en_los_limites_se_aceptan(arbol: Arbol) -> None:
+    arbol.fechar(ensayo="2026-10-03", validez="2026-10-03", cuota="2026-10-03", piloto="2026-10-03")
+    arbol.fechar(compuerta="2026-10-12")  # todo el mismo dia del registro; compuerta en la fecha minima
+    assert check_closed(arbol.escribir(), arbol.raiz).problemas == []
+    arbol.fechar(ensayo="2026-10-12", validez="2026-10-12", cuota="2026-10-12", piloto="2026-10-12")
+    assert check_closed(arbol.escribir(), arbol.raiz).problemas == []
+    # el limite de recibos es inclusivo (con la decision de compuerta tardia); un dia despues, no
+    arbol.fechar(compuerta="2026-10-22")
+    arbol.corrida["replicas"] = 2  # quedan 2 sabados: 48 h
+    arbol.decisiones = [
+        {
+            "decision": "compuerta_tardia",
+            "opcion": "seguir_solo_linea_base",
+            "fecha": "2026-10-22",
+            "referencia": "r",
+        }
+    ]
+    assert check_closed(arbol.escribir(), arbol.raiz).problemas == []
+    arbol.fechar(compuerta="2026-10-23")
+    assert "posterior al limite de recibos" in _problemas(arbol)
+
+
+def test_segundo_piloto_se_acepta(arbol: Arbol) -> None:
+    arbol.piloto["numero"] = 2
+    assert check_closed(arbol.escribir(), arbol.raiz).problemas == []
+    arbol.piloto.update({"numero": 1, "tareas": 8})
+    assert check_closed(arbol.escribir(), arbol.raiz).problemas == []
+
+
+def test_montaje_se_redondea_hacia_arriba_a_decimas(arbol: Arbol) -> None:
+    """15 s son 0,25 min: redondeado a 0,3 da floor(5,283 - 0,3) = 4; sin redondear daria 5."""
+    arbol.segundos = [15, 15]
+    data = arbol.escribir()
+    assert check_closed(data, arbol.raiz).problemas == []
+    validez = json.loads((arbol.raiz / "validez.json").read_text(encoding="utf-8"))
+    assert kp.setup_minutes(validez) == Fraction(3, 10)
+    arbol.b = 5
+    assert "max_time_minutes = 4" in _problemas(arbol)
+
+
+def test_validez_con_un_identificador_que_no_esta_en_tasks(arbol: Arbol) -> None:
+    def renombrar(v: dict[str, Any]) -> None:
+        v["tareas"][70]["instance_id"] = "zz_inexistente"  # una tarea 'discrimina' de rich
+
+    arbol.alterar_validez = renombrar
+    data = arbol.escribir()
+    sin_tasks = "\n".join(check_closed(data, arbol.raiz).problemas)
+    assert "no son exactamente las tareas de clase 'discrimina'" in sin_tasks
+    con_tasks = "\n".join(check_closed(data, arbol.raiz, tasks=arbol.raiz / "tasks.jsonl").problemas)
+    assert "no son los de tasks.jsonl (sobran 1, faltan 1)" in con_tasks
+    assert main([*arbol.completo(), "--sin-git"]) == 2
+
+
+def test_parametros_sin_commitear_o_head_fuera_de_main(
+    arbol: Arbol, capsys: pytest.CaptureFixture[str]
+) -> None:
+    arbol.escribir(git=True)
+    assert main(arbol.completo()) == 0
+    capsys.readouterr()
+    # el propio archivo de parametros con un cambio local (un espacio al final)
+    p = arbol.raiz / "parametros.json"
+    original = p.read_bytes()
+    p.write_bytes(original + b" ")
+    assert main(arbol.completo()) == 2
+    assert "parametros.json: tiene cambios sin commitear" in capsys.readouterr().err
+    p.write_bytes(original)
+    assert main(arbol.completo()) == 0
+    # un commit nuevo que origin/main (referencia local) no contiene
+    (arbol.raiz / "nuevo.txt").write_text("x", encoding="utf-8")
+    _git(arbol.raiz, "add", "nuevo.txt")
+    _git(arbol.raiz, "commit", "-q", "-m", "commit sin mergear")
+    capsys.readouterr()
+    assert main(arbol.completo()) == 2
+    assert "HEAD no esta contenido en origin/main" in capsys.readouterr().err
+    _git(arbol.raiz, "update-ref", "refs/remotes/origin/main", "HEAD")
+    assert main(arbol.completo()) == 0
+
+
+def test_parametros_fuera_de_la_raiz(arbol: Arbol, tmp_path_factory: pytest.TempPathFactory) -> None:
+    arbol.escribir(git=True)
+    fuera = tmp_path_factory.mktemp("fuera") / "parametros.json"
+    fuera.write_bytes((arbol.raiz / "parametros.json").read_bytes())
+    argv = ["comprobar", "--parametros", str(fuera), "--raiz", str(arbol.raiz)]
+    assert (
+        main([*argv, "--tasks", str(arbol.raiz / "tasks.jsonl"), "--envio", str(arbol.raiz / "envio")]) == 2
+    )
+    assert kp.relative_posix(arbol.raiz / "a" / "b.json", arbol.raiz) == "a/b.json"
+    assert kp.relative_posix(fuera, arbol.raiz) is None
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -1107,7 +1289,9 @@ def test_main_error_inesperado_sale_con_3(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_git_no_disponible_es_un_problema(tmp_path: Path) -> None:
     assert kp.git_problems(tmp_path / "no_existe", ["a.json"])[0].startswith("No se pudo ejecutar git")
-    assert kp.git_problems(tmp_path, ["a.json"]) == ["a.json: no esta versionado en git."]
+    problemas = kp.git_problems(tmp_path, ["a.json"])
+    assert len(problemas) == 2 and problemas[0].startswith("HEAD no esta contenido en origin/main")
+    assert problemas[1] == "a.json: no esta versionado en git."
 
 
 def test_cli_presupuesto(capsys: pytest.CaptureFixture[str]) -> None:

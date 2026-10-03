@@ -29,5 +29,6 @@ aparece versionado aquí cualquier otro archivo, aunque esté modificado.
 
 El `README.md` de este directorio entra en el hash del envío, como cualquier otro archivo, y ningún
 archivo del envío lo incluye. Que el compilador del arnés acepte el directorio con este archivo dentro
-**no está comprobado**: se comprueba en el ensayo de notebook, al compilar el envío. Si no lo acepta, el
-README se saca del directorio antes del primer recibo y se anota como enmienda.
+**no está comprobado**: se comprueba en el piloto (sección D.2), que es la primera corrida con este
+directorio; el ensayo de notebook usa el kit original. Si no lo acepta, el README se saca del directorio
+antes del primer recibo y se anota como enmienda.

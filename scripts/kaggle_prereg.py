@@ -55,7 +55,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PARAMS = REPO_ROOT / "experiments/gemma_developer_agent/preregistro/linea_base_a.json"
 # Resumen del bloque ``fijos`` registrado en el pre-registro. Cambiarlo es una enmienda: exige una
 # entrada en ``enmiendas`` y el mismo valor en el documento.
-FIJOS_SHA256 = "65afd0bc880a7314d874aeedf8712856038700ee93d6ae367e4754d484c2181c"
+FIJOS_SHA256 = "588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7"
 
 EXIT_OK = 0
 EXIT_OPEN = 1
@@ -74,6 +74,9 @@ ESQUEMA_ENTORNO = "kaggle-sandbox-env/1"
 ESQUEMA_VALIDEZ = "kaggle-task-validity/1"
 ESQUEMA_PILOTO = "kaggle-pilot/1"
 MEDIDAS_TERCILES = ("parche_lineas", "enunciado_caracteres")
+MANIFEST_REL = "experiments/gemma_developer_agent/conditions/a_kit/manifest.json"
+SAMPLING_REL = "configs/sampling.yaml"
+RAMA_PRINCIPAL = "origin/main"
 
 
 class PreregError(ValueError):
@@ -402,6 +405,7 @@ FIJOS: dict[str, Validador] = {
     "pases_entrenamiento": lambda v: _is_int(v, 1),
     "condiciones_nuevas": lambda v: _is_int(v, 1),
     "escalera": _check_escalera,
+    "fecha_registro": _is_date,
     "fecha_minima_compuerta": _is_date,
     "fecha_limite_compuerta": _is_date,
     "fecha_limite_recibos": _is_date,
@@ -496,6 +500,7 @@ TAREA_VALIDEZ: dict[str, Validador] = {
 }
 VALIDEZ: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_VALIDEZ,
+    "fecha": _is_date,
     "sha256_tasks": _is_sha,
     "entorno_sha256": _is_sha,
     "tareas": lambda v: isinstance(v, list) and all(_shape(TAREA_VALIDEZ, extra=True)(x) for x in v),
@@ -578,6 +583,7 @@ def _check_fijos_coherentes(fijos: dict[str, Any]) -> list[str]:
     fechas = [
         parse_date(fijos[k], k)
         for k in (
+            "fecha_registro",
             "fecha_minima_compuerta",
             "fecha_limite_compuerta",
             "fecha_limite_recibos",
@@ -585,9 +591,11 @@ def _check_fijos_coherentes(fijos: dict[str, Any]) -> list[str]:
             "fecha_cierre_paper",
         )
     ]
-    minima, lim_compuerta, lim_recibos, corte, cierre = fechas
-    if not (minima <= lim_compuerta < lim_recibos < corte < cierre):
-        problems.append("fijos: fechas: minima <= limite de compuerta < limite de recibos < corte < cierre.")
+    registro, minima, lim_compuerta, lim_recibos, corte, cierre = fechas
+    if not (registro <= minima <= lim_compuerta < lim_recibos < corte < cierre):
+        problems.append(
+            "fijos: fechas: registro <= minima <= limite de compuerta < limite de recibos < corte < cierre."
+        )
     repos = {e[0] for e in fijos["escalera"]}
     if len({tuple(e) for e in fijos["escalera"]}) != len(fijos["escalera"]):
         problems.append("fijos: la escalera repite un escalon.")
@@ -655,8 +663,25 @@ def cited_paths(data: dict[str, Any]) -> dict[str, str]:
 
 
 def git_problems(raiz: Path, rutas: Sequence[str]) -> list[str]:
-    """Archivos citados que no estan commiteados tal cual en el repositorio de ``raiz``."""
+    """Problemas de versionado en el repositorio de ``raiz``.
+
+    Cada ruta debe estar commiteada y sin cambios locales, y ``HEAD`` debe estar contenido en la
+    referencia **local** de ``origin/main``. No se consulta la red: si esa referencia esta
+    desactualizada, lo que se comprueba es que el commit ya estaba en ``main`` la ultima vez que se
+    hizo ``git fetch``.
+    """
     problems: list[str] = []
+    try:
+        contenido = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", "HEAD", RAMA_PRINCIPAL], cwd=raiz, capture_output=True
+        )
+    except OSError as exc:
+        return [f"No se pudo ejecutar git en {raiz}: {exc}"]
+    if contenido.returncode != 0:
+        problems.append(
+            f"HEAD no esta contenido en {RAMA_PRINCIPAL} (referencia local): la compuerta se comprueba "
+            "sobre un commit ya mergeado."
+        )
     for ruta in rutas:
         try:
             seguido = subprocess.run(
@@ -738,6 +763,7 @@ def check_closed(
     tasks: Path | None = None,
     envio: Path | None = None,
     git: bool = False,
+    parametros: str | None = None,
 ) -> Resultado:
     """Contrasta cada parametro cerrado con su regla. Supone ``check_structure`` sin problemas."""
     fijos: dict[str, Any] = data["fijos"]
@@ -762,11 +788,57 @@ def check_closed(
         _contrastar(fijos, valor, raiz, tasks, envio, res)
     except PreregError as exc:
         res.problemas.append(str(exc))
-    if git:
-        res.problemas.extend(git_problems(raiz, sorted(rutas.values())))
-    elif rutas:
-        res.pendientes.append("no se comprobo que los archivos citados esten commiteados (--sin-git)")
+    if git and any(v is None for v in valor.values()):
+        pass  # el versionado se comprueba al evaluar la compuerta, cuando no queda nada abierto
+    elif git:
+        propios = [parametros] if parametros is not None else []
+        if parametros is None:
+            res.problemas.append("El archivo de parametros no esta dentro de la raiz del repositorio.")
+        res.problemas.extend(git_problems(raiz, [*propios, *sorted(rutas.values())]))
+    else:
+        res.pendientes.append("no se comprobo el versionado en git (--sin-git)")
     return res
+
+
+def relative_posix(path: Path, raiz: Path) -> str | None:
+    """Ruta de ``path`` relativa a ``raiz`` en formato POSIX; ``None`` si queda fuera."""
+    try:
+        return path.resolve().relative_to(raiz.resolve()).as_posix()
+    except ValueError:
+        return None
+
+
+def check_sampling(raiz: Path, envio: Path, fijos: dict[str, Any], tokens: int) -> None:
+    """El archivo de muestreo del envio debe ser el del kit, con ``max_output_tokens = tokens``.
+
+    No se interpreta el YAML. Si ``tokens`` es el valor del kit, el archivo debe tener el SHA-256 del
+    manifiesto. Si es otro candidato, el archivo debe contener una sola vez ``max_output_tokens:
+    <tokens>`` y, al devolver ahi el valor del kit, recuperar el SHA-256 del manifiesto: es decir, es
+    el archivo del kit con ese unico cambio.
+    """
+    try:
+        manifiesto = loads_strict((raiz / MANIFEST_REL).read_text(encoding="utf-8"))
+        esperado = next(f["sha256"] for f in manifiesto["files"] if f["path"] == SAMPLING_REL)
+        data = (envio / SAMPLING_REL).read_bytes()
+    except (OSError, ValueError, KeyError, TypeError, StopIteration) as exc:
+        raise PreregError(
+            f"presupuesto: no se pudo contrastar {SAMPLING_REL} del envio con el manifiesto del kit: "
+            f"{type(exc).__name__}."
+        ) from exc
+    del_kit = int(fijos["max_output_tokens_candidatos"][0])
+    if tokens != del_kit:
+        aguja = f"max_output_tokens: {tokens}".encode("ascii")
+        if data.count(aguja) != 1:
+            raise PreregError(
+                f"presupuesto: el ensayo fija max_output_tokens = {tokens}, pero {SAMPLING_REL} del envio no "
+                "lo declara exactamente una vez."
+            )
+        data = data.replace(aguja, f"max_output_tokens: {del_kit}".encode("ascii"))
+    if sha256_bytes(data) != str(esperado).lower():
+        raise PreregError(
+            f"presupuesto: {SAMPLING_REL} del envio no es el del kit con max_output_tokens = {tokens}, que "
+            "es el valor que fija el ensayo de notebook."
+        )
 
 
 def _contrastar(
@@ -779,9 +851,29 @@ def _contrastar(
 ) -> None:
     """Deriva y compara, en el orden de cierre. La primera contradiccion lanza ``PreregError``."""
     necesarias: dict[str, str] = {}  # decision -> opcion que permite seguir
+    corte = parse_date(fijos["fecha_corte_campana"], "fecha_corte_campana")
+    ultimo_nombre = "el registro del pre-registro"
+    ultima_fecha = parse_date(fijos["fecha_registro"], "fecha_registro")
+
+    def en_orden(nombre: str, texto: object) -> date:
+        """Las fechas declaradas no retroceden de un paso al siguiente ni pasan del corte."""
+        nonlocal ultimo_nombre, ultima_fecha
+        fecha = parse_date(texto, nombre)
+        if fecha < ultima_fecha:
+            raise PreregError(
+                f"La fecha de {nombre} ({fecha}) es anterior a la de {ultimo_nombre} ({ultima_fecha})."
+            )
+        if fecha > corte:
+            raise PreregError(
+                f"La fecha de {nombre} ({fecha}) es posterior al corte de la campana ({corte})."
+            )
+        ultimo_nombre, ultima_fecha = nombre, fecha
+        return fecha
+
     if valor["ensayo_notebook"] is None:
         return
     ensayo = _read_record(raiz, valor["ensayo_notebook"], "ensayo_notebook", ENSAYO)
+    en_orden("el ensayo de notebook", ensayo["fecha"])
     turnos = ensayo["turnos_por_tarea"]
     viables = sum(1 for t in turnos if t >= fijos["viabilidad_turnos_minimos"])
     if not (ensayo["servidor_arranca"] and ensayo["envio_compila"]) or 2 * viables < len(turnos):
@@ -793,7 +885,7 @@ def _contrastar(
         )
     if ensayo["backend"] == "docker" and not ensayo["docker_disponible"]:
         raise PreregError("ensayo_notebook: el backend es docker pero el notebook no tiene Docker.")
-    output_tokens(fijos, ensayo)  # lanza si hay rechazos por contexto con todos los candidatos
+    tokens = output_tokens(fijos, ensayo)
 
     if valor["entorno_sandbox"] is None:
         return
@@ -806,6 +898,7 @@ def _contrastar(
     if valor["validez_tareas"] is None:
         return
     validez = _read_record(raiz, valor["validez_tareas"], "validez_tareas", VALIDEZ)
+    en_orden("la validez de tareas", validez["fecha"])
     if validez["sha256_tasks"] != fijos["tasks_sha256"]:
         raise PreregError("validez_tareas: 'sha256_tasks' no es el tasks_sha256 del pre-registro.")
     if validez["entorno_sha256"] != valor["entorno_sandbox"]["sha256"]:
@@ -830,14 +923,24 @@ def _contrastar(
         necesarias["entorno_sin_arreglo"] = "seguir_excluyendo"
     validas = {repo: sum(1 for x in c if x == "discrimina") for repo, c in por_repo.items()}
     escalones = ladder(fijos, validas)
+    if tasks is not None:
+        if kaggle_split.compute_sha256(tasks) != fijos["tasks_sha256"]:
+            raise PreregError("El archivo de --tasks no tiene el tasks_sha256 del pre-registro.")
+        try:
+            reales = {t.get("instance_id") for t in kaggle_split._read_tasks(tasks)}
+        except (OSError, kaggle_split.ParticionError) as exc:
+            raise PreregError(f"No se pudo leer --tasks: {exc}") from exc
+        if set(ids) != reales:
+            raise PreregError(
+                "validez_tareas: los identificadores no son los de tasks.jsonl "
+                f"(sobran {len(set(ids) - reales)}, faltan {len(reales - set(ids))})."
+            )
 
     if valor["subconjunto"] is None:
         return
     cuota = valor["cuota"]
-    corte = parse_date(fijos["fecha_corte_campana"], "fecha_corte_campana")
     minima = parse_date(fijos["fecha_minima_compuerta"], "fecha_minima_compuerta")
-    if parse_date(cuota["fecha_lectura"], "cuota.fecha_lectura") > corte:
-        raise PreregError("cuota: la fecha de lectura es posterior al corte de la campana.")
+    en_orden("la lectura de la cuota", cuota["fecha_lectura"])
     horas_c4 = usable_hours(
         fijos,
         cuota["gpu_semanal_horas"],
@@ -852,11 +955,13 @@ def _contrastar(
         )
     texto = _read_cited(raiz, valor["subconjunto"]["ruta"], valor["subconjunto"]["sha256"], "subconjunto")
     sub = _parse_subset(texto, fijos, paso, set(invalidas), validas)
+    if set(sub["test"]) | set(sub["train"]) != set(ids) - set(invalidas):
+        raise PreregError(
+            "subconjunto: 'test' y 'train' no son exactamente las tareas de clase 'discrimina' de la validez."
+        )
     if tasks is None:
         res.pendientes.append("no se regenero la particion desde tasks.jsonl (--tasks)")
     else:
-        if kaggle_split.compute_sha256(tasks) != fijos["tasks_sha256"]:
-            raise PreregError("subconjunto: el archivo de --tasks no tiene el tasks_sha256 del pre-registro.")
         if regenerated_subset(tasks, paso.repo, set(invalidas)).encode("utf-8") != texto:
             raise PreregError(
                 "subconjunto: el archivo no coincide byte a byte con lo que genera scripts/kaggle_split.py."
@@ -865,6 +970,7 @@ def _contrastar(
     if valor["piloto"] is None:
         return
     piloto = _read_record(raiz, valor["piloto"], "piloto", PILOTO)
+    en_orden("el piloto", piloto["fecha"])
     if piloto["subconjunto_sha256"] != valor["subconjunto"]["sha256"]:
         raise PreregError("piloto: 'subconjunto_sha256' no es el del subconjunto declarado.")
     if piloto["numero"] > fijos["pilotos_maximo"] or piloto["tareas"] > fijos["piloto_tareas_maximo"]:
@@ -902,13 +1008,22 @@ def _contrastar(
             raise PreregError(
                 f"presupuesto: el hash del envio es {real}, no el declarado {pre['envio_sha256']}."
             )
-        if (envio / "eval_config.yaml").read_bytes() != eval_config_bytes(fijos, b):
+        try:
+            del_envio = (envio / "eval_config.yaml").read_bytes()
+        except OSError as exc:
+            raise PreregError(f"presupuesto: no se pudo leer el eval_config.yaml del envio: {exc}") from exc
+        if del_envio != eval_config_bytes(fijos, b):
             raise PreregError("presupuesto: el eval_config.yaml del envio no es el canonico.")
+        check_sampling(raiz, envio, fijos, tokens)
 
     if valor["corrida"] is None:
         return
     corrida = valor["corrida"]
-    fecha = parse_date(corrida["fecha_compuerta"], "corrida.fecha_compuerta")
+    fecha = en_orden("la compuerta", corrida["fecha_compuerta"])
+    if fecha < minima:
+        raise PreregError(
+            f"corrida: la fecha de la compuerta ({fecha}) es anterior a la fecha minima ({minima})."
+        )
     if fecha > parse_date(fijos["fecha_limite_recibos"], "fecha_limite_recibos"):
         raise PreregError("corrida: la compuerta es posterior al limite de recibos de la linea base.")
     if fecha > parse_date(fijos["fecha_limite_compuerta"], "fecha_limite_compuerta"):
@@ -1036,7 +1151,14 @@ def _valid(path: Path) -> dict[str, Any]:
 
 def _cmd_comprobar(args: argparse.Namespace) -> int:
     data = _valid(args.parametros)
-    res = check_closed(data, args.raiz, tasks=args.tasks, envio=args.envio, git=not args.sin_git)
+    res = check_closed(
+        data,
+        args.raiz,
+        tasks=args.tasks,
+        envio=args.envio,
+        git=not args.sin_git,
+        parametros=relative_posix(args.parametros, args.raiz),
+    )
     if res.problemas:
         raise PreregError("Parametros del pre-registro:\n- " + "\n- ".join(res.problemas))
     print(f"fijos_sha256: {fijos_digest(data['fijos'])}")

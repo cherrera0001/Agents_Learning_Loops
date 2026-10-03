@@ -2213,16 +2213,21 @@ def test_stdout_y_stderr_en_utf8(monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 # ---------------------------------------------------------------------------
 
 
-def escribir_descartada(d: Path, subset: Path, rep: int, fila_de: dict[str, str]) -> Path:
+def escribir_descartada(d: Path, subset: Path, rep: int, fila_de: dict[str, str], **over: Any) -> Path:
     """Escribe ``descartadas/replica_<rep>.jsonl`` dentro del directorio de recibos ``d``."""
     desc = d / "descartadas"
     desc.mkdir(exist_ok=True)
     subset_sha = hashlib.sha256(subset.read_bytes()).hexdigest()
     lineas = [
-        json.dumps(receipt(iid, rep, letra, subset_sha256=subset_sha)) for iid, letra in fila_de.items()
+        json.dumps(receipt(iid, rep, letra, **{"subset_sha256": subset_sha, **over}))
+        for iid, letra in fila_de.items()
     ]
     (desc / f"replica_{rep}.jsonl").write_text("\n".join(lineas) + "\n", encoding="utf-8")
     return desc
+
+
+def con_descartadas(d: Path, s: Path) -> list[str]:
+    return [*args_analizar(d, s), "--descartadas", str(d / "descartadas")]
 
 
 def analizar_con_descartadas(d: Path, s: Path) -> dict[str, Any]:
@@ -2269,14 +2274,12 @@ def test_replica_descartada_no_entra_en_tasas_y_se_lista(
     rep = analizar_con_descartadas(d, s)
     assert rep["entrada"]["replicas"] == [1, 2] and rep["completo"] is True
     assert rep["replicas_descartadas"] == [
-        {"replica": 3, "infra": [{"instance_id": "t1", "infra_reason": "sandbox_error"}], "faltantes": []}
+        {"replica": 3, "infra": [{"instance_id": "t1", "infra_reason": "sandbox_error"}]}
     ]
     assert rep["infra_repetida"] == []
     assert [p["resueltas"] for p in rep["por_replica"]] == [1, 2]
-    assert "| 3 | `t1` (sandbox_error) | - |" in render_markdown(rep)
-    # el comando literal del pre-registro: el directorio no se recorre hacia abajo
-    assert run(capsys, *args_analizar(d, s))[0] == 0
-    assert run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))[0] == 0
+    assert "| 3 | `t1` (sandbox_error) |" in render_markdown(rep)
+    assert run(capsys, *con_descartadas(d, s))[0] == 0
     # la misma replica dentro del directorio principal deja el analisis incompleto
     (d / "replica_3.jsonl").write_bytes((d / "descartadas" / "replica_3.jsonl").read_bytes())
     assert run(capsys, *args_analizar(d, s))[0] == 1
@@ -2285,63 +2288,131 @@ def test_replica_descartada_no_entra_en_tasas_y_se_lista(
 def test_descartada_cuenta_para_el_tope_por_tarea(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     d, s = write_case(tmp_path, {"t1": ["R", "I"], "t2": ["N", "N"]}, repos={})
     assert run(capsys, *args_analizar(d, s))[0] == 1  # sin la descartada, t1 tiene una sola infra
-    escribir_descartada(d, s, 3, {"t1": "I"})
+    escribir_descartada(d, s, 3, {"t1": "I", "t2": "N"})
     rep = analizar_con_descartadas(d, s)
     assert rep["completo"] is True
     assert rep["infra_repetida"] == [{"instance_id": "t1", "replicas": [2, 3]}]
     assert rep["por_replica"][1]["no_resueltas_por_motivo"]["infra_repetida"] == 1
-    assert rep["replicas_descartadas"][0]["faltantes"] == ["t2"]
-    assert run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))[0] == 0
+    assert run(capsys, *con_descartadas(d, s))[0] == 0
 
 
-@pytest.mark.parametrize(
-    ("descartes", "texto"),
-    [
-        ({3: {"t1": "R", "t2": "N"}}, "no se descarta por su tasa"),
-        ({2: {"t1": "I", "t2": "N"}}, "a la vez vigentes y descartados"),
-        ({3: {"t1": "I"}, 4: {"t1": "I"}, 5: {"t2": "I"}}, "el tope es 2"),
-        ({3: {"t1": "I", "ajena": "N"}}, "fuera del subconjunto"),
-    ],
-)
-def test_descartadas_invalidas_salen_con_2(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str], descartes: dict[int, dict[str, str]], texto: str
+def test_replica_borrada_deja_un_hueco_y_sale_con_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
-    for rep, fila_de in descartes.items():
-        escribir_descartada(d, s, rep, fila_de)
-    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))
-    assert code == 2 and texto in err
+    """Borrar una replica en vez de moverla a descartadas/ no pasa: los numeros deben ser 1..k."""
+    grid = {"t1": ["I", "R", "R"], "t2": ["N", "N", "R"]}
+    d, s = write_case(tmp_path, grid, repos={})
+    assert run(capsys, *args_analizar(d, s))[0] == 1  # con la replica 1 a la vista, incompleto
+    (d / "replica_1.jsonl").unlink()  # descarte silencioso: quedan las vigentes 2 y 3
+    code, _, err = run(capsys, *args_analizar(d, s))
+    assert code == 2 and "contiguos desde 1" in err and "[2, 3]" in err
+    # movida a descartadas/ como manda el pre-registro, el analisis es valido
+    escribir_descartada(d, s, 1, {"t1": "I", "t2": "N"})
+    assert run(capsys, *con_descartadas(d, s))[0] == 0
+    # y sin pasar --descartadas vuelve a faltar la 1
+    assert run(capsys, *args_analizar(d, s))[0] == 2
+    # un hueco en medio: vigentes 1 y 2, descartada 4
+    otro = tmp_path / "otro"
+    otro.mkdir()
+    d2, s2 = write_case(otro, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
+    escribir_descartada(d2, s2, 4, {"t1": "I", "t2": "N"})
+    code, _, err = run(capsys, *con_descartadas(d2, s2))
+    assert code == 2 and "[1, 2, 4]" in err
 
 
-def test_descartadas_con_otros_hashes_o_ruta_invalida(
+def test_exactamente_dos_descartadas_se_aceptan_y_tres_no(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
-    desc = d / "descartadas"
-    desc.mkdir()
-    mala = receipt("t1", 3, "I", subset_sha256="d" * 64)
-    (desc / "replica_3.jsonl").write_text(json.dumps(mala) + "\n", encoding="utf-8")
-    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(desc))
-    assert code == 2 and "subset_sha256" in err
-    doble = receipt("t1", 3, "I", subset_sha256=hashlib.sha256(s.read_bytes()).hexdigest())
-    (desc / "replica_3.jsonl").write_text((json.dumps(doble) + "\n") * 2, encoding="utf-8")
-    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(desc))
+    escribir_descartada(d, s, 3, {"t1": "I", "t2": "N"})
+    escribir_descartada(d, s, 4, {"t1": "R", "t2": "X"})
+    rep = analizar_con_descartadas(d, s)
+    assert [x["replica"] for x in rep["replicas_descartadas"]] == [3, 4] and rep["completo"] is True
+    assert run(capsys, *con_descartadas(d, s))[0] == 0
+    escribir_descartada(d, s, 5, {"t1": "X", "t2": "N"})
+    code, _, err = run(capsys, *con_descartadas(d, s))
+    assert code == 2 and "el tope es 2" in err
+
+
+@pytest.mark.parametrize(
+    ("rep", "fila_de", "over", "texto"),
+    [
+        (3, {"t1": "R", "t2": "N"}, {}, "no se descarta por su tasa"),
+        (3, {"t1": "I"}, {}, "le faltan recibos de ['t2']"),
+        (2, {"t1": "I", "t2": "N"}, {}, "a la vez vigentes y descartados"),
+        (3, {"t1": "I", "t2": "N", "ajena": "N"}, {}, "fuera del subconjunto"),
+        (3, {"t1": "I", "t2": "N"}, {"subset_sha256": "d" * 64}, "subset_sha256"),
+        (3, {"t1": "I", "t2": "N"}, {"sandbox_image": "img:otra"}, "sandbox_image"),
+        (3, {"t1": "I", "t2": "N"}, {"harness_version": "otra"}, "harness_version"),
+        (3, {"t1": "I", "t2": "N"}, {"submission_sha256": "e" * 64}, "submission_sha256"),
+    ],
+)
+def test_descartadas_invalidas_salen_con_2(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    rep: int,
+    fila_de: dict[str, str],
+    over: dict[str, str],
+    texto: str,
+) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
+    escribir_descartada(d, s, rep, fila_de, **over)
+    code, _, err = run(capsys, *con_descartadas(d, s))
+    assert code == 2 and texto in err
+
+
+def test_descartadas_duplicadas_o_ruta_invalida(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
+    desc = escribir_descartada(d, s, 3, {"t1": "I", "t2": "N"})
+    texto = (desc / "replica_3.jsonl").read_text(encoding="utf-8")
+    (desc / "replica_3.jsonl").write_text(texto + texto.splitlines()[0] + "\n", encoding="utf-8")
+    code, _, err = run(capsys, *con_descartadas(d, s))
     assert code == 2 and "duplicados" in err
     code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(tmp_path / "no_existe"))
     assert code == 2 and "--descartadas" in err
     # una salida dentro del directorio de descartadas es una entrada: no se toca
-    code, _, err = run(
-        capsys, *args_analizar(d, s), "--descartadas", str(desc), "--salida-md", str(desc / "r.md")
-    )
+    code, _, err = run(capsys, *con_descartadas(d, s), "--salida-md", str(desc / "r.md"))
     assert code == 2 and "coincide con una entrada" in err
 
 
 def test_fecha_de_la_corrida_por_replica_en_el_reporte(tmp_path: Path) -> None:
-    rep = analizar(tmp_path, {"t1": ["R", "N"], "t2": ["N", "N"]}, repos={})
+    """Las tareas de una replica pueden tener fechas distintas: se dan la primera y la ultima."""
+    d, s = write_case(tmp_path, {"t1": ["R", "N"], "t2": ["N", "N"], "t3": ["N", "R"]}, repos={})
+
+    def fechar(f: Path, filas: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        horas = {"t1": "08", "t2": "06", "t3": "07"}
+        return [{**r, "run_utc": r["run_utc"][:11] + horas[r["instance_id"]] + ":30:00Z"} for r in filas]
+
+    reescribir(d, fechar)
+    rep = analyze(load_receipts([d]), load_subset(s))
     assert rep["entrada"]["corrida_utc_por_replica"] == {
-        "1": {"primero": "2026-10-01T09:00:00Z", "ultimo": "2026-10-01T09:00:00Z"},
-        "2": {"primero": "2026-10-02T09:00:00Z", "ultimo": "2026-10-02T09:00:00Z"},
+        "1": {"primero": "2026-10-01T06:30:00Z", "ultimo": "2026-10-01T08:30:00Z"},
+        "2": {"primero": "2026-10-02T06:30:00Z", "ultimo": "2026-10-02T08:30:00Z"},
     }
+
+
+def test_run_utc_igual_a_converted_utc_se_acepta() -> None:
+    igual = receipt("t1", 1, "R", run_utc="2026-10-01T10:00:00Z")
+    assert parse_receipt(igual, "x").run_utc == igual["converted_utc"]
+    with pytest.raises(ReplicasError, match="posterior"):
+        parse_receipt({**igual, "run_utc": "2026-10-01T10:00:01Z"}, "x")
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "Sandbox execution error: the context is long",
+        "Sandbox execution error: maximum length reached",
+        "Sandbox execution error: context length",
+        "Sandbox execution error: ContextWindow",
+        "Sandbox execution error: timeout del servidor",
+    ],
+)
+def test_marcador_de_contexto_no_se_ensancha(texto: str) -> None:
+    """Solo los dos marcadores completos cuentan; lo demas sigue siendo infraestructura."""
+    fila_cruda = raw(error=texto, agent_patch_size=0, test_exit_code=-1)
+    assert classify_harness(fila_cruda, "x") == ("infra_error", None, "sandbox_error")
+    assert kr.CONTEXT_ERROR_MARKERS == ("contextwindowexceedederror", "maximum context length")
 
 
 def test_convertir_toma_run_utc_del_archivo_y_falla_si_no_existe(
@@ -2362,19 +2433,17 @@ def test_convertir_toma_run_utc_del_archivo_y_falla_si_no_existe(
     assert run(capsys, "convertir", "--task-results", str(res), *comun, "--salida", str(salida))[0] == 0
     recibo = json.loads(salida.read_text(encoding="utf-8"))
     assert recibo["run_utc"] == "2026-10-02T08:00:00Z"
-    # una conversion fechada antes que la corrida es incoherente
+    # una conversion fechada en el mismo segundo que la corrida vale; un segundo antes, no
+    args = ["convertir", "--task-results", str(res), *comun]
+    assert (
+        run(capsys, *args, "--salida", str(tmp_path / "o1"), "--convertido-utc", "2026-10-02T08:00:00Z")[0]
+        == 0
+    )
     code, _, err = run(
-        capsys, "convertir", "--task-results", str(res), *comun, "--salida", str(tmp_path / "o2.jsonl"),
-        "--convertido-utc", "2026-10-02T07:59:59Z",
-    )  # fmt: skip
+        capsys, *args, "--salida", str(tmp_path / "o2"), "--convertido-utc", "2026-10-02T07:59:59Z"
+    )
     assert code == 2 and "posterior" in err
     code, _, err = run(
-        capsys,
-        "convertir",
-        "--task-results",
-        str(tmp_path / "nada.jsonl"),
-        *comun,
-        "--salida",
-        str(tmp_path / "o3"),
+        capsys, "convertir", "--task-results", str(tmp_path / "nada"), *comun, "--salida", "o3"
     )
     assert code == 2 and "No se pudo leer" in err

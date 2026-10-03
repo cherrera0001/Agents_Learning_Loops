@@ -34,6 +34,7 @@
       ["fastapi/fastapi", 2, 0],
       ["Textualize/rich", 2, 0]
     ],
+    "fecha_registro": "2026-10-03",
     "fecha_minima_compuerta": "2026-10-12",
     "fecha_limite_compuerta": "2026-10-19",
     "fecha_limite_recibos": "2026-10-22",

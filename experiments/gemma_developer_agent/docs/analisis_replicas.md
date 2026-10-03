@@ -134,12 +134,15 @@ python -m scripts.kaggle_replicas analizar --recibos evidence/<campaña> --subco
 
 ## Réplicas descartadas y tope por tarea
 
-Una réplica con algún `infra_error` o con tareas sin recibo se repite **entera** con un número de
-réplica nuevo, y sus recibos se mueven sin editar a `descartadas/`. No entran en tasas ni en pares; el
-reporte las lista con sus tareas afectadas. El análisis sale con 2 si una réplica descartada está
-completa y sin errores de infraestructura (**una réplica no se descarta por su tasa**), si hay más de
-2 descartadas, si un número de réplica está a la vez vigente y descartado, o si sus hashes no son los
-de las vigentes.
+Una réplica con algún `infra_error` se repite **entera** con el número de réplica siguiente, y sus
+recibos se mueven sin editar a `descartadas/`. No entran en tasas ni en pares; el reporte las lista con
+sus tareas afectadas. Una réplica a la que solo le faltan recibos no se descarta: se completa con otro
+archivo del mismo número de réplica. El análisis sale con 2 si los números de réplica de vigentes y
+descartadas no son contiguos desde 1 (una réplica borrada deja un hueco), si a una descartada le falta
+algún recibo o no tiene ningún `infra_error` (**una réplica no se descarta por su tasa**), si hay más
+de 2 descartadas, si un número de réplica está a la vez vigente y descartado, o si sus hashes, versión
+del arnés o imagen no son los de las vigentes. No puede ver que se haya borrado la réplica de número
+más alto ni una renumeración anterior al commit: eso lo protege el historial de git.
 
 Tope por tarea: si una misma tarea tiene `infra_error` en 2 réplicas o más, contando las descartadas,
 deja de repetirse. En las réplicas vigentes cuenta como no resuelta, con el motivo de análisis

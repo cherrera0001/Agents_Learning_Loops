@@ -563,12 +563,24 @@ def check_discarded(
 ) -> list[str]:
     """Problemas de las replicas descartadas (lista vacia = bien descartadas).
 
-    Una replica solo se descarta por infraestructura o por tareas sin recibo, nunca por su tasa:
-    una replica completa y sin ``infra_error`` en ``descartadas`` es un error. Tambien lo son mas de
-    ``MAX_DISCARDED_REPLICAS`` descartadas, un numero de replica repetido con las vigentes, recibos
-    duplicados, tareas ajenas al subconjunto y hashes distintos de los de las replicas vigentes.
+    Los numeros de replica de vigentes y descartadas, juntos, deben ser 1, 2, ..., k sin huecos:
+    una replica borrada en vez de movida a ``descartadas/`` deja un hueco y es un error. Una replica
+    solo se descarta por infraestructura, nunca por su tasa: cada descartada debe tener recibo de
+    todas las tareas del subconjunto y al menos un ``infra_error``. Tambien son errores mas de
+    ``MAX_DISCARDED_REPLICAS`` descartadas, un numero de replica a la vez vigente y descartado,
+    recibos duplicados, tareas ajenas al subconjunto y hashes distintos de los de las vigentes.
+
+    Lo que esto no puede ver: una replica borrada que era la de numero mas alto, o renumerada antes
+    de commitear. Eso solo lo protege el historial de git, porque los recibos se commitean al
+    terminar cada replica.
     """
     problems: list[str] = []
+    todos = sorted({r.replica for r in receipts} | {r.replica for r in descartadas})
+    if todos != list(range(1, len(todos) + 1)):
+        problems.append(
+            f"Los numeros de replica (vigentes y descartadas) son {todos}; deben ser contiguos desde 1: "
+            "falta alguna replica. Una replica no se borra: se mueve a descartadas/."
+        )
     if not descartadas:
         return problems
     for campo in (
@@ -598,11 +610,16 @@ def check_discarded(
         )
     for rep in numeros:
         suyos = [r for r in descartadas if r.replica == rep]
-        completa = {r.instance_id for r in suyos} >= set(subset.ids)
-        if completa and not any(r.status == ST_INFRA for r in suyos):
+        faltan = sorted(set(subset.ids) - {r.instance_id for r in suyos})
+        if faltan:
             problems.append(
-                f"La replica {rep} esta descartada, pero esta completa y sin errores de infraestructura: "
-                "una replica no se descarta por su tasa."
+                f"A la replica descartada {rep} le faltan recibos de {faltan}: una descartada conserva "
+                "todos sus recibos."
+            )
+        if not any(r.status == ST_INFRA for r in suyos):
+            problems.append(
+                f"La replica {rep} esta descartada sin ningun error de infraestructura: una replica no se "
+                "descarta por su tasa."
             )
     return problems
 
@@ -898,7 +915,6 @@ def analyze(
                     for iid in ids
                     if iid in suyos and suyos[iid].status == ST_INFRA
                 ],
-                "faltantes": [iid for iid in ids if iid not in suyos],
             }
         )
     tasas = [p["tasa_sobre_subconjunto"] for p in por_replica]
@@ -1141,11 +1157,10 @@ def render_markdown(report: dict[str, Any]) -> str:
         out.append("Ninguna.")
     out += ["", "## Replicas descartadas por infraestructura (no entran en tasas ni pares)", ""]
     if report["replicas_descartadas"]:
-        out += ["| Replica | Tareas con error de infraestructura | Tareas sin recibo |", "|---|---|---|"]
+        out += ["| Replica | Tareas con error de infraestructura |", "|---|---|"]
         for x in report["replicas_descartadas"]:
-            infra_txt = ", ".join(f"`{i['instance_id']}` ({i['infra_reason']})" for i in x["infra"]) or "-"
-            falt_txt = ", ".join(f"`{i}`" for i in x["faltantes"]) or "-"
-            out.append(f"| {x['replica']} | {infra_txt} | {falt_txt} |")
+            infra_txt = ", ".join(f"`{i['instance_id']}` ({i['infra_reason']})" for i in x["infra"])
+            out.append(f"| {x['replica']} | {infra_txt} |")
     else:
         out.append("Ninguna.")
     out += ["", "## Faltantes (sin recibo)", ""]
@@ -1432,7 +1447,7 @@ def _cmd_analizar(args: argparse.Namespace) -> int:
         if not args.descartadas.is_dir():
             raise ReplicasError(f"--descartadas debe ser un directorio existente: {args.descartadas}")
         descartadas = load_receipts([args.descartadas])
-        problems += check_discarded(receipts, descartadas, subset)
+    problems += check_discarded(receipts, descartadas, subset)
     archivos: list[tuple[str, str]] | None = None
     if args.envio:
         archivos = submission_files(args.envio)
