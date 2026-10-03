@@ -765,32 +765,26 @@ def generate_table4_h7_markdown(h7_data: dict[str, Any], output_file: Path) -> N
     md_lines = [
         "# Tabla 4: Transferencia y contaminación de fallos por umbral τ (H7)",
         "",
-        "| Base | Umbral τ | Variante | Pares evaluados | Pares ayudados | "
-        "Pares dañados | Veredicto de celda |",
-        "|---|---|---|---|---|---|---|",
+        "| Base | Umbral τ | Variante | Pares evaluados | Pares ayudados | Pares dañados |",
+        "|---|---|---|---|---|---|",
     ]
 
     for item in h7_data["summary"]:
-        veredicto = "Neutro"
-        if item["helped"] > 0 and item["hurt"] == 0:
-            veredicto = "Transfiere sin contaminar"
-        elif item["hurt"] > 0 and item["helped"] == 0:
-            veredicto = "Contamina"
-        elif item["helped"] > 0 and item["hurt"] > 0:
-            veredicto = "Contamina (mixto)"
-
+        pairs = item["pairs"]
+        helped = item["helped"]
+        hurt = item["hurt"]
         md_lines.append(
-            f"| {item['base']} | {item['tau']} | {item['var']} | {item['pairs']} | "
-            f"+{item['helped']} | -{item['hurt']} | {veredicto} |"
+            f"| {item['base']} | {item['tau']} | {item['var']} | {pairs} | "
+            f"+{helped}/{pairs} | -{hurt}/{pairs} |"
         )
 
     md_lines.extend(
         [
             "",
-            "> **Conclusión pre-registrada:** Con lecciones presentes (base C), la memoria de fallos nunca",
-            "> ayudó entre tareas distintas y causó contaminación con τ = 0.10 (-3/18 pares).",
+            "> **Nota:** Conteos descriptivos de pares de tareas según umbral τ y variante.",
+            "> Pares ayudados: +1 primer intento correcto; pares dañados: -1 primer intento correcto.",
             "> Datos derivados directamente de `results/failure-transfer-v1/failure_transfer_analysis.json`.",
-            "> Regenerar: `python -m scripts.paper_figures`.",
+            "> Campaña: `failure-transfer-v1` (#65). Regenerar: `python -m scripts.paper_figures`.",
             "",
         ]
     )
@@ -864,19 +858,16 @@ def generate_fig5_diagnostic_baseline(results_dir: Path, output_file: Path) -> d
         )
 
     orig_diff = diag_counts["original"]["B"] - diag_counts["original"]["A"]
-    orig_verdict = "aporta" if orig_diff >= 3 else ("perjudica" if orig_diff <= -3 else "sin diferencia")
-
     misl_diff = diag_counts["misleading"]["B"] - diag_counts["misleading"]["A"]
-    misl_verdict = "aporta" if misl_diff >= 3 else ("perjudica" if misl_diff <= -3 else "sin diferencia")
 
     groups = [
         (
-            f"Originales ({orig_diff:+d}/{diag_counts['original']['total']}: {orig_verdict})",
+            f"Originales (Δ B−A: {orig_diff:+d}/{diag_counts['original']['total']})",
             "original",
             plot_x + 60,
         ),
         (
-            f"Engañosas ({misl_diff:+d}/{diag_counts['misleading']['total']}: {misl_verdict})",
+            f"Engañosas (Δ B−A: {misl_diff:+d}/{diag_counts['misleading']['total']})",
             "misleading",
             plot_x + 380,
         ),
@@ -947,8 +938,8 @@ def generate_table5_diagnostic_markdown(diag_counts: dict[str, Any], output_file
         "# Tabla 5: Línea base de diagnóstico público común (#58) — Diferencia observada de aciertos",
         "",
         "| Tipo de tarea | A · Sin memoria (con D) | B · Historial (con D) | "
-        "C · Asociativa (con D) | Dif. observada B − A | Dif. observada C − A | Veredicto pre-registrado |",
-        "|---|---|---|---|---|---|---|",
+        "C · Asociativa (con D) | Δ aciertos B − A | Δ aciertos C − A |",
+        "|---|---|---|---|---|---|",
     ]
 
     for kind, label in (
@@ -961,19 +952,19 @@ def generate_table5_diagnostic_markdown(diag_counts: dict[str, Any], output_file
         sc = diag_counts[kind]["C"]
         db = sb - sa
         dc = sc - sa
-        veredicto = "Aporta (+6/18)" if db >= 3 else "Sin diferencia (-2/18)"
 
         md_lines.append(
             f"| {label} | {sa}/{tot} ({sa / tot:.2f}) | {sb}/{tot} ({sb / tot:.2f}) | "
-            f"{sc}/{tot} ({sc / tot:.2f}) | {db:+d} | {dc:+d} | {veredicto} |"
+            f"{sc}/{tot} ({sc / tot:.2f}) | {db:+d}/{tot} | {dc:+d}/{tot} |"
         )
 
     md_lines.extend(
         [
             "",
             "> **Nota:** Línea base D agrega tres reglas públicas de diagnóstico por tipo de excepción.",
-            "> Se etiquetan como diferencias observadas de aciertos entre condiciones.",
-            "> Campaña: `diagnostic-baseline-v1`. Regenerar: `python -m scripts.paper_figures`.",
+            "> Conteos descriptivos y diferencias observadas de aciertos (Δ) con "
+            "denominador entre condiciones.",
+            "> Campaña: `diagnostic-baseline-v1` (#58). Regenerar: `python -m scripts.paper_figures`.",
             "",
         ]
     )

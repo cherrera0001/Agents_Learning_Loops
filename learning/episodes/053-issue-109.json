@@ -18,7 +18,7 @@
     "model_source": "self-reported",
     "escalated": false,
     "estimate_revisions": 0,
-    "prs": 1
+    "prs": 0
   },
   "steps": [
     {
@@ -50,12 +50,18 @@
       "action": "lint_and_types",
       "success": true,
       "note": "ruff check, ruff format --check y mypy sin errores en scripts/paper_figures.py y tests/test_paper_figures.py"
+    },
+    {
+      "action": "refactor_tables_and_figures",
+      "success": true,
+      "note": "Ajuste de Table 4 y Table 5 eliminando columnas de veredicto y conclusiones fijas interpretativas; presentación exclusiva de Δ aciertos observados con denominador exacto y notas neutrales"
     }
   ],
   "lessons": [
     "La derivación de conteos en scripts de figuras de paper debe consultar las claves internas del JSON (p. ej. replicación, lotes y modos en task_breakdown y experiment1) para que los tests de mutación no fallen por supuestos de estructura plana.",
     "En SVGs generados por script, mantener las líneas dentro del límite de 110 caracteres mediante concatenación de literales o división de atributos XML previene fallos de linter E501.",
     "En Python 3.11, las f-strings no permiten reutilizar las comillas exteriores dentro de expresiones ni contener saltos de línea sin triple comilla: usar comillas alternas y precalcular llamadas complejas.",
-    "El uso de extras opcionales como [paper] permite tener utilidades de visualización sin imponer dependencias pesadas en el entorno mínimo de ejecución."
+    "El uso de extras opcionales como [paper] permite tener utilidades de visualización sin imponer dependencias pesadas en el entorno mínimo de ejecución.",
+    "Las tablas y figuras derivadas de agregados experimentales deben presentar únicamente medidas observadas con su denominador (p. ej. Δ aciertos) y evitar columnas o notas de veredicto/causalidad pre-registradas que puedan confundir la medida empírica con interpretaciones normativas."
   ]
 }

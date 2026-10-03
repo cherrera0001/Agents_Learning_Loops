@@ -240,9 +240,18 @@ def test_fig4_and_table4_match_failure_transfer(tmp_path: Path) -> None:
     assert cells["A"]["0.1"]["real"]["original"]["helped"]["numerator"] == 3
     assert cells["A"]["0.1"]["real"]["original"]["hurt"]["numerator"] == 3
 
-    # Base C tau=0.10 real helped=0, hurt=3 (contamina)
+    # Base C tau=0.10 real helped=0, hurt=3
     assert cells["C"]["0.1"]["real"]["original"]["helped"]["numerator"] == 0
     assert cells["C"]["0.1"]["real"]["original"]["hurt"]["numerator"] == 3
+
+    # Verificaciones de ausencia de texto de conclusión fija y presencia de denominadores
+    tab_text = tab_file.read_text(encoding="utf-8")
+    assert "nunca ayudó" not in tab_text
+    assert "causó contaminación" not in tab_text
+    assert "Veredicto" not in tab_text
+    assert "+3/18" in tab_text
+    assert "-3/18" in tab_text
+    assert "failure-transfer-v1" in tab_text
 
 
 def test_fig5_and_table5_match_diagnostic_baseline(tmp_path: Path) -> None:
@@ -267,6 +276,19 @@ def test_fig5_and_table5_match_diagnostic_baseline(tmp_path: Path) -> None:
     assert diag["misleading"]["B"] == misl["TEXT_HISTORY"]["FirstAttemptSuccess"]["numerator"]
     assert diag["misleading"]["C"] == misl["ASSOCIATIVE_MEMORY"]["FirstAttemptSuccess"]["numerator"]
     assert diag["misleading"]["total"] == 18
+
+    # Verificaciones de ausencia de veredictos interpretativos y presencia de delta con denominador
+    tab_text = tab_file.read_text(encoding="utf-8")
+    fig_text = fig_file.read_text(encoding="utf-8")
+    assert "Veredicto" not in tab_text
+    assert "Aporta" not in tab_text
+    assert "Sin diferencia" not in tab_text
+    assert "aporta" not in fig_text.lower()
+    assert "sin diferencia" not in fig_text.lower()
+    assert "perjudica" not in fig_text.lower()
+    assert "+6/18" in tab_text
+    assert "-2/18" in tab_text
+    assert "Δ aciertos B − A" in tab_text
 
 
 def test_mandatory_footnotes_and_labels(tmp_path: Path) -> None:
@@ -406,7 +428,7 @@ def test_mutation_failure_transfer_changes_fig4_and_table4(tmp_path: Path) -> No
 
     assert h7["summary"][0]["helped"] == 11
     assert "+11/18 ayuda" in out_svg.read_text(encoding="utf-8")
-    assert "+11" in out_md.read_text(encoding="utf-8")
+    assert "+11/18" in out_md.read_text(encoding="utf-8")
 
 
 def test_mutation_diagnostic_analysis_changes_fig5_and_table5(tmp_path: Path) -> None:
@@ -430,8 +452,8 @@ def test_mutation_diagnostic_analysis_changes_fig5_and_table5(tmp_path: Path) ->
     assert diag["original"]["A"] == 14
     assert "14/18" in out_svg.read_text(encoding="utf-8")
     assert "14/18" in out_md.read_text(encoding="utf-8")
-    # Y la diferencia B - A cambia en consecuencia (12 - 14 = -2 en lugar de +6)
-    assert "-2" in out_md.read_text(encoding="utf-8")
+    # Y la diferencia B - A cambia en consecuencia (12 - 14 = -2 en lugar de +6) con denominador
+    assert "-2/18" in out_md.read_text(encoding="utf-8")
 
 
 def test_all_paper_figures_and_tables_generated(tmp_path: Path) -> None:
