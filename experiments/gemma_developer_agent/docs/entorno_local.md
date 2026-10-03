@@ -75,3 +75,51 @@ uv pip install --python "C:\Users\herre\harness_venv\Scripts\python.exe" `
 C:\Users\herre\harness_venv\Scripts\python.exe -m swegemma.cli eval --help
 ```
 Output: `usage: swegemma eval [-h] --tasks TASKS --snapshots-dir SNAPSHOTS_DIR ...` (código de salida 0).
+
+---
+
+## 4. Construcción de la Imagen Docker de Sandbox (`swebench-sandbox:latest`)
+
+El arnés ejecuta los entornos de agente y verificación dentro de contenedores herméticos basados en
+la imagen `swebench-sandbox:latest` (`HARNESS § 4.1`).
+
+### 4.1 Comando de construcción e imagen resultante
+
+A partir de los archivos oficiales descargados de Kaggle (`docker/Dockerfile.public`, `docker/imp.py`,
+`docker/telnetlib.py` y `wheels/` con las 124 ruedas de dependencias públicas):
+
+```powershell
+# Contexto preparado en data/build_sandbox (ignorado por git)
+docker build -t swebench-sandbox:latest experiments/gemma_developer_agent/data/build_sandbox
+```
+
+* **ID de la imagen construida:** `2eae82eab1fe` (manifest sha256:2eae82eab1fe, config sha256:35f1e24bbd02).
+* **Tamaño en Docker:** 453 MB en disco (124 MB comprimido).
+* **Imagen base:** `python:3.13-slim`.
+
+### 4.2 Corrida piloto de 3 tareas sin parche (`--skip-agent-patch`)
+
+Se ejecutó una prueba piloto sobre 3 tareas (`fastapi_14077`, `fastapi_11194`, `rich_3061`) con
+concurrencia 1 para validar la interacción entre el arnés en el host y los contenedores Docker:
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+C:\Users\herre\harness_venv\Scripts\python.exe -m swegemma.cli eval `
+  --tasks "experiments/gemma_developer_agent/data/tasks.jsonl" `
+  --snapshots-dir "experiments/gemma_developer_agent/data/snapshots" `
+  --results-dir "experiments/gemma_developer_agent/data/test_results_3" `
+  --submission-dir "experiments/gemma_developer_agent/conditions/a_kit" `
+  --skip-agent-patch --sandbox docker --concurrency 1 `
+  --task-ids fastapi_14077 rich_3061 fastapi_11194
+```
+
+Resultados observados:
+1. Docker levantó los contenedores correctamente en modo hermético (`network_mode="none"`, 2 vCPU, 4 GB).
+2. `fastapi_14077` y `fastapi_11194`: los tests fallaron sin parche como se esperaba (exit code 2),
+   arrojando `ModuleNotFoundError: No module named 'typing_inspection'` durante la recolección
+   (dependencia no provista en el wheelhouse para Python 3.13).
+3. `rich_3061`: el host Windows CP1252 lanzó un error de codificación al serializar el log Unicode
+   en `verification.py:420`.
+4. El análisis detallado y el contraste con el notebook `busyaprime` (119 tareas válidas) se
+   registran en `experiments/gemma_developer_agent/calibracion/fase2_sin_parche.json`.
+
