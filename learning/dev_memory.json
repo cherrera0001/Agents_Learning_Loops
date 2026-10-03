@@ -306,7 +306,7 @@
         "kind": "lesson"
       },
       "created_at": 1,
-      "last_accessed_at": 16,
+      "last_accessed_at": 46,
       "activation_level": 0.0
     },
     {
@@ -2147,7 +2147,7 @@
         "kind": "lesson"
       },
       "created_at": 6,
-      "last_accessed_at": 39,
+      "last_accessed_at": 46,
       "activation_level": 0.0
     },
     {
@@ -2584,7 +2584,7 @@
         "kind": "lesson"
       },
       "created_at": 7,
-      "last_accessed_at": 44,
+      "last_accessed_at": 46,
       "activation_level": 0.0
     },
     {
@@ -18099,14 +18099,26 @@
     {
       "id": "outcome:46:4",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: None",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
         "error": null,
         "episode": 46,
         "step": 4
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:unknown_error",
+      "type": "Concept",
+      "label": "unknown error",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
       },
       "created_at": 46,
       "last_accessed_at": 46,
@@ -18129,6 +18141,138 @@
       "activation_level": 0.0
     },
     {
+      "id": "outcome:46:6",
+      "type": "Outcome",
+      "label": "failure: None",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 6
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:46:7",
+      "type": "Outcome",
+      "label": "failure: None",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 7
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:46:8",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 8
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:46:9",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 9
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:46:10",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 10
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:46:11",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 46,
+        "step": 11
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:run_tests:unknown_error",
+      "type": "Concept",
+      "label": "'run_tests' falló con 'unknown error'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:edit_module:unknown_error",
+      "type": "Concept",
+      "label": "'edit_module' falló con 'unknown error'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:write_tests:unknown_error",
+      "type": "Concept",
+      "label": "'write_tests' falló con 'unknown error'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
       "id": "concept:lesson:note:una_comprobaci_n_de_cumplimiento_debe_distinguir_sin_coincid",
       "type": "Concept",
       "label": "Una comprobación de cumplimiento debe distinguir «sin coincidencias» de «no pude comparar»: con referencia vacía o incompleta sale con un código propio y nunca imprime verificado",
@@ -18141,9 +18285,33 @@
       "activation_level": 0.0
     },
     {
+      "id": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "type": "Concept",
+      "label": "Verificar solo contra un subconjunto de la referencia debe etiquetarse como parcial y decir contra qué se comparó; el mismo «VERIFICADO» para ambos casos engaña",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "type": "Concept",
+      "label": "Toda fuente de referencia que no se puede leer (API sin nombres, manifiesto corrupto, archivo ilegible) es un error con el código de «no se pudo comprobar», no una traza ni un recuento de cero",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 46,
+      "last_accessed_at": 46,
+      "activation_level": 0.0
+    },
+    {
       "id": "concept:lesson:note:el_manifiesto_declara_10_archivos_pero_solo_8_hashes_distint",
       "type": "Concept",
-      "label": "El manifiesto declara 10 archivos pero solo 8 hashes distintos: contar referencias por hash único y decirlo en el informe, no por archivo",
+      "label": "El manifiesto declara 10 archivos pero solo 8 hashes distintos: contar referencias por hash único y decirlo en el informe",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -19861,6 +20029,28 @@
       "recency_factor": 1.0
     },
     {
+      "source": "action:run_tests",
+      "target": "outcome:46:10",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:run_tests",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "outcome:1:2",
       "target": "concept:error:keyerror_type_en_stats_add_edge_cre_un_n",
       "relation": "FAILED_DUE_TO",
@@ -19963,10 +20153,10 @@
       "source": "action:edit_module",
       "target": "concept:error:heredoc_largo_en_git_bash_unexpected_eof",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0003961408125713218,
+      "weight": 0.00025353012004564597,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 32,
+      "count": 34,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20040,10 +20230,10 @@
       "source": "action:edit_module",
       "target": "concept:error:parche_por_heredoc_convirti_n_en_un_salt",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0012089258196146294,
+      "weight": 0.0007737125245533628,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 27,
+      "count": 29,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20084,10 +20274,10 @@
       "source": "action:edit_module",
       "target": "concept:error:parche_por_heredoc_convirti_n_en_salto_d",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0015111572745182867,
+      "weight": 0.0009671406556917035,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 26,
+      "count": 28,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20139,10 +20329,10 @@
       "source": "action:edit_module",
       "target": "concept:error:test_dependencies_ubicaba_pyproject_toml",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.002361183241434823,
+      "weight": 0.0015111572745182867,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 24,
+      "count": 26,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20227,10 +20417,10 @@
       "source": "action:edit_module",
       "target": "concept:error:el_texto_nuevo_de_privacidad_habr_a_publ",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 16,
+      "count": 18,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20293,10 +20483,10 @@
       "source": "action:edit_module",
       "target": "concept:error:check_failure_memory_se_ejecutaba_antes_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.017592186044416,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 13,
+      "count": 15,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20326,10 +20516,10 @@
       "source": "action:edit_module",
       "target": "concept:error:los_arreglos_de_ese_test_y_de_cinco_avis",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.053687091200000016,
+      "weight": 0.034359738368000006,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 10,
+      "count": 12,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20392,10 +20582,10 @@
       "source": "action:edit_module",
       "target": "concept:error:ruff_ruf005_en_la_f_string_que_usa_subis",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.08388608000000002,
+      "weight": 0.053687091200000016,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 8,
+      "count": 10,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20458,10 +20648,10 @@
       "source": "action:edit_module",
       "target": "concept:error:se_cre_experiments_init_py_y_un_prototip",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.13107200000000002,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 4,
+      "count": 6,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20469,10 +20659,10 @@
       "source": "action:edit_module",
       "target": "concept:error:borrado_de_experiments_gemma_developer_a",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.256,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 3,
+      "count": 5,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20495,6 +20685,50 @@
       "decay_factor": 0.05,
       "last_updated": 46,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
+      "target": "outcome:46:5",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
+      "target": "outcome:46:6",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
+      "target": "outcome:46:8",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -20810,12 +21044,12 @@
       "source": "concept:lesson:fallback:run_tests:edit_module",
       "target": "action:edit_module",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.784,
+      "weight": 0.8704000000000001,
       "decay_factor": 0.05,
-      "last_updated": 16,
-      "count": 3,
+      "last_updated": 46,
+      "count": 4,
       "metadata": {},
-      "recency_factor": 0.22313
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:run_tests:edit_module",
@@ -21058,6 +21292,160 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.22313
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:run_tests:edit_module",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:note:networkx_crea_nodos_sin_atributos_al_a_adir_una_arista_hacia",
@@ -23637,10 +24025,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_de_determinismo_tautol_gico_siempre",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0029514790517935286,
+      "weight": 0.002361183241434823,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 23,
+      "count": 24,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23670,10 +24058,10 @@
       "source": "action:write_tests",
       "target": "concept:error:tomllib_requiere_python_3_11_y_requires_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0036893488147419105,
+      "weight": 0.0029514790517935286,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 22,
+      "count": 23,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23703,10 +24091,10 @@
       "source": "action:write_tests",
       "target": "concept:error:tests_v0_1_usaban_ids_sin_prefijo_a_e_re",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0036893488147419105,
+      "weight": 0.0029514790517935286,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 22,
+      "count": 23,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23725,10 +24113,10 @@
       "source": "action:write_tests",
       "target": "concept:error:expectativa_err_nea_se_asumi_que_el_cami",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.004611686018427388,
+      "weight": 0.0036893488147419105,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 21,
+      "count": 22,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23747,10 +24135,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_tautol_gico_el_refuerzo_ema_posteri",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.004611686018427388,
+      "weight": 0.0036893488147419105,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 21,
+      "count": 22,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23802,10 +24190,10 @@
       "source": "action:write_tests",
       "target": "concept:error:mutaci_n_sobrevivi_la_propiedad_de_satur",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.009007199254740993,
+      "weight": 0.007205759403792794,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 18,
+      "count": 19,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23835,10 +24223,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_test_del_verificador_encontr_que_mean",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.01125899906842624,
+      "weight": 0.009007199254740993,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 17,
+      "count": 18,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23901,10 +24289,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_mensaje_de_fallo_de_security_txt_dec_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.021990232555520003,
+      "weight": 0.017592186044416,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 14,
+      "count": 15,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23934,10 +24322,10 @@
       "source": "action:write_tests",
       "target": "concept:error:supon_an_que_el_evaluador_solo_pareja_b_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23945,10 +24333,10 @@
       "source": "action:write_tests",
       "target": "concept:error:negativos_sin_match_una_mutaci_n_sobrevi",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -23989,10 +24377,10 @@
       "source": "action:write_tests",
       "target": "concept:error:primer_borrador_del_harness_forzaba_el_f",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24000,10 +24388,10 @@
       "source": "action:write_tests",
       "target": "concept:error:cobertura_de_src_experiments_por_ruta_tr",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24044,10 +24432,10 @@
       "source": "action:write_tests",
       "target": "concept:error:test_del_placebo_con_las_tres_estrategia",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.034359738368000006,
+      "weight": 0.027487790694400004,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 12,
+      "count": 13,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24055,10 +24443,10 @@
       "source": "action:write_tests",
       "target": "concept:error:dos_expectativas_del_simulador_estaban_m",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.034359738368000006,
+      "weight": 0.027487790694400004,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 12,
+      "count": 13,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24099,10 +24487,10 @@
       "source": "action:write_tests",
       "target": "concept:error:el_control_negativo_usaba_palabras_reale",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.06710886400000002,
+      "weight": 0.053687091200000016,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 9,
+      "count": 10,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24176,10 +24564,10 @@
       "source": "action:write_tests",
       "target": "concept:error:tests_de_regla_9_fallan_issues_cerrados_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.10485760000000002,
+      "weight": 0.08388608000000002,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 7,
+      "count": 8,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24187,10 +24575,10 @@
       "source": "action:write_tests",
       "target": "concept:error:la_primera_entrega_hecha_con_haiku_4_5_m",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.13107200000000002,
+      "weight": 0.10485760000000002,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 6,
+      "count": 7,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24231,10 +24619,10 @@
       "source": "action:write_tests",
       "target": "concept:error:ruff_check_ruf015_en_tests_integration_t",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.16384,
+      "weight": 0.13107200000000002,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 5,
+      "count": 6,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24257,6 +24645,39 @@
       "decay_factor": 0.05,
       "last_updated": 46,
       "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:write_tests",
+      "target": "outcome:46:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:write_tests",
+      "target": "outcome:46:9",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:write_tests",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25087,7 +25508,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:46:5",
+      "target": "outcome:46:11",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -30472,12 +30893,12 @@
       "source": "concept:lesson:fallback:write_tests:edit_module",
       "target": "action:edit_module",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.8704000000000001,
+      "weight": 0.9222400000000001,
       "decay_factor": 0.05,
-      "last_updated": 39,
-      "count": 4,
+      "last_updated": 46,
+      "count": 5,
       "metadata": {},
-      "recency_factor": 0.704688
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:write_tests:edit_module",
@@ -30923,12 +31344,12 @@
       "source": "concept:lesson:fallback:write_tests:edit_module",
       "target": "concept:topic:sin",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 39,
-      "count": 1,
+      "last_updated": 46,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.704688
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:write_tests:edit_module",
@@ -30962,6 +31383,149 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.704688
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:write_tests:edit_module",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:merge_pr:timeout_de_red_contra_api_github_com_dur",
@@ -32411,12 +32975,12 @@
       "source": "concept:lesson:fallback:edit_module:edit_module",
       "target": "action:edit_module",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.98320384,
+      "weight": 0.989922304,
       "decay_factor": 0.05,
-      "last_updated": 44,
-      "count": 8,
+      "last_updated": 46,
+      "count": 9,
       "metadata": {},
-      "recency_factor": 0.904837
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:edit_module:edit_module",
@@ -32576,12 +33140,12 @@
       "source": "concept:lesson:fallback:edit_module:edit_module",
       "target": "concept:topic:no",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 11,
-      "count": 1,
+      "last_updated": 46,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.173774
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:edit_module:edit_module",
@@ -33016,12 +33580,12 @@
       "source": "concept:lesson:fallback:edit_module:edit_module",
       "target": "concept:topic:sin",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.64,
+      "weight": 0.784,
       "decay_factor": 0.05,
-      "last_updated": 39,
-      "count": 2,
+      "last_updated": 46,
+      "count": 3,
       "metadata": {},
-      "recency_factor": 0.704688
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:edit_module:edit_module",
@@ -33214,12 +33778,12 @@
       "source": "concept:lesson:fallback:edit_module:edit_module",
       "target": "concept:topic:contra",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
-      "last_updated": 44,
-      "count": 1,
+      "last_updated": 46,
+      "count": 2,
       "metadata": {},
-      "recency_factor": 0.904837
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:fallback:edit_module:edit_module",
@@ -33275,6 +33839,127 @@
       "count": 1,
       "metadata": {},
       "recency_factor": 0.904837
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:edit_module",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
     },
     {
       "source": "concept:lesson:avoid:write_tests:expectativa_err_nea_se_asumi_que_el_cami",
@@ -95736,12 +96421,12 @@
       "source": "goal:46",
       "target": "action:run_tests",
       "relation": "LEADS_TO",
-      "weight": 0.755,
+      "weight": 0.6185,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 2,
+      "count": 3,
       "metadata": {
-        "step": 4
+        "step": 10
       },
       "recency_factor": 1.0
     },
@@ -95760,12 +96445,12 @@
       "source": "goal:46",
       "target": "action:edit_module",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.6699499999999999,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 1,
+      "count": 4,
       "metadata": {
-        "step": 2
+        "step": 8
       },
       "recency_factor": 1.0
     },
@@ -95773,10 +96458,10 @@
       "source": "goal:46",
       "target": "action:edit_module",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -95784,12 +96469,12 @@
       "source": "goal:46",
       "target": "action:write_tests",
       "relation": "LEADS_TO",
-      "weight": 0.65,
+      "weight": 0.6185,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 1,
+      "count": 3,
       "metadata": {
-        "step": 3
+        "step": 9
       },
       "recency_factor": 1.0
     },
@@ -95797,10 +96482,10 @@
       "source": "goal:46",
       "target": "action:write_tests",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 46,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -95813,7 +96498,7 @@
       "last_updated": 46,
       "count": 1,
       "metadata": {
-        "step": 5
+        "step": 11
       },
       "recency_factor": 1.0
     },
@@ -95821,6 +96506,578 @@
       "source": "goal:46",
       "target": "action:rebuild_memory",
       "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:46:4",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:unknown_error",
+      "target": "action:edit_module",
+      "relation": "RESOLVED_BY",
+      "weight": 0.784,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 3,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:46:6",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:46:7",
+      "target": "concept:error:unknown_error",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "action:run_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:error:unknown_error",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:run_tests:unknown_error",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "action:edit_module",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:error:unknown_error",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:unknown_error",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "action:write_tests",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:error:unknown_error",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:write_tests:unknown_error",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
       "decay_factor": 0.05,
       "last_updated": 46,
@@ -95984,6 +97241,336 @@
     },
     {
       "source": "concept:lesson:note:una_comprobaci_n_de_cumplimiento_debe_distinguir_sin_coincid",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "goal:46",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:verificar_solo_contra_un_subconjunto_de_la_referencia_debe_e",
+      "target": "concept:topic:versionado",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "goal:46",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:comprobacion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:datos",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:competencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:no",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:apruebe",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:vacio",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:sin",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:referencia",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:sale",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:compara",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:tambien",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
+      "target": "concept:topic:manifiesto",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 46,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:toda_fuente_de_referencia_que_no_se_puede_leer_api_sin_nombr",
       "target": "concept:topic:versionado",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
