@@ -154,9 +154,21 @@ Deja un registro versionado (`preregistro/ensayo_notebook_v1.json`, esquema `kag
 | Si el notebook tiene Docker; backend que funciona (`docker` o `subprocess`, HARNESS § 4.1) | Fija el backend del entorno de A.1 |
 | Si el servidor del modelo arranca con los parámetros de HARNESS § 3.1; segundos de carga; hash del guion de arranque; identificador y versión del modelo | Viabilidad; carga del modelo |
 | Si el kit original compila | Viabilidad |
-| Duración máxima de una sesión | Partes por réplica (sección C) |
+| Duración máxima de una sesión, declarada por quien ejecuta con su fuente (Enmienda 1) | Partes por réplica (sección C) |
 | Tokens por segundo; turnos del modelo completados por tarea en 5 minutos | Viabilidad |
 | Peticiones al modelo y cuántas rechaza el servidor por exceder el contexto, con `max_output_tokens` del kit (16 384) | `max_output_tokens` |
+
+**Enmienda 1 (2026-10-03, sección I.4).** Tres precisiones sobre el registro, anteriores a cualquier
+recibo:
+
+- **Medidas ausentes en un fallo temprano.** Si el servidor no arranca o el kit no compila, las medidas
+  que por eso no existen (modelo, carga, tokens por segundo, backend, turnos, peticiones y rechazos) van
+  **ausentes (nulas)** en el registro, no con un número, y el ensayo se cierra como no viable. Un registro
+  que traiga un número en una medida que no puede existir se rechaza.
+- **Lista de turnos de la repetición.** Si hubo rechazos con 16 384, el registro lleva además la lista
+  de turnos de la repetición con 8 192 (`turnos_por_tarea_repeticion`).
+- **Informe citado.** El registro cita por su SHA-256 (`informe_sha256`) el informe de sondas que lo
+  acompaña, donde quedan el hardware, las versiones y el observable del rechazo.
 
 **`max_output_tokens`.** Se mantiene el 16 384 del kit. El observable de un rechazo es una respuesta HTTP
 400 del servidor del modelo cuyo mensaje dice que se excede la longitud máxima de contexto; en el arnés
@@ -168,7 +180,9 @@ de la primera réplica. Si el texto real del rechazo es otro, la lista de marcad
 rechazo durante una réplica cuenta como no resuelta (`context_exceeded`), no como infraestructura.
 
 **Compuerta de viabilidad.** El ensayo es viable si el servidor arranca, el kit compila y el agente
-completa al menos **5 turnos** del modelo en al menos la mitad de las tareas. Cinco turnos es una
+completa al menos **5 turnos** del modelo en al menos la mitad de las tareas. Los turnos se toman de la
+lista medida con el `max_output_tokens` que queda fijado: la del kit si no hubo rechazos con 16 384 y la
+de la repetición con 8 192 si los hubo (Enmienda 1). Cinco turnos es una
 convención: lo mínimo para leer, editar y entregar. Si no es viable, o si hay rechazos también con 8 192,
 `comprobar` sale con 2 y no se sigue con este diseño. El dueño elige entre detener el experimento o una
 **línea base v2** por enmienda (sección I.4), con otra regla de presupuesto, antes de medir nada más.
@@ -890,7 +904,7 @@ una enmienda: un commit propio, anterior al primer recibo al que afecta, con su 
 
 | Fecha | Motivo | Commit |
 |---|---|---|
-| — | Ninguna | — |
+| 2026-10-03 | **Enmienda 1.** Registro del ensayo de notebook (A.0): medidas ausentes cuando el servidor no arranca o el kit no compila; lista de turnos de la repetición con 8 192 y viabilidad juzgada con la lista del `max_output_tokens` que queda fijado; `informe_sha256`; y la duración de sesión se declara con su fuente. Cambia el esquema `kaggle-notebook-trial/1` en `scripts/kaggle_prereg.py`; no cambia ningún valor de `fijos` ni su resumen. Anterior a cualquier recibo y a C0.5 | PR #119 (commit de squash en `main`) |
 
 ## Fuera de alcance
 

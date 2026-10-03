@@ -106,5 +106,11 @@
       "cierra": "El dueño decide; el orquestador versiona la decisión en el commit C5 como tarde."
     }
   },
-  "enmiendas": []
+  "enmiendas": [
+    {
+      "fecha": "2026-10-03",
+      "motivo": "Enmienda 1. Registro del ensayo de notebook (A.0): medidas ausentes (nulas) cuando el servidor no arranca o el kit no compila; lista de turnos de la repeticion con 8192 y viabilidad juzgada con la lista del max_output_tokens que queda fijado; informe_sha256; la duracion de sesion se declara con su fuente. No cambia ningun valor de 'fijos'.",
+      "commit": "PR #119 (commit de squash en main)"
+    }
+  ]
 }
