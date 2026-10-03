@@ -1,7 +1,9 @@
 # Manifiesto de Adaptadores LoRA · Condición A (Starter Kit Oficial)
 
-Este directorio documenta los adaptadores LoRA incluidos oficialmente en el starter kit de la competencia (`data/sample_submission/adapters/`).
-Siguiendo las directrices de gobernanza de ALL, **los archivos de pesos binarios (`*.safetensors`) no se versionan en git** para mantener el repositorio ligero y reproducible.
+Este directorio documenta los adaptadores LoRA incluidos oficialmente en el starter kit de la
+competencia (`data/sample_submission/adapters/`).
+Siguiendo las directrices de gobernanza de ALL, **los archivos de pesos binarios (`*.safetensors`) no se
+versionan en git** para mantener el repositorio ligero y reproducible.
 
 ---
 
@@ -27,9 +29,14 @@ Ambos adaptadores (`main_lora` y `tool_lora`) poseen configuraciones idénticas:
 * **Capas a transformar (`layers_to_transform`):** `[0]` (únicamente la capa 0)
 
 ### Diagnóstico Técnico: Adaptadores Dummy / Placeholders de Ejemplo
-1. **Tamaño vs. Expectativa:** Un LoRA real de rango 16 aplicado a todas las capas de atención de un modelo de 31B parámetros ronda entre **110 MB y 220 MB** (`HARNESS § 3.4`). Estos adaptadores pesan apenas **217 KB** cada uno.
-2. **Hashes idénticos:** Los archivos `adapter_model.safetensors` de `main_lora` y `tool_lora` tienen exactamente el mismo hash SHA-256 (`dcbedd...`), demostrando que son pesos idénticos de plantilla.
-3. **Restricción a capa 0:** Solo adaptan la capa 0 (`layers_to_transform: [0]`). Son demostraciones provistas por Kaggle para ilustrar el mecanismo de carga de adaptadores múltiples vía vLLM (`enable_lora=True`).
+1. **Tamaño vs. Expectativa:** Un LoRA real de rango 16 aplicado a todas las capas de atención de un modelo
+   de 31B parámetros ronda entre **110 MB y 220 MB** (`HARNESS § 3.4`). Estos adaptadores pesan apenas
+   **217 KB** cada uno.
+2. **Hashes idénticos:** Los archivos `adapter_model.safetensors` de `main_lora` y `tool_lora` tienen
+   exactamente el mismo hash SHA-256 (`dcbedd...`), demostrando que son pesos idénticos de plantilla.
+3. **Restricción a capa 0:** Solo adaptan la capa 0 (`layers_to_transform: [0]`). Son demostraciones
+   provistas por Kaggle para ilustrar el mecanismo de carga de adaptadores múltiples vía vLLM
+   (`enable_lora=True`).
 
 ---
 
@@ -48,12 +55,15 @@ if not token:
 
 competition = 'gemma-4-developer-agent'
 adapters = [
-    ('adapters/main_lora/adapter_model.safetensors', 'sample_submission/adapters/main_lora/adapter_model.safetensors'),
-    ('adapters/tool_lora/adapter_model.safetensors', 'sample_submission/adapters/tool_lora/adapter_model.safetensors'),
+    ('adapters/main_lora/adapter_model.safetensors',
+     'sample_submission/adapters/main_lora/adapter_model.safetensors'),
+    ('adapters/tool_lora/adapter_model.safetensors',
+     'sample_submission/adapters/tool_lora/adapter_model.safetensors'),
 ]
 
 for dst_rel, src_path in adapters:
-    url = f'https://www.kaggle.com/api/v1/competitions/data/download/{competition}/{urllib.parse.quote(src_path, safe=\"\")}'
+    enc = urllib.parse.quote(src_path, safe='')
+    url = f'https://www.kaggle.com/api/v1/competitions/data/download/{competition}/{enc}'
     req = urllib.request.Request(url, headers={'Authorization': f'Bearer {token}'})
     with urllib.request.urlopen(req) as resp, open(dst_rel, 'wb') as f:
         f.write(resp.read())
@@ -65,9 +75,13 @@ for dst_rel, src_path in adapters:
 
 ## 4. Propuesta de Decisión para el Orquestador (Condición A)
 
-* **Opción A.1 (Estricto kit oficial):** Mantener `adapter: main_lora` y `adapter: tool_lora` activos con los pesos descargados. 
+* **Opción A.1 (Estricto kit oficial):** Mantener `adapter: main_lora` y `adapter: tool_lora` activos con los
+  pesos descargados.
   * *Ventaja:* Es una réplica exacta del submission provisto como muestra por la competencia.
-  * *Riesgo:* Puede inducir perturbaciones espurias en el razonamiento al aplicar pesos dummy sobre la capa 0 de Gemma 4.
-* **Opción A.2 («A sin LoRA»):** Retirar las directivas `adapter` de `agent.yaml` y `code_analyzer.yaml` para evaluar el modelo base puro `gemma-4-31b-it-qat-w4a16-ct`.
+  * *Riesgo:* Puede inducir perturbaciones espurias en el razonamiento al aplicar pesos dummy sobre la
+    capa 0 de Gemma 4.
+* **Opción A.2 («A sin LoRA»):** Retirar las directivas `adapter` de `agent.yaml` y `code_analyzer.yaml` para
+  evaluar el modelo base puro `gemma-4-31b-it-qat-w4a16-ct`.
   * *Ventaja:* Establece una línea base limpia y determinista del modelo base sin sesgos de adaptadores dummy.
-  * *Argumento recomendado:* La condición A de control científico debe ser «A sin LoRA» para medir el rendimiento genuino de Gemma 4 31B antes de introducir intervenciones (skills o LoRAs reales).
+  * *Argumento recomendado:* La condición A de control científico debe ser «A sin LoRA» para medir el
+    rendimiento genuino de Gemma 4 31B antes de introducir intervenciones (skills o LoRAs reales).
