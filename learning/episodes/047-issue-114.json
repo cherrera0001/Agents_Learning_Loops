@@ -1,0 +1,91 @@
+{
+  "seq": 47,
+  "id": "issue-114",
+  "goal": "Que la comprobación de datos de la competencia no apruebe en vacío: sin referencia sale con 2 y compara también contra el manifiesto versionado",
+  "ref": "#114",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall antes de leer el código; solo devolvió lecciones de #111 sobre higiene del repositorio"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Reproducido el defecto en un checkout limpio: sin .env ni data/ el script salía con 0 y [VERIFICADO] tras comparar contra 0 archivos"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "scripts/verify_no_competition_data.py separado en funciones inyectables (build_reference, find_collisions, run); referencia con manifiesto, data/ y API; salida 2 si está vacía o una fuente falla; excluidos manifest.json, download_kit.py y README.md del kit"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_verify_no_competition_data.py: referencia vacía, coincidencia por hash, sin coincidencias, nombre de la API, error de API y token no expuesto, todo con tmp_path y sin red"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "note": "ruff format --check falló en los dos archivos recién escritos porque no los formateé antes de comprobar"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Resolución: ruff format sobre ambos archivos y repetición de ruff check, ruff format --check, mypy, pytest --cov (631 pasan) y export_schema --check, todo en verde"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "note": "La revisión independiente del PR #115 halló defectos que la primera entrega no declaró: aprobaba con [VERIFICADO] y salida 0 comparando solo contra el manifiesto (un archivo real de data/ ausente del manifiesto pasaba); una API 200 sin files o vacía con token se daba por buena; un manifiesto corrupto daba traza y salida 1; contextlib.suppress ocultaba archivos ilegibles de data/; los archivos propios del kit se excluían también de la comparación por hash; pageToken sin codificar y urlopen sin timeout"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "note": "Los 11 tests iniciales no detectaron 8 de 23 defectos inyectados por el revisor (exclusión por nombre base, paginación, data/ recursivo, manifiesto corrupto, recuentos del informe, nombres leídos antes de un error, rama por nombre)"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corrección: etiqueta VERIFICADO PARCIAL con salida 0 y opción --require-full que sale con 2; VERIFICADO solo con API o data/; API 200 sin nombres útiles y manifiesto o data/ ilegibles son errores con salida 2; hashes validados como 64 hex en minúsculas; exclusión de los archivos propios solo por nombre; pageToken con quote, timeout y .env con export y espacios; alcance git ls-files documentado; stdout en UTF-8 y todo el resultado por stdout"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Ampliados a 42 tests con mocks de urlopen y excepciones reales HTTPError y URLError: parcial frente a completo, --require-full, paginación y error en la segunda página, manifiesto corrupto, hash inválido, API vacía con token, README con contenido del kit fuera del kit, token no expuesto"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la corrección: ruff check, ruff format --check, mypy, pytest completo y export_schema --check en verde"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "python -m scripts.devlog rebuild"
+    }
+  ],
+  "lessons": [
+    "Una comprobación de cumplimiento debe distinguir «sin coincidencias» de «no pude comparar»: con referencia vacía o incompleta sale con un código propio y nunca imprime verificado",
+    "Verificar solo contra un subconjunto de la referencia debe etiquetarse como parcial y decir contra qué se comparó; el mismo «VERIFICADO» para ambos casos engaña",
+    "Toda fuente de referencia que no se puede leer (API sin nombres, manifiesto corrupto, archivo ilegible) es un error con el código de «no se pudo comprobar», no una traza ni un recuento de cero",
+    "El manifiesto declara 10 archivos pero solo 8 hashes distintos: contar referencias por hash único y decirlo en el informe"
+  ]
+}
