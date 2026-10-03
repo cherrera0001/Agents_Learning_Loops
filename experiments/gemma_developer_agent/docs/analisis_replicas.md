@@ -33,6 +33,7 @@ un archivo existente.
 | `replica` | entero ≥ 1 |
 | `status` | `resolved`, `unresolved` o `infra_error` |
 | `failure_reason` | solo con `unresolved`: `empty_patch`, `agent_timeout`, `budget_exhausted`, `patch_apply_failed` o `tests_failed`; en los demás casos `null` |
+| `infra_reason` | solo con `infra_error`: `snapshot_missing`, `sandbox_error`, `evaluation_error`, `worker_error`, `missing_test_spec`, `test_patch_failed`, `test_exec_failed`, `test_timeout` o `test_killed`; en los demás casos `null` |
 | `resolved` | booleano; `true` solo si `status` es `resolved` |
 | `tool_calls`, `duration_seconds` | llamadas a herramientas y duración (del arnés) |
 | `patch_sha256` | SHA-256 del parche del agente; `null` si y solo si el parche está vacío. **Nunca el parche** |
@@ -40,12 +41,13 @@ un archivo existente.
 | `tasks_sha256` | SHA-256 de `tasks.jsonl` |
 | `subset_sha256` | SHA-256 del archivo de subconjunto (salida de `kaggle_split.py`) |
 | `harness_version`, `sandbox_image` | versión del arnés e imagen del sandbox |
-| `converted_utc` | momento de la conversión, `YYYY-MM-DDTHH:MM:SSZ` (fecha real, no solo el patrón) |
+| `converted_utc` | momento de la conversión, `YYYY-MM-DDTHH:MM:SSZ` con ceros de relleno y fecha real; se ordena como fecha |
 | `run_utc` | opcional: momento de la corrida, si se conoce; el arnés no lo escribe |
 | `harness_raw` | campos crudos del arnés: `resolved`, `error`, `test_exit_code`, `agent_patch_size`, `total_llm_calls` |
 
 `harness_raw` permite reclasificar sin el `task_results.jsonl`, que git ignora: al leer un recibo, el
-análisis vuelve a clasificar el crudo y exige que coincida con `status` y `failure_reason`. Una clave no
+análisis vuelve a clasificar el crudo y exige que coincida con `status`, `failure_reason` e `infra_reason`
+(editar un motivo a otro válido tampoco pasa). Una clave no
 listada (por ejemplo `patch` o `test_patch`), una clave repetida dentro de una línea o una fecha
 imposible hacen fallar la lectura.
 
@@ -63,11 +65,19 @@ con el manifiesto.
 
 El conversor lee de `task_results.jsonl` (HARNESS § 9.2) `instance_id`, `repo`, `resolved`,
 `agent_patch_size`, `test_exit_code`, `duration_seconds`, `error`, `tool_calls` y `total_llm_calls`; el
-parche, de `<dir_parches>/<instance_id>.patch` (HARNESS § 9.2). Lo clasifica así (HARNESS § 8.1 y § 8.2):
+parche, de `<dir_parches>/<instance_id>.patch`, con «/» del id sustituido por «__» como hace el arnés
+(HARNESS § 9.2). Lo clasifica así (HARNESS § 8.1 y § 8.2):
 
-- `resolved` del arnés manda. Si es `true`, la tarea es resuelta aunque quede texto en `error` (el arnés
-  rescata y verifica un parche no enviado tras un timeout); el error crudo se guarda.
-- Sin `error`: parche vacío es `empty_patch`; con parche, `tests_failed`.
+- `resolved` del arnés manda. Si es `true`, la tarea es resuelta, también con parche vacío, y el tamaño
+  y el `error` crudos se guardan. El arnés instalado deja `error` nulo cuando resuelve; conservar el
+  texto de error en una tarea resuelta es solo un caso defensivo, no algo observado.
+- Sin `error` y con parche vacío: `empty_patch`.
+- Sin `error` y con parche, decide `test_exit_code`: `-1` (falló el `exec` de Docker), `124` (timeout del
+  comando de pruebas) y `137` (proceso matado, por ejemplo por memoria) son `infra_error`, con
+  `infra_reason` `test_exec_failed`, `test_timeout` o `test_killed`: son tareas que hay que volver a
+  correr y no ruido del agente. Cualquier otro valor negativo o mayor que 128 (una señal) sin error del
+  arnés hace salir con 2 mostrando el valor. El resto de los códigos (por ejemplo 1, 2 o 5) es
+  `tests_failed`.
 - Con `error`, el texto se compara por prefijo con una **lista cerrada** derivada del código del arnés
   instalado, descrita con palabras propias:
   - sesión del agente agotada por tiempo → `agent_timeout`;
@@ -80,10 +90,20 @@ parche, de `<dir_parches>/<instance_id>.patch` (HARNESS § 9.2). Lo clasifica as
     especificación de pruebas ausente o `test_patch` que no aplica → `infra_error`. Un timeout del
     servidor del modelo llega por la vía del error de ejecución del sandbox.
 - Un texto de error que no figure en la lista, `resolved` que no sea booleano, `agent_patch_size` que no
-  sea un entero ≥ 0 o una combinación incoherente (por ejemplo `resolved` con parche vacío) hacen que el
-  comando salga con 2 y muestre el texto; no hay categoría por defecto.
+  sea un entero ≥ 0 o una combinación incoherente (por ejemplo `resolved` con `test_exit_code` distinto de
+  0) hacen que el comando salga con 2 y muestre el texto; no hay categoría por defecto. Tampoco se acepta
+  `--replica` menor que 1.
 
-Limitación: un timeout del comando de pruebas del arnés no deja un texto propio; llega como `tests_failed`.
+## Excepción a la convención de citar el arnés solo por sección
+
+[`kaggle_specifications.md`](kaggle_specifications.md) cita el arnés únicamente por sección, para no
+redistribuir su contenido. `scripts/kaggle_replicas.py` rompe esa convención en un punto: guarda los
+**prefijos** de los mensajes de `error` del arnés. Son identificadores funcionales cortos, imprescindibles
+para clasificar sin una categoría por defecto; no son tareas, parches ni pruebas de la competencia, y las
+pruebas del script solo usan cada prefijo seguido de un sufijo inventado. Los prefijos salen de la versión
+`swegemma` 0.2.7 del arnés instalado; con otra versión, un texto nuevo hará fallar el comando con 2 hasta
+revisar la lista. La licencia del wheel de `swegemma` no consta en sus metadatos: está pendiente de
+confirmar en la página del dataset de Kaggle, y la confirma el dueño del repositorio.
 
 ## Comandos
 
@@ -104,8 +124,18 @@ python -m scripts.kaggle_replicas analizar --recibos evidence/<campaña> --subco
 
 Salida de `analizar`: `0` completo; `1` se escribió el reporte pero está incompleto (faltan tareas en
 alguna réplica o hay errores de infraestructura, con la lista de tareas afectadas); `2` entrada inválida,
-sin reporte (se borran los de una corrida anterior); `3` error inesperado del script. La salida es
-determinista: mismos recibos, mismos bytes, en cualquier orden de entrada.
+sin reporte nuevo; `3` error inesperado del script. La salida es determinista: mismos recibos, mismos
+bytes, en cualquier orden de entrada.
+
+Rutas de salida: antes de tocar nada, `analizar` rechaza con 2 una ruta que coincida con una entrada
+(subconjunto, archivos o directorios de recibos, directorio de envío), que caiga dentro de un directorio
+de entrada, que sea un directorio, o la misma ruta para el JSON y el Markdown. Un archivo que ya existe
+solo se borra si es un reporte propio reconocible (JSON con la clave de versión del reporte, Markdown con
+su encabezado); si existe y no lo es, sale con 2 y no lo borra. Un reporte propio anterior se borra antes
+de leer las entradas, para que un error no deje un reporte obsoleto; si no se puede borrar (por ejemplo,
+abierto en Windows) sale con 2 y dice que el reporte viejo sigue en disco y es obsoleto. El JSON y el
+Markdown nuevos se escriben a temporales de nombre único y se renombran solo cuando ambos se escribieron
+bien: o quedan los dos o ninguno.
 
 ## Comprobaciones que hacen fallar el análisis (salida 2)
 

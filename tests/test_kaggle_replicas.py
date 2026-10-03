@@ -59,7 +59,7 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
         "empty_patch",
         {
             "resolved": False,
-            "error": "Agent completed execution without calling submit_patch.",
+            "error": "Agent completed execution without calling submit_patch. sintetico",
             "test_exit_code": -1,
             "agent_patch_size": 0,
         },
@@ -69,7 +69,7 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
         "agent_timeout",
         {
             "resolved": False,
-            "error": "Agent exceeded session timeout (30 min)",
+            "error": "Agent exceeded session timeout (sintetico)",
             "test_exit_code": -1,
             "agent_patch_size": 0,
         },
@@ -79,7 +79,7 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
         "budget_exhausted",
         {
             "resolved": False,
-            "error": "Agent exceeded tool call budget (50 calls)",
+            "error": "Agent exceeded tool call budget (sintetico)",
             "test_exit_code": -1,
             "agent_patch_size": 0,
         },
@@ -89,7 +89,7 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
         "patch_apply_failed",
         {
             "resolved": False,
-            "error": "Failed to apply agent patch: x",
+            "error": "Failed to apply agent patch: sintetico",
             "test_exit_code": 1,
             "agent_patch_size": 10,
         },
@@ -99,12 +99,19 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
         None,
         {
             "resolved": False,
-            "error": "Sandbox execution error: boom",
+            "error": "Sandbox execution error: sintetico",
             "test_exit_code": -1,
             "agent_patch_size": 0,
         },
     ),
+    # sin error y con parche: el codigo de salida de las pruebas es de infraestructura
+    "X": (
+        "infra_error",
+        None,
+        {"resolved": False, "error": None, "test_exit_code": 124, "agent_patch_size": 10},
+    ),
 }
+INFRA_REASON = {"I": "sandbox_error", "X": "test_timeout"}
 
 REPOS = {"t1": "o/a", "t2": "o/a", "t3": "o/a", "t4": "o/b", "t5": "o/b", "t6": "o/b"}
 # Caso a mano: tres replicas, seis tareas; t5 en la replica 2 es un timeout del agente (cuenta como N).
@@ -133,6 +140,7 @@ def receipt(iid: str, rep: int, letra: str, repo: str = "o/a", **over: Any) -> d
         "replica": rep,
         "status": status,
         "failure_reason": reason,
+        "infra_reason": INFRA_REASON.get(letra),
         "resolved": status == "resolved",
         "tool_calls": rep * 10,
         "duration_seconds": 12.5,
@@ -297,54 +305,93 @@ def raw(**over: Any) -> dict[str, Any]:
     return base
 
 
+SUF = " sintetico-xyz"  # sufijo inventado: los tests no copian mensajes completos del arnes
+
+# prefijo -> clasificacion exacta. Si se anade un prefijo al script, test_la_tabla_cubre_la_lista_cerrada
+# obliga a fijarlo aqui.
+PREFIJOS_AGENTE = {
+    "Agent exceeded session timeout (": "agent_timeout",
+    "Agent exceeded turns budget (": "budget_exhausted",
+    "Agent exceeded maximum allowed LLM turns": "budget_exhausted",
+    "Agent exceeded tool call budget (": "budget_exhausted",
+    "Agent completed execution without calling submit_patch.": "empty_patch",
+    "Failed to apply agent patch:": "patch_apply_failed",
+    "Missing or empty JUnit XML report": "tests_failed",
+    "Malformed JUnit XML report:": "tests_failed",
+    "No <testsuite> elements found in JUnit XML": "tests_failed",
+    "No passing tests recorded in JUnit XML (": "tests_failed",
+    "Test failures/errors recorded in JUnit XML (": "tests_failed",
+    "Required test node did not pass:": "tests_failed",
+    "Pytest stdout summary indicates zero or no passing tests": "tests_failed",
+    "Missing JUnit XML report (possible premature os._exit(0))": "tests_failed",
+}
+PREFIJOS_INFRA = {
+    "Snapshot file not found:": "snapshot_missing",
+    "Sandbox execution error:": "sandbox_error",
+    "Evaluation error:": "evaluation_error",
+    "Unexpected evaluation worker error:": "worker_error",
+    "Missing test specification": "missing_test_spec",
+    "Failed to apply test_patch:": "test_patch_failed",
+}
+
+
+def test_la_tabla_cubre_la_lista_cerrada() -> None:
+    assert dict(kr.AGENT_ERROR_PREFIXES) == PREFIJOS_AGENTE
+    assert dict(kr.INFRA_ERROR_PREFIXES) == PREFIJOS_INFRA
+
+
+@pytest.mark.parametrize(("prefijo", "motivo"), sorted(PREFIJOS_AGENTE.items()))
+def test_prefijo_del_agente_se_clasifica_como_no_resuelta(prefijo: str, motivo: str) -> None:
+    for tamano, codigo in ((0, -1), (10, 1)):
+        fila = raw(error=prefijo + SUF, agent_patch_size=tamano, test_exit_code=codigo)
+        assert classify_harness(fila, "x") == ("unresolved", motivo, None)
+
+
+@pytest.mark.parametrize(("prefijo", "motivo"), sorted(PREFIJOS_INFRA.items()))
+def test_prefijo_de_infraestructura_se_clasifica_como_infra_error(prefijo: str, motivo: str) -> None:
+    for tamano, codigo in ((0, -1), (10, 1)):
+        fila = raw(error=prefijo + SUF, agent_patch_size=tamano, test_exit_code=codigo)
+        assert classify_harness(fila, "x") == ("infra_error", None, motivo)
+
+
 @pytest.mark.parametrize(
     ("fila", "esperado"),
     [
-        (raw(resolved=True, test_exit_code=0), ("resolved", None)),
-        # resolved del arnes manda, aunque quede texto de error: se conserva en el recibo
+        (raw(resolved=True, test_exit_code=0), ("resolved", None, None)),
+        # resolved del arnes manda: con parche vacio y tambien con texto de error (caso defensivo)
+        (raw(resolved=True, test_exit_code=0, agent_patch_size=0), ("resolved", None, None)),
         (
-            raw(resolved=True, test_exit_code=0, error="Agent exceeded session timeout (30 min)"),
-            ("resolved", None),
+            raw(resolved=True, test_exit_code=0, error="Agent exceeded session timeout (" + SUF),
+            ("resolved", None, None),
         ),
-        (raw(), ("unresolved", "tests_failed")),
-        (raw(agent_patch_size=0), ("unresolved", "empty_patch")),
-        (
-            raw(error="Agent exceeded session timeout (30 min)", test_exit_code=-1),
-            ("unresolved", "agent_timeout"),
-        ),
-        (raw(error="Agent exceeded turns budget (40 turns)"), ("unresolved", "budget_exhausted")),
-        (raw(error="Agent exceeded maximum allowed LLM turns"), ("unresolved", "budget_exhausted")),
-        (raw(error="Agent exceeded tool call budget (50 calls)"), ("unresolved", "budget_exhausted")),
-        (
-            raw(error="Agent completed execution without calling submit_patch.", agent_patch_size=0),
-            ("unresolved", "empty_patch"),
-        ),
-        (raw(error="Failed to apply agent patch: bad hunk"), ("unresolved", "patch_apply_failed")),
-        (raw(error="Required test node did not pass: tests/x.py::test_a"), ("unresolved", "tests_failed")),
-        (
-            raw(error="Missing JUnit XML report (possible premature os._exit(0))"),
-            ("unresolved", "tests_failed"),
-        ),
-        (
-            raw(error="Sandbox execution error: model server timed out", test_exit_code=-1),
-            ("infra_error", None),
-        ),
-        (raw(error="Snapshot file not found: x"), ("infra_error", None)),
-        (raw(error="Evaluation error: docker"), ("infra_error", None)),
-        (raw(error="Unexpected evaluation worker error: x"), ("infra_error", None)),
-        (raw(error="Missing test specification (empty test_patch)"), ("infra_error", None)),
-        (raw(error="Failed to apply test_patch: x"), ("infra_error", None)),
+        (raw(), ("unresolved", "tests_failed", None)),
+        (raw(agent_patch_size=0), ("unresolved", "empty_patch", None)),
+        (raw(agent_patch_size=0, test_exit_code=-1), ("unresolved", "empty_patch", None)),
+        # sin error y con parche, el codigo de salida de las pruebas decide
+        (raw(test_exit_code=-1), ("infra_error", None, "test_exec_failed")),
+        (raw(test_exit_code=124), ("infra_error", None, "test_timeout")),
+        (raw(test_exit_code=137), ("infra_error", None, "test_killed")),
+        (raw(test_exit_code=1), ("unresolved", "tests_failed", None)),
+        (raw(test_exit_code=2), ("unresolved", "tests_failed", None)),
+        (raw(test_exit_code=5), ("unresolved", "tests_failed", None)),
+        (raw(test_exit_code=127), ("unresolved", "tests_failed", None)),
+        (raw(test_exit_code=128), ("unresolved", "tests_failed", None)),
     ],
 )
-def test_clasificacion_con_lista_cerrada(fila: dict[str, Any], esperado: tuple[str, str | None]) -> None:
+def test_clasificacion_con_lista_cerrada(fila: dict[str, Any], esperado: tuple[str, ...]) -> None:
     assert classify_harness(fila, "x") == esperado
 
 
-def test_toda_entrada_de_la_lista_cerrada_se_clasifica() -> None:
-    for prefijo, motivo in kr.AGENT_ERROR_PREFIXES:
-        assert classify_harness(raw(error=prefijo + " detalle"), "x") == ("unresolved", motivo)
-    for prefijo in kr.INFRA_ERROR_PREFIXES:
-        assert classify_harness(raw(error=prefijo + " detalle"), "x") == ("infra_error", None)
+@pytest.mark.parametrize("codigo", [-2, -9, -15, 129, 130, 139, 143, 255, 300])
+def test_codigo_de_salida_raro_sin_error_no_se_clasifica(codigo: int) -> None:
+    with pytest.raises(ReplicasError, match=f"test_exit_code={codigo}"):
+        classify_harness(raw(test_exit_code=codigo), "x")
+
+
+def test_codigos_de_infraestructura_estan_en_la_lista_de_motivos() -> None:
+    assert kr.INFRA_EXIT_CODES == {-1: "test_exec_failed", 124: "test_timeout", 137: "test_killed"}
+    assert set(kr.INFRA_EXIT_CODES.values()) <= set(kr.INFRA_REASONS)
+    assert set(PREFIJOS_INFRA.values()) <= set(kr.INFRA_REASONS)
 
 
 def test_error_desconocido_no_se_clasifica_por_defecto() -> None:
@@ -353,7 +400,7 @@ def test_error_desconocido_no_se_clasifica_por_defecto() -> None:
     assert "algo nunca visto" in str(exc.value)
     # una subcadena conocida en medio del texto no basta: se compara el principio
     with pytest.raises(ReplicasError, match="lista cerrada"):
-        classify_harness(raw(error="wrapper: Agent exceeded session timeout (30 min)"), "x")
+        classify_harness(raw(error="wrapper: Agent exceeded session timeout (" + SUF), "x")
 
 
 @pytest.mark.parametrize(
@@ -370,7 +417,6 @@ def test_error_desconocido_no_se_clasifica_por_defecto() -> None:
         raw(test_exit_code=True),
         raw(total_llm_calls=-1),
         raw(error=7),
-        raw(resolved=True, agent_patch_size=0, test_exit_code=0),  # resuelta sin parche
         raw(resolved=True, test_exit_code=1),  # resuelta con pytest fallido
         raw(test_exit_code=0),  # no resuelta, sin error y con pytest ok
     ],
@@ -602,7 +648,9 @@ def test_infra_error_se_excluye_de_pares_y_deja_incompleto(tmp_path: Path) -> No
     rep = analizar(tmp_path, {"t1": ["R", "I"], "t2": ["N", "N"], "t3": ["R", "R"]}, repos={})
     assert rep["completo"] is False
     assert rep["infra_afectadas"] == ["t1"]
-    assert rep["errores_de_infraestructura"] == [{"instance_id": "t1", "replica": 2, "status": "infra_error"}]
+    assert rep["errores_de_infraestructura"] == [
+        {"instance_id": "t1", "replica": 2, "status": "infra_error", "infra_reason": "sandbox_error"}
+    ]
     p2 = rep["por_replica"][1]
     assert (p2["infra_error"], p2["no_resueltas"], p2["validas"]) == (1, 1, 2)
     assert p2["tasa_sobre_subconjunto"] == round(1 / 3, 6) and p2["tasa_sobre_validas"] == 0.5
@@ -733,7 +781,7 @@ def test_markdown_marca_incompleto_y_lineas_vacias(tmp_path: Path) -> None:
     rep = analizar(tmp_path, {"t1": ["R", "R"], "t2": ["N", MISS], "t3": ["I", "N"]}, repos={})
     md = render_markdown(rep)
     assert "INCOMPLETO" in md
-    assert "| `t2` | [2] |" in md and "| `t3` | 1 |" in md
+    assert "| `t2` | [2] |" in md and "| `t3` | 1 | sandbox_error |" in md
     assert "| `t2` | o/a | N | - | n/d |" in md
 
 
@@ -1461,7 +1509,17 @@ def test_conversor_run_utc_aparte(tmp_path: Path) -> None:
         ({"agent_patch_size": 2.5}, "agent_patch_size"),
         ({"test_exit_code": None}, "test_exit_code"),
         ({"error": "texto que el arnes no escribe"}, "lista cerrada"),
-        ({"resolved": True, "agent_patch_size": 0, "test_exit_code": 0}, "incoherente"),
+        ({"resolved": True, "test_exit_code": 1}, "incoherente"),
+        ({"test_exit_code": -7}, "no se clasifica"),
+        ({"test_exit_code": 139}, "no se clasifica"),
+        ({"tool_calls": "4"}, "tool_calls"),
+        ({"tool_calls": -1}, "tool_calls"),
+        ({"duration_seconds": "3"}, "duration_seconds"),
+        ({"duration_seconds": -1.0}, "duration_seconds"),
+        ({"repo": ""}, "repo"),
+        ({"repo": None}, "repo"),
+        ({"instance_id": 7}, "instance_id"),
+        ({"instance_id": ""}, "instance_id"),
     ],
 )
 def test_conversor_sale_con_error_ante_datos_incoherentes(
@@ -1644,3 +1702,437 @@ def test_convertir_y_analizar_de_punta_a_punta(tmp_path: Path, capsys: pytest.Ca
     assert rep["cambian_de_resultado"]["tareas"] == ["t1"]
     assert rep["entrada"]["envio_sha256"] == sha256_directory(envio)
     assert rep["entrada"]["tasks_sha256"] == hashlib.sha256(tasks.read_bytes()).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# N1: rutas de salida (no borrar nunca algo ajeno ni una entrada)
+# ---------------------------------------------------------------------------
+
+
+def args_analizar(d: Path, s: Path) -> list[str]:
+    return ["analizar", "--recibos", str(d), "--subconjunto", str(s)]
+
+
+def assert_exit2_sin_tocar(
+    capsys: pytest.CaptureFixture[str], argv: list[str], intactos: dict[Path, bytes]
+) -> str:
+    code, _, err = run(capsys, *argv)
+    assert code == 2 and err.startswith("ERROR:")
+    for ruta, contenido in intactos.items():
+        assert ruta.is_file() and ruta.read_bytes() == contenido
+    return err
+
+
+def test_salida_json_igual_a_un_recibo_no_lo_borra(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    recibo = d / "replica_1.jsonl"
+    antes = {recibo: recibo.read_bytes(), s: s.read_bytes()}
+    err = assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(recibo)], antes)
+    assert "entrada" in err
+
+
+def test_salida_md_igual_al_subconjunto_no_lo_borra(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    antes = {s: s.read_bytes()}
+    assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-md", str(s)], antes)
+    assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(s)], antes)
+
+
+def test_salida_dentro_del_directorio_de_recibos_o_del_envio(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    envio = tmp_path / "envio"
+    hacer_envio(envio)
+    # recibos coherentes con el envio: si la ruta no se rechazara, el analisis saldria bien y escribiria
+    reescribir(d, lambda f, rows: [{**r, "submission_sha256": sha256_directory(envio)} for r in rows])
+    antes = {s: s.read_bytes(), **{f: f.read_bytes() for f in d.glob("*.jsonl")}}
+    nuevo_en_recibos = d / "reporte.json"
+    assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(nuevo_en_recibos)], antes)
+    assert not nuevo_en_recibos.exists()
+    en_envio = envio / "reporte.md"
+    assert_exit2_sin_tocar(
+        capsys, [*args_analizar(d, s), "--envio", str(envio), "--salida-md", str(en_envio)], antes
+    )
+    assert not en_envio.exists()
+    # la propia ruta del directorio y rutas disfrazadas con «..»
+    assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(d)], antes)
+    disfrazada = d / ".." / "recibos" / "replica_2.jsonl"
+    antes[d / "replica_2.jsonl"] = (d / "replica_2.jsonl").read_bytes()
+    assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(disfrazada)], antes)
+
+
+def test_recibos_dados_como_archivos_tambien_son_entradas(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    archivos = sorted(d.glob("*.jsonl"))
+    antes = {f: f.read_bytes() for f in archivos}
+    argv = [
+        "analizar",
+        "--recibos",
+        *map(str, archivos),
+        "--subconjunto",
+        str(s),
+        "--salida-md",
+        str(archivos[2]),
+    ]
+    assert_exit2_sin_tocar(capsys, argv, antes)
+
+
+def test_json_y_md_en_la_misma_ruta(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    d, s = write_case(tmp_path, CASO)
+    mismo = tmp_path / "salida.out"
+    err = assert_exit2_sin_tocar(
+        capsys, [*args_analizar(d, s), "--salida-json", str(mismo), "--salida-md", str(mismo)], {}
+    )
+    assert "la misma ruta" in err and not mismo.exists()
+
+
+def test_salida_ajena_existente_no_se_borra_ni_con_error_de_entrada(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    ajeno_json = tmp_path / "datos.json"
+    ajeno_json.write_text('{"version_reporte": 3, "otro": true}', encoding="utf-8")  # version no es texto
+    ajeno_md = tmp_path / "notas.md"
+    ajeno_md.write_text("# Mis notas\n", encoding="utf-8")
+    plano = tmp_path / "plano.json"
+    plano.write_text("no es json", encoding="utf-8")
+    json_ajeno = tmp_path / "otro.json"
+    json_ajeno.write_text('{"a": 1}', encoding="utf-8")
+    for ruta, flag in (
+        (ajeno_json, "--salida-json"),
+        (plano, "--salida-json"),
+        (json_ajeno, "--salida-json"),
+        (ajeno_md, "--salida-md"),
+    ):
+        antes = {ruta: ruta.read_bytes()}
+        err = assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), flag, str(ruta)], antes)
+        assert "no es un reporte" in err
+        # y tampoco si ademas la entrada es ilegible
+        (d / "replica_1.jsonl").write_text("{roto\n", encoding="utf-8")
+        assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), flag, str(ruta)], antes)
+    # un archivo con el encabezado del reporte pero pasado como JSON, y al reves, tampoco es propio
+    md_propio = tmp_path / "x.md"
+    md_propio.write_text(kr.REPORT_MD_HEADER + "\n", encoding="utf-8")
+    assert_exit2_sin_tocar(
+        capsys, [*args_analizar(d, s), "--salida-json", str(md_propio)], {md_propio: md_propio.read_bytes()}
+    )
+    json_propio = tmp_path / "y.json"
+    json_propio.write_text(json.dumps({"version_reporte": kr.REPORT_VERSION}), encoding="utf-8")
+    assert_exit2_sin_tocar(
+        capsys,
+        [*args_analizar(d, s), "--salida-md", str(json_propio)],
+        {json_propio: json_propio.read_bytes()},
+    )
+
+
+def test_salida_que_es_un_directorio(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    d, s = write_case(tmp_path, CASO)
+    carpeta = tmp_path / "carpeta"
+    carpeta.mkdir()
+    err = assert_exit2_sin_tocar(capsys, [*args_analizar(d, s), "--salida-json", str(carpeta)], {})
+    assert "directorio" in err and carpeta.is_dir()
+
+
+def test_solo_se_borra_un_reporte_propio_y_se_reescribe(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    j, m = tmp_path / "r.json", tmp_path / "r.md"
+    j.write_text(
+        json.dumps({"version_reporte": "kaggle-replica-analysis/1", "viejo": True}), encoding="utf-8"
+    )
+    m.write_text(kr.REPORT_MD_HEADER + "\nviejo\n", encoding="utf-8")
+    assert run(capsys, *args_analizar(d, s), "--salida-json", str(j), "--salida-md", str(m))[0] == 0
+    assert "viejo" not in j.read_text("utf-8") and "viejo" not in m.read_text("utf-8")
+    # con error de entrada, el reporte propio anterior si desaparece
+    with open(d / "replica_3.jsonl", "a", encoding="utf-8") as f:
+        f.write("{roto\n")
+    assert run(capsys, *args_analizar(d, s), "--salida-json", str(j), "--salida-md", str(m))[0] == 2
+    assert not j.exists() and not m.exists()
+
+
+def test_reporte_anterior_que_no_se_puede_borrar_se_declara_obsoleto(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    j = tmp_path / "r.json"
+    assert run(capsys, *args_analizar(d, s), "--salida-json", str(j))[0] == 0
+    viejo = j.read_bytes()
+    original = Path.unlink
+
+    def unlink(self: Path, missing_ok: bool = False) -> None:
+        if self == j:
+            raise PermissionError("archivo abierto en otro proceso")
+        original(self, missing_ok=missing_ok)
+
+    monkeypatch.setattr(Path, "unlink", unlink)
+    code, _, err = run(capsys, *args_analizar(d, s), "--salida-json", str(j))
+    assert code == 2
+    assert "sigue en disco" in err and "obsoleto" in err and "abierto en otro proceso" in err
+    assert j.read_bytes() == viejo
+
+
+# ---------------------------------------------------------------------------
+# N3: escritura de JSON y Markdown, ambos o ninguno
+# ---------------------------------------------------------------------------
+
+
+def test_si_falla_el_segundo_renombrado_no_queda_ningun_archivo_nuevo(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    salidas = tmp_path / "out"
+    j, m = salidas / "r.json", salidas / "r.md"
+    real = kr.os.replace
+    llamadas = []
+
+    def replace(src: Any, dst: Any) -> None:
+        llamadas.append(dst)
+        if len(llamadas) == 2:
+            raise OSError("disco lleno")
+        real(src, dst)
+
+    monkeypatch.setattr(kr.os, "replace", replace)
+    code, _, err = run(capsys, *args_analizar(d, s), "--salida-json", str(j), "--salida-md", str(m))
+    assert code == 2 and "disco lleno" in err
+    assert len(llamadas) == 2
+    assert not j.exists() and not m.exists() and list(salidas.iterdir()) == []
+
+
+def test_si_falla_la_escritura_del_segundo_temporal_no_queda_nada(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    salidas = tmp_path / "out"
+    j, m = salidas / "r.json", salidas / "r.md"
+    real = kr.tempfile.mkstemp
+    n = []
+
+    def mkstemp(*a: Any, **k: Any) -> Any:
+        n.append(1)
+        if len(n) == 2:
+            raise OSError("sin espacio")
+        return real(*a, **k)
+
+    monkeypatch.setattr(kr.tempfile, "mkstemp", mkstemp)
+    code, _, _ = run(capsys, *args_analizar(d, s), "--salida-json", str(j), "--salida-md", str(m))
+    assert code == 2 and list(salidas.iterdir()) == []
+
+
+def test_temporal_con_nombre_unico_no_pisa_un_archivo_ajeno(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    j = tmp_path / "r.json"
+    ajeno = tmp_path / "r.json.tmp"
+    ajeno.write_text("no tocar", encoding="utf-8")
+    assert run(capsys, *args_analizar(d, s), "--salida-json", str(j))[0] == 0
+    assert ajeno.read_text("utf-8") == "no tocar"
+    assert sorted(p.name for p in tmp_path.glob("*.tmp")) == ["r.json.tmp"]
+
+
+# ---------------------------------------------------------------------------
+# N2: codigos de salida de las pruebas sin error del arnes
+# ---------------------------------------------------------------------------
+
+
+def test_infra_por_codigo_de_salida_deja_incompleto_con_su_motivo(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    rep = analizar(tmp_path, {"t1": ["R", "X"], "t2": ["N", "N"]}, repos={})
+    assert rep["completo"] is False
+    assert rep["errores_de_infraestructura"] == [
+        {"instance_id": "t1", "replica": 2, "status": "infra_error", "infra_reason": "test_timeout"}
+    ]
+    assert rep["por_replica"][1]["infra_error"] == 1 and rep["por_replica"][1]["no_resueltas"] == 1
+    assert "| `t1` | 2 | test_timeout |" in render_markdown(rep)
+    otro = tmp_path / "otro"
+    otro.mkdir()
+    d, s = write_case(otro, {"t1": ["R", "X"], "t2": ["N", "N"]}, repos={})
+    assert run(capsys, *args_analizar(d, s))[0] == 1
+
+
+@pytest.mark.parametrize(
+    ("codigo", "motivo"), [(-1, "test_exec_failed"), (124, "test_timeout"), (137, "test_killed")]
+)
+def test_conversor_infra_por_codigo_de_salida(tmp_path: Path, codigo: int, motivo: str) -> None:
+    patches = tmp_path / "p"
+    patches.mkdir()
+    (patches / "x.patch").write_text("p", encoding="utf-8")
+    res = tmp_path / "r.jsonl"
+    escribir_resultados(res, [fila("x", test_exit_code=codigo)])
+    (r,) = convert_harness_results(res, **args_conv(["x"], patches))
+    assert (r["status"], r["failure_reason"], r["infra_reason"]) == ("infra_error", None, motivo)
+    assert r["harness_raw"]["test_exit_code"] == codigo and r["harness_raw"]["error"] is None
+
+
+# ---------------------------------------------------------------------------
+# N4: huecos de pruebas
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("letra", "cambio", "texto"),
+    [
+        ("N", {"failure_reason": "empty_patch"}, "no corresponden a 'harness_raw'"),
+        ("N", {"failure_reason": "agent_timeout"}, "no corresponden a 'harness_raw'"),
+        ("T", {"failure_reason": "tests_failed"}, "no corresponden a 'harness_raw'"),
+        ("E", {"failure_reason": "budget_exhausted"}, "no corresponden a 'harness_raw'"),
+        ("I", {"infra_reason": "test_timeout"}, "no corresponden a 'harness_raw'"),
+        ("X", {"infra_reason": "sandbox_error"}, "no corresponden a 'harness_raw'"),
+        ("I", {"infra_reason": None}, "infra_reason"),
+        ("I", {"infra_reason": "pereza"}, "infra_reason"),
+        ("N", {"infra_reason": "sandbox_error"}, "salvo con status"),
+        ("R", {"infra_reason": "sandbox_error"}, "salvo con status"),
+    ],
+)
+def test_editar_el_motivo_de_un_recibo_a_otro_valido_lo_rechaza(
+    letra: str, cambio: dict[str, Any], texto: str
+) -> None:
+    parse_receipt(receipt("t1", 1, letra), "x")  # el recibo sin editar es valido
+    with pytest.raises(ReplicasError, match=texto):
+        parse_receipt({**receipt("t1", 1, letra), **cambio}, "x")
+
+
+def test_main_rechaza_un_recibo_con_failure_reason_editado(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, CASO)
+    reescribir(d, en_replica2(failure_reason="empty_patch"))  # la primera fila de la replica 2 es «R»
+    code, _, err = run(capsys, *args_analizar(d, s))
+    assert code == 2 and "failure_reason" in err
+    # un motivo valido pero distinto del que sale del crudo (fila «N» de la replica 1)
+    d2 = tmp_path / "otro"
+    d2.mkdir()
+    d3, s3 = write_case(d2, CASO)
+
+    def editar(f: Path, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if f.name == "replica_1.jsonl":
+            fila_n = next(r for r in rows if r["status"] == "unresolved")
+            fila_n["failure_reason"] = "empty_patch"
+        return rows
+
+    reescribir(d3, editar)
+    code, _, err = run(capsys, *args_analizar(d3, s3))
+    assert code == 2 and "no corresponden a 'harness_raw'" in err
+
+
+def test_conversor_replica_cero(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    res = tmp_path / "r.jsonl"
+    escribir_resultados(res, [fila("x", agent_patch_size=0, test_exit_code=-1)])
+    for replica in (0, -1, True, "1"):
+        with pytest.raises(ReplicasError, match="replica"):
+            convert_harness_results(res, **{**args_conv(["x"], None), "replica": replica})
+    envio = tmp_path / "e"
+    envio.mkdir()
+    (envio / "f").write_text("f", encoding="utf-8")
+    tasks = tmp_path / "t.jsonl"
+    tasks.write_text("{}\n", encoding="utf-8")
+    subset = tmp_path / "s.json"
+    subset.write_text(json.dumps({"test": ["x"], "sha256_tasks": TASKS_SHA}), encoding="utf-8")
+    salida = tmp_path / "o.jsonl"
+    code, _, err = run(
+        capsys,
+        "convertir",
+        "--task-results",
+        str(res),
+        "--replica",
+        "0",
+        "--condicion",
+        "A",
+        "--envio",
+        str(envio),
+        "--tasks",
+        str(tasks),
+        "--subconjunto",
+        str(subset),
+        "--version-arnes",
+        "h",
+        "--imagen-sandbox",
+        "i",
+        "--salida",
+        str(salida),
+    )
+    assert code == 2 and "replica" in err and not salida.exists()
+
+
+@pytest.mark.parametrize("alfa", [0, 0.0, 1, 1.0, -0.1, 1.5])
+def test_discordance_floor_rechaza_alfa_fuera_de_rango(alfa: float) -> None:
+    with pytest.raises(ValueError, match="alpha"):
+        discordance_floor(alfa)
+
+
+# ---------------------------------------------------------------------------
+# N5 / N6
+# ---------------------------------------------------------------------------
+
+
+def test_resolved_con_parche_vacio_manda(tmp_path: Path) -> None:
+    fila_ok = raw(resolved=True, test_exit_code=0, agent_patch_size=0)
+    assert classify_harness(fila_ok, "x") == ("resolved", None, None)
+    res = tmp_path / "r.jsonl"
+    escribir_resultados(res, [fila("x", resolved=True, test_exit_code=0, agent_patch_size=0)])
+    (r,) = convert_harness_results(res, **args_conv(["x"], None))
+    assert r["status"] == "resolved" and r["resolved"] is True and r["patch_sha256"] is None
+    assert r["harness_raw"]["agent_patch_size"] == 0 and r["harness_raw"]["error"] is None
+    assert parse_receipt(r, "x").status == "resolved"
+
+
+@pytest.mark.parametrize(
+    "valor",
+    [
+        "2026-1-1T00:00:00Z",
+        "2026-10-03T0:00:00Z",
+        " 2026-10-03T00:00:00Z",
+        "2026-10-03T00:00:00Z\n",
+        "2026-10-03 00:00:00Z",
+        "2026-10-03T00:00:00",
+        "2026-10-03T00:00:00+00:00",
+        "２０２６-10-03T00:00:00Z",
+    ],
+)
+def test_fecha_utc_estricta(valor: str) -> None:
+    with pytest.raises(ReplicasError, match="converted_utc"):
+        parse_receipt({**receipt("t1", 1, "R"), "converted_utc": valor}, "x")
+
+
+def test_hash_con_salto_de_linea_no_es_un_sha256() -> None:
+    with pytest.raises(ReplicasError, match="patch_sha256"):
+        parse_receipt({**receipt("t1", 1, "R"), "patch_sha256": "a" * 64 + "\n"}, "x")
+
+
+def test_parche_de_un_id_con_barra_usa_dos_guiones_bajos(tmp_path: Path) -> None:
+    patches = tmp_path / "p"
+    patches.mkdir()
+    (patches / "org__repo-7.patch").write_text("parche-sintetico", encoding="utf-8")
+    res = tmp_path / "r.jsonl"
+    escribir_resultados(res, [fila("org/repo-7", resolved=True, test_exit_code=0)])
+    (r,) = convert_harness_results(res, **args_conv(["org/repo-7"], patches))
+    assert r["patch_sha256"] == sha("parche-sintetico")
+    (patches / "org__repo-7.patch").rename(patches / "org_repo-7.patch")
+    with pytest.raises(ReplicasError, match="no se puede calcular su hash"):
+        convert_harness_results(res, **args_conv(["org/repo-7"], patches))
+
+
+def test_stdout_y_stderr_en_utf8(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import io
+    import sys
+
+    out_b, err_b = io.BytesIO(), io.BytesIO()
+    out = io.TextIOWrapper(out_b, encoding="cp1252", errors="strict")
+    err = io.TextIOWrapper(err_b, encoding="cp1252", errors="strict")
+    monkeypatch.setattr(sys, "stdout", out)
+    monkeypatch.setattr(sys, "stderr", err)
+    s = tmp_path / "subset.json"
+    s.write_text(json.dumps({"test": ["a"], "sha256_tasks": TASKS_SHA}), encoding="utf-8")
+    code = main(["analizar", "--recibos", str(tmp_path / "no→existe.jsonl"), "--subconjunto", str(s)])
+    err.flush()
+    assert code == 2
+    assert "no→existe" in err_b.getvalue().decode("utf-8")

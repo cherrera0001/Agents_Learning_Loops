@@ -48,6 +48,7 @@ import math
 import os
 import re
 import sys
+import tempfile
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -92,14 +93,18 @@ AGENT_ERROR_PREFIXES: tuple[tuple[str, str], ...] = (
     ("Pytest stdout summary indicates zero or no passing tests", FR_TESTS),
     ("Missing JUnit XML report (possible premature os._exit(0))", FR_TESTS),
 )
-INFRA_ERROR_PREFIXES: tuple[str, ...] = (
-    "Snapshot file not found:",
-    "Sandbox execution error:",
-    "Evaluation error:",
-    "Unexpected evaluation worker error:",
-    "Missing test specification",
-    "Failed to apply test_patch:",
+INFRA_ERROR_PREFIXES: tuple[tuple[str, str], ...] = (
+    ("Snapshot file not found:", "snapshot_missing"),
+    ("Sandbox execution error:", "sandbox_error"),
+    ("Evaluation error:", "evaluation_error"),
+    ("Unexpected evaluation worker error:", "worker_error"),
+    ("Missing test specification", "missing_test_spec"),
+    ("Failed to apply test_patch:", "test_patch_failed"),
 )
+# Sin ``error`` y con parche, el ``test_exit_code`` del comando de pruebas decide: estos codigos son
+# de infraestructura (la tarea se vuelve a correr), no del agente.
+INFRA_EXIT_CODES: dict[int, str] = {-1: "test_exec_failed", 124: "test_timeout", 137: "test_killed"}
+INFRA_REASONS = (*(r for _, r in INFRA_ERROR_PREFIXES), *INFRA_EXIT_CODES.values())
 
 REQUIRED_KEYS = (
     "schema_version",
@@ -109,6 +114,7 @@ REQUIRED_KEYS = (
     "replica",
     "status",
     "failure_reason",
+    "infra_reason",
     "resolved",
     "tool_calls",
     "duration_seconds",
@@ -125,6 +131,8 @@ OPTIONAL_KEYS = ("run_utc",)
 RAW_KEYS = ("resolved", "error", "test_exit_code", "agent_patch_size", "total_llm_calls")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+UTC_RE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z")
+REPORT_MD_HEADER = "# Analisis de replicas de la linea base"
 DEFAULT_ALPHA = 0.05
 IGNORED_FILE_NAMES = frozenset({".DS_Store", "Thumbs.db", "desktop.ini"})
 IGNORED_SUFFIXES = (".pyc", ".pyo")
@@ -147,6 +155,7 @@ class Recibo:
     replica: int
     status: str
     failure_reason: str | None
+    infra_reason: str | None
     tool_calls: int
     duration_seconds: float
     patch_sha256: str | None
@@ -223,8 +232,8 @@ def sha256_directory(path: Path) -> str:
 
 
 def parse_utc(value: object, where: str, key: str) -> str:
-    """Valida ``YYYY-MM-DDTHH:MM:SSZ`` de verdad (fecha real), no solo con un patron."""
-    if not isinstance(value, str):
+    """Valida ``YYYY-MM-DDTHH:MM:SSZ`` con relleno de ceros y fecha real (no solo un patron)."""
+    if not isinstance(value, str) or not UTC_RE.fullmatch(value):
         raise ReplicasError(f"{where}: '{key}' debe ser texto YYYY-MM-DDTHH:MM:SSZ.")
     try:
         datetime.strptime(value, UTC_FORMAT)
@@ -246,12 +255,14 @@ def _int(v: object, where: str, key: str, *, minimum: int | None = None) -> int:
     return v
 
 
-def classify_harness(raw: dict[str, Any], where: str) -> tuple[str, str | None]:
-    """Clasifica una fila cruda del arnes en ``(status, failure_reason)``.
+def classify_harness(raw: dict[str, Any], where: str) -> tuple[str, str | None, str | None]:
+    """Clasifica una fila cruda del arnes en ``(status, failure_reason, infra_reason)``.
 
-    ``resolved`` del arnes manda. Un ``error`` que no figure en la lista cerrada
-    (``AGENT_ERROR_PREFIXES`` / ``INFRA_ERROR_PREFIXES``) o una combinacion incoherente lanzan
-    ``ReplicasError``: no hay categoria por defecto.
+    ``resolved`` del arnes manda (tambien con parche vacio). Un ``error`` que no figure en la lista
+    cerrada (``AGENT_ERROR_PREFIXES`` / ``INFRA_ERROR_PREFIXES``) o una combinacion incoherente lanzan
+    ``ReplicasError``: no hay categoria por defecto. Sin ``error`` y con parche, el ``test_exit_code``
+    decide: -1, 124 y 137 son infraestructura; otro negativo o mayor que 128 (senal) no se clasifica;
+    el resto es ``tests_failed``.
     """
     resolved = raw.get("resolved")
     if not isinstance(resolved, bool):
@@ -263,23 +274,32 @@ def classify_harness(raw: dict[str, Any], where: str) -> tuple[str, str | None]:
     if error is not None and not isinstance(error, str):
         raise ReplicasError(f"{where}: 'error' del arnes debe ser texto o null.")
     if resolved:
-        if size == 0 or exit_code != 0:
+        if exit_code != 0:
             raise ReplicasError(
-                f"{where}: combinacion incoherente: resolved=true con agent_patch_size={size} "
-                f"y test_exit_code={exit_code}."
+                f"{where}: combinacion incoherente: resolved=true con test_exit_code={exit_code}."
             )
-        return ST_RESOLVED, None
+        return ST_RESOLVED, None, None
     if not error:
         if exit_code == 0:
             raise ReplicasError(
                 f"{where}: combinacion incoherente: resolved=false, sin error y test_exit_code=0."
             )
-        return ST_UNRESOLVED, FR_EMPTY if size == 0 else FR_TESTS
+        if size == 0:
+            return ST_UNRESOLVED, FR_EMPTY, None
+        if exit_code in INFRA_EXIT_CODES:
+            return ST_INFRA, None, INFRA_EXIT_CODES[exit_code]
+        if exit_code < 0 or exit_code > 128:
+            raise ReplicasError(
+                f"{where}: test_exit_code={exit_code} sin error del arnes: no se clasifica "
+                "(negativo distinto de -1 o senal distinta de 137)."
+            )
+        return ST_UNRESOLVED, FR_TESTS, None
     for prefix, reason in AGENT_ERROR_PREFIXES:
         if error.startswith(prefix):
-            return ST_UNRESOLVED, reason
-    if error.startswith(INFRA_ERROR_PREFIXES):
-        return ST_INFRA, None
+            return ST_UNRESOLVED, reason, None
+    for prefix, infra in INFRA_ERROR_PREFIXES:
+        if error.startswith(prefix):
+            return ST_INFRA, None, infra
     raise ReplicasError(
         f"{where}: texto de error del arnes fuera de la lista cerrada, no se clasifica: {error[:300]!r}"
     )
@@ -301,7 +321,7 @@ def _sha(obj: dict[str, Any], key: str, where: str, *, nullable: bool = False) -
     v = obj.get(key)
     if v is None and nullable:
         return None
-    if not isinstance(v, str) or not SHA_RE.match(v):
+    if not isinstance(v, str) or not SHA_RE.fullmatch(v):
         raise ReplicasError(f"{where}: '{key}' debe ser un SHA-256 hexadecimal en minusculas.")
     return v
 
@@ -309,8 +329,8 @@ def _sha(obj: dict[str, Any], key: str, where: str, *, nullable: bool = False) -
 def parse_receipt(obj: object, where: str) -> Recibo:
     """Valida un objeto JSON como recibo; lanza ReplicasError con ``where`` si algo no cuadra.
 
-    Reclasifica ``harness_raw`` con la lista cerrada y exige que coincida con ``status`` y
-    ``failure_reason``: un recibo editado a mano no pasa.
+    Reclasifica ``harness_raw`` con la lista cerrada y exige que coincida con ``status``,
+    ``failure_reason`` e ``infra_reason``: un recibo editado a mano no pasa.
     """
     if not isinstance(obj, dict):
         raise ReplicasError(f"{where}: el recibo debe ser un objeto JSON.")
@@ -348,8 +368,14 @@ def parse_receipt(obj: object, where: str) -> Recibo:
     raw = obj["harness_raw"]
     if not isinstance(raw, dict) or set(raw) != set(RAW_KEYS):
         raise ReplicasError(f"{where}: 'harness_raw' debe ser un objeto con exactamente {list(RAW_KEYS)}.")
-    if classify_harness(raw, where) != (status, reason):
-        raise ReplicasError(f"{where}: status/failure_reason no corresponden a 'harness_raw'.")
+    infra_reason = obj["infra_reason"]
+    if status == ST_INFRA:
+        if infra_reason not in INFRA_REASONS:
+            raise ReplicasError(f"{where}: infra_reason {infra_reason!r} no es uno de {list(INFRA_REASONS)}.")
+    elif infra_reason is not None:
+        raise ReplicasError(f"{where}: infra_reason debe ser null salvo con status 'infra_error'.")
+    if classify_harness(raw, where) != (status, reason, infra_reason):
+        raise ReplicasError(f"{where}: status/failure_reason/infra_reason no corresponden a 'harness_raw'.")
     patch_sha = _sha(obj, "patch_sha256", where, nullable=True)
     if (patch_sha is None) != (raw["agent_patch_size"] == 0):
         raise ReplicasError(f"{where}: 'patch_sha256' debe ser null si y solo si agent_patch_size es 0.")
@@ -362,6 +388,7 @@ def parse_receipt(obj: object, where: str) -> Recibo:
         replica=replica,
         status=status,
         failure_reason=reason,
+        infra_reason=infra_reason,
         tool_calls=tool_calls,
         duration_seconds=float(dur),
         patch_sha256=patch_sha,
@@ -448,10 +475,10 @@ def load_subset(path: Path) -> Subconjunto:
 
 def resolve_tasks_sha(subset: Subconjunto, explicit: str | None) -> str:
     """Hash de ``tasks.jsonl`` de referencia: el del subconjunto, el explicito, o error."""
-    if explicit is not None and not SHA_RE.match(explicit):
+    if explicit is not None and not SHA_RE.fullmatch(explicit):
         raise ReplicasError("--tasks-sha256 debe ser un SHA-256 hexadecimal en minusculas.")
     declared = subset.sha256_tasks
-    if declared is not None and not SHA_RE.match(declared):
+    if declared is not None and not SHA_RE.fullmatch(declared):
         raise ReplicasError("El 'sha256_tasks' del subconjunto no es un SHA-256 hexadecimal en minusculas.")
     if declared and explicit and declared != explicit:
         raise ReplicasError("--tasks-sha256 contradice el 'sha256_tasks' que declara el subconjunto.")
@@ -573,6 +600,8 @@ def discordance_floor(alpha: float = DEFAULT_ALPHA) -> int:
 
     Es ``min d`` con ``2 / 2**d <= alpha``: 6 con alpha = 0,05 (p = 0,03125; con 5 es 0,0625).
     """
+    if not 0 < alpha < 1:
+        raise ValueError("alpha debe estar entre 0 y 1 (exclusivo).")
     umbral = Fraction(str(alpha))
     d = 1
     while Fraction(2, 2**d) > umbral:
@@ -755,13 +784,20 @@ def analyze(
         if any((iid, rep) not in by_key for rep in replicas)
     ]
     infra = [
-        {"instance_id": iid, "replica": rep, "status": ST_INFRA}
+        {
+            "instance_id": iid,
+            "replica": rep,
+            "status": ST_INFRA,
+            "infra_reason": by_key[(iid, rep)].infra_reason,
+        }
         for iid in ids
         for rep in replicas
         if estado(iid, rep) == ST_INFRA
     ]
     tasas = [p["tasa_sobre_subconjunto"] for p in por_replica]
     primero = receipts[0]
+    # se ordena como fecha (datetime), no como texto
+    fechas = sorted((r.converted_utc for r in receipts), key=lambda s: datetime.strptime(s, UTC_FORMAT))
     entrada: dict[str, Any] = {
         "condicion": primero.condition,
         "tasks_sha256": primero.tasks_sha256,
@@ -772,8 +808,8 @@ def analyze(
         "recibos": len(receipts),
         "replicas": replicas,
         "tareas_subconjunto": len(ids),
-        "convertido_utc_primero": min(r.converted_utc for r in receipts),
-        "convertido_utc_ultimo": max(r.converted_utc for r in receipts),
+        "convertido_utc_primero": min(fechas),
+        "convertido_utc_ultimo": max(fechas),
     }
     if envio_archivos is not None:
         entrada["envio_archivos"] = [{"ruta": rel, "sha256": h} for rel, h in envio_archivos]
@@ -973,8 +1009,11 @@ def render_markdown(report: dict[str, Any]) -> str:
         )
     out += ["", "## Errores de infraestructura (hay que volver a correr estas tareas)", ""]
     if report["errores_de_infraestructura"]:
-        out += ["| Tarea | Replica |", "|---|---|"]
-        out += [f"| `{x['instance_id']}` | {x['replica']} |" for x in report["errores_de_infraestructura"]]
+        out += ["| Tarea | Replica | Motivo |", "|---|---|---|"]
+        out += [
+            f"| `{x['instance_id']}` | {x['replica']} | {x['infra_reason']} |"
+            for x in report["errores_de_infraestructura"]
+        ]
     else:
         out.append("Ninguno.")
     out += ["", "## Faltantes (sin recibo)", ""]
@@ -1076,7 +1115,8 @@ def convert_harness_results(
     § 9.2). El estado sale de ``classify_harness`` (``resolved`` del arnes manda; los textos de
     ``error`` se comparan con una lista cerrada, HARNESS § 8.2). El recibo conserva los campos crudos
     en ``harness_raw`` para poder reclasificar sin el ``task_results.jsonl``. El hash del parche sale
-    de ``<patches_dir>/<instance_id>.patch`` (HARNESS § 9.2). Antes de devolver nada comprueba que no
+    de ``<patches_dir>/<instance_id>.patch`` con «/» sustituido por «__» como hace el arnes (HARNESS
+    § 9.2). Antes de devolver nada comprueba que no
     haya tareas repetidas ni ajenas al subconjunto.
     """
     try:
@@ -1084,6 +1124,7 @@ def convert_harness_results(
     except (OSError, UnicodeDecodeError) as exc:
         raise ReplicasError(f"No se pudo leer {task_results}: {exc}") from exc
     permitidos = set(subset_ids)
+    _int(replica, "convertir", "replica", minimum=1)
     parse_utc(converted_utc, "convertir", "converted_utc")
     if run_utc is not None:
         parse_utc(run_utc, "convertir", "run_utc")
@@ -1102,13 +1143,14 @@ def convert_harness_results(
             if k not in row:
                 raise ReplicasError(f"{where}: falta la clave '{k}' del arnes.")
         raw = {k: row[k] for k in RAW_KEYS}
-        status, reason = classify_harness(raw, where)
+        status, reason, infra_reason = classify_harness(raw, where)
         iid = row["instance_id"]
         if not isinstance(iid, str) or not iid:
             raise ReplicasError(f"{where}: 'instance_id' invalido.")
         patch_sha: str | None = None
         if raw["agent_patch_size"] > 0:
-            patch_file = (patches_dir / f"{iid}.patch") if patches_dir else None
+            # el arnes nombra el parche con el id y «/» sustituido por «__» (HARNESS § 9.2)
+            patch_file = (patches_dir / f"{iid.replace('/', '__')}.patch") if patches_dir else None
             if patch_file is None or not patch_file.is_file():
                 raise ReplicasError(
                     f"{where}: el parche de {iid!r} tiene tamano {raw['agent_patch_size']} pero no se "
@@ -1123,6 +1165,7 @@ def convert_harness_results(
             "replica": replica,
             "status": status,
             "failure_reason": reason,
+            "infra_reason": infra_reason,
             "resolved": status == ST_RESOLVED,
             "tool_calls": row["tool_calls"],
             "duration_seconds": row["duration_seconds"],
@@ -1156,20 +1199,97 @@ def convert_harness_results(
 # ---------------------------------------------------------------------------
 
 
-def _write_atomic(path: Path, text: str) -> None:
-    """Escribe a un temporal en el mismo directorio y lo renombra: nunca queda un archivo a medias."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_bytes(text.encode("utf-8"))
-    os.replace(tmp, path)
+def _write_all(items: Sequence[tuple[Path, str]]) -> None:
+    """Escribe todos los archivos a temporales unicos del mismo directorio y los renombra al final.
+
+    Si algo falla no queda ningun archivo nuevo (ni temporales). Un temporal tiene nombre unico
+    (``tempfile``): nunca pisa un archivo ajeno.
+    """
+    temps: list[tuple[Path, Path]] = []
+    done: list[Path] = []
+    try:
+        for path, text in items:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            fd, name = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+            temps.append((Path(name), path))
+            with os.fdopen(fd, "wb") as f:
+                f.write(text.encode("utf-8"))
+        for tmp, path in temps:
+            os.replace(tmp, path)
+            done.append(path)
+    except BaseException:
+        for path in done:
+            path.unlink(missing_ok=True)
+        for tmp, _ in temps:
+            tmp.unlink(missing_ok=True)
+        raise
+
+
+def _is_own_report(path: Path, kind: str) -> bool:
+    """¿Es ``path`` un reporte propio? JSON con la version del reporte; Markdown con su encabezado."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return False
+    if kind == "md":
+        return text.startswith(REPORT_MD_HEADER)
+    try:
+        data = loads_strict(text)
+    except ValueError:
+        return False
+    version = data.get("version_reporte") if isinstance(data, dict) else None
+    return isinstance(version, str) and version.startswith(REPORT_VERSION.split("/")[0] + "/")
+
+
+def _check_outputs(args: argparse.Namespace) -> list[tuple[Path, str]]:
+    """Valida las rutas de salida sin tocar nada; devuelve las que existen y son reportes propios.
+
+    Rechaza (salida 2) una ruta que coincida con una entrada (subconjunto, recibos, directorios de
+    recibos o de envio), que caiga dentro de un directorio de entrada, que sea un directorio, que
+    sea la misma para JSON y Markdown, o que exista y no sea un reporte propio.
+    """
+    outs = [(p, k) for p, k in ((args.salida_json, "json"), (args.salida_md, "md")) if p]
+    resueltas = [p.resolve() for p, _ in outs]
+    if len(set(resueltas)) < len(resueltas):
+        raise ReplicasError("--salida-json y --salida-md son la misma ruta.")
+    entradas: set[Path] = {args.subconjunto.resolve()}
+    dirs: list[Path] = []
+    for p in args.recibos:
+        entradas.add(p.resolve())
+        if p.is_dir():
+            dirs.append(p.resolve())
+            entradas.update(q.resolve() for q in p.glob("*.jsonl"))
+    if args.envio:
+        dirs.append(args.envio.resolve())
+        entradas.add(args.envio.resolve())
+    previos: list[tuple[Path, str]] = []
+    for (p, kind), r in zip(outs, resueltas, strict=True):
+        if r in entradas or any(d in r.parents for d in dirs):
+            raise ReplicasError(
+                f"La ruta de salida {p} coincide con una entrada o esta dentro de una: no se toca."
+            )
+        if r.is_dir():
+            raise ReplicasError(f"La ruta de salida {p} es un directorio.")
+        if r.exists():
+            if not _is_own_report(r, kind):
+                raise ReplicasError(f"{p} ya existe y no es un reporte de este comando: no se borra.")
+            previos.append((p, kind))
+    return previos
 
 
 def _cmd_analizar(args: argparse.Namespace) -> int:
     salidas: list[Path] = [p for p in (args.salida_json, args.salida_md) if p]
-    for p in salidas:  # una salida 2 no deja el reporte de una corrida anterior
-        p.unlink(missing_ok=True)
     if not 0 < args.alfa < 1:
         raise ReplicasError("--alfa debe estar entre 0 y 1 (exclusivo).")
+    previos = _check_outputs(args)
+    for p, _ in previos:  # una salida 2 no deja el reporte de una corrida anterior
+        try:
+            p.unlink()
+        except OSError as exc:
+            raise ReplicasError(
+                f"No se pudo borrar el reporte anterior {p} ({exc}); sigue en disco y es obsoleto: "
+                "no lo uses."
+            ) from exc
     receipts = load_receipts(args.recibos)
     subset = load_subset(args.subconjunto)
     tasks_ref = resolve_tasks_sha(subset, args.tasks_sha256)
@@ -1185,11 +1305,13 @@ def _cmd_analizar(args: argparse.Namespace) -> int:
     if problems:
         raise ReplicasError("Integridad de los recibos:\n- " + "\n- ".join(problems))
     report = analyze(receipts, subset, args.alfa, archivos)
-    if args.salida_json:
-        _write_atomic(args.salida_json, render_json(report))
     md = render_markdown(report)
+    escribir: list[tuple[Path, str]] = []
+    if args.salida_json:
+        escribir.append((args.salida_json, render_json(report)))
     if args.salida_md:
-        _write_atomic(args.salida_md, md)
+        escribir.append((args.salida_md, md))
+    _write_all(escribir)  # ambos o ninguno
     if not salidas:
         sys.stdout.write(md)
     if not report["completo"]:
@@ -1230,7 +1352,7 @@ def _cmd_convertir(args: argparse.Namespace) -> int:
         run_utc=args.run_utc,
     )
     text = "".join(json.dumps(r, sort_keys=True, ensure_ascii=False) + "\n" for r in recibos)
-    _write_atomic(args.salida, text)
+    _write_all([(args.salida, text)])
     print(f"{len(recibos)} recibos escritos en {args.salida}")
     return EXIT_OK
 
@@ -1274,6 +1396,10 @@ def main(argv: list[str] | None = None) -> int:
     c.set_defaults(func=_cmd_convertir)
 
     args = parser.parse_args(argv)
+    for stream in (sys.stdout, sys.stderr):  # mensajes con acentos o flechas no deben romper en Windows
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8")
     try:
         return int(args.func(args))
     except (ReplicasError, OSError) as exc:
