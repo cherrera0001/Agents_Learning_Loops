@@ -104,20 +104,22 @@ def _issue_line(
             f"estimado {_shown(estimate.get('size'))} · {_shown(estimate.get('points'))} pts, "
             f"I{_shown(estimate.get('uncertainty'))} R{_shown(estimate.get('risk'))}, "
             # la cadena vacía es un dato: issue de un agente que no es Claude, sin modelo previsto
-            f"previsto {'ninguno' if planned == '' else _shown(planned)}"
+            f"previsto {'ninguno' if planned == '' else _shown(planned)} "
+            "(declarado en episodio; no leído de tarjeta)"
         )
     else:
-        parts.append("sin estimación")
+        parts.append("episodio sin estimación")
     if outcome:
         escalated = outcome.get("escalated")
         parts.append(
             f"usado {_shown(outcome.get('used_model'))}, "
             f"escaló: {'sí' if escalated is True else 'no' if escalated is False else '?'}, "
             f"PR: {_shown(outcome.get('prs'))}, "
-            f"revisiones de estimación: {_shown(outcome.get('estimate_revisions'))}"
+            f"revisiones de estimación: {_shown(outcome.get('estimate_revisions'))} "
+            "(declarado en episodio; no leído de tarjeta)"
         )
     else:
-        parts.append("sin resultado")
+        parts.append("episodio sin resultado")
     parts.append(f"pasos fallidos {board.get('failed_steps', 0)}/{board.get('steps', 0)}")
     if cards is not None and issue is not None:
         card = cards.get(int(issue))
@@ -125,9 +127,43 @@ def _issue_line(
             parts.append("tablero: sin tarjeta")
         else:
             status, verified = card.get("status") or "sin estado", card.get("verificación") or "vacía"
-            parts.append(f"tablero: {status}, verificación {verified}")
+            parts.append(f"tablero: {status}, verificación {verified} (snapshot)")
+            discrepancies = _snapshot_discrepancies(estimate, outcome, card)
+            if discrepancies:
+                parts.append("discrepancias episodio/snapshot: " + ", ".join(discrepancies))
     name = f"#{issue}" if issue is not None else node.metadata.get("ref", goal)
     return f"  {name} ({node.metadata.get('ref', goal)}): " + "; ".join(parts)
+
+
+def _snapshot_discrepancies(
+    estimate: Mapping[str, Any], outcome: Mapping[str, Any], card: Mapping[str, Any]
+) -> list[str]:
+    """Compara los valores declarados en el episodio con los campos presentes en la tarjeta."""
+    comparisons = [
+        ("estimate.size", estimate.get("size"), "talla", card.get("talla")),
+        ("estimate.points", estimate.get("points"), "puntos", card.get("puntos")),
+        ("estimate.uncertainty", estimate.get("uncertainty"), "incertidumbre", card.get("incertidumbre")),
+        ("estimate.risk", estimate.get("risk"), "riesgo", card.get("riesgo")),
+        ("estimate.planned_model", estimate.get("planned_model"), "modelo", card.get("modelo")),
+        ("outcome.used_model", outcome.get("used_model"), "modelo usado", card.get("modelo usado")),
+        ("outcome.escalated", _escalated_label(outcome.get("escalated")), "escaló", card.get("escaló")),
+    ]
+    linked_prs = card.get("linked pull requests")
+    if isinstance(linked_prs, list):
+        comparisons.append(("outcome.prs", outcome.get("prs"), "PR vinculados", len(linked_prs)))
+    return [
+        f"{source}={_shown(episode_value)}; {target}={_shown(snapshot_value)}"
+        for source, episode_value, target, snapshot_value in comparisons
+        if episode_value is not None and snapshot_value is not None and episode_value != snapshot_value
+    ]
+
+
+def _escalated_label(value: Any) -> str | None:
+    if value is True:
+        return "Sí"
+    if value is False:
+        return "No"
+    return None
 
 
 def similar_issues(
