@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "description": "Calibracion de Fase 2 sin parche (control vacio) y auditoria de sanidad de tareas de Kaggle",
+    "comando_exacto_piloto": "swegemma eval --tasks experiments/gemma_developer_agent/data/tasks.jsonl --snapshots-dir experiments/gemma_developer_agent/data/snapshots --results-dir experiments/gemma_developer_agent/data/test_results_3 --submission-dir experiments/gemma_developer_agent/conditions/a_kit --skip-agent-patch --sandbox docker --concurrency 1 --task-ids fastapi_14077 rich_3061 fastapi_11194",
+    "sha256_tasks_jsonl": "e4b3fd60f69dbc2b9213e54eeb9636db78aefe92c1d06269d73d9f5f8f3c8ad6",
+    "swegemma_version": "0.2.7",
+    "adk_submission_version": "0.2.12",
+    "adk_eval_core_version": "0.1.0",
+    "docker_image": "swebench-sandbox:latest",
+    "docker_image_id": "2eae82eab1fe",
+    "docker_version": "29.8.0 (build 88096ef)",
+    "duracion_piloto_segundos": 87.75
+  },
+  "piloto_3_tareas": [
+    {
+      "instance_id": "fastapi_14077",
+      "repo": "fastapi/fastapi",
+      "resolved": false,
+      "test_exit_code": 2,
+      "duration_seconds": 39.83,
+      "resultado_sin_parche": "error_de_entorno",
+      "motivo": "ModuleNotFoundError: No module named 'typing_inspection' al importar fastapi en el sandbox Docker python:3.13-slim (la rueda no esta en wheels/ de Kaggle)."
+    },
+    {
+      "instance_id": "fastapi_11194",
+      "repo": "fastapi/fastapi",
+      "resolved": false,
+      "test_exit_code": 2,
+      "duration_seconds": 36.14,
+      "resultado_sin_parche": "error_de_entorno",
+      "motivo": "ModuleNotFoundError: No module named 'typing_inspection' al importar fastapi en el sandbox Docker python:3.13-slim."
+    },
+    {
+      "instance_id": "rich_3061",
+      "repo": "Textualize/rich",
+      "resolved": false,
+      "test_exit_code": -1,
+      "duration_seconds": 11.78,
+      "resultado_sin_parche": "error_de_entorno",
+      "motivo": "Host Windows cp1252 charmap encoding error en verification.py:420 al escribir diff temporal con caracteres Unicode."
+    }
+  ],
+  "contraste_con_busyaprime_119": {
+    "referencia": "busyaprime/119-of-129-sound-the-gemma-4-grader-rebuilt",
+    "conclusiones_busyaprime": {
+      "total_tasks": 129,
+      "sound_tasks": 119,
+      "anomalias_detectadas": 10,
+      "anomalias_list": [
+        {
+          "instance_id": "fastapi_14077",
+          "tipo": "passes_without_fix",
+          "motivo": "Pasa sin arreglo"
+        },
+        {
+          "instance_id": "fastapi_14851",
+          "tipo": "passes_without_fix",
+          "motivo": "Pasa sin arreglo"
+        },
+        {
+          "instance_id": "fastapi_15745",
+          "tipo": "gold_fails",
+          "motivo": "Desactiva plugin AnyIO requerido por test"
+        },
+        {
+          "instance_id": "fastapi_15763",
+          "tipo": "gold_fails",
+          "motivo": "Desactiva plugin AnyIO requerido por test"
+        },
+        {
+          "instance_id": "fastapi_15785",
+          "tipo": "gold_fails",
+          "motivo": "Desactiva plugin AnyIO requerido por test"
+        },
+        {
+          "instance_id": "requests_6589",
+          "tipo": "gold_fails",
+          "motivo": "Pytest antiguo falla en modo import del calificador"
+        },
+        {
+          "instance_id": "requests_6592",
+          "tipo": "gold_fails",
+          "motivo": "Pytest antiguo falla en modo import del calificador"
+        },
+        {
+          "instance_id": "requests_6629",
+          "tipo": "gold_fails",
+          "motivo": "Pytest antiguo falla en modo import del calificador"
+        },
+        {
+          "instance_id": "requests_6757",
+          "tipo": "gold_fails",
+          "motivo": "Certificado mTLS caducado"
+        },
+        {
+          "instance_id": "rich_3472",
+          "tipo": "gold_fails",
+          "motivo": "Mensaje de error del interprete cambio en la version declarada"
+        }
+      ]
+    },
+    "diferencias_con_nuestro_analisis_y_control_estricto": {
+      "tareas_comunes_descartadas": [
+        "fastapi_14077",
+        "fastapi_14851",
+        "fastapi_15745",
+        "requests_6589",
+        "requests_6592",
+        "requests_6629",
+        "requests_6757"
+      ],
+      "diferencias_explicadas": [
+        {
+          "categoria": "AnyIO en FastAPI",
+          "busyaprime": "Excluye 3 tareas (fastapi_15745, fastapi_15763, fastapi_15785).",
+          "control_estricto_gluzdov": "Excluye fastapi_15745; 15763 y 15785 superaron la ejecucion en su sandbox reparado.",
+          "nuestro_entorno": "fastapi_15763 y 15785 requieren cuidado al medir si AnyIO esta desactivado."
+        },
+        {
+          "categoria": "Timeouts en Rich (exit code 124)",
+          "busyaprime": "No excluye por timeout de 300s (trata rich_3480, rich_3772, rich_4006 como validas si gold pasa).",
+          "control_estricto_gluzdov": "Excluye rich_3480, rich_3772, rich_4006 porque el control vacio se cuelga 300s consumiendo presupuesto.",
+          "nuestra_decision": "Deben excluirse: un control vacio que agota 300s distorsiona la medicion de eficiencia."
+        },
+        {
+          "categoria": "Red y Enrutamiento en Requests",
+          "busyaprime": "No detecta o no excluye requests_7433 y requests_7502.",
+          "control_estricto_gluzdov": "Excluye requests_7433 y requests_7502 porque en sandbox air-gapped lanzan EHOSTUNREACH en vez del timeout esperado.",
+          "nuestra_decision": "Excluir: en modo network_mode=none de Docker, la falta de ruta altera el error esperado."
+        },
+        {
+          "categoria": "rich_3472",
+          "busyaprime": "Excluye rich_3472 por cambio de mensaje en interprete.",
+          "control_estricto_gluzdov": "Mantiene rich_3472 como sound.",
+          "nuestra_decision": "Conservar si el test discriminante pasa, o excluir si contamina."
+        }
+      ]
+    }
+  },
+  "tabla_resumen": {
+    "criterio_busyaprime": {
+      "validas": 119,
+      "excluidas": 10
+    },
+    "criterio_control_estricto_gluzdov": {
+      "validas": 114,
+      "excluidas": 15
+    },
+    "criterio_conservador_unificado": {
+      "validas": 112,
+      "excluidas": 17
+    },
+    "distribucion_recomendada_114": {
+      "fastapi/fastapi": 62,
+      "Textualize/rich": 44,
+      "psf/requests": 7,
+      "encode/httpx": 1,
+      "total": 114
+    }
+  }
+}
