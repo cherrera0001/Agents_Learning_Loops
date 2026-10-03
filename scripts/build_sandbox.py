@@ -5,6 +5,12 @@ Consume el lockfile de ruedas adicionales fijadas de PyPI, verifica sus hashes S
 y tamaños en bytes, prepara el contexto de construcción junto al wheelhouse local de Kaggle
 y construye la imagen Docker del sandbox de evaluación local. Es un instrumento de ensayo local: la
 imagen que resulte no es, por sí sola, el entorno del experimento (pre-registro, A.1).
+
+Códigos de salida: 0 correcto; 2 error de uso de la CLI; 3 lockfile desfasado o entrada local
+ausente o mal formada; 4 fallo de red; 5 hash o tamaño erróneo; 6 fallo de docker.
+
+Importante: la imagen NO decide qué ruedas instala el arnés. Esas salen del directorio de ruedas del
+host y de su caché (ver docs/propuesta_entorno_fastapi_v2.md). Este guion solo reconstruye la imagen.
 """
 
 from __future__ import annotations
@@ -29,6 +35,27 @@ DEFAULT_DOCKER_DIR = REPO_ROOT / "experiments" / "gemma_developer_agent" / "data
 DEFAULT_BUILD_DIR = REPO_ROOT / "experiments" / "gemma_developer_agent" / "data" / "build_sandbox"
 DEFAULT_TAG = "swebench-sandbox:latest"
 
+EXIT_INPUTS = 3
+EXIT_NETWORK = 4
+EXIT_INTEGRITY = 5
+EXIT_DOCKER = 6
+
+
+class StaleLockfileError(FileNotFoundError):
+    """El lockfile declara algo (una rueda excluida) que el origen no tiene."""
+
+
+class LockfileError(ValueError):
+    """El lockfile tiene una entrada mal formada."""
+
+
+class NetworkFailure(RuntimeError):
+    """La descarga de una rueda falló por la red, antes de poder verificar nada."""
+
+
+class IntegrityError(ValueError):
+    """Los bytes de una rueda no coinciden con el tamaño o el SHA-256 declarados."""
+
 
 def compute_sha256(file_path: Path) -> str:
     """Calcula el hash SHA-256 de un archivo en bloques de 64 KB."""
@@ -50,6 +77,86 @@ def load_lockfile(lockfile_path: Path) -> dict[str, Any]:
     return dict(data)
 
 
+def check_wheel_filename(filename: object) -> str:
+    """Rechaza nombres que no sean un nombre de archivo de rueda simple (sin rutas)."""
+    if not isinstance(filename, str) or not filename:
+        raise LockfileError(f"Nombre de rueda inválido en el lockfile: {filename!r}")
+    if "/" in filename or "\\" in filename or ".." in filename or Path(filename).name != filename:
+        raise LockfileError(f"El nombre de rueda no puede contener separadores de ruta: {filename!r}")
+    if not filename.endswith(".whl"):
+        raise LockfileError(f"El nombre de rueda debe terminar en .whl: {filename!r}")
+    return filename
+
+
+def excluded_filenames(lock_data: dict[str, Any]) -> set[str]:
+    """Nombres de las ruedas excluidas; una entrada mal formada es un error, no se descarta."""
+    entries = lock_data.get("excluded_wheels", [])
+    if not isinstance(entries, list):
+        raise LockfileError("'excluded_wheels' debe ser una lista.")
+    names: set[str] = set()
+    for entry in entries:
+        if not isinstance(entry, dict) or "filename" not in entry:
+            raise LockfileError(f"Entrada mal formada en 'excluded_wheels': {entry!r}")
+        names.add(check_wheel_filename(entry["filename"]))
+    return names
+
+
+def validate_inputs(
+    lock_data: dict[str, Any],
+    full_wheels_dir: Path,
+    docker_dir: Path,
+) -> set[str]:
+    """Valida lockfile y directorios locales antes de descargar nada; devuelve las exclusiones."""
+    for pkg in lock_data["packages"]:
+        if not isinstance(pkg, dict):
+            raise LockfileError(f"Entrada mal formada en 'packages': {pkg!r}")
+        for key in ("filename", "sha256", "size_bytes", "url"):
+            if key not in pkg:
+                raise LockfileError(f"Falta la clave {key!r} en un paquete del lockfile: {pkg!r}")
+        check_wheel_filename(pkg["filename"])
+    excluded = excluded_filenames(lock_data)
+    added = {pkg["filename"] for pkg in lock_data["packages"]}
+    contradictory = sorted(added & excluded)
+    if contradictory:
+        raise ValueError(f"Ruedas a la vez añadidas y excluidas: {', '.join(contradictory)}")
+    _check_source_dirs(full_wheels_dir, docker_dir, excluded)
+    return excluded
+
+
+def _check_source_dirs(source_wheels_dir: Path, docker_source_dir: Path, excluded: set[str]) -> None:
+    if not source_wheels_dir.exists():
+        raise FileNotFoundError(f"Directorio de ruedas de origen no encontrado: {source_wheels_dir}")
+    if not docker_source_dir.exists():
+        raise FileNotFoundError(f"Directorio de Docker no encontrado: {docker_source_dir}")
+    if (
+        not (docker_source_dir / "Dockerfile.public").exists()
+        and not (docker_source_dir / "Dockerfile").exists()
+    ):
+        raise FileNotFoundError(f"No se encontró Dockerfile.public en {docker_source_dir}")
+    # Una exclusión declarada que no corresponde a ninguna rueda del origen indica un lockfile
+    # desfasado: el entorno resultante no sería el que el lockfile describe.
+    missing = sorted(name for name in excluded if not (source_wheels_dir / name).is_file())
+    if missing:
+        raise StaleLockfileError(
+            f"El lockfile excluye ruedas que no están en {source_wheels_dir}: {', '.join(missing)}. "
+            "Si ya las apartaste del directorio que lee el arnés, indica con --full-wheels-dir el "
+            "directorio de origen completo, que es el que lee este guion."
+        )
+
+
+def _verify_bytes(
+    filename: str, data_size: int, data_sha: str, expected_size: int, expected_sha: str
+) -> None:
+    if data_size != expected_size:
+        raise IntegrityError(
+            f"Tamaño inesperado en {filename}: obtenido {data_size}, esperado {expected_size}"
+        )
+    if data_sha != expected_sha:
+        raise IntegrityError(
+            f"Hash SHA-256 no coincide en {filename}: obtenido {data_sha}, esperado {expected_sha}"
+        )
+
+
 def download_and_verify_wheels(
     packages: list[dict[str, Any]],
     cache_dir: Path,
@@ -59,7 +166,7 @@ def download_and_verify_wheels(
     verified_paths: list[Path] = []
 
     for pkg in packages:
-        filename = pkg["filename"]
+        filename = check_wheel_filename(pkg["filename"])
         expected_sha = pkg["sha256"].lower()
         expected_size = pkg["size_bytes"]
         url = pkg["url"]
@@ -75,32 +182,21 @@ def download_and_verify_wheels(
         if needs_download:
             print(f"Descargando {filename} desde {url}...")
             req = urllib.request.Request(url, headers={"User-Agent": "ALL-Sandbox-Builder/1.0"})
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                data = resp.read()
+            try:
+                with urllib.request.urlopen(req, timeout=60) as resp:
+                    data = resp.read()
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                raise NetworkFailure(f"Fallo de red al descargar {filename}: {exc}") from exc
             # Se verifica en memoria: unos bytes que no coinciden no llegan al disco.
-            if len(data) != expected_size:
-                raise ValueError(
-                    f"Tamaño inesperado en {filename}: obtenido {len(data)}, esperado {expected_size}"
-                )
-            downloaded_sha = hashlib.sha256(data).hexdigest().lower()
-            if downloaded_sha != expected_sha:
-                raise ValueError(
-                    f"Hash SHA-256 no coincide en {filename}: obtenido {downloaded_sha}, "
-                    f"esperado {expected_sha}"
-                )
+            _verify_bytes(
+                filename, len(data), hashlib.sha256(data).hexdigest().lower(), expected_size, expected_sha
+            )
             target_path.write_bytes(data)
 
         # Verificación estricta post-descarga/lectura
         actual_size = target_path.stat().st_size
-        if actual_size != expected_size:
-            raise ValueError(
-                f"Tamaño inesperado en {filename}: obtenido {actual_size}, esperado {expected_size}"
-            )
         actual_sha = compute_sha256(target_path)
-        if actual_sha != expected_sha:
-            raise ValueError(
-                f"Hash SHA-256 no coincide en {filename}: obtenido {actual_sha}, esperado {expected_sha}"
-            )
+        _verify_bytes(filename, actual_size, actual_sha, expected_size, expected_sha)
 
         print(f"  [OK] {filename} ({actual_size} bytes, sha256: {actual_sha[:16]}...)")
         verified_paths.append(target_path)
@@ -116,22 +212,15 @@ def prepare_build_context(
     excluded_wheels: set[str] | None = None,
 ) -> None:
     """Prepara el directorio de construcción Docker con todos los artefactos requeridos."""
-    if not source_wheels_dir.exists():
-        raise FileNotFoundError(f"Directorio de ruedas de origen no encontrado: {source_wheels_dir}")
-    if not docker_source_dir.exists():
-        raise FileNotFoundError(f"Directorio de Docker no encontrado: {docker_source_dir}")
-
     excluded = excluded_wheels or set()
-    # Una exclusión declarada que no corresponde a ninguna rueda del origen indica un lockfile
-    # desfasado: el entorno resultante no sería el que el lockfile describe.
-    missing = sorted(name for name in excluded if not (source_wheels_dir / name).is_file())
-    if missing:
-        raise FileNotFoundError(
-            f"El lockfile excluye ruedas que no están en {source_wheels_dir}: {', '.join(missing)}"
-        )
+    _check_source_dirs(source_wheels_dir, docker_source_dir, excluded)
     contradictory = sorted(aw.name for aw in additional_wheels if aw.name in excluded)
     if contradictory:
         raise ValueError(f"Ruedas a la vez añadidas y excluidas: {', '.join(contradictory)}")
+
+    dockerfile_src = docker_source_dir / "Dockerfile.public"
+    if not dockerfile_src.exists():
+        dockerfile_src = docker_source_dir / "Dockerfile"
 
     build_dir.mkdir(parents=True, exist_ok=True)
     dest_wheels_dir = build_dir / "wheels"
@@ -150,11 +239,6 @@ def prepare_build_context(
             shutil.copy2(aw, dest_wheels_dir / aw.name)
 
     # Copiar Dockerfile.public como Dockerfile
-    dockerfile_src = docker_source_dir / "Dockerfile.public"
-    if not dockerfile_src.exists():
-        dockerfile_src = docker_source_dir / "Dockerfile"
-    if not dockerfile_src.exists():
-        raise FileNotFoundError(f"No se encontró Dockerfile.public en {docker_source_dir}")
     shutil.copy2(dockerfile_src, build_dir / "Dockerfile")
 
     # Copiar shims imp.py y telnetlib.py si existen
@@ -198,14 +282,22 @@ def build_docker_image(
     return image_id, all_tags
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Punto de entrada de la CLI de reconstrucción del sandbox."""
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Reconstruye la imagen Docker del sandbox con verificación estricta de lockfile."
     )
     parser.add_argument("--lockfile", type=Path, default=DEFAULT_LOCKFILE, help="Ruta al lockfile JSON")
     parser.add_argument(
         "--wheels-dir", type=Path, default=DEFAULT_WHEELS_DIR, help="Ruta al wheelhouse local de Kaggle"
+    )
+    parser.add_argument(
+        "--full-wheels-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directorio de origen COMPLETO que lee este guion para construir la imagen, si difiere del "
+            "que usa el arnés (--wheels-dir, ya recortado). Por defecto, el mismo que --wheels-dir"
+        ),
     )
     parser.add_argument(
         "--docker-dir", type=Path, default=DEFAULT_DOCKER_DIR, help="Ruta a los archivos Docker de Kaggle"
@@ -230,41 +322,61 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--skip-docker-build", action="store_true", help="Solo prepara el contexto sin invocar docker build"
     )
-    args = parser.parse_args(argv)
+    return parser
 
-    print("1. Cargando lockfile de dependencias adicionales...")
-    lock_data = load_lockfile(args.lockfile)
-    packages = lock_data["packages"]
-    print(f"   Total de paquetes declarados: {len(packages)}")
 
-    print("2. Verificando y descargando ruedas adicionales...")
-    cache_dir = args.build_dir / "pypi_cache"
-    verified_wheels = download_and_verify_wheels(packages, cache_dir)
+def main(argv: list[str] | None = None) -> int:
+    """Punto de entrada de la CLI de reconstrucción del sandbox."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8")
+    args = _build_parser().parse_args(argv)
+    full_wheels_dir: Path = args.full_wheels_dir or args.wheels_dir
 
-    print("3. Preparando contexto de construcción en build_sandbox...")
-    excluded = {
-        pkg["filename"]
-        for pkg in lock_data.get("excluded_wheels", [])
-        if isinstance(pkg, dict) and "filename" in pkg
-    }
-    if excluded:
-        print(f"   Exclusiones justificadas por lockfile: {len(excluded)} ruedas")
-    prepare_build_context(
-        args.wheels_dir,
-        args.docker_dir,
-        verified_wheels,
-        args.build_dir,
-        excluded_wheels=excluded,
-    )
-    total_wheels = len(list((args.build_dir / "wheels").glob("*.whl")))
-    print(f"   Contexto listo con {total_wheels} ruedas en {args.build_dir / 'wheels'}")
+    try:
+        print("1. Cargando y validando lockfile y directorios locales...")
+        lock_data = load_lockfile(args.lockfile)
+        packages = lock_data["packages"]
+        excluded = validate_inputs(lock_data, full_wheels_dir, args.docker_dir)
+        print(f"   Total de paquetes declarados: {len(packages)}")
 
-    if args.skip_docker_build:
-        print("[OK] Preparación completada (docker build omitido).")
-        return 0
+        print("2. Verificando y descargando ruedas adicionales...")
+        cache_dir = args.build_dir / "pypi_cache"
+        verified_wheels = download_and_verify_wheels(packages, cache_dir)
 
-    print("4. Construyendo imagen Docker...")
-    image_id, tags = build_docker_image(args.build_dir, args.tag, args.extra_tag, args.no_cache)
+        print("3. Preparando contexto de construcción en build_sandbox...")
+        if excluded:
+            print(f"   Exclusiones justificadas por lockfile: {len(excluded)} ruedas")
+        prepare_build_context(
+            full_wheels_dir,
+            args.docker_dir,
+            verified_wheels,
+            args.build_dir,
+            excluded_wheels=excluded,
+        )
+        total_wheels = len(list((args.build_dir / "wheels").glob("*.whl")))
+        print(f"   Contexto listo con {total_wheels} ruedas en {args.build_dir / 'wheels'}")
+
+        if args.skip_docker_build:
+            print("[OK] Preparación completada (docker build omitido).")
+            return 0
+
+        print("4. Construyendo imagen Docker...")
+        image_id, tags = build_docker_image(args.build_dir, args.tag, args.extra_tag, args.no_cache)
+    except NetworkFailure as exc:
+        print(f"[ERROR red] {exc}", file=sys.stderr)
+        return EXIT_NETWORK
+    except IntegrityError as exc:
+        print(f"[ERROR integridad] {exc}", file=sys.stderr)
+        return EXIT_INTEGRITY
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        print(f"[ERROR lockfile o entradas locales] {exc}", file=sys.stderr)
+        return EXIT_INPUTS
+    except RuntimeError as exc:
+        print(f"[ERROR docker] {exc}", file=sys.stderr)
+        return EXIT_DOCKER
+
     print("[OK] Imagen construida exitosamente:")
     print(f"     Tags: {', '.join(tags)}")
     print(f"     Image ID: {image_id}")
