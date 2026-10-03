@@ -63,11 +63,11 @@ experiments/gemma_developer_agent/
 ├── drafts/                 # Borradores exploratorios sin condición asignada
 │   ├── README.md           # Explicación del estado de los borradores
 │   ├── agent.yaml          # Borrador de agente exploratorio
-│   └── skills/             # Borradores de skills escritas a mano
-│       └── all_core/
-│           └── SKILL.md
+│   ├── preregistration_abcd.md # Borrador preliminar de diseño experimental
+│   ├── paper/              # Borrador preliminar de manuscrito
+│   ├── skills/             # Borradores de directivas escritas a mano
+│   └── architecture_explainer.html # Diagrama de intención conceptual
 ├── docs/                   # Especificaciones oficiales verificadas e historial de supervisión
-│   ├── architecture_explainer.html      # Diagramas conceptuales de ALL
 │   ├── kaggle_specifications.md         # Ficha técnica verificada contra HARNESS_README.md
 │   ├── supervision-claude-2026-10-02.md    # Supervisión v1 del orquestador Claude
 │   ├── supervision-claude-2026-10-02-v2.md # Supervisión v2 del orquestador Claude

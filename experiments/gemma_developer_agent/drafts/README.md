@@ -34,3 +34,8 @@ ni forma parte de una submission oficial.**
 
 ### `NOTES_DISYUNTOR_Y_PRESUPUESTO.md`
 * **Estado:** Apuntes conceptuales sobre circuit breakers y presupuestos por tarea.
+
+### `architecture_explainer.html`
+* **Estado:** Diagrama de intención, nada de esto está implementado ni medido.
+* **Propósito:** Documento visual exploratorio generado para ilustrar conceptos arquitectónicos teóricos.
+
