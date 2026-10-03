@@ -210,9 +210,9 @@ obras. No encontramos un trabajo que las combine para agentes de código con ski
   bajaron 1,3 puntos porcentuales de media; las curadas subieron 16,2 puntos de media y, en ingeniería de
   software, 4,5 puntos (de 34,4 % a 38,9 %), con 16 de 84 tareas peor con skills curadas (Li et al., 2026,
   v1; una revisión posterior da otras cifras, por eso se cita siempre la v1).
-- **Archivos de contexto de repositorio.** En SWE-bench Lite y AGENTbench, los archivos generados por un LLM
-  empeoraron 5 de 8 configuraciones; la tasa de resolución bajó 0,5 % y 2 % de media (porcentajes tal como
-  los reporta la obra, en SWE-bench Lite y en CTXbench, un benchmark que crean los autores) y el costo subió
+- **Archivos de contexto de repositorio.** En SWE-bench Lite y en un segundo benchmark creado por los
+  autores, los archivos generados por un LLM empeoraron 5 de 8 configuraciones; la tasa de resolución bajó
+  0,5 % y 2 % de media (porcentajes tal como los reporta la obra, uno por benchmark) y el costo subió
   20 % y 23 % (Gloaguen et al., 2026; § 4.2). Según el resumen de su v3, los archivos no mejoran de forma
   general, sean de una IA o de personas; en el cuerpo, los escritos por desarrolladores superaron por poco a
   los generados, con más costo.
@@ -243,8 +243,8 @@ mixto.
   filtraciones ni que sus pruebas sean fuertes. Hoy no se ha ejecutado.
 - **Ruido.** En SWE-bench Verified, con tres modelos y dos scaffolds, la estimación pass@1 de una corrida
   varía entre 2,2 y 6,0 puntos según la corrida elegida, con desviación superior a 1,5 puntos aun a
-  temperatura 0 (Bjarnason et al., 2026). No son cifras de Gemma ni de 48 a 67 tareas. Por eso el experimento mide primero
-  cuánto varía el kit oficial (condición A) al repetirlo.
+  temperatura 0 (Bjarnason et al., 2026). No son cifras de Gemma ni de 48 a 67 tareas. Por eso el
+  experimento mide primero cuánto varía el kit oficial (condición A) al repetirlo.
 - **Prueba pareada.** Dietterich (1998) recomienda McNemar para comparar algoritmos de clasificación que se
   corren una sola vez. Trasladarlo a agentes con réplicas es un supuesto nuestro: no afirmamos que sea el
   estándar ni que tres réplicas basten.
@@ -462,7 +462,8 @@ de talla S: no calibran nada ni permiten concluir algo sobre Gemma.
 ### 6.2 Qué falta
 
 **El tablero no es parte de la memoria asociativa ni entra en `recall`.** El grafo de memoria de la bitácora
-(`learning/dev_memory.json`, derivado de los episodios) tiene cuatro tipos de nodo (Concept, Outcome, Goal y
+(`learning/dev_memory.json`, derivado de los episodios y no versionado: se genera en local con
+`python -m scripts.devlog rebuild`) tiene cuatro tipos de nodo (Concept, Outcome, Goal y
 Action) y ninguno lleva campos del tablero: ni talla, ni puntos, ni riesgo, ni verificación, ni modelo usado
 (hay nodos de texto que nombran talla o modelo como conceptos, pero no son datos de una tarjeta). Los conteos
 cambian con cada episodio, por eso no se fijan aquí: se obtienen con el comando de la sección 13.
@@ -955,7 +956,7 @@ Sale con 0. Sin los datos locales de `data/` solo compara contra el manifiesto d
 ```bash
 python -m scripts.devlog board --since 100     # sin hallazgos; salida 0
 python -m scripts.devlog pilot --since 100     # población de 3 issues (#102, #111 y #114); cifras en 6.1
-python -m scripts.devlog rebuild               # regenera la memoria derivada de los episodios
+python -m scripts.devlog rebuild               # genera en local la memoria derivada; no se versiona
 python -c "import json,collections as c;d=json.load(open('learning/dev_memory.json',encoding='utf-8')); \
 print(len(d['nodes']),c.Counter(n['type'] for n in d['nodes']),len(d['edges']))"
 ```
