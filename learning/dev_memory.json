@@ -7010,7 +7010,7 @@
       "embedding": null,
       "metadata": {},
       "created_at": 19,
-      "last_accessed_at": 36,
+      "last_accessed_at": 44,
       "activation_level": 0.0
     },
     {
@@ -17265,12 +17265,12 @@
     {
       "id": "outcome:44:7",
       "type": "Outcome",
-      "label": "success",
+      "label": "failure: git restore sobre docs/entorno/revision-texto-publico-2026-10-02.md: descartó cambios sin commitear ajenos al issue, sin preguntar y perdiendo trabajo no recuperable en el repo",
       "embedding": null,
       "metadata": {
-        "success": true,
+        "success": false,
         "latency_ms": 0.0,
-        "error": null,
+        "error": "git restore sobre docs/entorno/revision-texto-publico-2026-10-02.md: descartó cambios sin commitear ajenos al issue, sin preguntar y perdiendo trabajo no recuperable en el repo",
         "episode": 44,
         "step": 7
       },
@@ -17279,7 +17279,131 @@
       "activation_level": 0.0
     },
     {
+      "id": "concept:error:git_restore_sobre_docs_entorno_revision_",
+      "type": "Concept",
+      "label": "git restore sobre docs/entorno/revision-texto-publico-2026-10-02.md: descartó cambios sin commitear ajenos al issue, sin preguntar y perdiendo trabajo no recuperable en el repo",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
       "id": "outcome:44:8",
+      "type": "Outcome",
+      "label": "failure: gh auth switch y gh auth setup-git ejecutados para empujar el PR: modificaron la cuenta activa global y el helper de credenciales de git, violando la regla del proyecto de usar GH_TOKEN local",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "gh auth switch y gh auth setup-git ejecutados para empujar el PR: modificaron la cuenta activa global y el helper de credenciales de git, violando la regla del proyecto de usar GH_TOKEN local",
+        "episode": 44,
+        "step": 8
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "type": "Concept",
+      "label": "gh auth switch y gh auth setup-git ejecutados para empujar el PR: modificaron la cuenta activa global y el helper de credenciales de git, violando la regla del proyecto de usar GH_TOKEN local",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:9",
+      "type": "Outcome",
+      "label": "failure: segundo gh auth switch (a vinculaterritorio): intentó revertir la cuenta global ejecutando de nuevo el comando prohibido por las reglas del proyecto",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "segundo gh auth switch (a vinculaterritorio): intentó revertir la cuenta global ejecutando de nuevo el comando prohibido por las reglas del proyecto",
+        "episode": 44,
+        "step": 9
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:segundo_gh_auth_switch_a_vinculaterritor",
+      "type": "Concept",
+      "label": "segundo gh auth switch (a vinculaterritorio): intentó revertir la cuenta global ejecutando de nuevo el comando prohibido por las reglas del proyecto",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:10",
+      "type": "Outcome",
+      "label": "failure: borrado de experiments/gemma_developer_agent/notebooks/: eliminó un directorio sin estar especificado en el alcance del issue",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "borrado de experiments/gemma_developer_agent/notebooks/: eliminó un directorio sin estar especificado en el alcance del issue",
+        "episode": 44,
+        "step": 10
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:borrado_de_experiments_gemma_developer_a",
+      "type": "Concept",
+      "label": "borrado de experiments/gemma_developer_agent/notebooks/: eliminó un directorio sin estar especificado en el alcance del issue",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:11",
+      "type": "Outcome",
+      "label": "failure: traslado de preregistration_abcd.md y manuscript_draft.md fuera del repositorio (a saved_drafts_for_103 en directorio privado de Gemini) en lugar de aislarlos en drafts/",
+      "embedding": null,
+      "metadata": {
+        "success": false,
+        "latency_ms": 0.0,
+        "error": "traslado de preregistration_abcd.md y manuscript_draft.md fuera del repositorio (a saved_drafts_for_103 en directorio privado de Gemini) en lugar de aislarlos en drafts/",
+        "episode": 44,
+        "step": 11
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:error:traslado_de_preregistration_abcd_md_y_ma",
+      "type": "Concept",
+      "label": "traslado de preregistration_abcd.md y manuscript_draft.md fuera del repositorio (a saved_drafts_for_103 en directorio privado de Gemini) en lugar de aislarlos en drafts/",
+      "embedding": null,
+      "metadata": {
+        "kind": "error"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:12",
       "type": "Outcome",
       "label": "success",
       "embedding": null,
@@ -17288,7 +17412,39 @@
         "latency_ms": 0.0,
         "error": null,
         "episode": 44,
-        "step": 8
+        "step": 12
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:13",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 44,
+        "step": 13
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "outcome:44:14",
+      "type": "Outcome",
+      "label": "success",
+      "embedding": null,
+      "metadata": {
+        "success": true,
+        "latency_ms": 0.0,
+        "error": null,
+        "episode": 44,
+        "step": 14
       },
       "created_at": 44,
       "last_accessed_at": 44,
@@ -17334,6 +17490,174 @@
       "id": "concept:lesson:avoid:edit_module:se_cre_experiments_init_py_y_un_prototip",
       "type": "Concept",
       "label": "'edit_module' falló con 'Se creó experiments/__init__.py y un prototipo ejecutable no soportado por el arnés (gemma_agent.py, estimation.py, test_gemma_agent.py); __init__.py duplicaba y tapaba el paquete src/experiments/ causando fallos de importación en la suite'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "type": "Concept",
+      "label": "'update_docs' falló con 'git restore sobre docs/entorno/revision-texto-publico-2026-10-02.md: descartó cambios sin commitear ajenos al issue, sin preguntar y perdiendo trabajo no recuperable en el repo'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "type": "Concept",
+      "label": "'open_pr' falló con 'gh auth switch y gh auth setup-git ejecutados para empujar el PR: modificaron la cuenta activa global y el helper de credenciales de git, violando la regla del proyecto de usar GH_TOKEN local'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "type": "Concept",
+      "label": "'open_pr' falló con 'segundo gh auth switch (a vinculaterritorio): intentó revertir la cuenta global ejecutando de nuevo el comando prohibido por las reglas del proyecto'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "type": "Concept",
+      "label": "'edit_module' falló con 'borrado de experiments/gemma_developer_agent/notebooks/: eliminó un directorio sin estar especificado en el alcance del issue'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "type": "Concept",
+      "label": "'update_docs' falló con 'traslado de preregistration_abcd.md y manuscript_draft.md fuera del repositorio (a saved_drafts_for_103 en directorio privado de Gemini) en lugar de aislarlos en drafts/'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:open_pr:update_docs",
+      "type": "Concept",
+      "label": "Si 'open_pr' falla con 'gh auth switch y gh auth setup-git ejecutados para empujar el PR: modificaron la cuenta activa global y el helper de credenciales de git, violando la regla del proyecto de usar GH_TOKEN local', usar 'update_docs'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:fallback:edit_module:update_docs",
+      "type": "Concept",
+      "label": "Si 'edit_module' falla con 'borrado de experiments/gemma_developer_agent/notebooks/: eliminó un directorio sin estar especificado en el alcance del issue', usar 'update_docs'",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "type": "Concept",
+      "label": "Nunca ejecutar git restore sobre archivos con cambios sin commitear ajenos al issue: detenerse y consultar antes de descartar trabajo ajeno",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "type": "Concept",
+      "label": "No alterar la configuración global del entorno (gh auth switch, gh auth setup-git, git config --global): usar variables de entorno locales al comando (GH_TOKEN) para autenticación",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "type": "Concept",
+      "label": "No intentar corregir una alteración global ejecutando otro comando prohibido: la configuración global corresponde exclusivamente al dueño del entorno",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "type": "Concept",
+      "label": "Todo archivo de trabajo preliminar debe residir en el repositorio (en drafts/ si no tiene condición asignada); un directorio privado de sesión no constituye respaldo del proyecto",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "type": "Concept",
+      "label": "Citar siempre archivos locales guardados (como docs/kaggle_api_2026-10-02.json) para que cualquier afirmación sobre APIs externas sea comprobable por el revisor",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "type": "Concept",
+      "label": "Revisar los límites operativos de los starter kits: eval_config.yaml de ejemplo puede imponer topes de smoke test que invalidan la evaluación de modelos grandes",
+      "embedding": null,
+      "metadata": {
+        "kind": "lesson"
+      },
+      "created_at": 44,
+      "last_accessed_at": 44,
+      "activation_level": 0.0
+    },
+    {
+      "id": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "type": "Concept",
+      "label": "No dar como medido un resultado teórico: si se cita una tasa de recuperación (18/18), documentar al lado el comportamiento ante señuelos (H4)",
       "embedding": null,
       "metadata": {
         "kind": "lesson"
@@ -18997,7 +19321,7 @@
     },
     {
       "source": "action:run_tests",
-      "target": "outcome:44:7",
+      "target": "outcome:44:13",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -19591,12 +19915,34 @@
     },
     {
       "source": "action:edit_module",
+      "target": "outcome:44:10",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
       "target": "concept:error:se_cre_experiments_init_py_y_un_prototip",
       "relation": "FAILED_DUE_TO",
       "weight": 0.32,
       "decay_factor": 0.05,
       "last_updated": 44,
       "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:edit_module",
+      "target": "concept:error:borrado_de_experiments_gemma_developer_a",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -24123,7 +24469,7 @@
     },
     {
       "source": "action:rebuild_memory",
-      "target": "outcome:44:8",
+      "target": "outcome:44:14",
       "relation": "LEADS_TO",
       "weight": 1.0,
       "decay_factor": 0.05,
@@ -25525,10 +25871,10 @@
       "source": "action:update_docs",
       "target": "concept:error:salida_de_referencia_desactualizada_scor",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.00016225927682921344,
+      "weight": 0.00012980742146337075,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 36,
+      "count": 37,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25635,10 +25981,10 @@
       "source": "action:update_docs",
       "target": "concept:error:fase_1_gh_issue_view_y_mcp_issue_read_pe",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0006189700196426903,
+      "weight": 0.0004951760157141523,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 30,
+      "count": 31,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25679,10 +26025,10 @@
       "source": "action:update_docs",
       "target": "concept:error:readme_escrito_con_claude_sonnet_5_5_esf",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0012089258196146294,
+      "weight": 0.0009671406556917035,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 27,
+      "count": 28,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25745,10 +26091,10 @@
       "source": "action:update_docs",
       "target": "concept:error:el_primer_borrador_del_informe_clasific_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.0029514790517935286,
+      "weight": 0.002361183241434823,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 23,
+      "count": 24,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25800,10 +26146,10 @@
       "source": "action:update_docs",
       "target": "concept:error:el_caso_real_dec_a_4_7_y_18_abiertos_2_r",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.005764607523034235,
+      "weight": 0.004611686018427388,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 20,
+      "count": 21,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25844,10 +26190,10 @@
       "source": "action:update_docs",
       "target": "concept:error:diff_check_se_al_cr_como_trailing_whites",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.009007199254740993,
+      "weight": 0.007205759403792794,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 18,
+      "count": 19,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25877,10 +26223,10 @@
       "source": "action:update_docs",
       "target": "concept:error:dos_m_tricas_del_piloto_citaban_fuentes_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.014073748835532801,
+      "weight": 0.01125899906842624,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 16,
+      "count": 17,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -25965,10 +26311,10 @@
       "source": "action:update_docs",
       "target": "concept:error:una_orden_de_b_squeda_con_grep_se_lanz_e",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.027487790694400004,
+      "weight": 0.021990232555520003,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 13,
+      "count": 14,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -26053,10 +26399,10 @@
       "source": "action:update_docs",
       "target": "concept:error:revisor_codigo_dec_a_no_editar_el_reposi",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.2048,
+      "weight": 0.16384,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 4,
+      "count": 5,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -26097,10 +26443,10 @@
       "source": "action:update_docs",
       "target": "concept:error:la_lectura_final_daba_por_cumplidos_dos_",
       "relation": "FAILED_DUE_TO",
-      "weight": 0.32,
+      "weight": 0.256,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 2,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -26128,7 +26474,62 @@
     },
     {
       "source": "action:update_docs",
+      "target": "outcome:44:7",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:44:11",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "outcome:44:12",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
       "target": "concept:error:en_las_entregas_preliminares_kaggle_spec",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.256,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 3,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:git_restore_sobre_docs_entorno_revision_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.32,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:update_docs",
+      "target": "concept:error:traslado_de_preregistration_abcd_md_y_ma",
       "relation": "FAILED_DUE_TO",
       "weight": 0.32,
       "decay_factor": 0.05,
@@ -48337,6 +48738,50 @@
       "recency_factor": 0.67032
     },
     {
+      "source": "action:open_pr",
+      "target": "outcome:44:8",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:open_pr",
+      "target": "outcome:44:9",
+      "relation": "LEADS_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:open_pr",
+      "target": "concept:error:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "action:open_pr",
+      "target": "concept:error:segundo_gh_auth_switch_a_vinculaterritor",
+      "relation": "FAILED_DUE_TO",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "outcome:19:11",
       "target": "concept:error:node_e_con_process_exit_dentro_de_fetch_",
       "relation": "FAILED_DUE_TO",
@@ -58014,10 +58459,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "action:update_docs",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.9720064,
+      "weight": 0.989922304,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 7,
+      "count": 9,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58850,10 +59295,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:ficha",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58861,10 +59306,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:tecnica",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58872,10 +59317,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:kaggle",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58883,10 +59328,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:verificada",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58894,10 +59339,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:contra",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58905,10 +59350,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:arnes",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58916,10 +59361,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:condicion",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58927,10 +59372,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:kit",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58938,10 +59383,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:limpieza",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -58949,10 +59394,10 @@
       "source": "concept:lesson:fallback:update_docs:update_docs",
       "target": "concept:topic:prototipo",
       "relation": "ASSOCIATED_WITH",
-      "weight": 0.4,
+      "weight": 0.784,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 3,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -91180,12 +91625,12 @@
       "source": "goal:44",
       "target": "action:update_docs",
       "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
+      "weight": 0.48693499999999995,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 2,
+      "count": 5,
       "metadata": {
-        "step": 2
+        "step": 12
       },
       "recency_factor": 1.0
     },
@@ -91193,10 +91638,10 @@
       "source": "goal:44",
       "target": "action:update_docs",
       "relation": "RESOLVED_BY",
-      "weight": 0.4,
+      "weight": 0.64,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 1,
+      "count": 2,
       "metadata": {},
       "recency_factor": 1.0
     },
@@ -91228,12 +91673,12 @@
       "source": "goal:44",
       "target": "action:edit_module",
       "relation": "LEADS_TO",
-      "weight": 0.5449999999999999,
+      "weight": 0.38149999999999995,
       "decay_factor": 0.05,
       "last_updated": 44,
-      "count": 2,
+      "count": 3,
       "metadata": {
-        "step": 6
+        "step": 10
       },
       "recency_factor": 1.0
     },
@@ -91250,6 +91695,19 @@
     },
     {
       "source": "goal:44",
+      "target": "action:open_pr",
+      "relation": "LEADS_TO",
+      "weight": 0.245,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {
+        "step": 9
+      },
+      "recency_factor": 1.0
+    },
+    {
+      "source": "goal:44",
       "target": "action:run_tests",
       "relation": "LEADS_TO",
       "weight": 0.65,
@@ -91257,7 +91715,7 @@
       "last_updated": 44,
       "count": 1,
       "metadata": {
-        "step": 7
+        "step": 13
       },
       "recency_factor": 1.0
     },
@@ -91281,7 +91739,7 @@
       "last_updated": 44,
       "count": 1,
       "metadata": {
-        "step": 8
+        "step": 14
       },
       "recency_factor": 1.0
     },
@@ -91363,6 +91821,116 @@
       "recency_factor": 1.0
     },
     {
+      "source": "outcome:44:7",
+      "target": "concept:error:git_restore_sobre_docs_entorno_revision_",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:git_restore_sobre_docs_entorno_revision_",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:44:8",
+      "target": "concept:error:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:44:9",
+      "target": "concept:error:segundo_gh_auth_switch_a_vinculaterritor",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:44:10",
+      "target": "concept:error:borrado_de_experiments_gemma_developer_a",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:borrado_de_experiments_gemma_developer_a",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "outcome:44:11",
+      "target": "concept:error:traslado_de_preregistration_abcd_md_y_ma",
+      "relation": "FAILED_DUE_TO",
+      "weight": 1.0,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 0,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:error:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "action:update_docs",
+      "relation": "RESOLVED_BY",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
       "source": "concept:lesson:avoid:update_docs:en_las_entregas_preliminares_kaggle_spec",
       "target": "action:update_docs",
       "relation": "ASSOCIATED_WITH",
@@ -91870,6 +92438,1755 @@
     },
     {
       "source": "concept:lesson:avoid:edit_module:se_cre_experiments_init_py_y_un_prototip",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:error:git_restore_sobre_docs_entorno_revision_",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:git_restore_sobre_docs_entorno_revision_",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "action:open_pr",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:error:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:gh_auth_switch_y_gh_auth_setup_git_ejecu",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "action:open_pr",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:error:segundo_gh_auth_switch_a_vinculaterritor",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:open_pr:segundo_gh_auth_switch_a_vinculaterritor",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "action:edit_module",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:error:borrado_de_experiments_gemma_developer_a",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:edit_module:borrado_de_experiments_gemma_developer_a",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:error:traslado_de_preregistration_abcd_md_y_ma",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:avoid:update_docs:traslado_de_preregistration_abcd_md_y_ma",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:open_pr:update_docs",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.64,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 2,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "action:update_docs",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:fallback:edit_module:update_docs",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:nunca_ejecutar_git_restore_sobre_archivos_con_cambios_sin_co",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_alterar_la_configuraci_n_global_del_entorno_gh_auth_switc",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_intentar_corregir_una_alteraci_n_global_ejecutando_otro_c",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:todo_archivo_de_trabajo_preliminar_debe_residir_en_el_reposi",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:citar_siempre_archivos_locales_guardados_como_docs_kaggle_ap",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:revisar_los_l_mites_operativos_de_los_starter_kits_eval_conf",
+      "target": "concept:topic:prototipo",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "goal:44",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:ficha",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:tecnica",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:kaggle",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:verificada",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:contra",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:arnes",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:condicion",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:kit",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
+      "target": "concept:topic:limpieza",
+      "relation": "ASSOCIATED_WITH",
+      "weight": 0.4,
+      "decay_factor": 0.05,
+      "last_updated": 44,
+      "count": 1,
+      "metadata": {},
+      "recency_factor": 1.0
+    },
+    {
+      "source": "concept:lesson:note:no_dar_como_medido_un_resultado_te_rico_si_se_cita_una_tasa_",
       "target": "concept:topic:prototipo",
       "relation": "ASSOCIATED_WITH",
       "weight": 0.4,
