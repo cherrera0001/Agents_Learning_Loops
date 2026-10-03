@@ -497,29 +497,20 @@ TAREA_VALIDEZ: dict[str, Validador] = {
     "repo": _is_text,
     "clase": lambda v: v in CLASES_VALIDEZ,
     "sin_parche_segundos": lambda v: isinstance(v, list) and all(_is_num(x, 0) for x in v),
+    # ejecuciones lanzadas segun el diario de solo-anadir de la medicion: al menos las cuatro rondas
+    "ejecuciones_lanzadas": lambda v: _is_int(v, 4),
 }
-# Campos opcionales del registro de validez (los escribe ``scripts/kaggle_validez.py``): hash final del
-# diario de solo-anadir de la medicion y, por tarea, el numero de ejecuciones lanzadas. Si estan, se
-# validan; no son obligatorios para no invalidar registros anteriores a su introduccion.
-TAREA_OPCIONALES: dict[str, Validador] = {"ejecuciones_lanzadas": lambda v: _is_int(v, 4)}
-VALIDEZ_OPCIONALES: dict[str, Validador] = {"diario_sha256": _is_sha}
-
-
-def _tarea_validez_ok(x: Any) -> bool:
-    if not _shape(TAREA_VALIDEZ, extra=True)(x):
-        return False
-    return all(ok(x[k]) for k, ok in TAREA_OPCIONALES.items() if k in x)
-
-
 VALIDEZ: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_VALIDEZ,
     "fecha": _is_date,
     "sha256_tasks": _is_sha,
     "entorno_sha256": _is_sha,
-    "tareas": lambda v: isinstance(v, list) and all(_tarea_validez_ok(x) for x in v),
+    "tareas": lambda v: isinstance(v, list) and all(_shape(TAREA_VALIDEZ, extra=True)(x) for x in v),
     "tareas_invalidas": lambda v: (
         isinstance(v, list) and all(_shape({"instance_id": _is_text, "clase": _is_text})(x) for x in v)
     ),
+    # hash final del diario de solo-anadir de la medicion (ultima linea, que encadena todas)
+    "diario_sha256": _is_sha,
 }
 PILOTO: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_PILOTO,
@@ -643,17 +634,9 @@ def _read_cited(raiz: Path, ruta: str, sha: str, nombre: str) -> bytes:
 
 
 def _read_record(
-    raiz: Path,
-    valor: dict[str, Any],
-    nombre: str,
-    esquema: dict[str, Validador],
-    opcionales: dict[str, Validador] | None = None,
+    raiz: Path, valor: dict[str, Any], nombre: str, esquema: dict[str, Validador]
 ) -> dict[str, Any]:
-    """Registro JSON citado: hash, JSON estricto y esquema (claves exactas y valores validos).
-
-    ``opcionales`` son claves que pueden faltar; si estan, se validan. Cualquier otra clave sobra.
-    """
-    opcionales = opcionales or {}
+    """Registro JSON citado: hash, JSON estricto y esquema (claves exactas y valores validos)."""
     data = _read_cited(raiz, valor["ruta"], valor["sha256"], nombre)
     try:
         obj = loads_strict(data.decode("utf-8"))
@@ -661,14 +644,11 @@ def _read_record(
         raise PreregError(f"{nombre}: {valor['ruta']} no es JSON valido: {exc}") from exc
     if not isinstance(obj, dict):
         raise PreregError(f"{nombre}: {valor['ruta']} debe ser un objeto JSON.")
-    if not set(esquema) <= set(obj) <= {*esquema, *opcionales}:
+    if set(obj) != set(esquema):
         raise PreregError(
             f"{nombre}: {valor['ruta']} debe tener las claves {sorted(esquema)}; tiene {sorted(obj)}."
         )
-    malos = sorted(
-        [k for k, ok in esquema.items() if not ok(obj[k])]
-        + [k for k, ok in opcionales.items() if k in obj and not ok(obj[k])]
-    )
+    malos = sorted(k for k, ok in esquema.items() if not ok(obj[k]))
     if malos:
         raise PreregError(f"{nombre}: valores invalidos en {valor['ruta']}: {malos}.")
     return obj
@@ -921,9 +901,7 @@ def _contrastar(
 
     if valor["validez_tareas"] is None:
         return
-    validez = _read_record(
-        raiz, valor["validez_tareas"], "validez_tareas", VALIDEZ, opcionales=VALIDEZ_OPCIONALES
-    )
+    validez = _read_record(raiz, valor["validez_tareas"], "validez_tareas", VALIDEZ)
     en_orden("la validez de tareas", validez["fecha"])
     if validez["sha256_tasks"] != fijos["tasks_sha256"]:
         raise PreregError("validez_tareas: 'sha256_tasks' no es el tasks_sha256 del pre-registro.")

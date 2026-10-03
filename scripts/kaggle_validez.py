@@ -761,16 +761,15 @@ def validar_registro(obj: object) -> list[str]:
     """Problemas del registro contra el esquema de ``kaggle_prereg`` y las claves propias.
 
     Lista vacia = el registro pasa la validacion que hace la compuerta al cerrar ``validez_tareas``
-    (sin el cruce con ``tasks.jsonl``, que lo hace ``comprobar --tasks``). Aqui ``diario_sha256`` es
-    obligatorio (la compuerta lo admite como opcional).
+    (sin el cruce con ``tasks.jsonl``, que lo hace ``comprobar --tasks``). ``diario_sha256`` y
+    ``ejecuciones_lanzadas`` son obligatorios tambien en la compuerta.
     """
     if not isinstance(obj, dict):
         return ["El registro debe ser un objeto."]
     esquema = kaggle_prereg.VALIDEZ
-    opcionales = kaggle_prereg.VALIDEZ_OPCIONALES
-    if set(obj) != {*esquema, *opcionales}:
-        return [f"Claves del registro: se esperaban {sorted({*esquema, *opcionales})}, hay {sorted(obj)}."]
-    problemas = [f"'{k}' invalido." for k, ok in {**esquema, **opcionales}.items() if not ok(obj[k])]
+    if set(obj) != set(esquema):
+        return [f"Claves del registro: se esperaban {sorted(esquema)}, hay {sorted(obj)}."]
+    problemas = [f"'{k}' invalido." for k, ok in esquema.items() if not ok(obj[k])]
     if problemas:
         return problemas
     for t in obj["tareas"]:

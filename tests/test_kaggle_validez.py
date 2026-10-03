@@ -800,7 +800,7 @@ def test_main_punta_a_punta_escribe_el_registro_y_pasa_la_validacion(
     out = capsys.readouterr().out
     assert "Tareas medidas: 3" in out
     registro = esc.registro()
-    assert set(registro) == {*kaggle_prereg.VALIDEZ, *kaggle_prereg.VALIDEZ_OPCIONALES}
+    assert set(registro) == set(kaggle_prereg.VALIDEZ)
     assert registro["schema_version"] == "kaggle-task-validity/1"
     assert registro["fecha"] == "2026-10-05"
     assert registro["sha256_tasks"] == hashlib.sha256(esc.tasks.read_bytes()).hexdigest()
@@ -824,13 +824,7 @@ def test_main_punta_a_punta_escribe_el_registro_y_pasa_la_validacion(
 def test_el_registro_pasa_el_contraste_de_la_compuerta(esc: Escenario) -> None:
     assert esc.correr(Falso()) == kv.EXIT_OK
     valor = {"ruta": esc.salida.name, "sha256": hashlib.sha256(esc.salida.read_bytes()).hexdigest()}
-    leido = kaggle_prereg._read_record(
-        esc.base,
-        valor,
-        "validez_tareas",
-        kaggle_prereg.VALIDEZ,
-        opcionales=kaggle_prereg.VALIDEZ_OPCIONALES,
-    )
+    leido = kaggle_prereg._read_record(esc.base, valor, "validez_tareas", kaggle_prereg.VALIDEZ)
     assert leido["entorno_sha256"] == esc.entorno_sha
     # el hash final del diario del registro es el de la ultima linea del diario del crudo
     ultima = (esc.crudo / "diario.jsonl").read_bytes().split(b"\n")[-2]
@@ -1253,7 +1247,6 @@ def test_el_registro_versionable_no_contiene_ninguna_cadena_envenenada(
         *kv.CLAVES_TAREA,
         *kv.CLAVES_EJECUCION_VERSIONADAS,
         *kaggle_prereg.VALIDEZ,
-        *kaggle_prereg.VALIDEZ_OPCIONALES,
         "2026-10-05",
         esc.entorno_sha,
         hashlib.sha256(esc.tasks.read_bytes()).hexdigest(),
@@ -1301,7 +1294,7 @@ def test_validar_registro_detecta_defectos(esc: Escenario) -> None:
     assert con(lambda d: d["tareas_invalidas"].append({"instance_id": "zzz", "clase": "inestable"}))
     assert con(lambda d: d["tareas"][0].update(clase="inestable"))  # invalida y no esta en la lista
     assert con(lambda d: d.update(sha256_tasks="no"))
-    assert con(lambda d: d.pop("diario_sha256"))  # el guion lo exige (la compuerta lo admite opcional)
+    assert con(lambda d: d.pop("diario_sha256"))
     assert con(lambda d: d.update(diario_sha256="zz"))
     assert con(lambda d: d["tareas"][0].update(ejecuciones_lanzadas=7))
     assert con(lambda d: d["tareas"][0].pop("ejecuciones_lanzadas"))
