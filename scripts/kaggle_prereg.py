@@ -497,6 +497,8 @@ TAREA_VALIDEZ: dict[str, Validador] = {
     "repo": _is_text,
     "clase": lambda v: v in CLASES_VALIDEZ,
     "sin_parche_segundos": lambda v: isinstance(v, list) and all(_is_num(x, 0) for x in v),
+    # ejecuciones lanzadas segun el diario de solo-anadir de la medicion: al menos las cuatro rondas
+    "ejecuciones_lanzadas": lambda v: _is_int(v, 4),
 }
 VALIDEZ: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_VALIDEZ,
@@ -507,6 +509,8 @@ VALIDEZ: dict[str, Validador] = {
     "tareas_invalidas": lambda v: (
         isinstance(v, list) and all(_shape({"instance_id": _is_text, "clase": _is_text})(x) for x in v)
     ),
+    # hash final del diario de solo-anadir de la medicion (ultima linea, que encadena todas)
+    "diario_sha256": _is_sha,
 }
 PILOTO: dict[str, Validador] = {
     "schema_version": lambda v: v == ESQUEMA_PILOTO,

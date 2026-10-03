@@ -530,12 +530,14 @@ class Arbol:
                     "clase": self.clases[t["instance_id"]],
                     "sin_parche_segundos": self.segundos,
                     "con_dorado_segundos": [60, 61],
+                    "ejecuciones_lanzadas": 4,
                 }
                 for t in self.tareas
             ],
             "tareas_invalidas": [
                 {"instance_id": i, "clase": c} for i, c in sorted(self.clases.items()) if c != "discrimina"
             ],
+            "diario_sha256": "e" * 64,
         }
         if self.alterar_validez:
             self.alterar_validez(validez_obj)
