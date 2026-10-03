@@ -135,12 +135,19 @@ El arnés registra **9 herramientas oficiales** disponibles para los agentes:
 
 ## 6. Presupuestos Operativos (`HARNESS § 7`)
 
-Los presupuestos por defecto por tarea administrados por `swegemma` son:
+Los presupuestos por defecto por tarea administrados por `swegemma` para la evaluación oficial son:
 * **Tiempo de sesión:** **60.0 minutos**.
 * **Llamadas a herramientas:** **100 llamadas** (en evaluación oficial).
 * **Turnos de razonamiento:** **500 turnos**.
 * **Timeout de comando individual:** **300 segundos**.
-* **Personalización:** Se puede incluir un archivo `eval_config.yaml` en la raíz de la submission para fijar límites más estrictos si la estrategia del agente lo requiere.
+
+### Discrepancia Crítica del Starter Kit Oficial (`eval_config.yaml`)
+El archivo `eval_config.yaml` provisto en el starter kit de Kaggle (`sample_submission/`) fija límites mínimos
+de prueba rápida (`HARNESS § 7.1`): `max_time_minutes: 1`, `max_tool_calls: 10`, `max_turns: 50` y
+`timeout_seconds: 60`. Bajo este presupuesto de juguete, el agente casi con certeza agotará su cuota antes de
+diagnosticar y reparar los defectos. Para la línea base de #103 se debe definir si mantener estos límites de
+ejemplo o adoptar los topes de evaluación oficial (ver `conditions/a_kit/NOTA.md`).
+
 
 ---
 
