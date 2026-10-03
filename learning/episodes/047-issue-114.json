@@ -1,0 +1,59 @@
+{
+  "seq": 47,
+  "id": "issue-114",
+  "goal": "Que la comprobación de datos de la competencia no apruebe en vacío: sin referencia sale con 2 y compara también contra el manifiesto versionado",
+  "ref": "#114",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall antes de leer el código; solo devolvió lecciones de #111 sobre higiene del repositorio"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Reproducido el defecto en un checkout limpio: sin .env ni data/ el script salía con 0 y [VERIFICADO] tras comparar contra 0 archivos"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "scripts/verify_no_competition_data.py separado en funciones inyectables (build_reference, find_collisions, run); referencia con manifiesto, data/ y API; salida 2 si está vacía o una fuente falla; excluidos manifest.json, download_kit.py y README.md del kit"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_verify_no_competition_data.py: referencia vacía, coincidencia por hash, sin coincidencias, nombre de la API, error de API y token no expuesto, todo con tmp_path y sin red"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff format reformateó dos archivos nuevos al primer intento; después ruff check, ruff format --check, mypy, pytest --cov (631 pasan) y export_schema --check en verde"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "python -m scripts.devlog rebuild"
+    }
+  ],
+  "lessons": [
+    "Una comprobación de cumplimiento debe distinguir «sin coincidencias» de «no pude comparar»: con referencia vacía o incompleta sale con un código propio y nunca imprime verificado",
+    "El manifiesto declara 10 archivos pero solo 8 hashes distintos: contar referencias por hash único y decirlo en el informe, no por archivo"
+  ]
+}
