@@ -1,0 +1,76 @@
+{
+  "seq": 49,
+  "id": "entorno-sandbox-v2-fastapi",
+  "goal": "Ensayo local de una variante de entorno del sandbox (11 ruedas de starlette retiradas y 4 ruedas de PyPI añadidas) con control vacío sobre fastapi_11194 y rich_3061; lista candidata para el entorno del experimento, no el entorno",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/103#issuecomment-5969599380",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Gemini 3.8 Flash (High)",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall de lecciones: leer los logs de recolección además de summary.errors, separar los controles vacíos de los resultados del modelo y fundamentar las desviaciones en los archivos de proyecto de los snapshots."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leer el archivo de proyecto de los snapshots de fastapi_11194 y fastapi_14077 (cotas de starlette por tarea; lectura declarada por agy, no repetida en la integración) y la lógica del arnés por nombre de función: la deduplicación de ruedas elige la versión más alta del directorio."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Redactar experiments/gemma_developer_agent/docs/propuesta_entorno_fastapi_v2.md con el corte en starlette 0.48.0 y el peso de fastapi en la muestra (67 de 129 tareas). La integración reescribió el documento: quitó fragmentos del arnés, de un log y de archivos de proyecto de tareas, y lo presentó como ensayo local."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Lockfile desviaciones_entorno_wheels.lock con 4 ruedas de PyPI fijadas por SHA-256 y 11 exclusiones de starlette. El episodio original solo atribuye a este tramo la rueda de python-multipart; no consta en los archivos de origen quién añadió las otras tres."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "scripts/build_sandbox.py: admitir excluded_wheels y omitirlas al preparar el contexto de construcción."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Prueba nueva test_prepare_build_context_respects_excluded_wheels en tests/test_build_sandbox.py: 10 de 10 pasan; ruff check y ruff format sin avisos."
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "Construir la imagen swebench-sandbox:20261003-v2 (sha256:42d2948ac7a0006da88d9c1c497a5ccf669a72ce88622c5349574c2ac5c1f4c6) con el directorio de ruedas sin las 11 de starlette y con las 4 añadidas."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Control vacío v2 (--skip-agent-patch, Docker, concurrencia 1) sobre fastapi_11194 y rich_3061; recibos locales ignorados en artifacts/control-vacio-20261003-v2."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leer los recibos v2: fastapi_11194 pasa de código 2 (v1, fallo de recolección) a código 1 (las pruebas se recolectan y fallan sin parche); rich_3061 sigue en código 1. SHA-256 de task_results.jsonl: be0ce50dcc34233d7e5e01a31c5f9e622ead149a4c021acfa5e9038fa79b9e3c. Son dos tareas y no hay parche de referencia: no prueba que el entorno sirva para otras tareas de fastapi ni que alguna tarea sea válida."
+    }
+  ],
+  "lessons": [
+    "El arnés elige la versión más alta de cada paquete del directorio de ruedas del host y no resuelve dependencias por tarea: un wheelhouse genérico puede romper una biblioteca cuando su versión más alta ya no acepta un argumento de construcción.",
+    "Un tope de versión elegido mirando dos tareas no se generaliza: cada commit de fastapi fija su propio rango de starlette, y solo la medición de validez sobre todas las tareas decide si el tope sirve.",
+    "Una medición local con Docker solo es un ensayo (pre-registro, A.1): sus arreglos son una lista candidata para el archivo de entorno del experimento, no el entorno.",
+    "Las dependencias necesarias para recolectar pruebas deben fijarse con nombre, tamaño y SHA-256 en el lockfile, y contrastarse con el registro de paquetes antes de darlas por buenas."
+  ]
+}

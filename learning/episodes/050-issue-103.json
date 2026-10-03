@@ -1,0 +1,75 @@
+{
+  "seq": 50,
+  "id": "issue-103-integracion-entorno-sandbox",
+  "goal": "Integrar en un PR (Refs #103) la entrega sin commitear de agy/Gemini y Codex sobre el entorno del sandbox local, corrigiendo lo que incumplía las reglas del repositorio",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/103 (tramo de integración; el issue sigue abierto y es de talla L)",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del trabajo; sin lecciones útiles sobre integración de entregas ajenas"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Contrastar con la API JSON de PyPI nombre de archivo, URL, tamaño y SHA-256 de las 4 ruedas del lockfile: coinciden las cuatro. pydantic 2.13.4 declara typing-inspection como dependencia"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "scripts/build_sandbox.py de origen: mypy daba no-any-return; las ruedas descargadas se escribían al cache antes de verificar tamaño y SHA-256; una exclusión declarada que no existía en el origen se ignoraba en silencio; una rueda a la vez añadida y excluida se descartaba sin aviso"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Tres pruebas nuevas (exclusión ausente, rueda añadida y excluida, descarga con hash erróneo que no deja nada en el cache); 13 pasan en tests/test_build_sandbox.py"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corrección del guion con verificación en memoria antes de escribir, fallo ante exclusión ausente o contradictoria y retorno tipado; el diseño no cambia"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "propuesta_entorno_fastapi_v2.md copiaba un fragmento del arnés, un traceback, bloques del archivo de proyecto de dos tareas y un log con nombres de pruebas, y llamaba calibrado y reproducible a v2 con solo dos tareas; el lockfile fechaba la fijación con una hora redonda sin respaldo; el episodio 049 afirmaba una invalidación de caché que ningún archivo de origen sostiene"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento reescrito como ensayo local con riesgos declarados; lockfile con la fecha de modificación del origen y la verificación contra PyPI; episodio 049 sin el paso de caché ni su lección; acciones fuera del vocabulario sustituidas"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "pytest completo, ruff check, ruff format --check, mypy, mypy del guion, export_schema --check, verify_no_competition_data y kaggle_prereg comprobar (sale con 1 como se esperaba)"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "python -m scripts.devlog rebuild sobre la base de origin/main, no sobre el dev_memory.json del otro árbol"
+    }
+  ],
+  "lessons": [
+    "Al integrar una entrega ajena, comprobar contra la fuente (PyPI, hashes, mypy) en lugar de fiarse de lo que el documento declara; una fecha redonda sin respaldo se sustituye por una marca verificable.",
+    "Un guion que descarga bytes debe verificar tamaño y SHA-256 en memoria antes de escribirlos a ningún disco, y debe fallar ante un lockfile que declara algo que el origen no tiene.",
+    "Antes de versionar documentos de otra sesión sobre datos de la competencia, buscar fragmentos del arnés, trazas, nombres de pruebas y contenido de tareas, y reescribirlos con palabras propias citando por función o sección."
+  ]
+}
