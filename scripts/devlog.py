@@ -1,8 +1,9 @@
 """Bitácora de aprendizaje del propio repositorio (*dogfooding*).
 
 Cada issue trabajado es un episodio en ``learning/episodes/*.json``. El grafo
-``learning/dev_memory.json`` se deriva de ellos de forma determinista, y antes
-de empezar un issue se consulta con ``recall``.
+``learning/dev_memory.json`` se deriva de ellos de forma determinista (no se versiona: está en
+``.gitignore``), y antes de empezar un issue se consulta con ``recall``, que reconstruye el grafo
+en memoria desde los episodios.
 
 Uso::
 
@@ -83,7 +84,7 @@ def main() -> None:
         default="lexical",
         help="fastembed requiere el extra [embeddings]",
     )
-    sub.add_parser("rebuild", help="reconstruye learning/dev_memory.json")
+    sub.add_parser("rebuild", help="escribe learning/dev_memory.json (copia local, ignorada por git)")
     p_board = sub.add_parser(
         "board",
         help="chequeo de solo lectura: issues, tablero y episodios (salida 0, 1 hallazgos, 2 sin lectura)",
@@ -135,9 +136,12 @@ def main() -> None:
     if args.cmd == "rebuild":
         mg = rebuild(load_episodes())
         mg.save(MEMORY_PATH)
-        print(f"{MEMORY_PATH.relative_to(ROOT)}: {mg.stats()}")
+        shown = MEMORY_PATH.relative_to(ROOT) if MEMORY_PATH.is_relative_to(ROOT) else MEMORY_PATH
+        print(f"{shown}: {mg.stats()}")
     else:
-        mg = MemoryGraph.load(MEMORY_PATH) if MEMORY_PATH.exists() else rebuild(load_episodes())
+        # El grafo no se versiona (#96): `recall` lo deriva de los episodios y nunca lee un
+        # `dev_memory.json` local, que podría estar desactualizado tras un `git pull`.
+        mg = rebuild(load_episodes())
         embedder = FastEmbedEmbedder() if args.embedder == "fastembed" else None
         print(recall(mg, args.query, args.n, embedder))
 

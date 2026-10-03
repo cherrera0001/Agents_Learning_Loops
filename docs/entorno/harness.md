@@ -20,7 +20,7 @@ es la del harness de experimento (sección 2).
 |---|---|
 | El código y la documentación que la tarea requiere | Editar a mano recibos existentes de `evidence/` |
 | Tests nuevos, con su control o su mutación | Reescribir `results/` a mano: se generan con `python -m experiments evaluate` |
-| Un episodio nuevo en `learning/episodes/` | Editar `learning/dev_memory.json` a mano: se regenera con `rebuild` |
+| Un episodio nuevo en `learning/episodes/` | Versionar o editar a mano `learning/dev_memory.json`: está ignorado por git y se genera con `rebuild` |
 | Una campaña nueva, en un directorio nuevo e identificado | Sobrescribir una campaña publicada |
 
 Si un recibo revela un defecto, se corrige el código, se conserva la evidencia antigua y se ejecuta una
@@ -49,8 +49,7 @@ flowchart LR
     B --> I["implementar<br/>+ tests"]
     I --> PR["PR con<br/>Closes #&lt;n&gt;"]
     PR --> E["episodio<br/>learning/episodes/"]
-    E --> RB["rebuild<br/>devlog rebuild"]
-    RB --> RV["REVISAR<br/>revisor independiente"]
+    E --> RV["REVISAR<br/>revisor independiente"]
     RV --> M["merge del orquestador<br/>verificado por mergedAt"]
     M --> CF["CONFIRMAR<br/>criterio de cierre"]
     CF --> D["Done"]
@@ -61,7 +60,8 @@ flowchart LR
 3. `python -m scripts.devlog recall "<título del issue>"`.
 4. Rama `issue-<n>-<tema>`; implementar con tests y abrir el PR.
 5. Registrar el episodio `learning/episodes/NNN-issue-<n>.json` (con `estimate` y `outcome`).
-6. `python -m scripts.devlog rebuild`.
+6. Nada que consolidar en el PR: `learning/dev_memory.json` no se versiona (se genera en local con
+   `python -m scripts.devlog rebuild`; CI comprueba que la reconstrucción funciona y es determinista).
 7. REVISAR: el orquestador encarga la revisión a un revisor independiente ([roles](agentes.md#revisor)) y,
    con su informe y el CI en verde, hace el merge **verificado** por `mergedAt`. Después, CONFIRMAR:
    comprueba el criterio de cierre de la tabla siguiente y registra *Verificación*, *Modelo usado* y

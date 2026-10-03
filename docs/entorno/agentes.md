@@ -33,7 +33,7 @@ Resuelve un issue.
 2. Edita en una rama `issue-<n>-<tema>`, dentro de los permisos del [harness de entorno](harness.md).
 3. Registra el episodio con los fallos tal como ocurrieron, y con los bloques `estimate` y `outcome`: skill
    [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md).
-4. Reconstruye la bitácora con `python -m scripts.devlog rebuild`.
+4. No commitees `learning/dev_memory.json`: no se versiona ([`learning/README.md`](../../learning/README.md#por-qué-dev_memoryjson-no-se-versiona)).
 5. Abre el PR con `Closes #<n>` (`Refs #<n>` si el cierre es de sistema externo y falta la observación) y
    **no hace merge** ni mueve la tarjeta a *Done*: eso corresponde al orquestador.
 
@@ -160,8 +160,8 @@ falsification*). Ni el implementador ni el solver acotado lo hacen.
 Mantiene la memoria de desarrollo en `learning/`:
 
 - **antes** de actuar, `python -m scripts.devlog recall "<título del issue>"`;
-- **después** de registrar un episodio, `python -m scripts.devlog rebuild`.
+- **si hace falta el grafo en disco**, `python -m scripts.devlog rebuild` (copia local; no es un paso de entrega).
 
 No decide el diseño: recupera y consolida experiencia para que el implementador y el revisor la usen.
-Los episodios de `learning/episodes/` son la fuente de verdad y `learning/dev_memory.json` es derivado
-([`learning/README.md`](../../learning/README.md)).
+Los episodios de `learning/episodes/` son la fuente de verdad y `learning/dev_memory.json` es derivado y no
+versionado ([`learning/README.md`](../../learning/README.md#por-qué-dev_memoryjson-no-se-versiona)).

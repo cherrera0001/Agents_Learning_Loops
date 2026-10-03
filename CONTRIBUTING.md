@@ -46,7 +46,11 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
 5. **Registrar** `learning/episodes/NNN-issue-<n>.json` con los fallos **tal como ocurrieron** (en la
    acción que los causó), más los bloques opcionales `estimate` y `outcome`
    ([formato](learning/README.md#formato-de-un-episodio)).
-6. **CONSOLIDATE**: `python -m scripts.devlog rebuild`.
+6. **CONSOLIDATE** (local; ya no se entrega): el grafo `learning/dev_memory.json` **no se versiona**
+   ([#96](https://github.com/cherrera0001/Agents_Learning_Loops/issues/96); motivo en
+   [`learning/README.md`](learning/README.md#por-qué-dev_memoryjson-no-se-versiona)). El PR lleva el episodio y
+   nada más de la memoria; `recall` lo deriva de `learning/episodes/` y CI comprueba que `rebuild` funciona y
+   es determinista. Quien quiera el archivo en disco ejecuta `python -m scripts.devlog rebuild`.
 
    **REVISAR** (antes del merge): el orquestador encarga la revisión del PR a un revisor independiente
    del autor

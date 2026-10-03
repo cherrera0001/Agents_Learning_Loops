@@ -1,0 +1,66 @@
+{
+  "seq": 52,
+  "id": "issue-96",
+  "goal": "Dejar de versionar learning/dev_memory.json para que los PR paralelos no choquen en un archivo derivado (opción A elegida por el dueño)",
+  "ref": "#96",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del trabajo: devolvió la lección del propio problema (siete PR del piloto regenerando dev_memory.json a mano)"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "git rm --cached del archivo y entrada en .gitignore; devlog recall pasa a reconstruir siempre desde los episodios en lugar de leer un dev_memory.json local que podría estar desactualizado"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cambiadas las menciones del contrato viejo en learning/README.md (con la sección del motivo), CONTRIBUTING, AGENTS, harness, agentes, README, skills registrar-episodio y recall-antes-de-issue y las definiciones de .claude/agents; los registros fechados se dejaron"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Mi primera prueba de determinismo redirigía MEMORY_PATH a un directorio temporal y devlog rebuild fallaba al imprimir la ruta con relative_to(ROOT), que supone que el archivo está dentro del repositorio"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "devlog muestra la ruta absoluta si MEMORY_PATH queda fuera del repositorio; la prueba pasa"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas de que el archivo está ignorado y no versionado (con control: un episodio no está ignorado), de que recall funciona sin él y no lee uno corrupto, y de que rebuild da los mismos bytes y sigue a los episodios (control)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "pytest completo, ruff, mypy, export_schema --check, devlog board --since 90 y kaggle_prereg comprobar (sale 1, como debe); paso de CI que reconstruye dos veces y compara con cmp"
+    }
+  ],
+  "lessons": [
+    "Un archivo derivado de otros versionados no debe versionarse: cada PR paralelo lo regenera y choca; los episodios son la única fuente de verdad y el grafo se genera bajo demanda.",
+    "Un comando de consulta no debe preferir un caché local sobre la fuente de verdad: un archivo ignorado por git no se actualiza con un pull y respondería con datos viejos; recall lo deriva siempre de los episodios.",
+    "Al sacar un archivo del control de versiones, buscar con grep todas sus menciones (documentos, skills, definiciones de agentes, CI y pruebas) y decidir cada una; los registros fechados no se reescriben.",
+    "El número seq de los episodios sigue siendo un punto de choque entre PR paralelos: comprobar el último libre en origin/main, no solo en la propia rama."
+  ]
+}

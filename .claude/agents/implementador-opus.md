@@ -29,8 +29,9 @@ Eres el **implementador** de un issue ([rol](../../docs/entorno/agentes.md)). Re
    (`gh api repos/<dueño>/<repo>/commits/<sha>/check-runs`).
 8. **Episodio**: `learning/episodes/NNN-issue-<n>.json` con los fallos en la acción que los causó, y con
    los bloques `estimate` (copia de la «Estimación v1» del issue) y `outcome`
-   ([formato](../../learning/README.md#formato-de-un-episodio)). Después `python -m scripts.devlog rebuild`
-   y commit de `learning/dev_memory.json`. Si ya existe ese `NNN`, avisa y no renumeres.
+   ([formato](../../learning/README.md#formato-de-un-episodio)). `learning/dev_memory.json` no se versiona:
+   no lo commitees (`python -m scripts.devlog rebuild` solo escribe una copia local). Si ya existe ese
+   `NNN`, avisa y no renumeres.
 9. **PR** contra `main` cuyo cuerpo **empieza** por `Closes #<n>` (`Refs #<n>` si el cierre es de un
    sistema externo y falta la observación): sin esa línea el merge no cierra el issue.
    **No hagas merge, no muevas la tarjeta a *Done* y no cierres issues**: el merge con `Closes` ya mueve

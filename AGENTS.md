@@ -15,8 +15,9 @@ este repositorio. El contrato completo está en [`docs/entorno/`](docs/entorno/R
    - ESTIMAR: el orquestador registra la estimación antes de empezar
      ([`estimar-issue`](skills/estimar-issue/SKILL.md)); el implementador pasa a *In Progress*;
    - antes de implementar, [`recall-antes-de-issue`](skills/recall-antes-de-issue/SKILL.md);
-   - al terminar, [`registrar-episodio`](skills/registrar-episodio/SKILL.md) (con `estimate` y `outcome`) y
-     `python -m scripts.devlog rebuild`;
+   - al terminar, [`registrar-episodio`](skills/registrar-episodio/SKILL.md) (con `estimate` y `outcome`);
+     el grafo `learning/dev_memory.json` no se versiona ni se entrega en el PR (se genera con
+     `python -m scripts.devlog rebuild` y `recall` lo deriva solo);
    - CONFIRMAR: tras el merge verificado, el orquestador comprueba el criterio de cierre
      ([`confirmar-cierre`](skills/confirmar-cierre/SKILL.md)) y registra *Verificación*; una tarjeta en
      *Done* sin *Verificación* = *Verificada* no está confirmada (`python -m scripts.devlog board`).
