@@ -963,6 +963,10 @@ diagnóstico público (#58) y una memoria de fallos, dentro de una tarea (H6, #6
 pregunta general sigue abierta y tiene un issue: H8 (#98) propone sembrar la recuperación con señales no
 léxicas y repetir la prueba con las mismas tareas con señuelo.
 
+Aparte de esa línea, el repositorio documenta un experimento con un modelo de lenguaje en el concurso Gemma 4
+Developer Agent de Kaggle: [`experiments/gemma_developer_agent/`](experiments/gemma_developer_agent/README.md).
+Está en fase de diseño y pre-registro: hoy no hay ninguna corrida con el modelo ni resultado alguno.
+
 ```mermaid
 flowchart TB
     E0["Experimento 0<br/>mecanismo sintético · #31"]
