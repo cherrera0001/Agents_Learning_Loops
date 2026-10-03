@@ -1,0 +1,61 @@
+{
+  "seq": 53,
+  "id": "issue-109",
+  "goal": "Generar figuras SVG y tablas Markdown reproducibles para el paper desde los agregados de results/ con derivación dinámica y tests de mutación",
+  "ref": "#109",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "agy/gemini",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "agy/gemini",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall para issue 109: consultadas lecciones de determinismo, dependencias opcionales y prevención de hardcoding en generación de artefactos"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "pyproject.toml: añadido extra opcional [paper] con matplotlib>=3.8 y configuración de ignore en mypy para no contaminar el núcleo"
+    },
+    {
+      "action": "write_module",
+      "success": true,
+      "note": "scripts/paper_figures.py: pipeline determinista que genera 7 figuras SVG y 5 tablas Markdown a partir de results/reference-v2, failure-transfer-v1 y diagnostic-baseline-v1"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_paper_figures.py: 13 pruebas que verifican determinismo estricto, coincidencia de conteos, notas de pie obligatorias, regeneración completa y 5 tests de mutación que prueban que alterar los JSON altera inmediatamente las figuras y tablas"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "13 pruebas de test_paper_figures.py pasan en verde; suite completa de 1952 tests pasa con 98.72% de cobertura"
+    },
+    {
+      "action": "lint_and_types",
+      "success": true,
+      "note": "ruff check, ruff format --check y mypy sin errores en scripts/paper_figures.py y tests/test_paper_figures.py"
+    }
+  ],
+  "lessons": [
+    "La derivación de conteos en scripts de figuras de paper debe consultar las claves internas del JSON (p. ej. replicación, lotes y modos en task_breakdown y experiment1) para que los tests de mutación no fallen por supuestos de estructura plana.",
+    "En SVGs generados por script, mantener las líneas dentro del límite de 110 caracteres mediante concatenación de literales o división de atributos XML previene fallos de linter E501.",
+    "En Python 3.11, las f-strings no permiten reutilizar las comillas exteriores dentro de expresiones ni contener saltos de línea sin triple comilla: usar comillas alternas y precalcular llamadas complejas.",
+    "El uso de extras opcionales como [paper] permite tener utilidades de visualización sin imponer dependencias pesadas en el entorno mínimo de ejecución."
+  ]
+}

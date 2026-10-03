@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="800" height="420" fill="#ffffff"/>
+  <text x="40" y="40" font-size="16" font-weight="700" fill="#0f172a">Figura 6: Esquema del diseño experimental (condiciones, tareas y señuelos)</text>
+  <rect x="40" y="55" width="410" height="24" fill="#fef3c7" stroke="#f59e0b" rx="3"/>
+  <text x="48" y="71" font-size="11" font-weight="700" fill="#b45309">ESQUEMA METODOLÓGICO (NO ES RESULTADO EXPERIMENTAL)</text>
+  <!-- Bloque Entrenamiento -->
+  <rect x="40" y="100" width="220" height="220" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5" rx="6"/>
+  <text x="55" y="125" font-size="13" font-weight="700" fill="#0f172a">1. Entrenamiento (Train)</text>
+  <text x="55" y="145" font-size="11" fill="#64748b">Siembra de memoria léxica</text>
+  <rect x="55" y="165" width="190" height="32" fill="#e0f2fe" rx="4"/>
+  <text x="65" y="185" font-size="11" font-weight="600" fill="#0369a1">EXP-01: Auth (Storage)</text>
+  <rect x="55" y="205" width="190" height="32" fill="#e0f2fe" rx="4"/>
+  <text x="65" y="225" font-size="11" font-weight="600" fill="#0369a1">EXP-02: Config (Norm Env)</text>
+  <rect x="55" y="245" width="190" height="32" fill="#e0f2fe" rx="4"/>
+  <text x="65" y="265" font-size="11" font-weight="600" fill="#0369a1">EXP-03: Readiness (Identity)</text>
+  <!-- Bloque Transferencia Original -->
+  <rect x="310" y="100" width="210" height="220" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" rx="6"/>
+  <text x="325" y="125" font-size="13" font-weight="700" fill="#0f172a">2. Transfer Original</text>
+  <text x="325" y="145" font-size="11" fill="#64748b">Texto alineado a familia real</text>
+  <rect x="325" y="165" width="180" height="32" fill="#dcfce7" rx="4"/>
+  <text x="335" y="185" font-size="11" font-weight="600" fill="#15803d">EXP-04: Auth</text>
+  <rect x="325" y="205" width="180" height="32" fill="#dcfce7" rx="4"/>
+  <text x="335" y="225" font-size="11" font-weight="600" fill="#15803d">EXP-05: Config</text>
+  <rect x="325" y="245" width="180" height="32" fill="#dcfce7" rx="4"/>
+  <text x="335" y="265" font-size="11" font-weight="600" fill="#15803d">EXP-06: Readiness</text>
+  <!-- Bloque Transferencia Engañosa -->
+  <rect x="540" y="100" width="220" height="220" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" rx="6"/>
+  <text x="555" y="125" font-size="13" font-weight="700" fill="#0f172a">3. Transfer Señuelo (Decoy)</text>
+  <text x="555" y="145" font-size="11" fill="#64748b">Texto imita familia ajena</text>
+  <rect x="555" y="165" width="190" height="32" fill="#fee2e2" rx="4"/>
+  <text x="565" y="185" font-size="10" font-weight="600" fill="#b91c1c">EXP-07 (Real Auth → Señuelo Read)</text>
+  <rect x="555" y="205" width="190" height="32" fill="#fee2e2" rx="4"/>
+  <text x="565" y="225" font-size="10" font-weight="600" fill="#b91c1c">EXP-08 (Real Config → Señuelo Auth)</text>
+  <rect x="555" y="245" width="190" height="32" fill="#fee2e2" rx="4"/>
+  <text x="565" y="265" font-size="10" font-weight="600" fill="#b91c1c">EXP-09 (Real Read → Señuelo Conf)</text>
+  <rect x="40" y="335" width="720" height="42" fill="#f8fafc" stroke="#e2e8f0" rx="4"/>
+  <text x="55" y="360" font-size="11" font-weight="600" fill="#0f172a">Condiciones cruzadas en 6 permutaciones de prior deterministas: A (Sin memoria) · B (Historial) · C (Memoria asociativa).</text>
+  <text x="40" y="405" font-size="10" fill="#64748b">Esquema ilustrativo del diseño factorial 3x3. Regenerar: python -m scripts.paper_figures</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 490" width="820" height="490" font-family="system-ui, -apple-system, sans-serif">
+  <rect width="820" height="490" fill="#ffffff"/>
+  <text x="40" y="45" font-size="18" font-weight="700" fill="#0f172a">Figura 4: Transferencia y contaminación de fallos por umbral τ (H7)</text>
+  <text x="40" y="70" font-size="13" fill="#64748b">Pares de tareas ayudadas (+1º intento) frente a dañadas (-1º intento), derivados de failure_transfer_analysis.json</text>
+  <text x="225" y="121" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">A (Sin lecciones) | τ=0.25 (real)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="420" y="100" width="135" height="32" fill="#10b981" rx="3"/>
+  <text x="563" y="120" font-size="11" font-weight="700" fill="#10b981">+3/18 ayuda</text>
+  <text x="225" y="165" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">A (Sin lecciones) | τ=0.1 (real)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="420" y="144" width="135" height="32" fill="#10b981" rx="3"/>
+  <text x="563" y="164" font-size="11" font-weight="700" fill="#10b981">+3/18 ayuda</text>
+  <rect x="285" y="144" width="135" height="32" fill="#f43f5e" rx="3"/>
+  <text x="277" y="164" font-size="11" font-weight="700" text-anchor="end" fill="#f43f5e">-3/18 daña</text>
+  <text x="225" y="209" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">A (Sin lecciones) | τ=0.0 (real)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="420" y="188" width="135" height="32" fill="#10b981" rx="3"/>
+  <text x="563" y="208" font-size="11" font-weight="700" fill="#10b981">+3/18 ayuda</text>
+  <text x="225" y="253" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">C (Con lecciones) | τ=0.25 (real)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="428" y="252" font-size="11" fill="#64748b">0/18 cambios</text>
+  <text x="225" y="297" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">C (Con lecciones) | τ=0.25 (placebo)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="285" y="276" width="135" height="32" fill="#f43f5e" rx="3"/>
+  <text x="277" y="296" font-size="11" font-weight="700" text-anchor="end" fill="#f43f5e">-3/18 daña</text>
+  <text x="225" y="341" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">C (Con lecciones) | τ=0.1 (real)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="285" y="320" width="135" height="32" fill="#f43f5e" rx="3"/>
+  <text x="277" y="340" font-size="11" font-weight="700" text-anchor="end" fill="#f43f5e">-3/18 daña</text>
+  <text x="225" y="385" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">C (Con lecciones) | τ=0.1 (placebo)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="285" y="364" width="135" height="32" fill="#f43f5e" rx="3"/>
+  <text x="277" y="384" font-size="11" font-weight="700" text-anchor="end" fill="#f43f5e">-3/18 daña</text>
+  <text x="225" y="429" font-size="11" font-weight="600" text-anchor="end" fill="#0f172a">C (Con lecciones) | τ=0.0 (placebo)</text>
+  <line x1="420" y1="90" x2="420" y2="452" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="285" y="408" width="135" height="32" fill="#f43f5e" rx="3"/>
+  <text x="277" y="428" font-size="11" font-weight="700" text-anchor="end" fill="#f43f5e">-3/18 daña</text>
+  <g transform="translate(240, 462)">
+    <rect x="0" y="0" width="14" height="14" fill="#10b981" rx="2"/>
+    <text x="22" y="12" font-size="11" fill="#0f172a">Pares ayudados (+1 intento)</text>
+    <rect x="230" y="0" width="14" height="14" fill="#f43f5e" rx="2"/>
+    <text x="252" y="12" font-size="11" fill="#0f172a">Pares dañados (-1 intento)</text>
+  </g>
+  <text x="40" y="475" font-size="10" fill="#64748b">Origen: campaña failure-transfer-v1 (#65) (solver determinista de 3 operadores, sin LLM). Conteos exactos de diseño exhaustivo. Regenerar: python -m scripts.paper_figures</text>
+</svg>
