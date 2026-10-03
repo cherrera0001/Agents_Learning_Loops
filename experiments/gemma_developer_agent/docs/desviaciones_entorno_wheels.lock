@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "descripcion": "Lockfile de paquetes y ruedas adicionales/fijadas de PyPI para reconstruir el evaluador local de Fase 2 (Decision b')",
+  "fecha_fijacion": "2026-10-02T23:45:00Z",
+  "criterio": "Decision del orquestador en PR #110 (b'): fijado, declarado y validado con parches dorados",
+  "packages": [
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "filename": "typing_inspection-0.4.4-py3-none-any.whl",
+      "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+      "url": "https://files.pythonhosted.org/packages/67/81/4add07e5172b7ac40d8ed5ff580409a7801a4fe26d529bdd915401dabfbe/typing_inspection-0.4.4-py3-none-any.whl",
+      "size_bytes": 14750,
+      "motivo": "Dependencia requerida por pydantic>=2.13.4 en Python 3.13; omitida en el wheelhouse publico de Kaggle."
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "filename": "h11-0.16.0-py3-none-any.whl",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "url": "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl",
+      "size_bytes": 37515,
+      "motivo": "Dependencia transitiva de httpcore/httpx para el TestClient de FastAPI; omitida en wheels/."
+    },
+    {
+      "name": "dirty-equals",
+      "version": "0.11",
+      "filename": "dirty_equals-0.11-py3-none-any.whl",
+      "sha256": "b1d7093273fc2f9be12f443a8ead954ef6daaf6746fd42ef3a5616433ee85286",
+      "url": "https://files.pythonhosted.org/packages/bb/8d/dbff05239043271dbeace563a7686212a3dd517864a35623fe4d4a64ca19/dirty_equals-0.11-py3-none-any.whl",
+      "size_bytes": 28051,
+      "motivo": "Dependencia requerida en tests de FastAPI para comparaciones flexibles; omitida en wheels/."
+    },
+    {
+      "name": "anyio",
+      "version": "4.14.2",
+      "filename": "anyio-4.14.2-py3-none-any.whl",
+      "sha256": "9f505dda5ac9f0c8309b5e8bd445a8c2bf7246f3ce950121e45ea15bc41d1494",
+      "url": "https://files.pythonhosted.org/packages/da/35/f2287558c17e29fafc8ef3daf819bb9834061cfa43bff8014f7df7f63bdc/anyio-4.14.2-py3-none-any.whl",
+      "size_bytes": 125813,
+      "motivo": "Fijado en <4.15 para evitar DeprecationWarning en BlockingPortal tratado como error de coleccion por pytest."
+    },
+    {
+      "name": "starlette",
+      "version": "0.48.0",
+      "filename": "starlette-0.48.0-py3-none-any.whl",
+      "sha256": "0764ca97b097582558ecb498132ed0c7d942f233f365b86ba37770e026510659",
+      "url": "https://files.pythonhosted.org/packages/be/72/2db2f49247d0a18b4f1bb9a5a39a0162869acf235f3a96418363947b3d46/starlette-0.48.0-py3-none-any.whl",
+      "size_bytes": 73736,
+      "motivo": "Fijado para FastAPI 0.116; conserva Router.__init__(..., on_startup=...) que la rueda fork 1.6.0 rompe."
+    }
+  ]
+}

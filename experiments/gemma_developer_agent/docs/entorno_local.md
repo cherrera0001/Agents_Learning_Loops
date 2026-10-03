@@ -97,29 +97,40 @@ docker build -t swebench-sandbox:latest experiments/gemma_developer_agent/data/b
 * **Tamaño en Docker:** 453 MB en disco (124 MB comprimido).
 * **Imagen base:** `python:3.13-slim`.
 
-### 4.2 Corrida piloto de 3 tareas sin parche (`--skip-agent-patch`)
+### 4.2 Corrida piloto de 3 tareas y reconstrucción del entorno (Decisión b')
 
-Se ejecutó una prueba piloto sobre 3 tareas (`fastapi_14077`, `fastapi_11194`, `rich_3061`) con
-concurrencia 1 para validar la interacción entre el arnés en el host y los contenedores Docker:
+Se ejecutó la prueba piloto sobre 3 tareas (`fastapi_14077`, `fastapi_11194`, `rich_3061`) para validar la Fase 2 sin agente (`--skip-agent-patch`) y se aplicó la decisión (b') del orquestador en el PR #110 para subsanar los defectos de entorno observados:
 
-```powershell
-$env:PYTHONIOENCODING="utf-8"
-C:\Users\herre\harness_venv\Scripts\python.exe -m swegemma.cli eval `
-  --tasks "experiments/gemma_developer_agent/data/tasks.jsonl" `
-  --snapshots-dir "experiments/gemma_developer_agent/data/snapshots" `
-  --results-dir "experiments/gemma_developer_agent/data/test_results_3" `
-  --submission-dir "experiments/gemma_developer_agent/conditions/a_kit" `
-  --skip-agent-patch --sandbox docker --concurrency 1 `
-  --task-ids fastapi_14077 rich_3061 fastapi_11194
-```
+1. **Host Windows y Codificación Unicode (`PYTHONUTF8=1`):**
+   * El log de `rich_3061` contiene caracteres de formato de consola Unicode. `verification.py:420` abría archivos temporales sin declarar `encoding="utf-8"`, lo que bajo la configuración por defecto de Windows lanzaba `UnicodeEncodeError: 'charmap' codec can't encode...`.
+   * Solución: Se ejecuta con `$env:PYTHONUTF8="1"`, activando el modo UTF-8 de CPython de forma estricta sin parchear el código del arnés. `rich_3061` ejecuta y reporta sus resultados sin error.
 
-Resultados observados:
-1. Docker levantó los contenedores correctamente en modo hermético (`network_mode="none"`, 2 vCPU, 4 GB).
-2. `fastapi_14077` y `fastapi_11194`: los tests fallaron sin parche como se esperaba (exit code 2),
-   arrojando `ModuleNotFoundError: No module named 'typing_inspection'` durante la recolección
-   (dependencia no provista en el wheelhouse para Python 3.13).
-3. `rich_3061`: el host Windows CP1252 lanzó un error de codificación al serializar el log Unicode
-   en `verification.py:420`.
-4. El análisis detallado y el contraste con el notebook `busyaprime` (119 tareas válidas) se
-   registran en `experiments/gemma_developer_agent/calibracion/fase2_sin_parche.json`.
+2. **Reconstrucción del Entorno de Tests con PyPI Fijado (Decisión b'):**
+   * `fastapi_11194` y `fastapi_14077` presentaban inicialmente `ModuleNotFoundError: No module named 'typing_inspection'`, omitido en los 124 wheels del concurso pero requerido por `pydantic>=2.13.4` bajo Python 3.13.
+   * Adicionalmente, el wheelhouse incluía una rueda fork `starlette-1.6.0-py3-none-any.whl` (que eliminó `on_startup` de `Router.__init__`, rompiendo FastAPI 0.116) y omitía dependencias de test (`h11`, `dirty-equals`).
+   * Se fijaron las ruedas estrictas en `experiments/gemma_developer_agent/docs/desviaciones_entorno_wheels.lock` (`typing-inspection==0.4.4`, `h11==0.16.0`, `dirty-equals==0.11`, `anyio==4.14.2`, `starlette==0.48.0`).
+   * Al reconstruir la imagen y el caché de inyección, el contenedor evalúa en aislamiento hermético absoluto (`network_mode="none"`).
+
+3. **Resultados Empíricos de Validación (Fail-to-Pass):**
+   * **`fastapi_14077` (INVÁLIDA):** Sin parche pasa los 3 tests (3 passed en 0.28s, exit code 0). No discrimina la solución del agente; el control vacío pasa sin cambios.
+   * **`fastapi_11194` (VÁLIDA):** Sin parche falla genuinamente por el defecto reportado (`AssertionError: assert 422 == 200`, 2 failed, 2 passed, exit code 1). Con el parche dorado pasa al 100% (4 passed en 0.30s, exit code 0).
+   * **`rich_3061` (VÁLIDA):** Sin parche falla en las aserciones por el método faltante (`AttributeError: 'Text' object has no attribute 'extend_style'`, 12 failed, 100 passed, exit code 1). Con el parche dorado pasa al 100% (112 passed en 0.29s, exit code 0).
+
+---
+
+## 5. Reporte de Tamaño de Snapshots de la Competencia
+
+De acuerdo con la inspección realizada a través de la API oficial de Kaggle (`gemma-4-developer-agent`):
+* **Total de snapshots para las 129 tareas:** 129 archivos tarball `.tgz`.
+* **Tamaño total acumulado:** **20.02 GB** (21 502 446 736 bytes).
+* **Snapshots locales descargados en `data/snapshots/`:** 3 tareas del piloto (515.8 MB).
+
+---
+
+## 6. Partición Estratificada y Regla Leave-One-Repo-Out
+
+El script `scripts/kaggle_split.py` implementa dos reglas deterministas (stdlib pura) auditadas en `tests/test_kaggle_split.py`:
+1. `temporal_stratified`: División temporal proporcional por cuotas de Hamilton por repositorio ($N \in \{24, 32, 40\}$).
+2. `leave_one_repo_out`: Reserva la totalidad de un repositorio (`--held-out-repo <nombre>`) como conjunto de prueba de generalización fuera de distribución, asignando los demás repositorios al entrenamiento.
+
 
