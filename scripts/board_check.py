@@ -348,6 +348,12 @@ def read_snapshot(directory: Path) -> tuple[Any, Any, dict[int, list[dict[str, A
     return items, issues, subs
 
 
+def cards_from_snapshot(directory: Path) -> dict[int, Mapping[str, Any]]:
+    """Tarjetas de una instantánea del tablero, indexadas por número de issue."""
+    items, _issues, _subs = read_snapshot(directory)
+    return _index_cards(items, None)
+
+
 def read_github(runner: Runner = _run_gh) -> tuple[Any, Any, dict[int, list[dict[str, Any]]]]:
     """Lee el tablero, los issues y los subissues de las épicas con ``gh``."""
 
