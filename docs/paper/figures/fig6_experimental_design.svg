@@ -35,5 +35,5 @@
   <text x="565" y="265" font-size="10" font-weight="600" fill="#b91c1c">EXP-09 (Real Read → Señuelo Conf)</text>
   <rect x="40" y="335" width="720" height="42" fill="#f8fafc" stroke="#e2e8f0" rx="4"/>
   <text x="55" y="360" font-size="11" font-weight="600" fill="#0f172a">Condiciones cruzadas en 6 permutaciones de prior deterministas: A (Sin memoria) · B (Historial) · C (Memoria asociativa).</text>
-  <text x="40" y="405" font-size="10" fill="#64748b">Esquema ilustrativo del diseño factorial 3x3. Regenerar: python -m scripts.paper_figures</text>
+  <text x="40" y="405" font-size="10" fill="#64748b">Esquema: tres grupos de tareas en tres fases y tres condiciones evaluadas en seis permutaciones. Regenerar: python -m scripts.paper_figures</text>
 </svg>

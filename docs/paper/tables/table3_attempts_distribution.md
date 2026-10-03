@@ -10,4 +10,5 @@
 | Señuelos · Asociativa | 0/36 | 18/36 | 18/36 | 36 | 2.50 |
 
 > **Nota:** Datos derivados de `results/reference-v2/experiment1.json:comparisons`.
+> Las 36 ejecuciones reúnen dos réplicas deterministas; no son 36 observaciones independientes.
 > Regenerar: `python -m scripts.paper_figures`.

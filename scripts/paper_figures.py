@@ -56,6 +56,12 @@ def escape_xml(text: str) -> str:
     )
 
 
+def write_utf8_lf(path: Path, text: str) -> None:
+    """Write UTF-8 text with platform-independent LF line endings."""
+    with path.open("w", encoding="utf-8", newline="\n") as output:
+        output.write(text)
+
+
 # ==============================================================================
 # 1. FIGURA 1 & TABLA 1: H4 Éxito al Primer Intento
 # ==============================================================================
@@ -222,16 +228,20 @@ def generate_fig1_h4_first_attempt(results_dir: Path, output_file: Path) -> dict
         ]
     )
 
-    fn = escape_xml(
-        "Origen: derivado de reference-v2/experiment1.json (réplica equivalente de 18 pares) "
-        "y auditoría en reference-v2/family_breakdown.json (36 runs). "
-        "(solver determinista de 3 operadores, sin LLM). Regenerar: python -m scripts.paper_figures"
+    fn_lines = (
+        "Origen: reference-v2/experiment1.json (18 pares primarios) y family_breakdown.json "
+        "(36 ejecuciones de dos réplicas).",
+        "Solver determinista de 3 operadores, sin LLM. Regenerar: python -m scripts.paper_figures",
     )
-    svg_lines.append(f'  <text x="40" y="{height - 14}" font-size="9.5" fill="{COLOR_MUTED}">{fn}</text>')
+    for offset, line in enumerate(fn_lines):
+        svg_lines.append(
+            f'  <text x="40" y="{height - 31 + offset * 14}" font-size="9.5" '
+            f'fill="{COLOR_MUTED}">{escape_xml(line)}</text>'
+        )
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
     return {
         "primary": primary_counts,
@@ -283,13 +293,14 @@ def generate_table1_h4_markdown(counts: dict[str, Any], output_file: Path) -> No
             "`reference-v2/experiment1.json`.",
             "> La columna de auditoría reporta el total consolidado de ambas réplicas (36 ejecuciones,",
             "> fuente: `results/reference-v2/family_breakdown.json`).",
+            "> Las 36 ejecuciones reúnen dos réplicas deterministas; no son 36 observaciones independientes.",
             "> El agente evaluado es el solver determinista de tres operadores sin LLM.",
             "> Regenerar: `python -m scripts.paper_figures`.",
             "",
         ]
     )
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(md_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(md_lines))
 
 
 # ==============================================================================
@@ -380,10 +391,10 @@ def generate_fig2_lesson_attribution(results_dir: Path, output_file: Path) -> di
                 f'  <text x="55" y="{row_y + 35}" font-size="13" font-weight="700" '
                 f'fill="{COLOR_TEXT}">{tid}</text>',
                 f'  <text x="145" y="{row_y + 35}" font-size="12" fill="{COLOR_TEXT}">'
-                f"{item['real_family']}</text>",
+                f"{escape_xml(item['real_family'])}</text>",
                 f'  <rect x="245" y="{row_y + 18}" width="110" height="26" fill="#fee2e2" rx="3"/>',
                 f'  <text x="300" y="{row_y + 35}" font-size="11" font-weight="600" text-anchor="middle" '
-                f'fill="#991b1b">{item["decoy_family"]}</text>',
+                f'fill="#991b1b">{escape_xml(item["decoy_family"])}</text>',
                 "  <!-- B -->",
                 f'  <rect x="370" y="{row_y + 18}" width="125" height="26" '
                 f'fill="#fef2f2" stroke="#fca5a5" rx="3"/>',
@@ -419,7 +430,7 @@ def generate_fig2_lesson_attribution(results_dir: Path, output_file: Path) -> di
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
     return attribution_data
 
@@ -450,7 +461,7 @@ def generate_table2_misleading_markdown(attr_data: dict[str, Any], output_file: 
         ]
     )
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(md_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(md_lines))
 
 
 # ==============================================================================
@@ -558,7 +569,7 @@ def generate_fig3_attempts_distribution(results_dir: Path, output_file: Path) ->
                 if seg_w >= 22:
                     svg_lines.append(
                         f'  <text x="{cur_x + seg_w // 2}" y="{y + 21}" font-size="11" font-weight="700" '
-                        f'text-anchor="middle" fill="#ffffff">{cnt}</text>'
+                        f'text-anchor="middle" fill="#ffffff">{cnt}/{tot}</text>'
                     )
                 cur_x += seg_w
 
@@ -583,7 +594,7 @@ def generate_fig3_attempts_distribution(results_dir: Path, output_file: Path) ->
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
     return attempts_data
 
@@ -610,12 +621,13 @@ def generate_table3_attempts_markdown(attempts_data: dict[str, Any], output_file
         [
             "",
             "> **Nota:** Datos derivados de `results/reference-v2/experiment1.json:comparisons`.",
+            "> Las 36 ejecuciones reúnen dos réplicas deterministas; no son 36 observaciones independientes.",
             "> Regenerar: `python -m scripts.paper_figures`.",
             "",
         ]
     )
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(md_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(md_lines))
 
 
 # ==============================================================================
@@ -755,7 +767,7 @@ def generate_fig4_h7_failure_transfer(results_dir: Path, output_file: Path) -> d
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
     return {"summary": h7_summary}
 
@@ -789,7 +801,7 @@ def generate_table4_h7_markdown(h7_data: dict[str, Any], output_file: Path) -> N
         ]
     )
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(md_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(md_lines))
 
 
 # ==============================================================================
@@ -922,12 +934,19 @@ def generate_fig5_diagnostic_baseline(results_dir: Path, output_file: Path) -> d
         ]
     )
 
-    fn = escape_xml(FOOTNOTE_BASE.format(campaign="diagnostic-baseline-v1 (#58)"))
-    svg_lines.append(f'  <text x="40" y="{height - 15}" font-size="10" fill="{COLOR_MUTED}">{fn}</text>')
+    fn_lines = (
+        "Origen: campaña diagnostic-baseline-v1 (#58); solver determinista de 3 operadores, sin LLM.",
+        "Conteos exactos. Regenerar: python -m scripts.paper_figures",
+    )
+    for offset, line in enumerate(fn_lines):
+        svg_lines.append(
+            f'  <text x="40" y="{height - 31 + offset * 14}" font-size="10" '
+            f'fill="{COLOR_MUTED}">{escape_xml(line)}</text>'
+        )
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
     return diag_counts
 
@@ -969,7 +988,7 @@ def generate_table5_diagnostic_markdown(diag_counts: dict[str, Any], output_file
         ]
     )
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(md_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(md_lines))
 
 
 # ==============================================================================
@@ -1040,13 +1059,14 @@ def generate_fig6_experimental_design_schema(output_file: Path) -> None:
     ]
 
     fn = escape_xml(
-        "Esquema ilustrativo del diseño factorial 3x3. Regenerar: python -m scripts.paper_figures"
+        "Esquema: tres grupos de tareas en tres fases y tres condiciones evaluadas en seis permutaciones. "
+        "Regenerar: python -m scripts.paper_figures"
     )
     svg_lines.append(f'  <text x="40" y="{height - 15}" font-size="10" fill="{COLOR_MUTED}">{fn}</text>')
     svg_lines.append("</svg>\n")
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
 
 def generate_fig7_memory_cycle_schema(output_file: Path) -> None:
@@ -1101,7 +1121,7 @@ def generate_fig7_memory_cycle_schema(output_file: Path) -> None:
     ]
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text("\n".join(svg_lines), encoding="utf-8")
+    write_utf8_lf(output_file, "\n".join(svg_lines))
 
 
 # ==============================================================================

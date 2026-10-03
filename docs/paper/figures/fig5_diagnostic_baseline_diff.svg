@@ -40,5 +40,6 @@
     <rect x="320" y="0" width="14" height="14" fill="#22c55e" rx="2"/>
     <text x="342" y="12" font-size="11" fill="#0f172a">C · Con D + Asociativa</text>
   </g>
-  <text x="40" y="445" font-size="10" fill="#64748b">Origen: campaña diagnostic-baseline-v1 (#58) (solver determinista de 3 operadores, sin LLM). Conteos exactos de diseño exhaustivo. Regenerar: python -m scripts.paper_figures</text>
+  <text x="40" y="429" font-size="10" fill="#64748b">Origen: campaña diagnostic-baseline-v1 (#58); solver determinista de 3 operadores, sin LLM.</text>
+  <text x="40" y="443" font-size="10" fill="#64748b">Conteos exactos. Regenerar: python -m scripts.paper_figures</text>
 </svg>

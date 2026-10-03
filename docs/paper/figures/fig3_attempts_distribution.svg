@@ -4,34 +4,34 @@
   <text x="40" y="70" font-size="13" fill="#64748b">Barras apiladas de ejecuciones resueltas al intento 1, 2 o 3 (derivado de experiment1.json comparisons)</text>
   <text x="205" y="121" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Originales · Sin memoria</text>
   <rect x="220" y="100" width="173" height="32" fill="#22c55e" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="306" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="306" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <rect x="393" y="100" width="173" height="32" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="479" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="479" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <rect x="566" y="100" width="173" height="32" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="652" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="652" y="121" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <text x="205" y="171" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Originales · Historial</text>
   <rect x="220" y="150" width="520" height="32" fill="#22c55e" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="480" y="171" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">36</text>
+  <text x="480" y="171" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">36/36</text>
   <text x="205" y="221" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Originales · Asociativa</text>
   <rect x="220" y="200" width="520" height="32" fill="#22c55e" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="480" y="221" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">36</text>
+  <text x="480" y="221" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">36/36</text>
   <text x="205" y="271" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Señuelos · Sin memoria</text>
   <rect x="220" y="250" width="173" height="32" fill="#22c55e" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="306" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="306" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <rect x="393" y="250" width="173" height="32" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="479" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="479" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <rect x="566" y="250" width="173" height="32" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="652" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12</text>
+  <text x="652" y="271" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">12/36</text>
   <text x="205" y="321" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Señuelos · Historial</text>
   <rect x="220" y="300" width="260" height="32" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="350" y="321" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18</text>
+  <text x="350" y="321" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18/36</text>
   <rect x="480" y="300" width="260" height="32" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="610" y="321" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18</text>
+  <text x="610" y="321" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18/36</text>
   <text x="205" y="371" font-size="12" font-weight="600" text-anchor="end" fill="#0f172a">Señuelos · Asociativa</text>
   <rect x="220" y="350" width="260" height="32" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="350" y="371" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18</text>
+  <text x="350" y="371" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18/36</text>
   <rect x="480" y="350" width="260" height="32" fill="#ef4444" stroke="#ffffff" stroke-width="1.5"/>
-  <text x="610" y="371" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18</text>
+  <text x="610" y="371" font-size="11" font-weight="700" text-anchor="middle" fill="#ffffff">18/36</text>
   <g transform="translate(250, 415)">
     <rect x="0" y="0" width="14" height="14" fill="#22c55e" rx="2"/>
     <text x="22" y="12" font-size="12" fill="#0f172a">1 intento</text>

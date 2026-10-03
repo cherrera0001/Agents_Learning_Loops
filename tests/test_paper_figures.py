@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from scripts.paper_figures import (
@@ -151,6 +152,7 @@ def test_fig1_and_table1_match_h4_sources(tmp_path: Path) -> None:
     assert "18/18" in tab_text
     assert "0/18" in tab_text
     assert "12/36" in tab_text
+    assert "no son 36 observaciones independientes" in tab_text
 
 
 def test_fig2_and_table2_match_task_breakdown(tmp_path: Path) -> None:
@@ -217,6 +219,10 @@ def test_fig3_and_table3_match_experiment1(tmp_path: Path) -> None:
     assert "Señuelos · Asociativa" in fig_text
     assert "36/36" in tab_text
     assert "12/36" in tab_text
+    assert ">12/36<" in fig_text
+    assert ">18/36<" in fig_text
+    assert ">36/36<" in fig_text
+    assert "no son 36 observaciones independientes" in tab_text
 
 
 def test_fig4_and_table4_match_failure_transfer(tmp_path: Path) -> None:
@@ -327,6 +333,12 @@ def test_mandatory_footnotes_and_labels(tmp_path: Path) -> None:
         assert "ESQUEMA METODOLÓGICO (NO ES RESULTADO EXPERIMENTAL)" in content, (
             f"Falta rótulo de esquema en {f.name}"
         )
+    assert "diseño factorial" not in f6.read_text(encoding="utf-8").lower()
+    for f in (f1, f5):
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if "Origen:" in line or "Regenerar:" in line:
+                visible_text = line.split(">", 1)[1].split("<", 1)[0]
+                assert len(visible_text) <= 120, f"Texto posiblemente recortado en {f.name}: {line}"
 
 
 def test_mutation_family_breakdown_changes_fig1_and_table1(tmp_path: Path) -> None:
@@ -379,6 +391,12 @@ def test_mutation_task_breakdown_changes_fig2_and_table2(tmp_path: Path) -> None
     assert attr["EXP-07"]["decoy_count_b"] == 42
     assert "42/42 señuelo" in out_svg.read_text(encoding="utf-8")
     assert "42/42 (EXP-03)" in out_md.read_text(encoding="utf-8")
+
+    tb_data["tasks"]["EXP-07"]["TEXT_HISTORY"]["family"] = "auth & config <safe>"
+    tb_data["tasks"]["EXP-07"]["TEXT_HISTORY"]["decoy_family"] = "read & write <safe>"
+    tb_path.write_text(json.dumps(tb_data), encoding="utf-8")
+    generate_fig2_lesson_attribution(mock_results, out_svg)
+    ET.parse(out_svg)
 
 
 def test_mutation_experiment1_changes_fig3_and_table3(tmp_path: Path) -> None:
@@ -487,6 +505,7 @@ def test_all_paper_figures_and_tables_generated(tmp_path: Path) -> None:
         assert content.startswith("<svg"), f"{fname} no es un SVG válido"
         assert content.rstrip().endswith("</svg>"), f"{fname} no cierra el tag </svg>"
         assert len(content) > 500, f"{fname} parece truncado ({len(content)} bytes)"
+        assert b"\r\n" not in p.read_bytes(), f"{fname} debe usar LF portable"
 
     for fname in expected_tabs:
         p = tabs_dir / fname
@@ -495,3 +514,4 @@ def test_all_paper_figures_and_tables_generated(tmp_path: Path) -> None:
         assert content.startswith("# Tabla"), f"{fname} debe iniciar con encabezado Markdown # Tabla"
         assert "|---|" in content, f"{fname} debe contener separador de tabla Markdown"
         assert len(content) > 200, f"{fname} parece truncada ({len(content)} bytes)"
+        assert b"\r\n" not in p.read_bytes(), f"{fname} debe usar LF portable"

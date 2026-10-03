@@ -9,5 +9,6 @@
 > tras verificar `replication.all_semantic_projections_equal == True` en `reference-v2/experiment1.json`.
 > La columna de auditoría reporta el total consolidado de ambas réplicas (36 ejecuciones,
 > fuente: `results/reference-v2/family_breakdown.json`).
+> Las 36 ejecuciones reúnen dos réplicas deterministas; no son 36 observaciones independientes.
 > El agente evaluado es el solver determinista de tres operadores sin LLM.
 > Regenerar: `python -m scripts.paper_figures`.
