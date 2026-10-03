@@ -2,27 +2,48 @@
 
 Espacio de estudio, prototipado y redacción para la participación en los desafíos de Google en Kaggle:
 
-1. **Paper Track:** [`gemma-4-developer-agent-paper`](https://www.kaggle.com/competitions/gemma-4-developer-agent-paper) · *Cierre: 12 de noviembre de 2026*
-2. **Code Track:** [`gemma-4-developer-agent`](https://www.kaggle.com/competitions/gemma-4-developer-agent) · *Cierre: 2 de diciembre de 2026*
+1. **Paper Track:**
+   [`gemma-4-developer-agent-paper`](https://www.kaggle.com/competitions/gemma-4-developer-agent-paper)
+   · *Cierre: 12 de noviembre de 2026*
+2. **Code Track:**
+   [`gemma-4-developer-agent`](https://www.kaggle.com/competitions/gemma-4-developer-agent)
+   · *Cierre: 2 de diciembre de 2026*
 
 ---
 
 ## 1. Pregunta y Tesis de Investigación
 
-* **Pregunta:** ¿Cómo condiciona una memoria episódica en grafo asociativo las decisiones de un agente de ingeniería de software basado en Gemma 4, sin saturar su ventana de contexto y preservando la frontera frente a la transferencia negativa?
-* **Tesis (ALL):** Los agentes autónomos sin memoria (*stateless*) repiten fallos ante tareas análogas, mientras que los historiales planos de texto saturan la ventana de inferencia con lecciones no pertinentes. El marco **Agents Learning Loops (ALL)** introduce una memoria asociativa con activación propagada (Collins & Loftus) que expone lecciones quirúrgicas (18/18 relevantes frente a 18/54 en historial plano en el experimento sintético).
-* **Rigor y Límites:** El estudio incorpora los resultados negativos del marco (**H4**): ante señuelos léxicos o trampas de coincidencia superficial entre tareas de un mismo proyecto de software (Task Ledger), la memoria puramente léxica indujo a error (transferencia negativa). El objetivo científico es caracterizar esta frontera y evaluar si anclajes semánticos y topológicos más profundos (AST, vecinos de símbolos, grafos de código provistos por el arnés oficial) mitigan este fenómeno.
+* **Pregunta:** ¿Puede una memoria episódica en grafo asociativo mejorar la selección de contexto en un
+  agente de ingeniería de software basado en Gemma 4 sin inducir transferencia negativa ante tareas no
+  análogas?
+* **Tesis a evaluar:** La hipótesis de ALL es que un grafo asociativo permite seleccionar lecciones
+  pertinentes con mayor precisión que un historial textual plano. En el Experimento 1 (Task Ledger, 6 tareas
+  originales de software), la memoria asociativa expuso 18/18 lecciones relevantes frente a 18/54 del
+  historial plano. Sin embargo, en las tareas con señuelo de H4 esa misma selectividad expuso
+  sistemáticamente la lección del señuelo (18/18 expuestas correspondieron al señuelo; ver
+  [`docs/results/h4-associative-vs-history.md`](../../docs/results/h4-associative-vs-history.md)), induciendo
+  a error al agente. Por tanto, este estudio no asume una ventaja general, sino que evalúa si anclajes
+  estructurales más profundos (grafos AST, vecinos de símbolos provistos por `swegemma`) logran discriminar
+  la relevancia sin repetir la transferencia negativa medida en H4.
 
 ---
 
 ## 2. Fronteras y Gobernanza del Repositorio
 
-En estricto cumplimiento de [`AGENTS.md`](../../AGENTS.md), [`docs/entorno/glosario.md`](../../docs/entorno/glosario.md) y [`docs/entorno/harness.md`](../../docs/entorno/harness.md):
+En estricto cumplimiento de [`AGENTS.md`](../../AGENTS.md),
+[`docs/entorno/glosario.md`](../../docs/entorno/glosario.md) y
+[`docs/entorno/harness.md`](../../docs/entorno/harness.md):
 
-* **Aislamiento del Experimento 1:** Este estudio no modifica el **solver acotado** (`src/experiments/agent.py`) ni el software bajo prueba Task Ledger ([`experiments/software_project/`](../software_project/)). Esos componentes permanecen como líneas base deterministas cerradas.
-* **Inmutabilidad de la evidencia:** Los recibos de `evidence/` y los resultados consolidados de `results/` son históricos e intocables. Los datos generados por Kaggle o Gemma se mantienen separados.
-* **Seguridad y tokens:** Ningún token de Kaggle (`KGAT...`) ni credencial se versiona en git. Las claves se manejan exclusivamente a través de variables de entorno y archivos ignorados (`.env`).
-* **Datos pesados fuera de git:** Las subcarpetas `data/`, `artifacts/` y `checkpoints/` están excluidas en [`.gitignore`](../../.gitignore).
+* **Aislamiento del Experimento 1:** Este estudio no modifica el **solver acotado**
+  (`src/experiments/agent.py`) ni el software bajo prueba Task Ledger
+  ([`experiments/software_project/`](../software_project/)). Esos componentes permanecen como líneas base
+  deterministas cerradas.
+* **Inmutabilidad de la evidencia:** Los recibos de `evidence/` y los resultados consolidados de `results/`
+  son históricos e intocables. Los datos generados por Kaggle o Gemma se mantienen separados.
+* **Seguridad y tokens:** Ningún token de Kaggle (`KGAT...`) ni credencial se versiona en git. Las claves se
+  manejan exclusivamente a través de variables de entorno y archivos ignorados (`.env`).
+* **Datos pesados fuera de git:** Las subcarpetas `data/`, `artifacts/` y `checkpoints/` están excluidas en
+  [`.gitignore`](../../.gitignore).
 
 ---
 
@@ -60,8 +81,15 @@ experiments/gemma_developer_agent/
 
 ## 4. Fases y Estado
 
-- [x] **Fase 0 · Entorno y API:** Conexión con la API de Kaggle verificada y token seguro en `.env` (ignorado por git).
-- [x] **Fase 1 · Especificaciones Técnicas y Condición A:** Especificaciones verificadas contra `data/HARNESS_README.md` (`docs/kaggle_specifications.md`) y réplica exacta de `sample_submission/` en `conditions/a_kit/`.
-- [x] **Fase 2 · Limpieza y Aislamiento de Borradores:** Retiro de código Python fuera del contrato de submission (`gemma_agent.py`, `estimation.py`), resolución de colisiones de paquetes (`experiments/__init__.py`) y traslado de borradores no consolidados a `drafts/`.
-- [ ] **Fase 3 · Definición y Pre-registro Experimental (#103):** Formulación del protocolo A/B/C/D, split estratificado de tareas públicas y pre-registro formal antes de cualquier cómputo.
-- [ ] **Fase 4 · Ejecución Experimental y Redacción (#104-#106):** Minería offline, consolidación verificada y preparación de entregables para Code Track y Paper Track.
+- [x] **Fase 0 · Entorno y API:** Conexión con la API de Kaggle verificada y token seguro en `.env` (ignorado
+  por git).
+- [x] **Fase 1 · Especificaciones Técnicas y Condición A:** Especificaciones verificadas contra
+  `data/HARNESS_README.md` (`docs/kaggle_specifications.md`) y réplica exacta de `sample_submission/` en
+  `conditions/a_kit/`.
+- [x] **Fase 2 · Limpieza y Aislamiento de Borradores:** Retiro de código Python fuera del contrato de
+  submission (`gemma_agent.py`, `estimation.py`), resolución de colisiones de paquetes
+  (`experiments/__init__.py`) y traslado de borradores no consolidados a `drafts/`.
+- [ ] **Fase 3 · Definición y Pre-registro Experimental (#103):** Formulación del protocolo A/B/C/D, split
+  estratificado de tareas públicas y pre-registro formal antes de cualquier cómputo.
+- [ ] **Fase 4 · Ejecución Experimental y Redacción (#104-#106):** Minería offline, consolidación verificada y
+  preparación de entregables para Code Track y Paper Track.
