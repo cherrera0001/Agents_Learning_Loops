@@ -1,0 +1,78 @@
+{
+  "schema_version": "kaggle-baseline-prereg/1",
+  "fijos": {
+    "limite_envio_minutos": 720,
+    "tareas_envio": 120,
+    "reserva": 0.1,
+    "tope_max_time_minutes": 60,
+    "minimo_max_time_minutes": 2,
+    "max_tool_calls": 100,
+    "max_turns": 500,
+    "timeout_seconds": 300,
+    "max_output_tokens_candidatos": [16384, 8192],
+    "alfa": 0.05,
+    "replicas_minimo": 2,
+    "regla_particion": "leave_one_repo_out",
+    "min_tareas_prueba": 40,
+    "factor_cuota_l4x4": 2,
+    "fraccion_utilizable": 0.8,
+    "pases_entrenamiento": 1,
+    "condiciones_nuevas": 2,
+    "escalera": [
+      ["fastapi/fastapi", 3, 2],
+      ["fastapi/fastapi", 2, 2],
+      ["Textualize/rich", 3, 2],
+      ["Textualize/rich", 2, 2],
+      ["fastapi/fastapi", 2, 1],
+      ["Textualize/rich", 2, 1],
+      ["Textualize/rich", 2, 0],
+      ["fastapi/fastapi", 2, 0]
+    ],
+    "fecha_corte_campana": "2026-11-05",
+    "umbral_ruido_bajo": 0.15,
+    "umbral_ruido_dominante": 0.25,
+    "tasks_sha256": "e4b3fd60f69dbc2b9213e54eeb9636db78aefe92c1d06269d73d9f5f8f3c8ad6"
+  },
+  "abiertos": {
+    "entorno_sandbox": {
+      "valor": null,
+      "regla": "Seccion A.1: el entorno de pruebas en el que se verificaran las replicas (backend docker o subprocess, imagen o interprete, version del arnes) con su declaracion versionada y el SHA-256 de esa declaracion. Si el entorno cambia despues, la validez se mide de nuevo.",
+      "cierra": "El implementador del paso de validez, revisado por el orquestador, en el commit C2."
+    },
+    "validez_tareas": {
+      "valor": null,
+      "regla": "Seccion A: archivo nuevo con el registro por tarea de las 129 (sin parche y con parche dorado, dos veces cada uno) y la lista 'tareas_invalidas' = toda tarea cuya clase no sea 'discrimina'. Se declara su ruta y su SHA-256.",
+      "cierra": "El implementador del paso de validez, revisado por el orquestador con una repeticion propia, en el commit C2."
+    },
+    "cuota": {
+      "valor": null,
+      "regla": "Seccion E: cuota semanal de GPU de la cuenta leida en Kaggle (issue #101), semanas enteras entre el dia de la lectura y fecha_corte_campana, y duracion maxima de una sesion de notebook con L4x4.",
+      "cierra": "El dueno la lee en el navegador y la deja en un comentario de #101; el orquestador la traslada en el commit C3."
+    },
+    "subconjunto": {
+      "valor": null,
+      "regla": "Seccion B: salida de scripts/kaggle_split.py con --rule leave_one_repo_out y el repositorio del primer escalon de la escalera que quepa en las horas utilizables. Se declara su ruta y el SHA-256 del blob de git.",
+      "cierra": "El orquestador, con validez_tareas y cuota cerrados, en el commit C4."
+    },
+    "replicas": {
+      "valor": null,
+      "regla": "Seccion C: el numero de replicas de A del escalon elegido de la escalera (3, o 2 si 3 no caben). Nunca menos de 2.",
+      "cierra": "El orquestador, junto con subconjunto, en el commit C4."
+    },
+    "piloto": {
+      "valor": null,
+      "regla": "Seccion D.2: corrida piloto corta sobre tareas de entrenamiento, que no cuenta como replica. Deja la concurrencia del envio real con su fuente (1 si no hay fuente), la carga del modelo y el montaje por tarea en minutos, el max_output_tokens que el servidor acepta, y la ruta y el SHA-256 del registro del piloto.",
+      "cierra": "Quien ejecute el piloto en el notebook L4x4, revisado por el orquestador, en el commit C5."
+    },
+    "presupuesto": {
+      "valor": null,
+      "regla": "Seccion D: max_time_minutes segun la formula con los datos del piloto; eval_config.yaml de la linea base con esos cuatro valores y su SHA-256; SHA-256 del directorio del envio calculado por scripts/kaggle_replicas.py.",
+      "cierra": "El orquestador, con piloto cerrado, en el commit C5."
+    },
+    "repeticion_infra": {
+      "valor": null,
+      "regla": "Seccion F.3: 'replica_completa' (lo unico que admite scripts/kaggle_replicas.py en main hoy) o 'tarea' si antes del primer recibo se mergea un cambio revisado que permita sustituir un recibo infra_error por el de la repeticion sin editar el original.",
+      "cierra": "El orquestador, en el commit C5 como tarde."
+    }
+  }
+}
