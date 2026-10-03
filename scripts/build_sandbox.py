@@ -49,6 +49,10 @@ class LockfileError(ValueError):
     """El lockfile tiene una entrada mal formada."""
 
 
+class BuildContextError(FileExistsError, ValueError):
+    """El directorio de construcción ya tiene un wheelhouse de una ejecución anterior."""
+
+
 class NetworkFailure(RuntimeError):
     """La descarga de una rueda falló por la red, antes de poder verificar nada."""
 
@@ -72,6 +76,8 @@ def load_lockfile(lockfile_path: Path) -> dict[str, Any]:
         raise FileNotFoundError(f"No se encontró el lockfile: {lockfile_path}")
     with open(lockfile_path, encoding="utf-8") as f:
         data = json.load(f)
+    if not isinstance(data, dict):
+        raise LockfileError(f"La raíz del lockfile debe ser un objeto JSON, no {type(data).__name__}.")
     if "packages" not in data or not isinstance(data["packages"], list):
         raise ValueError("El lockfile debe contener una lista bajo la clave 'packages'.")
     return dict(data)
@@ -226,7 +232,12 @@ def prepare_build_context(
     dest_wheels_dir = build_dir / "wheels"
     # Un contexto reutilizado puede conservar ruedas retiradas del origen.
     # El cache de descargas puede existir; el wheelhouse de construcción no.
-    dest_wheels_dir.mkdir(parents=True, exist_ok=False)
+    if dest_wheels_dir.exists():
+        raise BuildContextError(
+            f"El contexto de construcción ya existe: {dest_wheels_dir}. No se reutiliza, porque puede "
+            "conservar ruedas retiradas del origen. Bórralo o indica otro directorio con --build-dir."
+        )
+    dest_wheels_dir.mkdir(parents=True)
 
     # Copiar ruedas base del wheelhouse (omitiendo las excluidas justificadamente)
     for item in source_wheels_dir.glob("*.whl"):
@@ -267,14 +278,20 @@ def build_docker_image(
     cmd.append(str(build_dir))
 
     print(f"Ejecutando: {' '.join(cmd)}")
-    res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except FileNotFoundError as exc:
+        raise RuntimeError("No se encontró el ejecutable 'docker' en el PATH.") from exc
     if res.returncode != 0:
         sys.stderr.write(res.stderr)
         raise RuntimeError(f"Fallo en docker build (código {res.returncode}):\n{res.stderr or res.stdout}")
 
     # Obtener ID exacto no truncado
     id_cmd = ["docker", "images", "--no-trunc", "--format", "{{.ID}}", tag]
-    id_res = subprocess.run(id_cmd, capture_output=True, text=True, check=False)
+    try:
+        id_res = subprocess.run(id_cmd, capture_output=True, text=True, check=False)
+    except FileNotFoundError as exc:
+        raise RuntimeError("No se encontró el ejecutable 'docker' en el PATH.") from exc
     if id_res.returncode != 0 or not id_res.stdout.strip():
         raise RuntimeError(f"No se pudo obtener el ID de la imagen {tag}")
 

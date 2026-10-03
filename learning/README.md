@@ -34,13 +34,19 @@ issue* de [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-pro
 
 Hasta el issue [#96](https://github.com/cherrera0001/Agents_Learning_Loops/issues/96) el grafo se commiteaba
 en cada PR. Siendo un archivo derivado de los episodios, cada PR paralelo lo regeneraba y chocaba con los
-demás: siete PR del piloto tuvieron que integrar `main` y regenerarlo a mano, y el PR #90 y los #61 y #57
-chocaron en él. El dueño eligió (2026-10-03) dejar de versionarlo: los episodios son la única fuente de
-verdad, y dos PR con episodios distintos ya no tocan un archivo común.
+demás: siete PR del piloto tuvieron que integrar `main` y regenerarlo a mano (el #90 entre ellos), y antes
+los PR #61 y #57 chocaron en él. El dueño eligió (2026-10-03) dejar de versionarlo: los episodios son la
+única fuente de verdad, y dos PR con episodios distintos ya no tocan un archivo común.
 
 - `python -m scripts.devlog recall` reconstruye el grafo en memoria desde `learning/episodes/`; nunca lee
   el archivo, así que un `dev_memory.json` local desactualizado no puede engañarlo.
-- `python -m scripts.devlog rebuild` escribe `learning/dev_memory.json` en tu copia local.
+- `python -m scripts.devlog rebuild` escribe `learning/dev_memory.json` en tu copia local. Si ya existe uno,
+  aunque esté corrupto, lo sobrescribe sin avisar; `recall` lo ignora, también sin avisar.
+- **El archivo guardado y `recall` pueden ordenar distinto las lecciones.** Guardar y releer el grafo
+  conserva su contenido, pero no el orden interno que el recuperador usa para desempatar. En una muestra de
+  52 consultas, 5 dieron otra lista de lecciones al cargar el archivo; por ejemplo,
+  `"conflicto de merge entre PR paralelos en CI"`. La respuesta de `recall` es la de referencia. El defecto
+  de orden está en el paquete de memoria y queda fuera de #96.
 - CI comprueba que `rebuild` funciona desde los episodios y que dos reconstrucciones dan los mismos bytes
   (`tests/integration/test_devlog_memory_unversioned.py` y un paso del workflow), no que un archivo
   versionado esté sincronizado.
@@ -48,7 +54,7 @@ verdad, y dos PR con episodios distintos ya no tocan un archivo común.
   ya no lo encontrarás en `main`: genéralo con `python -m scripts.devlog rebuild`.
 - Lo que no cambió: el formato de los episodios, la consolidación y la numeración `seq`. `seq` sigue siendo
   un posible punto de choque entre PR paralelos (dos PR que toman el mismo número): comprueba el último
-  libre en `origin/main`.
+  libre en `origin/main` **y en los PR abiertos** (`gh pr list --state open --json number,files`).
 
 Los episodios son la **fuente de verdad**. [`skills/`](../skills/README.md) contiene skills de entorno
 ([glosario](../docs/entorno/glosario.md)): una **proyección legible** de procedimientos ya fijados en este
