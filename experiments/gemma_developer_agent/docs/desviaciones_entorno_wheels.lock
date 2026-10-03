@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "descripcion": "Ensayo local (no es el entorno del experimento): ruedas adicionales de PyPI y exclusiones del wheelhouse para el sandbox Docker local. Lista candidata para preregistro/entorno_sandbox_v1.json (pre-registro, A.1).",
+  "fecha_fijacion_utc": "2026-10-03T14:32:12Z",
+  "fecha_fijacion_nota": "Ultima modificacion del archivo en el arbol de origen (marca de tiempo del sistema de archivos, UTC). La fecha anterior, 14:20:00Z, era una hora redonda sin respaldo.",
+  "verificado_contra_pypi_fecha_utc": "2026-10-03",
+  "verificado_contra_pypi_nota": "Nombre de archivo, URL, tamano y SHA-256 de las 4 ruedas coinciden con https://pypi.org/pypi/<paquete>/<version>/json.",
+  "criterio": "Ruedas de PyPI que el wheelhouse oficial no trae y ruedas de starlette retiradas para que el arnes, que elige la version mas alta del directorio del host, quede en 0.47.3. De las 4 ruedas, solo typing_inspection y python_multipart estuvieron en el directorio del host del control v2; h11 y dirty_equals estan en el /wheels de las imagenes pero no en ese directorio ni en la cache del arnes, asi que todo indica que NO estuvieron instaladas en el control v2. Las exclusiones actuan sobre la imagen; lo que produjo el cambio observado en fastapi_11194 fue el directorio del host recortado mas la cache del arnes regenerada (ver propuesta_entorno_fastapi_v2.md). Basado en dos tareas: no valida el entorno para las demas.",
+  "packages": [
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "filename": "typing_inspection-0.4.4-py3-none-any.whl",
+      "sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+      "url": "https://files.pythonhosted.org/packages/67/81/4add07e5172b7ac40d8ed5ff580409a7801a4fe26d529bdd915401dabfbe/typing_inspection-0.4.4-py3-none-any.whl",
+      "size_bytes": 14750,
+      "motivo": "pydantic 2.13.4, que trae el wheelhouse, la declara como dependencia (typing-inspection>=0.4.2); sin ella fallo la recoleccion de pruebas de fastapi en la corrida piloto previa (entorno_local.md, 4.2)."
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "filename": "h11-0.16.0-py3-none-any.whl",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "url": "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl",
+      "size_bytes": 37515,
+      "motivo": "Dependencia de httpcore, que el cliente de pruebas de fastapi usa a traves de httpx; no esta en el wheelhouse oficial. Esta en /wheels de las imagenes v1 y v2 pero no en el directorio del host ni en la cache del control v2: todo indica que no estuvo instalada en el. Declarada por el autor; no se midio una corrida sin ella."
+    },
+    {
+      "name": "dirty-equals",
+      "version": "0.11",
+      "filename": "dirty_equals-0.11-py3-none-any.whl",
+      "sha256": "b1d7093273fc2f9be12f443a8ead954ef6daaf6746fd42ef3a5616433ee85286",
+      "url": "https://files.pythonhosted.org/packages/bb/8d/dbff05239043271dbeace563a7686212a3dd517864a35623fe4d4a64ca19/dirty_equals-0.11-py3-none-any.whl",
+      "size_bytes": 28051,
+      "motivo": "Paquete de pruebas que usan tareas de fastapi; no esta en el wheelhouse oficial. Esta en /wheels de las imagenes v1 y v2 pero no en el directorio del host ni en la cache del control v2: todo indica que no estuvo instalada en el. Declarada por el autor; no se midio una corrida sin ella."
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.18",
+      "filename": "python_multipart-0.0.18-py3-none-any.whl",
+      "sha256": "efe91480f485f6a361427a541db4796f9e1591afc0fb8e7a4ba06bfbc6708996",
+      "url": "https://files.pythonhosted.org/packages/13/6b/b60f47101ba2cac66b4a83246630e68ae9bbe2e614cbae5f4465f46dee13/python_multipart-0.0.18-py3-none-any.whl",
+      "size_bytes": 24389,
+      "motivo": "Dependencia de fastapi para formularios y archivos; es la unica rueda que cambia entre las imagenes v1 y v2 y estuvo en el directorio del host del control v2. La version la eligio el autor y no se midio ninguna otra."
+    }
+  ],
+  "excluded_wheels": [
+    {
+      "filename": "starlette-0.48.0-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, el proyecto de fastapi_14077 fija starlette por debajo de 0.48.0. Con esta fuera, el arnes elige starlette-0.47.3."
+    },
+    {
+      "filename": "starlette-0.49.0-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.49.1-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.49.2-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.49.3-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.50.0-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.51.0-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.52.0-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-0.52.1-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-1.3.1-py3-none-any.whl",
+      "motivo": "Corte en 0.48.0: segun agy, fastapi_14077 la excluye (tope 0.48.0) y fastapi_11194 tiene tope 0.49.0."
+    },
+    {
+      "filename": "starlette-1.6.0-py3-none-any.whl",
+      "motivo": "Con el wheelhouse sin tocar, esta era la mas alta y la recoleccion de fastapi_11194 fallo (codigo 2) en el control v1. Corte en 0.48.0 como las demas."
+    }
+  ],
+  "riesgo": "Las 67 tareas de fastapi van de 2025-09 a 2026-06 y cada commit fija su propio rango de starlette: un tope unico elegido mirando dos tareas puede romper las que necesiten una version mas nueva. Solo lo decide la medicion de validez sobre las 129."
+}

@@ -1,0 +1,83 @@
+{
+  "seq": 50,
+  "id": "issue-103-integracion-entorno-sandbox",
+  "goal": "Integrar en un PR (Refs #103) la entrega sin commitear de agy/Gemini y Codex sobre el entorno del sandbox local, corrigiendo lo que incumplía las reglas del repositorio",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/103 (tramo de integración; el issue sigue abierto y es de talla L)",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del trabajo; sin lecciones útiles sobre integración de entregas ajenas"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Contrastar con la API JSON de PyPI nombre de archivo, URL, tamaño y SHA-256 de las 4 ruedas del lockfile: coinciden las cuatro. pydantic 2.13.4 declara typing-inspection como dependencia"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En la primera entrega quité del episodio 049 y del texto la caché del host del arnés por no poder sostenerla con los archivos de origen; el revisor independiente la leyó en el arnés y es cierta y material (decide qué ruedas se instalan)."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Caché restituida en el episodio 049 (paso fallido y lección), en la propuesta (mecanismo completo y borrado obligatorio) y en el cuerpo del PR; lockfile con criterio y motivos corregidos"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Mi primera versión de scripts/build_sandbox.py fallaba ante una exclusión ausente sin ofrecer cómo indicar el origen completo, de modo que salía con error contra el estado local documentado (11 ruedas ya apartadas del directorio del host); además dejaba urllib.error sin usar, no distinguía fallo de red, hash erróneo y lockfile desfasado, ni validaba nombres de rueda y directorios antes de descargar."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Opción --full-wheels-dir, validación local antes de descargar, nombres sin rutas, exclusiones mal formadas como error, códigos de salida 3 a 6 y salida UTF-8; el fallo ante exclusión ausente se conserva"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Mis 3 pruebas nuevas dejaban sin cubrir main y build_docker_image: 18 de 32 defectos inyectados por el revisor sobrevivían."
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas con dobles de urlopen y subprocess para main, la descarga, la cache de PyPI, shims, Dockerfile y códigos de retorno; 44 pasan"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "pytest completo, ruff check, ruff format --check, mypy, mypy del guion, export_schema --check y devlog board --since 100"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "python -m scripts.devlog rebuild sobre la base de origin/main, no sobre el dev_memory.json del otro árbol"
+    }
+  ],
+  "lessons": [
+    "Al integrar una entrega ajena, comprobar contra la fuente (PyPI, hashes, mypy, código del arnés) en lugar de fiarse de lo que el documento declara; no descartar un hecho por no tener su fuente a mano sin pedirla antes a quien pueda leerla.",
+    "Un guion que descarga bytes debe verificar tamaño y SHA-256 en memoria antes de escribirlos a ningún disco, y debe fallar ante un lockfile que declara algo que el origen no tiene, diciendo cómo corregir la entrada.",
+    "Antes de versionar documentos de otra sesión sobre datos de la competencia, buscar fragmentos del arnés, trazas, nombres de pruebas y contenido de tareas, y reescribirlos con palabras propias citando por función o sección.",
+    "Un tope de versión elegido mirando dos tareas no se generaliza: cada commit de fastapi fija su propio rango de starlette, y solo la medición de validez sobre todas las tareas decide si el tope sirve.",
+    "Una medición local con Docker solo es un ensayo (pre-registro, A.1): sus arreglos son una lista candidata para el archivo de entorno del experimento, no el entorno.",
+    "Las ruedas fijadas en un lockfile se contrastan con el registro de paquetes antes de darlas por buenas."
+  ]
+}
