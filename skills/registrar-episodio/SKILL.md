@@ -23,7 +23,8 @@ Al terminar un issue, antes de abrir el PR. El episodio viaja en el mismo PR que
 ## Procedimiento
 
 1. Crea `learning/episodes/NNN-<id>.json`. `seq` continúa la numeración: **`seq` ordena el reloj lógico**
-   de la memoria.
+   de la memoria. Comprueba el último `seq` libre en `origin/main` (`git ls-tree origin/main learning/episodes/`),
+   no solo en tu rama: dos PR paralelos pueden tomar el mismo número.
 2. Anota cada paso con una acción del vocabulario de `learning/README.md`, indicando `success` y un
    `error` o una `note`.
 3. **El fallo va en la acción que lo causó, no en la que lo detectó.** Si una revisión encuentra un test
@@ -32,10 +33,7 @@ Al terminar un issue, antes de abrir el PR. El episodio viaja en el mismo PR que
    consolidación crea `error -RESOLVED_BY-> acción` solo para ese paso.
 5. Registra los fallos **tal como ocurrieron**, sin suavizarlos ni omitirlos.
 6. Escribe las lecciones como frases accionables.
-7. Reconstruye la memoria derivada:
-
-   ```bash
-   python -m scripts.devlog rebuild
-   ```
-
-   `learning/dev_memory.json` no se edita a mano.
+7. **No entregues la memoria derivada.** `learning/dev_memory.json` no se versiona (está en
+   `.gitignore`; motivo en `learning/README.md`): el PR lleva solo el episodio. Para comprobar que el
+   episodio se consolida, `python -m scripts.devlog rebuild` escribe una copia local, que no se commitea ni
+   se edita a mano.

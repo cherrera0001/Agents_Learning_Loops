@@ -18,14 +18,14 @@ alguno, pídelo en el informe y no lo supongas.
 
 1. **Lee el issue, no el resumen del implementador.** Criterios de aceptación, fuera de alcance y tipo de
    cierre: `gh api repos/cherrera0001/Agents_Learning_Loops/issues/<n> --jq .body`. Después lee el diff
-   completo: `git diff origin/main...<rama> -- . ':!learning/dev_memory.json'`.
+   completo: `git diff origin/main...<rama>`. Si el diff incluye `learning/dev_memory.json`, es un hallazgo: ya no se versiona.
 2. **Alcance.** El diff no toca archivos que el issue deja fuera y no edita recibos de `evidence/` ni
    agregados de `results/` ([`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md)). Nada nuevo
    lee `benchmark/private/` salvo el evaluador del experimento. Un test existente modificado es un hallazgo
    aunque la entrega lo llame necesario: di cuáles, si debilitan alguna aserción y si había un diseño que
    no los tocara. (Caso: #85, cuatro tests modificados sin declararlo.) Comprueba también que la rama
-   entra limpia en `origin/main` (`git merge-tree --write-tree origin/main HEAD`; caso: el PR #90 chocaba
-   en `learning/dev_memory.json`).
+   entra limpia en `origin/main` (`git merge-tree --write-tree origin/main HEAD`; caso histórico: el PR #90
+   chocaba en `learning/dev_memory.json`, que desde #96 no se versiona).
 3. **Copia de trabajo.** Exporta la rama fuera del repositorio (`git archive HEAD` a un directorio
    temporal, más `git init` y un commit, porque algunos tests llaman a `git rev-parse`) y trabaja siempre
    ahí: el worktree del implementador puede estar ocupado por sus propios procesos (caso: PR #90) y tú no
