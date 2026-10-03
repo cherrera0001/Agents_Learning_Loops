@@ -23,4 +23,8 @@ experiments/gemma_developer_agent/conditions/a_kit/*
 !experiments/gemma_developer_agent/conditions/a_kit/README.md
 !experiments/gemma_developer_agent/conditions/a_kit/manifest.json
 !experiments/gemma_developer_agent/conditions/a_kit/download_kit.py
+# Envio de la linea base A: copia del kit (no se versiona) mas dos archivos propios
+experiments/gemma_developer_agent/conditions/a_linea_base/*
+!experiments/gemma_developer_agent/conditions/a_linea_base/eval_config.yaml
+!experiments/gemma_developer_agent/conditions/a_linea_base/README.md
 *.ipynb_checkpoints

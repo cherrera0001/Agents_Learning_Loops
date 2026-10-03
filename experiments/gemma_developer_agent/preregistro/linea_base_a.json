@@ -1,0 +1,110 @@
+{
+  "schema_version": "kaggle-baseline-prereg/2",
+  "fijos": {
+    "limite_envio_minutos": 720,
+    "tareas_envio": 120,
+    "tareas_publicas": 129,
+    "reserva": 0.1,
+    "tope_max_time_minutes": 60,
+    "minimo_max_time_minutes": 2,
+    "max_tool_calls": 100,
+    "max_turns": 500,
+    "timeout_seconds": 300,
+    "max_output_tokens_candidatos": [16384, 8192],
+    "viabilidad_turnos_minimos": 5,
+    "pilotos_maximo": 2,
+    "piloto_tareas_maximo": 8,
+    "alfa": 0.05,
+    "suelo_pares": 6,
+    "replicas_minimo": 2,
+    "replicas_extra_maximo": 2,
+    "regla_particion": "leave_one_repo_out",
+    "min_tareas_prueba": 40,
+    "factor_cuota_l4x4_publicado": 2,
+    "fraccion_utilizable": 0.8,
+    "pases_entrenamiento": 1,
+    "condiciones_nuevas": 2,
+    "escalera": [
+      ["fastapi/fastapi", 3, 2],
+      ["fastapi/fastapi", 2, 2],
+      ["Textualize/rich", 3, 2],
+      ["Textualize/rich", 2, 2],
+      ["fastapi/fastapi", 2, 1],
+      ["Textualize/rich", 2, 1],
+      ["fastapi/fastapi", 2, 0],
+      ["Textualize/rich", 2, 0]
+    ],
+    "fecha_registro": "2026-10-03",
+    "fecha_minima_compuerta": "2026-10-12",
+    "fecha_limite_compuerta": "2026-10-19",
+    "fecha_limite_recibos": "2026-10-22",
+    "fecha_corte_campana": "2026-11-05",
+    "fecha_cierre_paper": "2026-11-12",
+    "umbral_ruido_bajo": [6, 40],
+    "umbral_ruido_dominante": [6, 24],
+    "umbral_predominio": [1, 2],
+    "terciles": {
+      "parche_lineas": [5, 26],
+      "enunciado_caracteres": [237, 739]
+    },
+    "decisiones": {
+      "entorno_sin_arreglo": ["seguir_excluyendo", "detener"],
+      "campana_no_cabe": ["seguir_solo_linea_base", "detener"],
+      "compuerta_tardia": ["seguir_solo_linea_base", "detener"],
+      "ensayo_no_viable": ["enmienda_v2", "detener"],
+      "rechazos_con_todos_los_candidatos": ["enmienda_v2", "detener"],
+      "sin_escalon": ["enmienda_v2", "detener"],
+      "presupuesto_bajo_minimo": ["enmienda_v2", "detener"],
+      "piloto_degenerado": ["enmienda_v2", "detener"]
+    },
+    "tasks_sha256": "e4b3fd60f69dbc2b9213e54eeb9636db78aefe92c1d06269d73d9f5f8f3c8ad6"
+  },
+  "abiertos": {
+    "ensayo_notebook": {
+      "valor": null,
+      "regla": "Sección A.0: ensayo en un notebook L4×4 que solo mide cosas que no son resultados (Docker y backend, arranque del servidor, carga del modelo, sesión máxima, tokens por segundo, turnos completados en el presupuesto, rechazos por contexto). Registro versionado con esquema kaggle-notebook-trial/1, su ruta y su SHA-256.",
+      "cierra": "Quien ejecute el ensayo en Kaggle, revisado por el orquestador, en el commit C0.5."
+    },
+    "entorno_sandbox": {
+      "valor": null,
+      "regla": "Sección A.1: declaración del entorno de pruebas (esquema kaggle-sandbox-env/1) con el backend que fijó el ensayo, la imagen o el intérprete, la versión del arnés, el hash de las ruedas y los arreglos. Se declara su ruta y su SHA-256.",
+      "cierra": "El implementador del paso de validez, revisado por el orquestador, en el commit C2."
+    },
+    "validez_tareas": {
+      "valor": null,
+      "regla": "Secciones A.2 a A.4: registro de las 129 tareas (esquema kaggle-task-validity/1) con su clase y la duración sin parche, y la lista 'tareas_invalidas' = toda tarea cuya clase no sea 'discrimina'. Se declara su ruta y su SHA-256.",
+      "cierra": "El implementador del paso de validez, revisado por el orquestador con una repetición propia, en el commit C2."
+    },
+    "cuota": {
+      "valor": null,
+      "regla": "Sección E.1: cuota semanal de GPU de la cuenta, factor de consumo de L4×4 releído ese día, día de la semana en que se reinicia la cuota, fuente y fecha de la lectura.",
+      "cierra": "El dueño la lee en Kaggle y la deja en un comentario de #101; el orquestador la versiona en el commit C3."
+    },
+    "subconjunto": {
+      "valor": null,
+      "regla": "Sección B: salida de scripts/kaggle_split.py con --rule leave_one_repo_out y el repositorio del primer escalón apto de la escalera que quepa en las horas utilizables contadas desde fecha_minima_compuerta. Se declara su ruta y el SHA-256 del blob de git.",
+      "cierra": "El orquestador, con validez_tareas y cuota cerrados, en el commit C4."
+    },
+    "piloto": {
+      "valor": null,
+      "regla": "Sección D.2: registro del piloto (esquema kaggle-pilot/1) sobre tareas válidas de entrenamiento: concurrencia con su fuente (1 si no hay fuente oficial), carga del modelo y comprobación de que el prompt muestra el presupuesto pasado. Se declara su ruta y su SHA-256.",
+      "cierra": "Quien ejecute el piloto en el notebook L4×4, revisado por el orquestador, en el commit C5."
+    },
+    "presupuesto": {
+      "valor": null,
+      "regla": "Sección D: eval_config.yaml de la línea base con los bytes canónicos que da la fórmula, su ruta y su SHA-256, y el SHA-256 del directorio del envío calculado por scripts/kaggle_replicas.py.",
+      "cierra": "El orquestador, con piloto cerrado, en el commit C5."
+    },
+    "corrida": {
+      "valor": null,
+      "regla": "Secciones C y E.2: fecha de la compuerta, réplicas de A que da la escalera recalculada con esa fecha para el repositorio ya fijado, y partes por réplica según la regla de la sesión máxima.",
+      "cierra": "El orquestador, en el commit C5."
+    },
+    "decisiones_dueno": {
+      "valor": null,
+      "regla": "Sección I.3: lista de las decisiones del dueño que el diseño prevé, cada una con su opción entre las enumeradas en fijos.decisiones, su fecha y su referencia. Lista vacía si ninguna condición las pide.",
+      "cierra": "El dueño decide; el orquestador versiona la decisión en el commit C5 como tarde."
+    }
+  },
+  "enmiendas": []
+}
