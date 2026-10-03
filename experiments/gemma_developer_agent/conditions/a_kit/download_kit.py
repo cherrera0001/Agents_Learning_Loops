@@ -25,9 +25,7 @@ from typing import Any
 
 DEFAULT_MANIFEST = Path(__file__).parent / "manifest.json"
 DEFAULT_TARGET_DIR = Path(__file__).parent
-DATA_SAMPLE_SUBMISSION = (
-    Path(__file__).parent.parent.parent / "data" / "sample_submission"
-)
+DATA_SAMPLE_SUBMISSION = Path(__file__).parent.parent.parent / "data" / "sample_submission"
 
 
 def compute_sha256(file_path: Path) -> str:
@@ -43,7 +41,7 @@ def load_manifest(manifest_path: Path) -> dict[str, Any]:
     """Carga y valida la estructura básica del manifiesto JSON."""
     if not manifest_path.exists():
         raise FileNotFoundError(f"No se encontró el manifiesto: {manifest_path}")
-    with open(manifest_path, "r", encoding="utf-8") as f:
+    with open(manifest_path, encoding="utf-8") as f:
         data = json.load(f)
     if "files" not in data or not isinstance(data["files"], list):
         raise ValueError("El manifiesto debe contener una lista bajo la clave 'files'.")
@@ -77,9 +75,7 @@ def verify_files(target_dir: Path, manifest: dict[str, Any]) -> tuple[bool, list
         actual_sha = compute_sha256(file_path).lower()
         if actual_sha != expected_sha:
             messages.append(
-                f"[SHA-256 DISCORDANTE] {rel_path}:\n"
-                f"  esperado: {expected_sha}\n"
-                f"  real:     {actual_sha}"
+                f"[SHA-256 DISCORDANTE] {rel_path}:\n  esperado: {expected_sha}\n  real:     {actual_sha}"
             )
             all_ok = False
             continue
@@ -252,7 +248,7 @@ def main() -> int:
             print(f"  {m}")
         return 0
     else:
-        print(f"Error: los archivos descargados no coinciden con el manifiesto:")
+        print("Error: los archivos descargados no coinciden con el manifiesto:")
         for m in msgs:
             print(f"  {m}")
         return 1
