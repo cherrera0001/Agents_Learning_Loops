@@ -3596,6 +3596,7 @@ def test_main_el_tope_global_acorta_la_espera_del_servidor(esc: Escenario, doble
     assert correr_main(esc, doble, "--tope-total-min", "0.1") == ke.EXIT_INCOMPLETO  # 6 s
     assert doble.consultas_salud == 3  # a los 0, 2 y 4 s; a los 6 ya no
     assert esc.sondas()["servidor"]["valores"]["motivo"] == "tiempo_agotado"
+    assert esc.sondas()["servidor"]["segundos"] == 6.0  # no sigue esperando los 1 200 s de la sonda
     assert not doble.proceso.esta_vivo
 
 
