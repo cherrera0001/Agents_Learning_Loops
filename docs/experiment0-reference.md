@@ -138,7 +138,7 @@ usadas decaen con el tiempo y la poda las elimina. Tabla completa en
 │   ├── config.py            # AppConfig desde TOML + variables AAL_*
 │   └── main.py              # benchmark (aal-benchmark)
 ├── scripts/                 # devlog (memoria del propio repo), export_schema, mutation_check
-├── learning/                # episodios de desarrollo y dev_memory.json
+├── learning/                # episodios de desarrollo (dev_memory.json se genera, no se versiona)
 └── tests/
     ├── unit/                # componentes, valores calculados a mano, propiedades (hypothesis)
     └── integration/         # agente completo, benchmark, CLI, bitácora
@@ -178,8 +178,8 @@ max_edges = 5000
 
 El desarrollo de este repositorio usa su propio bucle de aprendizaje. Cada issue
 es un episodio en [`learning/episodes/`](learning/episodes/) (meta, pasos con sus
-fallos reales, lecciones), y [`learning/dev_memory.json`](learning/dev_memory.json)
-es la memoria asociativa derivada. Antes de empezar un issue se consulta:
+fallos reales, lecciones), y `learning/dev_memory.json` (no versionado; se genera con
+`devlog rebuild`) es la memoria asociativa derivada. Antes de empezar un issue se consulta:
 
 ```bash
 python -m scripts.devlog recall "Spreading Activation: umbral de disparo y fan-out"

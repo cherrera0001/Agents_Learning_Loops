@@ -14,7 +14,7 @@ Recibes: el número de issue, el PR o la rama, y el directorio del worktree dond
 ## Procedimiento
 
 1. **Lee el issue y el diff.** `gh api repos/cherrera0001/Agents_Learning_Loops/issues/<n> --jq .body` y
-   `git diff origin/main...<rama> -- . ':!learning/dev_memory.json'`.
+   `git diff origin/main...<rama>`. Si el diff incluye `learning/dev_memory.json`, es un hallazgo: ya no se versiona.
 2. **Cada afirmación comprobable tiene fuente, y la fuente dice eso.** Para cada cifra, fecha, ruta,
    número de issue o PR, comando y nombre de campo que el diff añade, abre la fuente y compárala. Una
    fuente que no existe es un hallazgo. (Casos: una métrica que citaba el «historial del campo» del

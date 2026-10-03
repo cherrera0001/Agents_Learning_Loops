@@ -12,12 +12,11 @@ flowchart LR
     P --> R["RETRIEVE<br/>devlog recall"]
     R --> W["Implementar<br/>(rama + PR)"]
     W --> E["Escribir episodio<br/>learning/episodes/"]
-    E --> B["CONSOLIDATE<br/>devlog rebuild"]
-    B --> V["REVISAR<br/>revisor independiente"]
+    E --> V["REVISAR<br/>revisor independiente"]
     V --> M["merge<br/>mergedAt"]
     M --> C["CONFIRMAR<br/>criterio de cierre"]
     C --> D["Done"]
-    B -. "dev_memory.json" .-> R
+    E -. "recall deriva el grafo<br/>de los episodios" .-> R
 ```
 
 ESTIMAR y CONFIRMAR son pasos del orquestador sobre el issue y el Project #5; el episodio solo conserva
@@ -29,7 +28,27 @@ issue* de [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-pro
 | Ruta | Rol |
 |---|---|
 | `episodes/NNN-<id>.json` | **Fuente de verdad**: un episodio por issue/hito, revisable en el PR |
-| `dev_memory.json` | Grafo **derivado**; se regenera con `rebuild` (no editar a mano) |
+| `dev_memory.json` | Grafo **derivado y no versionado** (en `.gitignore`); solo existe si lo generas con `rebuild` (no editar a mano) |
+
+### Por qué `dev_memory.json` no se versiona
+
+Hasta el issue [#96](https://github.com/cherrera0001/Agents_Learning_Loops/issues/96) el grafo se commiteaba
+en cada PR. Siendo un archivo derivado de los episodios, cada PR paralelo lo regeneraba y chocaba con los
+demás: siete PR del piloto tuvieron que integrar `main` y regenerarlo a mano, y el PR #90 y los #61 y #57
+chocaron en él. El dueño eligió (2026-10-03) dejar de versionarlo: los episodios son la única fuente de
+verdad, y dos PR con episodios distintos ya no tocan un archivo común.
+
+- `python -m scripts.devlog recall` reconstruye el grafo en memoria desde `learning/episodes/`; nunca lee
+  el archivo, así que un `dev_memory.json` local desactualizado no puede engañarlo.
+- `python -m scripts.devlog rebuild` escribe `learning/dev_memory.json` en tu copia local.
+- CI comprueba que `rebuild` funciona desde los episodios y que dos reconstrucciones dan los mismos bytes
+  (`tests/integration/test_devlog_memory_unversioned.py` y un paso del workflow), no que un archivo
+  versionado esté sincronizado.
+- **Si lees el archivo desde fuera del repositorio** (otro programa, un clon sin generar, la vista de GitHub),
+  ya no lo encontrarás en `main`: genéralo con `python -m scripts.devlog rebuild`.
+- Lo que no cambió: el formato de los episodios, la consolidación y la numeración `seq`. `seq` sigue siendo
+  un posible punto de choque entre PR paralelos (dos PR que toman el mismo número): comprueba el último
+  libre en `origin/main`.
 
 Los episodios son la **fuente de verdad**. [`skills/`](../skills/README.md) contiene skills de entorno
 ([glosario](../docs/entorno/glosario.md)): una **proyección legible** de procedimientos ya fijados en este
@@ -57,7 +76,7 @@ Registra los fallos **tal como ocurrieron**: son la señal de aprendizaje.
 ### Bloques opcionales: `estimate` y `outcome`
 
 Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteriores no los tienen) y
-`rebuild` los ignora: la presencia de estos bloques no cambia `dev_memory.json`.
+`rebuild` los ignora: la presencia de estos bloques no cambia el grafo generado.
 
 ```json
 "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 1, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
@@ -111,9 +130,8 @@ Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismo
 python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: búsqueda semántica)
 # 2. implementar en la rama issue-<n>-...
 # 3. escribir learning/episodes/NNN-issue-<n>.json (con estimate y outcome)
-python -m scripts.devlog rebuild                     # 4. CONSOLIDATE
-# 5. commit del episodio y dev_memory.json dentro del mismo PR
-# 6. tras el merge verificado (mergedAt): CONFIRMAR (orquestador): Verificación = Verificada
+# 4. commit del episodio en el PR; dev_memory.json no se versiona (opcional, copia local: devlog rebuild)
+# 5. tras el merge verificado (mergedAt): CONFIRMAR (orquestador): Verificación = Verificada
 ```
 
 Los pasos, responsables y reglas del registro están en

@@ -38,5 +38,5 @@ Antes de escribir código para un issue, al empezar el trabajo del rol **impleme
 3. Lee las lecciones recuperadas **antes** de elegir herramientas o enfoque. Las acciones con valencia
    negativa indican pasos que ya fallaron en contextos parecidos.
 
-Esta skill no escribe nada: solo lee `learning/dev_memory.json` (o lo reconstruye en memoria desde
-`learning/episodes/` si falta).
+Esta skill no escribe nada: `recall` reconstruye el grafo en memoria desde `learning/episodes/` y no lee
+`learning/dev_memory.json`, que no se versiona y puede no existir en tu checkout.

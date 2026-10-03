@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 memory_graph.json
+# Grafo derivado de los episodios; no se versiona (#96). Se genera con `python -m scripts.devlog rebuild`.
+learning/dev_memory.json
 *.egg-info/
 build/
 dist/

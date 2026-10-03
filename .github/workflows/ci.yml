@@ -30,6 +30,16 @@ jobs:
         run: python -m scripts.export_schema --check
       - name: esquemas experimentales sincronizados
         run: python -m scripts.export_experiment_schema --check
+      # #96: dev_memory.json no se versiona; se comprueba que se reconstruye desde los episodios
+      # y que dos reconstrucciones dan los mismos bytes.
+      - name: memoria derivada reconstruible y determinista
+        run: |
+          git check-ignore -q learning/dev_memory.json
+          test -z "$(git ls-files learning/dev_memory.json)"
+          python -m scripts.devlog rebuild
+          cp learning/dev_memory.json "$RUNNER_TEMP/dev_memory.first.json"
+          python -m scripts.devlog rebuild
+          cmp learning/dev_memory.json "$RUNNER_TEMP/dev_memory.first.json"
 
   test:
     name: tests · ${{ matrix.os }} · py${{ matrix.python }}

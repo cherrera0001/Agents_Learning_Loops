@@ -872,7 +872,8 @@ agent = Agent(tools, embedder=FastEmbedEmbedder())  # requiere el extra [embeddi
 El repositorio aplica su propio bucle de aprendizaje al proceso de desarrollo. Cada issue es un
 episodio ([`learning/episodes/`](learning/episodes/)) con los pasos ejecutados, los fallos **tal
 como ocurrieron** (atribuidos a la acción que los causó) y las lecciones extraídas. La memoria
-derivada ([`learning/dev_memory.json`](learning/dev_memory.json)) se consulta antes de cada issue.
+derivada (`learning/dev_memory.json`, no versionada: se genera con `devlog rebuild`) se consulta antes de cada
+issue; `recall` la reconstruye desde los episodios.
 
 ```mermaid
 flowchart LR
@@ -881,12 +882,11 @@ flowchart LR
     P --> R["RETRIEVE<br/>devlog recall<br/>léxico + semántico"]
     R --> W["Implementación<br/>rama + PR + CI"]
     W --> E["Episodio<br/>learning/episodes/NNN.json"]
-    E --> B["CONSOLIDATE<br/>devlog rebuild"]
-    B --> V["REVISAR<br/>revisor independiente"]
+    E --> V["REVISAR<br/>revisor independiente"]
     V --> M["merge<br/>mergedAt"]
     M --> C["CONFIRMAR<br/>criterio de cierre"]
     C --> D["Done"]
-    B -. "dev_memory.json" .-> R
+    E -. "recall deriva el grafo<br/>de los episodios" .-> R
 ```
 
 ESTIMAR y CONFIRMAR los hace el orquestador sobre el issue y el Project #5; el episodio conserva su rastro
@@ -897,7 +897,7 @@ registro se sostiene (no valida todavía las tallas) está en
 
 ```bash
 python -m scripts.devlog recall "título del issue" --embedder fastembed
-python -m scripts.devlog rebuild
+python -m scripts.devlog rebuild   # opcional: escribe learning/dev_memory.json (ignorado por git)
 ```
 
 Estado tras el ciclo v0.2: **14 episodios, 126 pasos, 26 fallos registrados y 61 lecciones**. Al 2026-10-02
@@ -931,7 +931,7 @@ Los procedimientos ya fijados de este ciclo (entre ellos recuperar antes de un i
 episodio, proteger la evidencia y revisar un texto público) también están escritos como **skills de
 entorno** en [`skills/`](skills/README.md). Son una
 proyección legible: los episodios de `learning/episodes/` siguen siendo la fuente de verdad y
-`learning/dev_memory.json` sigue siendo derivado. El rol que ejecuta `recall` y `rebuild` es la
+`learning/dev_memory.json` sigue siendo derivado (y no versionado). El rol que ejecuta `recall` y `rebuild` es la
 **bitácora** ([`docs/entorno/agentes.md`](docs/entorno/agentes.md)).
 
 Antes de abrir el worktree del implementador, el **orquestador** lee [`docs/estimation.md`](docs/estimation.md),
