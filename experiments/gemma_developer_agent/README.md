@@ -461,15 +461,17 @@ de talla S: no calibran nada ni permiten concluir algo sobre Gemma.
 
 ### 6.2 Qué falta
 
-**El tablero no es parte de la memoria asociativa ni entra en `recall`.** El grafo de memoria de la bitácora
+**El tablero entra en la memoria solo en parte.** El grafo de memoria de la bitácora
 (`learning/dev_memory.json`, derivado de los episodios y no versionado: se genera en local con
-`python -m scripts.devlog rebuild`) tiene cuatro tipos de nodo (Concept, Outcome, Goal y
-Action) y ninguno lleva campos del tablero: ni talla, ni puntos, ni riesgo, ni verificación, ni modelo usado
-(hay nodos de texto que nombran talla o modelo como conceptos, pero no son datos de una tarjeta). Los conteos
-cambian con cada episodio, por eso no se fijan aquí: se obtienen con el comando de la sección 13.
-`python -m scripts.devlog recall` no consulta el tablero. El tablero se lee para auditar; no alimenta la
-memoria ni decide el paso siguiente. Por eso, hoy, no cumple como punto de control de la memoria asociativa.
-Integrarlo tiene su propio issue: [#122](https://github.com/cherrera0001/Agents_Learning_Loops/issues/122).
+`python -m scripts.devlog rebuild`) tiene cuatro tipos de nodo (Concept, Outcome, Goal y Action). Desde la
+primera entrega de [#122](https://github.com/cherrera0001/Agents_Learning_Loops/issues/122), cada nodo `Goal`
+lleva en su metadata la estimación y el resultado que el episodio copia del tablero (talla, puntos,
+incertidumbre, riesgo, modelo previsto y usado, si escaló, PR), y `python -m scripts.devlog recall` los
+muestra para los issues parecidos; con una instantánea del tablero añade estado y verificación. Lo que
+sigue faltando: no hay nodos ni aristas propios del tablero, esos datos no influyen en qué se recupera ni en
+la decisión siguiente, y `recall` no lee el tablero en vivo. El tablero se consulta, pero todavía no decide:
+no cumple aún como punto de control de la memoria asociativa. Los conteos del grafo cambian con cada
+episodio, por eso no se fijan aquí: se obtienen con el comando de la sección 13.
 
 **Los tramos de un issue grande no quedan registrados como datos.** El issue #103 es una sola tarjeta de talla
 L. Bajo ella se fusionaron seis PR con `Refs #103`: #113, #116, #117, #118, #119 y #120. Solo el tramo de #120

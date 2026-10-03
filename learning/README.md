@@ -81,8 +81,21 @@ Registra los fallos **tal como ocurrieron**: son la señal de aprendizaje.
 
 ### Bloques opcionales: `estimate` y `outcome`
 
-Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteriores no los tienen) y
-`rebuild` los ignora: la presencia de estos bloques no cambia el grafo generado.
+Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteriores no los tienen).
+Desde el issue [#122](https://github.com/cherrera0001/Agents_Learning_Loops/issues/122), `rebuild` los copia
+en la metadata del nodo `Goal` del episodio (`metadata["board"]`), junto con el issue citado y el número de
+pasos y de pasos fallidos. No crean nodos ni aristas, no cambian pesos y no cambian las acciones ni las
+lecciones que `recall` recupera: lo fija `tests/integration/test_devlog.py`.
+
+`recall` usa ese registro para decir, de los episodios más activados por la consulta, **cómo se estimaron y
+cómo salieron** (sección «Issues parecidos»): talla, puntos, incertidumbre, riesgo y modelo previsto; modelo
+usado, si escaló, PR y revisiones de la estimación; y pasos fallidos. Un dato que falta se muestra como
+`?`. Son episodios, no issues, y no hay umbral de parecido: cada línea muestra su activación, y `--issues N`
+cambia cuántos se listan (3 por defecto). Con `--snapshot <directorio>` (una
+instantánea del tablero con `items.json` e `issues.json`, la misma que acepta `devlog board`) añade el
+estado y la verificación de la tarjeta. Sin instantánea no consulta GitHub ni inventa ese estado. Son datos
+de una población chica y autoinformada: sirven para preguntar «¿cómo nos fue con algo parecido?», no para
+validar las tallas.
 
 ```json
 "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 1, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
@@ -134,6 +147,7 @@ Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismo
 # 0. ESTIMAR (orquestador): «Estimación v1» en el issue y campos del Project #5
 # 1. In Progress, y después RETRIEVE:
 python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: búsqueda semántica)
+#    lee también «Issues parecidos»: cómo se estimaron y cómo salieron (--snapshot <dir> añade el tablero)
 # 2. implementar en la rama issue-<n>-...
 # 3. escribir learning/episodes/NNN-issue-<n>.json (con estimate y outcome)
 # 4. commit del episodio en el PR; dev_memory.json no se versiona (opcional, copia local: devlog rebuild)
