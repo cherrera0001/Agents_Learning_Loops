@@ -1,0 +1,100 @@
+{
+  "seq": 49,
+  "id": "entorno-sandbox-v2-fastapi",
+  "goal": "Ensayo local de una variante de entorno del sandbox (11 ruedas de starlette apartadas, 4 ruedas de PyPI en el lockfile, caché del arnés borrada) con control vacío sobre fastapi_11194 y rich_3061; lista candidata para el entorno del experimento, no el entorno",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/103#issuecomment-5969599380",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Otro agente",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall de lecciones: leer los logs de recolección además de summary.errors, separar los controles vacíos de los resultados del modelo y fundamentar las desviaciones en los archivos de proyecto de los snapshots. Modelo declarado por la sesión de agy: Gemini 3.8 Flash (High); declaración de la sesión, no telemetría del proveedor."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leer el archivo de proyecto de los snapshots de fastapi_11194 y fastapi_14077 (cotas de starlette por tarea; lectura declarada por agy, no repetida en la integración) y la lógica del arnés por nombre de función."
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Detectado por la integración: propuesta_entorno_fastapi_v2.md copiaba un fragmento del arnés, un traceback, bloques del archivo de proyecto de dos tareas y un log con nombres de pruebas, y llamaba calibrado y reproducible a v2 con solo dos tareas; no describía que la caché del host decide qué se instala."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Reescrito en la integración con la lectura estática del arnés (revisor independiente): directorio del host más caché, inyección solo con Docker, procedimiento con dos directorios y borrado obligatorio de la caché, y alcance de ensayo local."
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Detectado por la integración: el lockfile fechaba la fijación con una hora redonda sin respaldo y su criterio decía que las 4 ruedas las necesitaron las dos tareas, pero h11 y dirty_equals no estuvieron en el directorio del host ni en la caché del control v2."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Lockfile corregido en la integración: fecha respaldada por la marca de tiempo del archivo, verificación contra PyPI (las 4 ruedas coinciden) y criterio y motivos que dicen qué estuvo realmente instalado. Contiene 4 ruedas de PyPI por SHA-256 y 11 exclusiones de starlette; el episodio original solo atribuye a este tramo la de python-multipart."
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Detectado por la integración en scripts/build_sandbox.py: mypy daba no-any-return, los bytes descargados se escribían al cache antes de verificar tamaño y SHA-256, una exclusión ausente o contradictoria con una rueda añadida se ignoraba, y la salida no distinguía fallo de red, hash erróneo y lockfile desfasado."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Guion corregido en la integración: verificación en memoria antes de escribir, validación local antes de descargar, fallo ante exclusión ausente o mal formada, nombres sin rutas, códigos de salida distintos y --full-wheels-dir para el origen completo."
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Detectado por la revisión independiente: 10 tests pasaban pero 18 de 32 defectos inyectados sobrevivían; main y build_docker_image no tenían cobertura."
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Tests añadidos en la integración con dobles para urlopen y subprocess (descarga, cache corrupta, cableado de main, códigos de retorno); 44 pasan."
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "Construir la imagen swebench-sandbox:20261003-v2 (sha256:42d2948ac7a0006da88d9c1c497a5ccf669a72ce88622c5349574c2ac5c1f4c6); según el revisor 117 ruedas frente a 127 en v1. La imagen no decide qué starlette se instala."
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Primera corrida v2: las carpetas de recibos tienen marca de tiempo anterior a la imagen v2 y fueron sobrescritas; se infiere por las marcas de tiempo que usó la caché antigua del arnés, que no se invalida al cambiar el directorio de ruedas, y reprodujo v1."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Con el directorio del host sin las 11 ruedas, con las dos ruedas copiadas a mano y con la caché swegemma_sp_cache_v8 borrada y regenerada, control vacío v2 (--skip-agent-patch, Docker, concurrencia 1) sobre fastapi_11194 y rich_3061; recibos locales ignorados en artifacts/control-vacio-20261003-v2."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leer los recibos v2: fastapi_11194 pasa de código 2 (v1, fallo de recolección) a código 1 (las pruebas se recolectan y fallan sin parche); rich_3061 sigue en código 1. SHA-256 de task_results.jsonl: be0ce50dcc34233d7e5e01a31c5f9e622ead149a4c021acfa5e9038fa79b9e3c. Son dos tareas y no hay parche de referencia: no prueba que el entorno sirva para otras tareas de fastapi ni que alguna tarea sea válida."
+    }
+  ],
+  "lessons": [
+    "Apartar ruedas del directorio del host sin borrar la caché swegemma_sp_cache_v8 del arnés reproduce el entorno anterior: la caché se reutiliza mientras exista y no esté vacía.",
+    "El arnés elige la versión más alta de cada paquete del directorio de ruedas del host y no resuelve dependencias por tarea: un wheelhouse genérico puede romper una biblioteca cuando su versión más alta ya no acepta un argumento de construcción.",
+    "Las dependencias necesarias para recolectar pruebas deben fijarse con hash en el lockfile de entorno para evitar abortos tempranos de pytest."
+  ]
+}

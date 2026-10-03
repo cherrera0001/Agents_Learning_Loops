@@ -1,0 +1,115 @@
+{
+  "seq": 48,
+  "id": "hito-supervision-kaggle",
+  "goal": "Orientar la colaboración entre Claude Code, agy/Gemini y Codex a entregas verificables de los issues existentes y conservar la situación en memoria",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/100#issuecomment-5969295054",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Otro agente",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con .venv/Scripts/python.exe: recuperar lecciones sobre coordinación, estimación, tablero y entregas verificadas."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documentar en experiments/gemma_developer_agent/docs/supervision-codex-2026-10-03.md las más de 12 horas reportadas por el dueño, sin tratarlas como telemetría; responsables previstos, medición y entregas entre sesiones. No se crea un issue nuevo."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El dueño precisa que la operación completa de colaboración supervisada y memoria experiencial es el objeto de la postulación. Documentar ese encuadre, la cadena de recuperación y reutilización observable, y la atribución separada a memoria, supervisor, otros modelos y dueño. La aceptación del encuadre no acredita todavía eficacia causal."
+    },
+    {
+      "action": "gh_project_update",
+      "success": false,
+      "error": "La tarjeta #103 estaba en Todo pese a PR de preparación mergeados y PR #117 abierto; el responsable de la actualización previa no está identificado. El chequeo board --since 100 devolvió sin hallazgos y no detectó esta desalineación."
+    },
+    {
+      "action": "gh_project_update",
+      "success": true,
+      "note": "Codex actualizó #103 a In Progress por trabajo observado; conserva talla L y verificación Pendiente. El hito no cierra #103, no acredita resultados con Gemma y no prueba la recepción del encargo por las otras sesiones."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Por instrucción del dueño, conservar la base del experimento y sintetizar la colaboración al final. Publicar asignación operativa en los diez issues abiertos sin crear tarjetas ni campos: Codex #100/#101; agy/Gemini #103/#104/#105/#106/#107/#109; Claude Code #96/#98 y colaboración prioritaria en el protocolo de #103. Cada comentario pide ACEPTO/BLOQUEADO, sesión, modelo real, entrega, intervalo restante y checkpoint UTC. Los diez comandos gh issue comment devolvieron salida 0; no se ha constatado aceptación de las sesiones."
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El primer reparto se publicó sin identificar las sesiones ni comprobar su trabajo activo; dejó una entrega sin continuidad directa y la atribución de los reportes en el chat resultó mezclada."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Identificar por transcripción Claude Code ee5fe5f1-2f0e-48fc-aa75-230d364337ad, Opus 5.5, ocupado con ambas revisiones y correcciones de PR #117; ya encargó EDA versionado. Identificar AGY 00bad8a5-b1f9-4c70-8b4d-929d34c08a27 como IDLE para el workspace. Publicar reparto por entrega sin duplicar el implementador de Claude."
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La continuación headless de AGY no produjo respuesta: RunCommand fue auto-denegado al no poder solicitar permiso. La salida declaró SUCCESS pero incluyó denied_actions; no acreditó ejecución ni entrega."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Continuar la misma sesión AGY mediante CLI interactiva, sin bypass ni permisos globales. La sesión declaró ACEPTO y Gemini 3.8 Flash High, rama issue-103-entorno-sandbox. Codex envió un segundo mensaje para que ejecutara en vez de terminar con un plan; se observaron herramientas Read/Edit/Bash y una solicitud de permiso para el build. La calidad y la finalización siguen pendientes."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Reproducir el EDA temporal: agregados coinciden y contador de archivos falla. Distinguir líneas totales de diff de líneas añadidas/eliminadas. Reproducir con wheelhouses sintéticos que prepare_build_context conserva una rueda retirada del origen. Enviar a AGY corrección de contexto obsoleto, test de SHA256 que no pruebe solo fallo de red, imagen identificada y build-dir propio. Publicar revisión operativa en PR #117 sin aprobar merge."
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "AGY corrigió los tests de hash, pero la corrección de contexto seguía ausente aunque la daba por hecha. Los mensajes de supervisión estaban en cola mientras continuaba con lint/formato; Codex interrumpió el tramo y reasignó ese cambio acotado."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Tramo acotado estimado S (2 puntos, A1/I1/R3/V2), ejecutor Codex: cambiar dest_wheels_dir.mkdir a exist_ok=False para rechazar reutilización sin borrar nada. Agregar tests de rechazo en segunda preparación y compatibilidad con cache de descarga preexistente. Transferir a AGY verificación y construcción con tag propio/build-dir nuevo, sin revertir los cambios. La base del experimento no cambia."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Codex ejecutó .venv/Scripts/python.exe -m pytest tests/test_build_sandbox.py -q: 9 passed; ruff check y format --check de ambos archivos pasan. AGY leyó los cambios y solicitó ejecutar su verificación independiente. La imagen y los controles aún no están acreditados."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "AGY construyó imagen nueva b1e2a17806d06ee3262368550dff61a56d7ef6772360fd6adbe897c1360f4054 y ejecutó control vacío con Docker y esa imagen sobre fastapi_11194/rich_3061. Codex verificó recibos nuevos: SHA256 task_results.jsonl c82648cc3e3432de12c44e9b96b746d89fc3bebabe9832fa461071616a8f6de6; FastAPI código 2 en la fase de recolección (la construcción de FastAPI() falla con las versiones nuevas de starlette); Rich código 1, 12 failed/100 passed sin parche. Se ejecutó el diagnóstico, no Gemma; FastAPI aún no sirve para medir y Rich carece del contraste de referencia. No se generaliza a otras tareas ni se cuenta 0/2 como tasa del agente. Publicar checkpoint #103 y asignar a AGY una propuesta de compatibilidad fundamentada antes de v2."
+    }
+  ],
+  "lessons": [
+    "Antes de abrir trabajo de coordinación, vincular la siguiente entrega a un criterio de aceptación de un issue existente y nombrar un único responsable de integración.",
+    "Distinguir encargo publicado, recepción por la sesión y aceptación del artefacto; compartir el tablero no acredita que dos agentes estén colaborando.",
+    "Medir estimación restante frente a tiempos con fuente y dependencias aceptadas; los puntos de talla y la duración entre eventos de GitHub no son horas efectivas de un modelo.",
+    "Comprobar que el estado del tablero corresponde al trabajo observado aunque devlog board no reporte hallazgos.",
+    "Estudiar la operación completa de ALL como colaboración supervisada con memoria experiencial, conectando la trazabilidad del proceso con resultados de reparación sin confundir sus unidades de análisis.",
+    "Registrar la consulta de memoria, la lección recuperada, la decisión modificada y el resultado posterior antes de afirmar reutilización; atribuir por separado las intervenciones de supervisores y otros modelos.",
+    "Identificar sesión, estado y encargo activo antes de reasignar; un reporte pegado puede estar atribuido al modelo equivocado.",
+    "No contar SUCCESS de una CLI como entrega si la respuesta está vacía o denied_actions registra herramientas denegadas; comprobar el artefacto y continuar mediante permisos por comando.",
+    "En una construcción reproducible, usar un contexto identificado sin ruedas obsoletas y registrar el ID completo de imagen; añadir un tag no lo vuelve inmutable.",
+    "Si una CLI deja mensajes de supervisión en cola mientras ejecuta, comprobar su recepción antes de asumir que el implementador incorporó la corrección; interrumpir el tramo cuando una observación bloqueante siga sin atenderse.",
+    "Transferir explícitamente la propiedad de un cambio acotado cuando se cambia de ejecutor y exigir luego verificación independiente del artefacto.",
+    "Inspeccionar los logs de recolección además de summary.errors: error=null y errors=0 pueden coexistir con un instrumento incapaz de recolectar pruebas.",
+    "Separar diagnóstico de controles vacíos de resultados del modelo; una ejecución sin agente no acredita ResolutionRate de Gemma ni validez sin contraste con referencia."
+  ]
+}

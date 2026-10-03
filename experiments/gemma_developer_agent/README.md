@@ -40,11 +40,13 @@ experiencia.
 Las condiciones que se compararían son cuatro: **A**, el kit oficial; **B**, un texto de relleno de longitud
 comparable a las skills; **C**, las skills; y **D**, las skills con la instrucción de usar el grafo de código.
 
-**Qué está hecho.** El diseño de la medición, escrito y fijado antes de ejecutar nada: el
-[pre-registro de la línea base A](../../docs/preregistration/kaggle-baseline-a.md) (fijado: solo cambia por
-enmienda). Los guiones que lo acompañan (partición de las tareas, análisis de réplicas, validez de tareas,
-ensayo de notebook, compuerta de parámetros) están en `main` y se probaron con datos sintéticos. La cuota
-semanal de GPU de la cuenta se leyó por API.
+**Qué está hecho.** El diseño de la medición: el
+[pre-registro de la línea base A](../../docs/preregistration/kaggle-baseline-a.md), escrito y fijado antes de
+cualquier corrida con el modelo y antes de medir A (fijado: solo cambia por enmienda). Antes hubo controles
+locales sin modelo y sin parche, que el propio pre-registro describe y que no miden a Gemma. Los guiones que
+lo acompañan (partición de las tareas, análisis de réplicas, validez de tareas, ensayo de notebook,
+compuerta de parámetros) están en `main` y se probaron con datos sintéticos. La cuota semanal de GPU de la
+cuenta se leyó por API.
 
 **Qué no está hecho.** No se sabe qué proporción de tareas resuelve el kit oficial, cuánto varía entre
 repeticiones, qué tareas son válidas ni si la cuenta puede usar el acelerador L4×4. Las condiciones B, C y D
@@ -64,8 +66,8 @@ definen aquí, y se propone añadirlos.
 hashes que identifican las entradas. *Réplica*: una repetición completa de la misma corrida. *Tercil*: cada
 tercio de un reparto ordenado (aquí, por longitud del enunciado o del parche). `leave_one_repo_out`: reservar
 para prueba todas las tareas de un repositorio. *Episodio*: el registro de un issue en la bitácora de ALL.
-`recall`: la consulta de esa bitácora antes de empezar un issue. `M*`: la menor diferencia que el
-pre-registro leería como distinta del ruido (sección 8.2). LoRA: un adaptador entrenado que se suma al modelo.
+`recall`: la consulta de esa bitácora antes de empezar un issue. `M*`: el umbral de decisión del
+pre-registro para leer una diferencia (sección 8.2). LoRA: un adaptador entrenado que se suma al modelo.
 L4×4: la máquina con cuatro GPU NVIDIA L4 que usan los notebooks de la competencia.
 
 ---
@@ -156,13 +158,17 @@ Preguntas pendientes para los organizadores, sin respuesta hasta hoy:
 - ¿Un repositorio público de GitHub con scripts, agregados e identificadores de tarea cumple la regla de
   compartir código en el foro o en los notebooks de Kaggle (Foundational § 6.b)?
 - ¿Esos agregados o identificadores cuentan como «datos» (Rules § 2.4.b)?
-- ¿Qué significa «no publicado» frente a un repositorio público con resultados (Paper Track)?
+- ¿Qué significa «no publicado» frente a un repositorio público con resultados (Paper Track)? La
+  sección sobre los datos es, en la copia local de la página *Rules* del Paper Track, «4. Competition Data»,
+  apartados a y b (Rules §§ 4.a y 4.b); en la del Code Track es la misma sección, que este documento cita
+  como Rules § 2.4.a y § 2.4.b.
 - ¿Con qué concurrencia corre la puntuación y qué pasa si se superan las 12 h?
 - ¿Cómo se asignan los tres premios del Paper Track?
 - ¿Se puede gastar cuota de L4×4 en experimentos que solo alimentan el artículo?
 
 No se consultaron las páginas vivas ni el foro. Mientras no haya respuesta, este repositorio publica solo
-agregados y hashes, y no contenido de tareas.
+agregados y hashes, y no contenido de tareas, y el artículo de #105 queda sin publicación externa hasta
+aclararlo.
 
 El concurso no pregunta si un agente aprende de su experiencia. Pregunta cuántas tareas resuelve un envío fijo
 dentro de un presupuesto.
@@ -180,7 +186,7 @@ ellas, y la consolidación fuera de línea de #104 es un diseño, no código.
 
 **Aprender de la propia experiencia sin cambiar los pesos del modelo.** Reflexion, Voyager, ExpeL, Agent
 Workflow Memory y Memp convierten trayectorias en texto o código reutilizable. SWE-Exp lo aplica a SWE-bench
-Verified con un modelo propietario y no tiene un control con placebo, solo ablaciones. Casi todos los demás
+Verified con Claude 4 Sonnet y no tiene un control con placebo, solo ablaciones. Casi todos los demás
 son de otros dominios (funciones aisladas, Minecraft, web, planificación), y en sus resúmenes no vimos
 controles con un texto de relleno.
 
@@ -205,9 +211,11 @@ obras. No encontramos un trabajo que las combine para agentes de código con ski
   software, 4,5 puntos (de 34,4 % a 38,9 %), con 16 de 84 tareas peor con skills curadas (Li et al., 2026,
   v1; una revisión posterior da otras cifras, por eso se cita siempre la v1).
 - **Archivos de contexto de repositorio.** En SWE-bench Lite y AGENTbench, los archivos generados por un LLM
-  empeoraron 5 de 8 configuraciones, con la tasa de resolución 0,5 % y 2 % más baja de media y el costo 20 %
-  y 23 % más alto (Gloaguen et al., 2026; § 4.2). Según el resumen de su v3, los archivos no mejoran de forma
-  general, sean de una IA o de personas.
+  empeoraron 5 de 8 configuraciones; la tasa de resolución bajó 0,5 % y 2 % de media (porcentajes tal como
+  los reporta la obra, en SWE-bench Lite y en CTXbench, un benchmark que crean los autores) y el costo subió
+  20 % y 23 % (Gloaguen et al., 2026; § 4.2). Según el resumen de su v3, los archivos no mejoran de forma
+  general, sean de una IA o de personas; en el cuerpo, los escritos por desarrolladores superaron por poco a
+  los generados, con más costo.
 - **Autocorrección.** En tareas de razonamiento, sin retroalimentación externa la autocorrección a veces
   empeora (Huang et al., 2024).
 - **Resultado propio previo.** Con tareas con señuelo, las dos memorias empeoraron el primer intento, de 6/18
@@ -222,18 +230,20 @@ mixto.
 
 ### 3.3 Validez de las tareas y ruido
 
-- **Validez.** En SWE-bench hay problemas documentados. Entre los parches exitosos de SWE-Agent con GPT-4,
-  32,67 % tenían la solución filtrada en el issue o en sus comentarios y 31,08 % eran sospechosos por pruebas
-  débiles (Aleithan et al., 2024). Otro estudio estimó que 7,8 % de los parches «correctos» fallan las
-  pruebas de los desarrolladores (Wang et al., 2025). Hay indicios de memorización (Liang et al., 2025) y
-  conjuntos renovados con tareas recientes (SWE-bench-Live, SWE-rebench).
+- **Validez.** Hay problemas documentados en SWE-bench. En un análisis manual de los parches exitosos de
+  SWE-Agent con GPT-4, 32,67 % tenían la solución filtrada en el issue o en sus comentarios y 31,08 % eran
+  sospechosos por pruebas débiles (Aleithan et al., 2024); son cifras de esa configuración, no una propiedad
+  general de SWE-bench. Otro estudio estimó que 7,8 % de los parches «correctos» fallan las pruebas de los
+  desarrolladores, en los tres sistemas y el conjunto SWE-bench Verified que estudia (Wang et al., 2025).
+  Hay indicios de memorización (Liang et al., 2025) y conjuntos renovados con tareas recientes
+  (SWE-bench-Live, SWE-rebench).
 - **Lo que hace este experimento.** No corrige nada de eso. Mide por su cuenta qué tareas públicas
   discriminan (fallan sin parche y pasan con el de referencia) y excluye las demás. Es un filtro más estrecho
   que las auditorías citadas: comprueba que la tarea discrimina, no que su enunciado esté libre de
   filtraciones ni que sus pruebas sean fuertes. Hoy no se ha ejecutado.
-- **Ruido.** En SWE-bench Verified, con tres modelos y dos arneses, la estimación pass@1 de una corrida varía
-  entre 2,2 y 6,0 puntos según la corrida elegida, con desviación superior a 1,5 puntos aun a temperatura 0
-  (Bjarnason et al., 2026). No son cifras de Gemma ni de 48 a 67 tareas. Por eso el experimento mide primero
+- **Ruido.** En SWE-bench Verified, con tres modelos y dos scaffolds, la estimación pass@1 de una corrida
+  varía entre 2,2 y 6,0 puntos según la corrida elegida, con desviación superior a 1,5 puntos aun a
+  temperatura 0 (Bjarnason et al., 2026). No son cifras de Gemma ni de 48 a 67 tareas. Por eso el experimento mide primero
   cuánto varía el kit oficial (condición A) al repetirlo.
 - **Prueba pareada.** Dietterich (1998) recomienda McNemar para comparar algoritmos de clasificación que se
   corren una sola vez. Trasladarlo a agentes con réplicas es un supuesto nuestro: no afirmamos que sea el
@@ -366,7 +376,10 @@ y sin memoria. Registrar y consolidar solo pueden hacerse antes del envío, y lo
 «Recordar» se reduce a que el modelo lea un archivo fijo. Ninguna tarea se beneficia de la anterior, el
 orden no importa y nada se corrige tras un fallo. La recuperación tampoco la hace el grafo asociativo de ALL,
 sino el modelo. La vía que el concurso ofrece para fijar un aprendizaje son los adaptadores LoRA, que #104
-deja fuera de alcance.
+deja fuera de alcance. Esto es un límite del experimento y una posible desalineación entre la pregunta de ALL,
+que trata de una memoria que se consulta, y el diseño del concurso, que evalúa archivos fijos (fuentes:
+HARNESS § 4.1 y § 5.1, y la página *Model Selection, Budget, and Harness Rules*). No cambia ninguna
+predicción ni regla fijada del pre-registro.
 
 **Dónde sí hay comunicación entre tareas.** Que la ejecución de cada tarea sea aislada no significa que las
 tareas no se comuniquen en ningún sitio. Se clasifican, se siguen y se evalúan en un tablero común, fuera de
@@ -582,8 +595,8 @@ skills.
 grafo asociativo mejora la selección de contexto de un agente Gemma 4 sin transferencia negativa. Se retiró
 porque no es contestable en este arnés: ninguna condición implementa un grafo asociativo, y la recuperación no
 la hace ese grafo sino el propio modelo, que decide si lee un archivo fijo (sección 5). Tampoco coincide con
-la pregunta del issue #100. La pregunta asociativa sigue abierta en otro lugar: la siembra con señales no léxicas
-del solver acotado es el issue #98 (H8), que el #100 califica de «relacionado, no hijo».
+la pregunta del issue #100. La pregunta asociativa sigue abierta en otro lugar: la siembra con señales no
+léxicas del solver acotado es el issue #98 (H8), que el #100 califica de «relacionado, no hijo».
 
 ---
 
@@ -607,10 +620,9 @@ el [pre-registro](../../docs/preregistration/kaggle-baseline-a.md):
 
 **Propuesta, a fijar en el pre-registro de #104 antes de cualquier episodio; no están pre-registradas.** No se
 inventa ningún umbral: donde el pre-registro de la línea base tiene una regla, se remite a ella, y donde no,
-dice «por fijar». `M*` es el tamaño mínimo de diferencia que se leería como distinta del ruido (sección G del
-pre-registro): el mayor entre el suelo 6/n y la diferencia mínima significativa calculada con la variación
-medida de A. No garantiza detectarla: un efecto real de ese tamaño se detectaría aproximadamente la mitad de
-las veces.
+dice «por fijar». `M*` es el umbral de decisión que fija la sección G del pre-registro de la línea base: el
+mayor entre el suelo 6/n y la diferencia mínima calculada con la variación medida de A. Aquí solo se usa
+como umbral de lectura; no se anticipa con qué frecuencia una diferencia real lo superaría.
 
 Cada hipótesis se lee con tres desenlaces que no se solapan. Se comparan tareas resueltas de dos condiciones
 sobre las mismas tareas:
@@ -683,7 +695,8 @@ nulo o en contra. No se busca una nota alta en la tabla.
 
 **Aporte esperado.** Consolidar skills desde episodios ya existe. Lo propio es la combinación: medir el ruido
 de A, un placebo de longitud comparable, partición por repositorio y reglas declaradas antes de ver datos.
-Reaplica en otro arnés ideas conocidas y no demuestra que un agente adquiera una habilidad nueva. La línea
+Es un diseño propuesto para aplicar en otro arnés ideas conocidas: no hay ninguna corrida que las replique, y
+no demostraría que un agente adquiera una habilidad nueva. La línea
 base es exploratoria y no confirmatoria. Preregistrar distingue la predicción del análisis posterior (Nosek
 et al., 2018); que no elimine por sí solo el sesgo es una opinión nuestra, no un resultado de esa obra.
 
@@ -801,7 +814,7 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 | Variación entre réplicas de A | **Sin medir** | — |
 | Validez de cada tarea (`discrimina` o no) | **Sin medir.** `scripts/kaggle_validez.py` nunca se ejecutó con el verificador real | [`docs/validez_tareas.md`](docs/validez_tareas.md) |
 | Ensayo de notebook: backend, carga del modelo, tokens por segundo, rechazos por contexto | **Sin medir.** El instrumento nunca se ejecutó en Kaggle | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
-| Entorno del sandbox: una variante local v2 (constructor `scripts/build_sandbox.py`, PR #120) con dos controles vacíos | Ensayo local con dos tareas sin parche de referencia; no fija el entorno del experimento ni acredita validez de ninguna tarea | [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) |
+| Entorno del sandbox: una variante local v2 (constructor `scripts/build_sandbox.py`, PR #120) con controles vacíos de dos tareas | Ensayo local, sin parche de referencia: no fija el entorno del experimento ni acredita la validez de ninguna tarea; su diagnóstico es una lectura estática del arnés, sin ejecutarlo | [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) |
 | Concurrencia de la puntuación real | **Sin medir** | — |
 | Acceso a L4×4 desde la cuenta | **Sin medir** | Comentario en #101 |
 | Efecto de B, C o D | **Sin medir.** Las condiciones no existen | — |
@@ -852,9 +865,9 @@ entorno del experimento, que fija el ensayo de notebook.
 | [`docs/kaggle_api_2026-10-02.json`](docs/kaggle_api_2026-10-02.json) | Instantánea de la API del 2026-10-02 | Registro fechado: dice que la cuenta no estaba inscrita en la pista de artículo; hoy sí lo está |
 | [`docs/entorno_local.md`](docs/entorno_local.md) | Procedencia e instalación del arnés | Vigente, con partes sin recibo rotuladas |
 | [`docs/compilacion_condicion_a.md`](docs/compilacion_condicion_a.md) | Que el kit compila con el arnés | Vigente, con la salida sin recibo rotulada |
-| [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) | Variante local v2 del entorno del sandbox, con dos controles vacíos | Lista candidata de arreglos; ensayo local, no es el entorno del experimento |
-| [`docs/desviaciones_entorno_wheels.lock`](docs/desviaciones_entorno_wheels.lock) | Registro de las ruedas apartadas en la variante v2 | Registro de ese ensayo local |
-| `scripts/build_sandbox.py` | Constructor local del contexto del sandbox | Instrumento del ensayo local |
+| [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) | Diagnóstico y variante v2 del entorno del sandbox, medida sobre dos tareas sin parche de referencia | Lista candidata de arreglos; ensayo local, no es el entorno del experimento ni prueba que sirva para las demás tareas |
+| [`docs/desviaciones_entorno_wheels.lock`](docs/desviaciones_entorno_wheels.lock) | Cuatro ruedas adicionales de PyPI con su SHA-256 y las ruedas de starlette apartadas del wheelhouse | Lista candidata de ese ensayo local |
+| `scripts/build_sandbox.py` | Reconstruye la imagen Docker del sandbox verificando hashes y tamaños; no decide qué ruedas instala el arnés | Instrumento de ensayo local; la imagen que produce no es por sí sola el entorno del experimento |
 | [`docs/analisis_replicas.md`](docs/analisis_replicas.md) | Ficha de `scripts/kaggle_replicas.py` | Vigente; describe el pre-registro |
 | [`docs/validez_tareas.md`](docs/validez_tareas.md) | Ficha de `scripts/kaggle_validez.py` | Vigente; nunca ejecutado con el verificador real |
 | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) | Paso a paso del ensayo de notebook | Vigente; nunca ejecutado |
@@ -923,10 +936,10 @@ python -m scripts.kaggle_prereg ruido --tareas 40 48 67
 
 El primero devuelve «minutos de reloj por tarea que deja el envío: 5.40», que es `T · (1 − r) / N` con
 T = 720, r = 0,10 y N = 120, y una tabla de `max_time_minutes` por concurrencia, carga del modelo y montaje:
-restando el montaje y la carga, con concurrencia 1 salen entre 3 y 5 minutos. El segundo devuelve la escalera de ocho
-escalones, calculada con todas las tareas válidas y un factor de cuota 2 (de 59,85 h de L4×4 el escalón 1, a
-17,28 h el escalón 8). El tercero devuelve, para 40, 48 y 67 tareas, el suelo (6/n) y los discordantes que
-admite el caso de ruido bajo (1, 2 y 10) y el intermedio (11, 18 y 44).
+restando el montaje y la carga, con concurrencia 1 salen entre 3 y 5 minutos. El segundo devuelve la
+escalera de ocho escalones, calculada con todas las tareas válidas y un factor de cuota 2 (de 59,85 h de
+L4×4 el escalón 1, a 17,28 h el escalón 8). El tercero devuelve, para 40, 48 y 67 tareas, el suelo (6/n) y
+los discordantes que admite el caso de ruido bajo (1, 2 y 10) y el intermedio (11, 18 y 44).
 
 **No se versiona contenido de la competencia:**
 
@@ -943,7 +956,8 @@ Sale con 0. Sin los datos locales de `data/` solo compara contra el manifiesto d
 python -m scripts.devlog board --since 100     # sin hallazgos; salida 0
 python -m scripts.devlog pilot --since 100     # población de 3 issues (#102, #111 y #114); cifras en 6.1
 python -m scripts.devlog rebuild               # regenera la memoria derivada de los episodios
-python -c "import json,collections as c;d=json.load(open('learning/dev_memory.json',encoding='utf-8'));print(len(d['nodes']),c.Counter(n['type'] for n in d['nodes']),len(d['edges']))"
+python -c "import json,collections as c;d=json.load(open('learning/dev_memory.json',encoding='utf-8')); \
+print(len(d['nodes']),c.Counter(n['type'] for n in d['nodes']),len(d['edges']))"
 ```
 
 Los dos primeros leen GitHub con `gh`. El último imprime los nodos, sus cuatro tipos y las aristas; los
@@ -963,7 +977,7 @@ la § 4.2 de Gloaguen et al., tomadas del cuerpo. Lo que se dice de cada obra se
 
 **Evaluación de issues reales y validez.**
 
-- Jimenez et al. (2024), SWE-bench, ICLR 2024. [arXiv:2310.06770](https://arxiv.org/abs/2310.06770).
+- Jimenez et al. (2024), SWE-bench. [arXiv:2310.06770](https://arxiv.org/abs/2310.06770).
 - Aleithan et al. (2024), SWE-Bench+. [arXiv:2410.06992](https://arxiv.org/abs/2410.06992).
 - Wang, Pradel y Liu (2025), «Are "Solved Issues" in SWE-bench Really Solved Correctly?».
   [arXiv:2503.15223](https://arxiv.org/abs/2503.15223).
@@ -976,14 +990,14 @@ la § 4.2 de Gloaguen et al., tomadas del cuerpo. Lo que se dice de cada obra se
 
 - Shinn et al. (2023), Reflexion. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366).
 - Wang et al. (2023), Voyager. [arXiv:2305.16291](https://arxiv.org/abs/2305.16291).
-- Zhao et al., ExpeL, AAAI-24. [arXiv:2308.10144](https://arxiv.org/abs/2308.10144).
+- Zhao et al., ExpeL. [arXiv:2308.10144](https://arxiv.org/abs/2308.10144).
 - Wang, Mao, Fried y Neubig (2024), Agent Workflow Memory.
   [arXiv:2409.07429](https://arxiv.org/abs/2409.07429).
 - Fang et al. (2025), Memp. [arXiv:2508.06433](https://arxiv.org/abs/2508.06433).
 - Chen et al. (2025), SWE-Exp. [arXiv:2507.23361](https://arxiv.org/abs/2507.23361).
 - Xiong et al. (2025), «How Memory Management Impacts LLM Agents: An Empirical Study of Experience-Following
   Behavior». [arXiv:2505.16067](https://arxiv.org/abs/2505.16067).
-- Huang et al. (2024), «Large Language Models Cannot Self-Correct Reasoning Yet», ICLR 2024.
+- Huang et al. (2024), «Large Language Models Cannot Self-Correct Reasoning Yet».
   [arXiv:2310.01798](https://arxiv.org/abs/2310.01798).
 
 **Skills como archivos declarativos.**
@@ -1004,7 +1018,7 @@ la § 4.2 de Gloaguen et al., tomadas del cuerpo. Lo que se dice de cada obra se
 
 **Grafos de código.**
 
-- Ouyang et al. (2025), RepoGraph, ICLR 2025. [arXiv:2410.14684](https://arxiv.org/abs/2410.14684).
+- Ouyang et al. (2025), RepoGraph. [arXiv:2410.14684](https://arxiv.org/abs/2410.14684).
 - Chen et al. (2025), LocAgent. [arXiv:2503.09089](https://arxiv.org/abs/2503.09089).
 - Liu et al. (2024), CodexGraph. [arXiv:2408.03910](https://arxiv.org/abs/2408.03910).
 
@@ -1020,8 +1034,8 @@ la § 4.2 de Gloaguen et al., tomadas del cuerpo. Lo que se dice de cada obra se
 - Dietterich (1998), Neural Computation 10(7).
   [doi:10.1162/089976698300017197](https://doi.org/10.1162/089976698300017197).
 - Clopper y Pearson (1934), Biometrika 26(4).
-  [doi:10.1093/biomet/26.4.404](https://doi.org/10.1093/biomet/26.4.404): origen del intervalo exacto que
-  usa el análisis de réplicas ([`docs/analisis_replicas.md`](docs/analisis_replicas.md)).
+  [doi:10.1093/biomet/26.4.404](https://doi.org/10.1093/biomet/26.4.404): se cita solo como origen del
+  intervalo exacto que usa el análisis de réplicas ([`docs/analisis_replicas.md`](docs/analisis_replicas.md)).
 
 **Modelo.**
 
