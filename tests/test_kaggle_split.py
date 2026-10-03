@@ -15,9 +15,7 @@ import pytest
 from scripts.kaggle_split import allocate_proportional_seats, split_tasks
 
 
-def generate_synthetic_tasks(
-    counts_per_repo: dict[str, int], seed: int = 42
-) -> list[dict[str, Any]]:
+def generate_synthetic_tasks(counts_per_repo: dict[str, int], seed: int = 42) -> list[dict[str, Any]]:
     """Genera tareas sinteticas con fechas deterministas no correlacionadas con el orden."""
     rng = random.Random(seed)
     tasks: list[dict[str, Any]] = []
@@ -47,9 +45,7 @@ def generate_synthetic_tasks(
 @pytest.fixture
 def synthetic_tasks() -> list[dict[str, Any]]:
     """Fixture de 60 tareas sinteticas repartidas en 3 repositorios (30, 20, 10)."""
-    return generate_synthetic_tasks(
-        {"repo_alpha": 30, "repo_beta": 20, "repo_gamma": 10}, seed=123
-    )
+    return generate_synthetic_tasks({"repo_alpha": 30, "repo_beta": 20, "repo_gamma": 10}, seed=123)
 
 
 def test_split_is_deterministic(synthetic_tasks: list[dict[str, Any]]) -> None:
@@ -111,14 +107,10 @@ def test_no_test_task_is_older_than_repo_cutoff(
             continue
 
         repo_train_dates = [
-            tasks_by_id[tid]["created_at"]
-            for tid in train_ids
-            if tasks_by_id[tid]["repo"] == repo
+            tasks_by_id[tid]["created_at"] for tid in train_ids if tasks_by_id[tid]["repo"] == repo
         ]
         repo_test_dates = [
-            tasks_by_id[tid]["created_at"]
-            for tid in test_ids
-            if tasks_by_id[tid]["repo"] == repo
+            tasks_by_id[tid]["created_at"] for tid in test_ids if tasks_by_id[tid]["repo"] == repo
         ]
 
         assert repo_test_dates, f"Repo {repo} no tiene tareas de prueba"

@@ -17,9 +17,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-DEFAULT_CALIBRACION_PATH = Path(
-    "experiments/gemma_developer_agent/calibracion/fase2_sin_parche.json"
-)
+DEFAULT_CALIBRACION_PATH = Path("experiments/gemma_developer_agent/calibracion/fase2_sin_parche.json")
 
 
 def compute_sha256(file_path: Path | str) -> str:
@@ -47,9 +45,7 @@ def load_excluded_task_ids(calibracion_path: Path | str | None) -> set[str]:
     return {item["instance_id"] for item in invalid_tasks if "instance_id" in item}
 
 
-def allocate_proportional_seats(
-    counts: dict[str, int], total_seats: int
-) -> dict[str, int]:
+def allocate_proportional_seats(counts: dict[str, int], total_seats: int) -> dict[str, int]:
     """Asigna vacantes proporcionalmente mediante el metodo de mayor residuo (Hamilton)."""
     total_items = sum(counts.values())
     if total_items == 0 or total_seats == 0:
@@ -64,9 +60,7 @@ def allocate_proportional_seats(
 
     unassigned = total_seats - sum(seats.values())
     # Desempate determinista por residuo descendente y luego por nombre de clave
-    sorted_rem = sorted(
-        counts.keys(), key=lambda k: (-remainders[k], k)
-    )
+    sorted_rem = sorted(counts.keys(), key=lambda k: (-remainders[k], k))
     for k in sorted_rem[:unassigned]:
         seats[k] += 1
 
@@ -83,9 +77,7 @@ def split_tasks(
     if excluded_ids is None:
         excluded_ids = set()
 
-    valid_tasks: list[dict[str, Any]] = [
-        t for t in tasks if str(t.get("instance_id")) not in excluded_ids
-    ]
+    valid_tasks: list[dict[str, Any]] = [t for t in tasks if str(t.get("instance_id")) not in excluded_ids]
 
     # Agrupar por repositorio
     by_repo: dict[str, list[dict[str, Any]]] = {}
@@ -95,9 +87,7 @@ def split_tasks(
 
     # Ordenar tareas dentro de cada repo por (created_at, instance_id) ascendente
     for repo_tasks in by_repo.values():
-        repo_tasks.sort(
-            key=lambda x: (str(x.get("created_at", "")), str(x.get("instance_id", "")))
-        )
+        repo_tasks.sort(key=lambda x: (str(x.get("created_at", "")), str(x.get("instance_id", ""))))
 
     # Asignacion estratificada por repositorio
     repo_counts = {repo: len(rtasks) for repo, rtasks in by_repo.items()}

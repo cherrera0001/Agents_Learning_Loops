@@ -15,8 +15,15 @@ from swegemma.models import setup_gemma_model_registry
 submission_dir = Path("experiments/gemma_developer_agent/conditions/a_kit")
 tools = ToolRegistry()
 for tool_name in [
-    "run_command", "read_file", "edit_file", "write_file", "get_status",
-    "submit_patch", "get_code_neighbors", "search_similar_code", "get_code_subgraph",
+    "run_command",
+    "read_file",
+    "edit_file",
+    "write_file",
+    "get_status",
+    "submit_patch",
+    "get_code_neighbors",
+    "search_similar_code",
+    "get_code_subgraph",
 ]:
     tools.register(tool_name, lambda **kwargs: None)
 
