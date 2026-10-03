@@ -19,4 +19,8 @@ scratch/
 experiments/gemma_developer_agent/data/
 experiments/gemma_developer_agent/artifacts/
 experiments/gemma_developer_agent/checkpoints/
+experiments/gemma_developer_agent/conditions/a_kit/*
+!experiments/gemma_developer_agent/conditions/a_kit/README.md
+!experiments/gemma_developer_agent/conditions/a_kit/manifest.json
+!experiments/gemma_developer_agent/conditions/a_kit/download_kit.py
 *.ipynb_checkpoints
