@@ -1,0 +1,65 @@
+{
+  "seq": 46,
+  "id": "issue-111",
+  "goal": "Retirar del repositorio público los datos de la competencia y sustituirlos por manifiesto declarativo y script de descarga (reglas, sección 4)",
+  "ref": "#111",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Otro agente",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Consulta devlog recall antes de implementar el retiro de datos protegidos y el diseño de manifiesto reproducible"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Creación de manifest.json con 10 archivos y sus hashes SHA-256 oficiales, y download_kit.py en stdlib pura con verificación de integridad y soporte de Kaggle API"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Actualización de .gitignore para ignorar los artefactos descargados en conditions/a_kit/ y retiro del árbol de git de los 10 archivos del starter kit (git rm --cached)"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Creación de conditions/a_kit/README.md explicando la adquisición declarativa y recorte de docs/kaggle_specifications.md a hechos de páginas públicas citadas y referencias de sección a HARNESS"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Creación y ejecución de scripts/verify_no_competition_data.py comprobando 0 coincidencias por nombre o SHA-256 contra 524 archivos de la API y 167 hashes locales"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Comprobación de calidad con ruff check y ruff format --check en scripts nuevos y modificados"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "Consolidación de la bitácora ejecutando python -m scripts.devlog rebuild"
+    }
+  ],
+  "lessons": [
+    "En proyectos de investigación abierta sobre competencias, nunca versionar plantillas ni datos del concurso: mantener código y manifiestos SHA-256, descargando los datos localmente a rutas ignoradas por git",
+    "Las fichas técnicas deben remitir a las especificaciones del arnés mediante referencias de sección (HARNESS § X.Y) o páginas públicas citadas, sin copiar texto protegido",
+    "Verificar la higiene del repositorio contrastando directamente el árbol de archivos rastreados (git ls-files) contra la lista completa de la API de la competencia por ruta y por hash criptográfico"
+  ]
+}
