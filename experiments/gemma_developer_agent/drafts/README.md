@@ -2,8 +2,8 @@
 
 > **Nota de estado.** Catálogo vigente de los borradores, pero varios de ellos están superados: ver el
 > [mapa de documentos](../README.md#12-mapa-de-documentos). Sobre B, las tres definiciones que circulan (la
-> de este catálogo, la del borrador de pre-registro y la del issue #104) no coinciden: la que vale es la que
-> fije el pre-registro de la campaña, que aún no existe.
+> de este catálogo, la del borrador de pre-registro y la del issue #104) no coinciden: la que vale es la del
+> [pre-registro de la campaña](../../../docs/preregistration/kaggle-campaign-abcd.md).
 
 Este directorio contiene configuraciones, directivas y textos preliminares escritos durante la fase inicial
 de exploración del concurso.

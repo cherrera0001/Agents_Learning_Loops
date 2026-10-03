@@ -49,8 +49,9 @@ compuerta de parámetros) están en `main` y se probaron con datos sintéticos. 
 cuenta se leyó por API.
 
 **Qué no está hecho.** No se sabe qué proporción de tareas resuelve el kit oficial, cuánto varía entre
-repeticiones, qué tareas son válidas ni si la cuenta puede usar el acelerador L4×4. Las condiciones B, C y D
-son una propuesta del issue #104 y no tienen pre-registro. Los resultados que ALL tiene hoy
+repeticiones, qué tareas son válidas ni si la cuenta puede usar el acelerador L4×4. Las reglas de B, C y D
+están en el [pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md); la prueba no
+ha empezado, porque falta la variación de A. Los resultados que ALL tiene hoy
 ([H4, #58, H6 y H7](../../README.md#qué-presenta-este-experimento)) son de un solver acotado que no usa modelo
 de lenguaje: no permiten concluir nada sobre Gemma.
 
@@ -586,7 +587,7 @@ de herramientas, ¿cuánto varía el resultado de la condición A al repetir la 
 tareas? ¿Qué diferencia entre dos condiciones no se distingue de esa variación? La respuesta decide cuántas
 réplicas y qué margen necesita la campaña, o si esa campaña puede afirmar algo.
 
-**Pregunta de la campaña** (issue #104; **todavía sin pre-registro**). ¿Unas skills consolidadas fuera de
+**Pregunta de la campaña** (issue #104; reglas en el [pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md); la prueba no ha empezado). ¿Unas skills consolidadas fuera de
 línea a partir de episodios con Gemma mejoran la resolución de tareas de otro repositorio frente al kit y
 frente a un placebo de longitud comparable, dentro del presupuesto del envío? La condición D, con una
 instrucción de usar el grafo de código, exige una comparación adicional que separe su efecto del de las
@@ -619,11 +620,11 @@ el [pre-registro](../../docs/preregistration/kaggle-baseline-a.md):
 
 ### 8.2 Campaña (C frente a A, C frente a B, D frente a C)
 
-**Propuesta, a fijar en el pre-registro de #104 antes de cualquier episodio; no están pre-registradas.** No se
-inventa ningún umbral: donde el pre-registro de la línea base tiene una regla, se remite a ella, y donde no,
-dice «por fijar». `M*` es el umbral de decisión que fija la sección G del pre-registro de la línea base: el
-mayor entre el suelo 6/n y la diferencia mínima calculada con la variación medida de A. Aquí solo se usa
-como umbral de lectura; no se anticipa con qué frecuencia una diferencia real lo superaría.
+**Fijadas en el [pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md), antes de
+cualquier episodio.** El texto que manda es ese. Esta sección lo resume y no añade umbrales. `M*` es el de
+la sección G del pre-registro de la línea base: el mayor entre el suelo 6/n y la diferencia mínima calculada
+con la variación medida de A. Aquí solo se usa como umbral de lectura; no se anticipa con qué frecuencia una
+diferencia real lo superaría.
 
 Cada hipótesis se lee con tres desenlaces que no se solapan. Se comparan tareas resueltas de dos condiciones
 sobre las mismas tareas:
@@ -635,35 +636,34 @@ sobre las mismas tareas:
 | H(D, C): la instrucción de usar el grafo (D) añade a C | D resuelve más que C por más de `M*` | La diferencia es menor que `M*` | D resuelve menos que C por más de `M*` |
 
 Supuestos: para C frente a B y D frente a C se usa el mismo `M*`, lo que supone que la variación entre
-corridas es la de A (la de B, C y D no se ha medido). El estimador de varias corridas por condición está por
-fijar. D solo se corre si alcanza el cómputo (G6). Si A resuelve casi todas las tareas del subconjunto (menos
-de 6 sin resolver, G3), la campaña no puede declarar mejora sobre ese subconjunto; si la línea base cae en el
-caso de ruido dominante, la campaña no se corre como confirmatoria. La predicción de la campaña, una sola como
-pide #104, está por fijar.
+corridas es la de A (la de B, C y D no se ha medido). El estimador es mayoría estricta y la predicción, una,
+es que H(C, A) no queda apoyada: las dos están en el pre-registro de la campaña. D solo se corre si alcanza
+el cómputo (G6). Si A resuelve casi todas las tareas del subconjunto (menos de 6 sin resolver, G3), la
+campaña no puede declarar mejora sobre ese subconjunto; si la línea base cae en el caso de ruido dominante,
+la campaña no se corre, ni como confirmatoria ni como descriptiva.
 
-**B y D tienen hoy varias definiciones en los borradores.** La del issue #104 es la que valdrá para el
-pre-registro, y aun así deja una elección abierta.
+**B y D tenían varias definiciones en los borradores.** La elección quedó en el pre-registro de la campaña:
+B es el placebo de longitud, no unas heurísticas, y D es la instrucción literal, sin herramientas nuevas.
 
 | Condición | Definiciones en circulación | La del issue #104 |
 |---|---|---|
 | B | «Skills escritas a mano» (`drafts/preregistration_abcd.md`, `drafts/paper/manuscript_draft.md`); «texto neutro de longitud igual a C, escrito después de congelar C» (`drafts/README.md`, `drafts/skills/all_core/SKILL.md`) | «Placebo escrito a mano, misma longitud que C» |
 | D | «Grafo AST más traza de excepción» (`drafts/preregistration_abcd.md`) | «C con una instrucción que obliga a ubicar el código con las herramientas de grafo antes de aplicar una skill» |
 
-El texto de #104 sobre B puede leerse como un texto neutro o como unas heurísticas humanas, que un comentario
-de #100 distingue como controles diferentes: el pre-registro de #104 debe elegir uno. En cuanto a D, el kit
-ya declara las tres herramientas de grafo y el arnés las anuncia en el prompt (HARNESS § 5.2), así que D no
-añade herramientas: añade una instrucción.
+La tabla de arriba conserva las definiciones que circularon. El comentario de #100 distingue el texto neutro
+de las heurísticas humanas: el pre-registro eligió el texto neutro. El kit ya declara las tres herramientas
+de grafo y el arnés las anuncia en el prompt (HARNESS § 5.2), así que D no añade herramientas.
 
-### Diagrama D2. Las condiciones de la campaña (propuesta de #104, no fijada)
+### Diagrama D2. Las condiciones de la campaña (fijadas; ninguna corrida)
 
 ```mermaid
 flowchart TD
     A["A: kit con el eval_config.yaml de la línea base"]
-    B["B: texto de relleno de longitud comparable a C. Propuesta"]
-    C["C: skills consolidadas de episodios de entrenamiento. Propuesta"]
-    D["D: C más instrucción de usar el grafo de código, solo si alcanza el cómputo. Propuesta"]
-    P["Prueba: todas las tareas válidas de un repositorio reservado"]
-    S["Señuelos: enunciados reescritos tras congelar C, por alguien ciego a sus resultados. Propuesta"]
+    B["B: placebo de la misma longitud que C, escrito después de congelar C"]
+    C["C: skills del envío, solo con tres éxitos en instance_id distintos de train"]
+    D["D: los mismos archivos que C más la instrucción literal, solo si cabe"]
+    P["Prueba: las tareas válidas del repositorio que reserve la línea base"]
+    S["Señuelos: uno de cada cinco enunciados de prueba, aparte del denominador"]
     A -.-> P
     B -.-> P
     C -.-> P
@@ -679,12 +679,11 @@ flowchart TD
 ```
 
 La condición A es la línea base: el kit con un solo archivo cambiado, `eval_config.yaml`, y el brazo A de la
-campaña son todas las réplicas completas de la línea base (pre-registro, G5). B, C y D son propuestas del
-issue #104 y por eso llevan borde discontinuo. B se escribiría después de congelar C, con una longitud
-comparable. C son skills `SKILL.md` consolidadas de episodios de un pase de A sobre las tareas de
-entrenamiento, y falta definir «tres éxitos independientes» y quién las redacta (si fuera un LLM, se guardan
-prompt, modelo y salida). D añade la instrucción literal. Los tres contrastes son los de las hipótesis de la
-tabla. Los señuelos se escribirían después de congelar C, y reescribir un enunciado modifica el benchmark.
+campaña son todas las réplicas completas de la línea base (pre-registro, G5). B, C, D y los señuelos llevan
+borde discontinuo porque no hay corrida. El pre-registro de la campaña fija el resto: B es el placebo de
+longitud, escrito después de congelar C; C exige tres éxitos en `instance_id` distintos y los redacta una
+persona; D añade la instrucción literal; los señuelos se escriben después de congelar C, aparte del
+denominador, y reescribir un enunciado modifica el benchmark.
 
 ---
 
@@ -839,7 +838,7 @@ flowchart TD
     ES["kaggle_specifications.md: ficha de reglas"]
     PR["Pre-registro de la línea base A, fijado"]
     JS["linea_base_a.json: valores fijados"]
-    CA["Issues 100 y 104: la campaña, sin pre-registro"]
+    CA["Issue 104: pre-registro de la campaña; la prueba no ha empezado"]
     FI["Fichas de instrumentos: analisis_replicas, validez_tareas, ensayo_notebook, conditions"]
     EN["Fichas de entorno: entorno_local, compilacion_condicion_a, propuesta_entorno_fastapi_v2"]
     RF["Registros fechados: supervisiones y fase2_sin_parche.json"]
@@ -878,7 +877,8 @@ entorno del experimento, que fija el ensayo de notebook.
 | [`docs/supervision-claude-2026-10-02.md`](docs/supervision-claude-2026-10-02.md), [`-v2`](docs/supervision-claude-2026-10-02-v2.md), [`-v3`](docs/supervision-claude-2026-10-02-v3.md) | Revisiones del orquestador | Registros fechados; no se reescriben |
 | [`calibracion/fase2_sin_parche.json`](calibracion/fase2_sin_parche.json) | Piloto local de tres tareas sin parche | Registro fechado; no es fuente de exclusiones |
 | [`drafts/README.md`](drafts/README.md) | Catálogo de borradores | Vigente como catálogo; su nota de estado dice qué lo supera |
-| [`drafts/preregistration_abcd.md`](drafts/preregistration_abcd.md) | Diseño A/B/C/D | Borrador, en parte superado por el pre-registro y por #104 |
+| [`docs/preregistration/kaggle-campaign-abcd.md`](../../docs/preregistration/kaggle-campaign-abcd.md) | Pre-registro de la campaña A/B/C/D | Fijado en las reglas; los tres parámetros que salen de A siguen abiertos y la prueba no ha empezado |
+| [`drafts/preregistration_abcd.md`](drafts/preregistration_abcd.md) | Diseño A/B/C/D | Borrador, superado por el pre-registro de la campaña |
 | [`drafts/paper/manuscript_draft.md`](drafts/paper/manuscript_draft.md) | Manuscrito (en inglés) | Borrador, sin trabajo relacionado ni citas; lo reescribe #105 |
 | [`drafts/NOTES_DISYUNTOR_Y_PRESUPUESTO.md`](drafts/NOTES_DISYUNTOR_Y_PRESUPUESTO.md) | Apuntes | Borrador, superado en el presupuesto |
 | [`drafts/agent.yaml`](drafts/agent.yaml), [`drafts/skills/all_core/SKILL.md`](drafts/skills/all_core/SKILL.md) | Configuración y directivas exploratorias | Borradores; no son condición alguna |

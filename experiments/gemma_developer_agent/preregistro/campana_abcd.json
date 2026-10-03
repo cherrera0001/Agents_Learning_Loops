@@ -1,0 +1,34 @@
+{
+  "schema_version": "kaggle-campaign-prereg/1",
+  "fijos": {
+    "particion": "leave_one_repo_out",
+    "hereda_particion": "docs/preregistration/kaggle-baseline-a.md, seccion B",
+    "estimador": "mayoria_estricta",
+    "alfa": 0.05,
+    "exitos_independientes": 3,
+    "pases_entrenamiento": 1,
+    "redactor_skills": "persona",
+    "redactor_placebo": "otra_persona",
+    "frase_placebo": "Este párrafo no indica ningún cambio de código.",
+    "redactor_senuelos": "persona_distinta_del_redactor_de_skills",
+    "paso_senuelos": 5,
+    "minimo_senuelos_para_lectura": 6,
+    "instruccion_d": "Before you apply any skill, locate the code with the graph tools. Take a symbol that appears in the failing test name or in the traceback and call get_code_neighbors, search_similar_code, or get_code_subgraph on that symbol. Read the tool result. Only then follow a skill.",
+    "prediccion": "H(C, A) no queda apoyada",
+    "orden_reduccion": ["D", "no_bajar_de_G2"]
+  },
+  "abiertos": {
+    "variacion_a": {
+      "valor": null,
+      "regla": "Reporte con salida 0 de scripts/kaggle_replicas.py sobre las réplicas de la línea base. De él salen M*, el caso de G2 y L y U de G3. No se rellena antes de ese reporte ni después de ver un episodio de entrenamiento."
+    },
+    "subconjunto": {
+      "valor": null,
+      "regla": "Ruta y SHA-256 del blob de git del archivo que cierra la sección B del pre-registro de la línea base. La prueba son sus instance_id de test; el entrenamiento, los de train."
+    },
+    "corridas_por_condicion": {
+      "valor": null,
+      "regla": "Entero por condición según G2 y G6, después de cerrar variacion_a y antes de cualquier episodio de entrenamiento. Ruido dominante: no hay campaña. Ruido intermedio: 2 para B y para C; D solo si también caben 2. Ruido bajo: 1 para B y para C, y 2 si el cómputo que ya fijó la línea base alcanza; D con el mismo número solo si cabe."
+    }
+  }
+}
