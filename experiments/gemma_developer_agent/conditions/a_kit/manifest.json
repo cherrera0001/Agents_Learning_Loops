@@ -1,0 +1,58 @@
+{
+  "competition_id": 149921,
+  "competition_slug": "gemma-4-developer-agent",
+  "kit_name": "sample_submission",
+  "description": "Manifiesto declarativo de integridad del kit oficial sample_submission (Kaggle Gemma 4 Developer Agent).",
+  "files": [
+    {
+      "path": "agent.yaml",
+      "size": 438,
+      "sha256": "c7fbbbbdc44778419be8e9f53a85800eeb17d0cf151e0846c46e107401b72034"
+    },
+    {
+      "path": "eval_config.yaml",
+      "size": 232,
+      "sha256": "adb486b67535fa59b427b79d44dafc131176f1f1964d184e16046ed520ede02d"
+    },
+    {
+      "path": "configs/sampling.yaml",
+      "size": 120,
+      "sha256": "3dab0b2506dae34ce92fef7b380d6073729104b23fe2cf66d44ac1d2f213aa6a"
+    },
+    {
+      "path": "prompts/analyzer.md",
+      "size": 527,
+      "sha256": "c762b062032cc8463015e589ad8b4f0e17296062e1b0ff1e78712eef9f5e2d43"
+    },
+    {
+      "path": "prompts/system.md",
+      "size": 3888,
+      "sha256": "f1cbf7943ee9687382321b1dfd9cd88581d608c1c8b8e6ea61a763bd1a3234af"
+    },
+    {
+      "path": "sub_agents/code_analyzer.yaml",
+      "size": 361,
+      "sha256": "7a764798e36cc68aa38900256245e4aed969b5439b992c7da4105b6ebcb7e62b"
+    },
+    {
+      "path": "adapters/main_lora/adapter_config.json",
+      "size": 664,
+      "sha256": "75a46da2db7f3c70442e5c728f64059aff52cf64174cee7aeb3a4ec37f6e78fb"
+    },
+    {
+      "path": "adapters/main_lora/adapter_model.safetensors",
+      "size": 217672,
+      "sha256": "dcbedd989af34f5201a39606e0bd4014d351a29162dd96da418782cbbe487ad9"
+    },
+    {
+      "path": "adapters/tool_lora/adapter_config.json",
+      "size": 664,
+      "sha256": "75a46da2db7f3c70442e5c728f64059aff52cf64174cee7aeb3a4ec37f6e78fb"
+    },
+    {
+      "path": "adapters/tool_lora/adapter_model.safetensors",
+      "size": 217672,
+      "sha256": "dcbedd989af34f5201a39606e0bd4014d351a29162dd96da418782cbbe487ad9"
+    }
+  ]
+}
