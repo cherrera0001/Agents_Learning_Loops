@@ -14,9 +14,11 @@ import hashlib
 import importlib
 import itertools
 import json
+import logging
+import re
 import subprocess
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -215,6 +217,15 @@ def spec_un_repo(n: int, repo: str = "owner/a") -> list[tuple[str, str]]:
 @pytest.fixture
 def esc(tmp_path: Path) -> Escenario:
     return Escenario(tmp_path, spec_un_repo(3))
+
+
+def params_para(esc: Escenario) -> Path:
+    """Copia de linea_base_a.json cuyo ``tasks_sha256`` es el del ``tasks.jsonl`` sintetico."""
+    ruta = esc.base / "params.json"
+    datos = json.loads(kaggle_prereg.DEFAULT_PARAMS.read_text(encoding="utf-8"))
+    datos["fijos"]["tasks_sha256"] = hashlib.sha256(esc.tasks.read_bytes()).hexdigest()
+    ruta.write_text(json.dumps(datos), encoding="utf-8")
+    return ruta
 
 
 # ---------------------------------------------------------------------------
@@ -456,7 +467,19 @@ def test_medir_tarea_duraciones_y_ejecuciones(tmp_path: Path) -> None:
         ("sin_parche", 2, 1),
         ("dorado", 2, 1),
     ]
-    assert all(x["fecha_utc"] == FECHA_UTC for x in t["ejecuciones"])
+    assert t["ejecuciones_lanzadas"] == 4
+    # lo versionable solo lleva lo que A.2 y A.4 enumeran: sin conteos ni fecha por ejecucion
+    assert all(set(x) == set(kv.CLAVES_EJECUCION_VERSIONADAS) for x in t["ejecuciones"])
+    # la fecha y los conteos quedan en el crudo
+    crudo = json.loads(
+        (tmp_path / "ejecuciones" / tarea.instance_id / "sin_parche_1_1.json").read_text("utf-8")
+    )
+    assert crudo["registro"]["fecha_utc"] == FECHA_UTC
+    assert (crudo["registro"]["passed"], crudo["registro"]["failed"], crudo["registro"]["errors"]) == (
+        1,
+        2,
+        0,
+    )
 
 
 def test_infraestructura_se_repite_una_vez_y_vale_la_repeticion(tmp_path: Path) -> None:
@@ -567,39 +590,78 @@ def guardar_ronda(almacen: Almacen, tarea: Tarea) -> Path:
     return almacen.raiz / "ejecuciones" / tarea.instance_id / "sin_parche_1_1.json"
 
 
+def rehacer_diario(raiz: Path) -> None:
+    """Recalcula el diario tras editar archivos a mano (lo que haria quien manipula con cuidado)."""
+    lineas = (raiz / "diario.jsonl").read_bytes().split(b"\n")[:-1]
+    previo = kv.GENESIS
+    salida: list[bytes] = []
+    for linea in lineas:
+        obj = json.loads(linea)
+        ruta = (
+            raiz
+            / "ejecuciones"
+            / obj["instance_id"]
+            / f"{obj['verificacion']}_{obj['numero']}_{obj['intento']}.json"
+        )
+        obj["sha256_ejecucion"] = hashlib.sha256(ruta.read_bytes()).hexdigest()
+        obj["previo"] = previo
+        nueva = json.dumps(obj, sort_keys=True, separators=(",", ":")).encode()
+        previo = hashlib.sha256(nueva).hexdigest()
+        salida.append(nueva)
+    (raiz / "diario.jsonl").write_bytes(b"".join(x + b"\n" for x in salida))
+
+
 def test_discrepancia_entre_lo_guardado_y_lo_recalculado_es_error(tmp_path: Path) -> None:
     tarea = Tarea("pkg__x-1", "o/pkg")
-    almacen = Almacen(tmp_path)
-    ruta = guardar_ronda(almacen, tarea)
+    ruta = guardar_ronda(Almacen(tmp_path), tarea)
     obj = json.loads(ruta.read_text(encoding="utf-8"))
     # cambiar el resultado crudo (pasa de fallar a resolver) sin tocar el registro
     obj["resultado"]["resolved"] = True
     obj["resultado"]["test_exit_code"] = 0
     obj["resultado"]["error"] = None
     ruta.write_text(json.dumps(obj), encoding="utf-8")
+    rehacer_diario(tmp_path)  # el diario ya no delata la edicion: queda el recalculo
     with pytest.raises(ValidezError, match="Discrepancia"):
-        kv.medir_tarea(tarea, Falso(), almacen, reloj)
+        kv.medir_tarea(tarea, Falso(), Almacen(tmp_path), reloj)
 
 
 def test_registro_alterado_tambien_es_discrepancia(tmp_path: Path) -> None:
     tarea = Tarea("pkg__x-1", "o/pkg")
-    almacen = Almacen(tmp_path)
-    ruta = guardar_ronda(almacen, tarea)
+    ruta = guardar_ronda(Almacen(tmp_path), tarea)
     obj = json.loads(ruta.read_text(encoding="utf-8"))
     obj["registro"]["resolved"] = True
     ruta.write_text(json.dumps(obj), encoding="utf-8")
+    rehacer_diario(tmp_path)
     with pytest.raises(ValidezError, match="Discrepancia"):
-        kv.medir_tarea(tarea, Falso(), almacen, reloj)
+        kv.medir_tarea(tarea, Falso(), Almacen(tmp_path), reloj)
+
+
+def test_editar_resultado_y_registro_a_la_vez_y_rehacer_el_diario_pasa_pero_cambia_el_hash_final(
+    tmp_path: Path,
+) -> None:
+    """Limite declarado: el diario hace visible la manipulacion, no la impide."""
+    tarea = Tarea("pkg__x-1", "o/pkg")
+    almacen = Almacen(tmp_path)
+    ruta = guardar_ronda(almacen, tarea)
+    antes = kv.Almacen(tmp_path).diario_sha256()
+    obj = json.loads(ruta.read_text(encoding="utf-8"))
+    obj["resultado"].update(resolved=True, test_exit_code=0, error=None)
+    obj["registro"].update(resolved=True, estado="resolved", categoria=None, codigo_salida=0)
+    ruta.write_text(json.dumps(obj), encoding="utf-8")
+    rehacer_diario(tmp_path)
+    nuevo_almacen = Almacen(tmp_path)
+    assert kv.medir_tarea(tarea, Falso(), nuevo_almacen, reloj)["clase"] == CLASE_INESTABLE
+    assert nuevo_almacen.diario_sha256() != antes  # lo unico que lo delata: el hash final registrado
 
 
 @pytest.mark.parametrize("contenido", ["no es json", "[]", '{"resultado": {}, "registro": {}}'])
 def test_ejecucion_guardada_ilegible_es_error(tmp_path: Path, contenido: str) -> None:
     tarea = Tarea("pkg__x-1", "o/pkg")
-    almacen = Almacen(tmp_path)
-    ruta = guardar_ronda(almacen, tarea)
+    ruta = guardar_ronda(Almacen(tmp_path), tarea)
     ruta.write_text(contenido, encoding="utf-8")
+    rehacer_diario(tmp_path)  # que el diario coincida: se prueba la lectura, no el hash
     with pytest.raises(ValidezError):
-        kv.medir_tarea(tarea, Falso(), almacen, reloj)
+        kv.medir_tarea(tarea, Falso(), Almacen(tmp_path), reloj)
 
 
 def test_repeticion_sin_primera_ejecucion_o_sobrante_es_error(tmp_path: Path) -> None:
@@ -738,7 +800,7 @@ def test_main_punta_a_punta_escribe_el_registro_y_pasa_la_validacion(
     out = capsys.readouterr().out
     assert "Tareas medidas: 3" in out
     registro = esc.registro()
-    assert set(registro) == set(kaggle_prereg.VALIDEZ)
+    assert set(registro) == {*kaggle_prereg.VALIDEZ, *kaggle_prereg.VALIDEZ_OPCIONALES}
     assert registro["schema_version"] == "kaggle-task-validity/1"
     assert registro["fecha"] == "2026-10-05"
     assert registro["sha256_tasks"] == hashlib.sha256(esc.tasks.read_bytes()).hexdigest()
@@ -762,8 +824,18 @@ def test_main_punta_a_punta_escribe_el_registro_y_pasa_la_validacion(
 def test_el_registro_pasa_el_contraste_de_la_compuerta(esc: Escenario) -> None:
     assert esc.correr(Falso()) == kv.EXIT_OK
     valor = {"ruta": esc.salida.name, "sha256": hashlib.sha256(esc.salida.read_bytes()).hexdigest()}
-    leido = kaggle_prereg._read_record(esc.base, valor, "validez_tareas", kaggle_prereg.VALIDEZ)
+    leido = kaggle_prereg._read_record(
+        esc.base,
+        valor,
+        "validez_tareas",
+        kaggle_prereg.VALIDEZ,
+        opcionales=kaggle_prereg.VALIDEZ_OPCIONALES,
+    )
     assert leido["entorno_sha256"] == esc.entorno_sha
+    # el hash final del diario del registro es el de la ultima linea del diario del crudo
+    ultima = (esc.crudo / "diario.jsonl").read_bytes().split(b"\n")[-2]
+    assert leido["diario_sha256"] == hashlib.sha256(ultima).hexdigest()
+    assert [t["ejecuciones_lanzadas"] for t in leido["tareas"]] == [4, 4, 4]
     # la media que usa la compuerta para s sale de las duraciones sin parche de las que discriminan
     s = kaggle_prereg.setup_minutes(leido)
     assert float(s) == pytest.approx(0.1, abs=1e-9)  # 1,5 s -> 0,025 min -> hacia arriba a 0,1 min
@@ -869,7 +941,8 @@ def test_reanudar_con_otro_entorno_es_error(esc: Escenario, capsys: pytest.Captu
     falso = Falso()
     assert esc.correr(falso) == kv.EXIT_INVALID
     assert falso.llamadas == []
-    assert "otro entorno" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "campos que difieren" in err and "entorno_sha256" in err
 
 
 def test_task_ids_es_parcial_ordenado_y_sin_registro(
@@ -881,10 +954,49 @@ def test_task_ids_es_parcial_ordenado_y_sin_registro(
     assert [x[0] for x in falso.llamadas[::4]] == [ids[0], ids[2]]
     assert not esc.salida.exists()
     assert "no se escribe registro" in capsys.readouterr().out
-    # la corrida completa reutiliza lo ya medido
-    resto = Falso()
-    assert esc.correr(resto) == kv.EXIT_OK
-    assert {x[0] for x in resto.llamadas} == {ids[1]}
+    # otro ensayo sobre el mismo crudo si se puede reanudar (mismo modo)
+    otro = Falso()
+    assert esc.correr(otro, "--task-ids", ids[0], ids[1], salida=False) == kv.EXIT_OK
+    assert {x[0] for x in otro.llamadas} == {ids[1]}
+
+
+def test_una_medicion_completa_no_reutiliza_un_ensayo_de_task_ids(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ids = [i for i, _ in esc.spec]
+    assert esc.correr(Falso(), "--task-ids", ids[0], salida=False) == kv.EXIT_OK
+    capsys.readouterr()
+    falso = Falso()
+    assert esc.correr(falso) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+    assert "modo" in capsys.readouterr().err
+    assert not esc.salida.exists()
+    # y al reves: un ensayo no continua una medicion
+    otra = nuevo(esc.base, "otra", esc.spec)
+    assert otra.correr(Falso()) == kv.EXIT_OK
+    assert otra.correr(Falso(), "--task-ids", ids[0], salida=False) == kv.EXIT_INVALID
+
+
+def test_la_muestra_sobre_el_crudo_de_la_medicion_original_es_salida_2_sin_ejecutar(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert esc.correr(Falso()) == kv.EXIT_OK
+    capsys.readouterr()
+    falso = Falso()
+    comparacion = esc.base / "comparacion.json"
+    argv = [*esc.argv(salida=False), "--muestra-desde", str(esc.salida), "--comparacion", str(comparacion)]
+    assert kv.main(argv, verificador=falso, reloj=reloj) == kv.EXIT_INVALID
+    assert falso.llamadas == []  # no reutiliza ninguna ejecucion de la medicion
+    assert not comparacion.exists()
+    assert "modo" in capsys.readouterr().err
+
+
+def test_la_muestra_exige_el_mismo_entorno_que_la_referencia(tmp_path: Path) -> None:
+    ref = corrida_completa(tmp_path, spec_un_repo(12), {})
+    escribir_entorno(ref.entorno, arreglos=["otro arreglo"])  # otro hash de declaracion
+    codigo, comparacion = muestra(ref, tmp_path, Falso())
+    assert codigo == kv.EXIT_INVALID
+    assert not comparacion.exists()
 
 
 def test_task_ids_con_salida_o_desconocido_es_error(esc: Escenario) -> None:
@@ -901,7 +1013,7 @@ def test_swegemma_ausente_es_salida_2_con_mensaje_claro(
 
     monkeypatch.setattr(importlib, "import_module", sin_paquete)
     monkeypatch.setattr(kv.importlib.metadata, "version", lambda _n: "0.2.7")
-    assert esc.correr(None) == kv.EXIT_INVALID
+    assert esc.correr(None, "--params", str(params_para(esc))) == kv.EXIT_INVALID
     err = capsys.readouterr().err
     assert "swegemma" in err and "no esta instalado" in err
     assert not esc.salida.exists()
@@ -913,8 +1025,13 @@ def test_swegemma_con_otra_version_es_salida_2(
 ) -> None:
     monkeypatch.setattr(kv.importlib.metadata, "version", lambda _n: "9.9.9")
     monkeypatch.setattr(importlib, "import_module", lambda *_a, **_k: object())
-    assert esc.correr(None) == kv.EXIT_INVALID
+    assert esc.correr(None, "--params", str(params_para(esc))) == kv.EXIT_INVALID
     assert "9.9.9" in capsys.readouterr().err
+
+
+def test_la_verificacion_real_exige_params(esc: Escenario, capsys: pytest.CaptureFixture[str]) -> None:
+    assert esc.correr(None) == kv.EXIT_INVALID
+    assert "--params" in capsys.readouterr().err
 
 
 def test_imagen_o_backend_distintos_de_la_declaracion_es_salida_2(esc: Escenario) -> None:
@@ -954,16 +1071,44 @@ def test_params_exige_el_hash_registrado_de_tasks(esc: Escenario, tmp_path: Path
     assert esc.correr(Falso(), "--params", str(tmp_path / "no_existe.json")) == kv.EXIT_INVALID
 
 
-def test_tercera_medicion_v3_se_rechaza(esc: Escenario) -> None:
-    v3 = esc.base / "validez_tareas_v3.json"
+@pytest.mark.parametrize(
+    "nombre",
+    [
+        "validez_tareas_v3.json",
+        "validez_tareas_V3.json",
+        "validez_tareas-v3.json",
+        "validez_tareas_v3_final.json",
+        "validez_tareas_v10.json",
+    ],
+)
+def test_tercera_medicion_se_rechaza_con_cualquier_forma_del_nombre(esc: Escenario, nombre: str) -> None:
     argv = esc.argv()
-    argv[argv.index("--salida") + 1] = str(v3)
+    argv[argv.index("--salida") + 1] = str(esc.base / nombre)
     falso = Falso()
     assert kv.main(argv, verificador=falso, reloj=reloj) == kv.EXIT_INVALID
     assert falso.llamadas == []
-    for v in ("validez_tareas_v2.json",):
-        argv[argv.index("--salida") + 1] = str(esc.base / v)
-        assert kv.main(argv, verificador=Falso(), reloj=reloj) == kv.EXIT_OK
+
+
+def test_v2_exige_el_v1_conservado_y_un_entorno_distinto(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    v2 = esc.base / "validez_tareas_v2.json"
+    argv2 = esc.argv()
+    argv2[argv2.index("--salida") + 1] = str(v2)
+    # sin v1
+    assert kv.main(argv2, verificador=Falso(), reloj=reloj) == kv.EXIT_INVALID
+    assert "_v1" in capsys.readouterr().err
+    # con v1 y el mismo entorno
+    assert esc.correr(Falso()) == kv.EXIT_OK
+    falso = Falso()
+    assert kv.main(argv2, verificador=falso, reloj=reloj) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+    assert "entorno distinto" in capsys.readouterr().err
+    # con v1 y un entorno nuevo declarado (otro crudo: el manifiesto es de otro entorno)
+    escribir_entorno(esc.entorno, arreglos=["rueda anadida"])
+    argv2[argv2.index("--crudo") + 1] = str(esc.base / "crudo_v2")
+    assert kv.main(argv2, verificador=Falso(), reloj=reloj) == kv.EXIT_OK
+    assert v2.is_file() and esc.salida.is_file()  # el v1 se conserva
 
 
 def test_registro_dentro_de_crudo_se_rechaza(esc: Escenario) -> None:
@@ -1030,6 +1175,22 @@ def test_opciones_incompatibles_son_salida_2(esc: Escenario) -> None:
     )  # sin --comparacion
 
 
+def test_muestra_junto_con_task_ids_o_salida_es_salida_2(tmp_path: Path) -> None:
+    ref = corrida_completa(tmp_path, spec_un_repo(12), {})
+    base = [
+        "--tasks", str(ref.tasks), "--snapshots-dir", str(ref.snapshots), "--entorno", str(ref.entorno),
+        "--imagen", "sandbox:prueba", "--sandbox", "subprocess", "--crudo", str(tmp_path / "otro_crudo"),
+        "--muestra-desde", str(ref.salida), "--comparacion", str(tmp_path / "c.json"),
+    ]  # fmt: skip
+    falso = Falso()
+    assert kv.main([*base, "--task-ids", ref.spec[0][0]], verificador=falso, reloj=reloj) == kv.EXIT_INVALID
+    assert kv.main([*base, "--salida", str(tmp_path / "s_v1.json")], verificador=falso, reloj=reloj) == (
+        kv.EXIT_INVALID
+    )
+    assert falso.llamadas == []
+    assert not (tmp_path / "otro_crudo").exists()
+
+
 def test_tasks_inexistente_o_invalido_es_salida_2(esc: Escenario) -> None:
     esc.tasks.unlink()
     assert esc.correr(Falso()) == kv.EXIT_INVALID
@@ -1041,6 +1202,9 @@ def test_tasks_inexistente_o_invalido_es_salida_2(esc: Escenario) -> None:
     assert esc.correr(Falso()) == kv.EXIT_INVALID
     dup = json.dumps({"instance_id": "a__b-1", "repo": "o/a"})
     esc.tasks.write_text(f"{dup}\n{dup}\n", encoding="utf-8")
+    assert esc.correr(Falso()) == kv.EXIT_INVALID
+    clave_repetida = '{"instance_id": "a__b-1", "instance_id": "a__b-2", "repo": "o/a"}'
+    esc.tasks.write_text(clave_repetida + "\n", encoding="utf-8")
     assert esc.correr(Falso()) == kv.EXIT_INVALID
     esc.tasks.write_text(json.dumps({"instance_id": "../x", "repo": "o/a"}) + "\n", encoding="utf-8")
     assert esc.correr(Falso()) == kv.EXIT_INVALID
@@ -1087,28 +1251,34 @@ def test_el_registro_versionable_no_contiene_ninguna_cadena_envenenada(
         kv.VERIF_SIN,
         kv.VERIF_DORADO,
         *kv.CLAVES_TAREA,
-        *kv.CLAVES_EJECUCION,
+        *kv.CLAVES_EJECUCION_VERSIONADAS,
         *kaggle_prereg.VALIDEZ,
-        FECHA_UTC,
+        *kaggle_prereg.VALIDEZ_OPCIONALES,
         "2026-10-05",
         esc.entorno_sha,
         hashlib.sha256(esc.tasks.read_bytes()).hexdigest(),
     }
     registro = json.loads(texto)
-    assert set(todas_las_cadenas(registro)) <= permitidas
+    cadenas = set(todas_las_cadenas(registro))
+    # la unica cadena que no es de un conjunto cerrado es el hash final del diario
+    assert cadenas - permitidas == {registro["diario_sha256"]}
     # ningun texto sobrante: ni el hash del parche de referencia
     parche_sha = hashlib.sha256(POISON_PARCHE.encode()).hexdigest()
     assert parche_sha not in texto
 
 
-def test_la_clave_de_conteos_solo_lleva_enteros(esc: Escenario) -> None:
+def test_el_registro_no_lleva_conteos_ni_fecha_por_ejecucion(esc: Escenario) -> None:
+    """A.4 no los enumera: quedan solo en el crudo."""
     assert esc.correr(Falso()) == kv.EXIT_OK
+    texto = esc.salida.read_text(encoding="utf-8")
+    for clave in ('"passed"', '"failed"', '"errors"', '"fecha_utc"'):
+        assert clave not in texto
     for t in esc.registro()["tareas"]:
         for x in t["ejecuciones"]:
-            for k in ("passed", "failed", "errors"):
-                assert x[k] is None or (isinstance(x[k], int) and not isinstance(x[k], bool))
             assert isinstance(x["codigo_salida"], int)
             assert isinstance(x["duracion_segundos"], float)
+    crudo = "".join(p.read_text(encoding="utf-8") for p in (esc.crudo / "ejecuciones").rglob("*.json"))
+    assert '"passed"' in crudo and '"fecha_utc"' in crudo
 
 
 def test_validar_registro_detecta_defectos(esc: Escenario) -> None:
@@ -1131,6 +1301,12 @@ def test_validar_registro_detecta_defectos(esc: Escenario) -> None:
     assert con(lambda d: d["tareas_invalidas"].append({"instance_id": "zzz", "clase": "inestable"}))
     assert con(lambda d: d["tareas"][0].update(clase="inestable"))  # invalida y no esta en la lista
     assert con(lambda d: d.update(sha256_tasks="no"))
+    assert con(lambda d: d.pop("diario_sha256"))  # el guion lo exige (la compuerta lo admite opcional)
+    assert con(lambda d: d.update(diario_sha256="zz"))
+    assert con(lambda d: d["tareas"][0].update(ejecuciones_lanzadas=7))
+    assert con(lambda d: d["tareas"][0].pop("ejecuciones_lanzadas"))
+    assert con(lambda d: d["tareas"][0]["ejecuciones"][0].update(fecha_utc=POISON_TEST))  # clave de mas
+    assert con(lambda d: d["tareas"][0]["ejecuciones"][0].pop("duracion_segundos"))
 
 
 # ---------------------------------------------------------------------------
@@ -1281,11 +1457,575 @@ def test_construir_verificador_sin_paquete(tmp_path: Path, monkeypatch: pytest.M
 
     monkeypatch.setattr(kv.importlib.metadata, "version", sin_version)
     with pytest.raises(ValidezError, match="no esta instalado"):
-        kv.construir_verificador_swegemma(
+        kv.construir_arnes_swegemma(
             tasks_path=tmp_path / "t.jsonl",
             snapshots_dir=tmp_path,
             crudo=tmp_path,
             imagen="i",
             sandbox="subprocess",
             version_arnes="0.2.7",
+            timeout_seconds=300,
         )
+
+
+def test_comprobar_timeout() -> None:
+    kv.comprobar_timeout(300, 300)
+    with pytest.raises(ValidezError, match="timeout"):
+        kv.comprobar_timeout(300, 600)
+    with pytest.raises(ValidezError):
+        kv.comprobar_timeout(300, None)
+
+
+def test_la_limpieza_del_sandbox_se_llama_al_terminar_y_tambien_si_falla(
+    esc: Escenario, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    llamadas: list[str] = []
+    falso = Falso()
+
+    def arnes(**_k: object) -> kv.Arnes:
+        return kv.Arnes(falso, lambda _t: 0, lambda: llamadas.append("limpiar"))
+
+    monkeypatch.setattr(kv, "construir_arnes_swegemma", arnes)
+    assert esc.correr(None, "--params", str(params_para(esc))) == kv.EXIT_OK
+    assert llamadas == ["limpiar"]
+    # si la medicion falla, tambien se limpia
+    otro = nuevo(esc.base, "otro", esc.spec)
+    roto = Falso()
+    roto.explotar_en = 1
+    monkeypatch.setattr(
+        kv,
+        "construir_arnes_swegemma",
+        lambda **_k: kv.Arnes(roto, lambda _t: 0, lambda: llamadas.append("limpiar")),
+    )
+    assert otro.correr(None, "--params", str(params_para(otro))) == kv.EXIT_INVALID
+    assert llamadas == ["limpiar", "limpiar"]
+
+    # un fallo de la propia limpieza no cambia el resultado
+    def mala() -> None:
+        raise RuntimeError
+
+    tercero = nuevo(esc.base, "tercero", esc.spec)
+    monkeypatch.setattr(kv, "construir_arnes_swegemma", lambda **_k: kv.Arnes(Falso(), lambda _t: 0, mala))
+    assert tercero.correr(None, "--params", str(params_para(tercero))) == kv.EXIT_OK
+
+
+def test_el_arnes_real_recibe_el_timeout_del_preregistro(
+    esc: Escenario, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    recibido: dict[str, object] = {}
+
+    def arnes(**k: object) -> kv.Arnes:
+        recibido.update(k)
+        return kv.Arnes(Falso(), lambda _t: 0, lambda: None)
+
+    monkeypatch.setattr(kv, "construir_arnes_swegemma", arnes)
+    assert esc.correr(None, "--params", str(params_para(esc))) == kv.EXIT_OK
+    fijos = json.loads(kaggle_prereg.DEFAULT_PARAMS.read_text(encoding="utf-8"))["fijos"]
+    assert recibido["timeout_seconds"] == fijos["timeout_seconds"] == 300
+    assert recibido["version_arnes"] == "0.2.7"
+
+
+# ---------------------------------------------------------------------------
+# Diario de solo-anadir
+# ---------------------------------------------------------------------------
+
+
+def lineas_diario(raiz: Path) -> list[dict[str, Any]]:
+    return [json.loads(x) for x in (raiz / "diario.jsonl").read_bytes().split(b"\n")[:-1]]
+
+
+def test_el_diario_tiene_una_linea_por_ejecucion_lanzada_y_encadena_hashes(esc: Escenario) -> None:
+    ids = [i for i, _ in esc.spec]
+    falso = verificador_con_clases(esc, {ids[1]: CLASE_NO_MEDIBLE})  # 5 ejecuciones: 1 repeticion
+    assert esc.correr(falso) == kv.EXIT_OK
+    lineas = lineas_diario(esc.crudo)
+    assert len(lineas) == len(falso.llamadas) == 13
+    assert [x["n"] for x in lineas] == list(range(1, 14))
+    previo = kv.GENESIS
+    crudas = (esc.crudo / "diario.jsonl").read_bytes().split(b"\n")[:-1]
+    for obj, cruda in zip(lineas, crudas, strict=True):
+        assert obj["previo"] == previo
+        previo = hashlib.sha256(cruda).hexdigest()
+        ruta = (
+            esc.crudo
+            / "ejecuciones"
+            / obj["instance_id"]
+            / f"{obj['verificacion']}_{obj['numero']}_{obj['intento']}.json"
+        )
+        assert obj["sha256_ejecucion"] == hashlib.sha256(ruta.read_bytes()).hexdigest()
+        assert obj["fecha_utc"] == FECHA_UTC
+    assert len({x["corrida"] for x in lineas}) == 1
+    registro = esc.registro()
+    assert registro["diario_sha256"] == previo
+    por_tarea = {t["instance_id"]: t["ejecuciones_lanzadas"] for t in registro["tareas"]}
+    assert por_tarea == {ids[0]: 4, ids[1]: 5, ids[2]: 4}
+
+
+def test_el_diario_sobrevive_a_una_reanudacion_con_la_cadena_intacta(tmp_path: Path) -> None:
+    limpio = nuevo(tmp_path, "limpio", spec_un_repo(3))
+    cortado = nuevo(tmp_path, "cortado", spec_un_repo(3))
+    assert limpio.correr(Falso()) == kv.EXIT_OK
+    corte = Falso()
+    corte.explotar_en = 6
+    assert cortado.correr(corte) == kv.EXIT_INVALID
+    assert cortado.correr(Falso()) == kv.EXIT_OK
+    a, b = limpio.registro(), cortado.registro()
+    assert [t["ejecuciones_lanzadas"] for t in a["tareas"]] == [
+        t["ejecuciones_lanzadas"] for t in b["tareas"]
+    ]
+    assert len(lineas_diario(cortado.crudo)) == 12
+    assert [x["n"] for x in lineas_diario(cortado.crudo)] == list(range(1, 13))
+
+
+def cortada(esc: Escenario) -> list[str]:
+    """Deja una medicion completa y devuelve los ids; el registro se borra para poder reanudar."""
+    assert esc.correr(Falso()) == kv.EXIT_OK
+    esc.salida.unlink()
+    return [i for i, _ in esc.spec]
+
+
+def test_borrar_una_ejecucion_y_relanzar_es_salida_2(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Antes: borrar ``sin_parche_1_1.json`` y relanzar podia cambiar el resultado sin rastro."""
+    ids = [i for i, _ in esc.spec]
+    falso = verificador_con_clases(esc, {ids[0]: CLASE_INESTABLE})
+    assert esc.correr(falso) == kv.EXIT_OK
+    esc.salida.unlink()
+    (esc.crudo / "ejecuciones" / ids[0] / "sin_parche_1_1.json").unlink()
+    nuevo_falso = Falso()  # la repeticion «elegiria» otro resultado
+    assert esc.correr(nuevo_falso) == kv.EXIT_INVALID
+    assert nuevo_falso.llamadas == []
+    assert "diario" in capsys.readouterr().err
+    assert not esc.salida.exists()
+
+
+def test_una_ejecucion_en_disco_que_no_esta_en_el_diario_es_salida_2(esc: Escenario) -> None:
+    ids = cortada(esc)
+    carpeta = esc.crudo / "ejecuciones" / ids[0]
+    (carpeta / "sin_parche_1_2.json").write_bytes((carpeta / "sin_parche_1_1.json").read_bytes())
+    falso = Falso()
+    assert esc.correr(falso) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+    (carpeta / "sin_parche_1_2.json").unlink()
+    (carpeta / "raro.json").write_text("{}", encoding="utf-8")  # nombre que no es de una ejecucion
+    assert esc.correr(falso) == kv.EXIT_INVALID
+
+
+def test_una_ejecucion_ajena_a_la_seleccion_tambien_se_detecta(esc: Escenario) -> None:
+    """Solo el recorrido del disco la ve: la tarea sobrante no se vuelve a leer en esta corrida."""
+    ids = [i for i, _ in esc.spec]
+    assert esc.correr(Falso(), "--task-ids", ids[0], ids[2], salida=False) == kv.EXIT_OK
+    carpeta = esc.crudo / "ejecuciones" / ids[2]
+    (carpeta / "dorado_2_1.json").unlink()  # borrada sin tocar el diario
+    falso = Falso()
+    assert esc.correr(falso, "--task-ids", ids[0], salida=False) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+    otro = nuevo(esc.base, "otro", esc.spec)
+    assert otro.correr(Falso(), "--task-ids", ids[0], ids[2], salida=False) == kv.EXIT_OK
+    huerfana = otro.crudo / "ejecuciones" / ids[2] / "dorado_2_1.json"
+    huerfana.with_name("dorado_2_2.json").write_bytes(huerfana.read_bytes())  # sobra en disco
+    assert otro.correr(falso, "--task-ids", ids[0], salida=False) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+
+
+def test_un_temporal_de_una_escritura_cortada_no_cuenta_como_ejecucion(esc: Escenario) -> None:
+    ids = cortada(esc)
+    (esc.crudo / "ejecuciones" / ids[0] / ".sin_parche_1_1.json.abc.tmp").write_bytes(b"medio escrito")
+    assert esc.correr(Falso()) == kv.EXIT_OK
+
+
+def test_editar_una_ejecucion_sin_rehacer_el_diario_es_salida_2(esc: Escenario) -> None:
+    ids = cortada(esc)
+    ruta = esc.crudo / "ejecuciones" / ids[0] / "dorado_1_1.json"
+    obj = json.loads(ruta.read_text(encoding="utf-8"))
+    obj["resultado"].update(resolved=False, test_exit_code=1, error=None)
+    obj["registro"].update(resolved=False, estado="unresolved", categoria="tests_failed", codigo_salida=1)
+    ruta.write_text(json.dumps(obj), encoding="utf-8")  # resultado y registro a la vez
+    falso = Falso()
+    assert esc.correr(falso) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+
+
+def reescribir_diario(esc: Escenario, mutar: Callable[[list[bytes]], list[bytes]]) -> None:
+    ruta = esc.crudo / "diario.jsonl"
+    lineas = ruta.read_bytes().split(b"\n")[:-1]
+    ruta.write_bytes(b"".join(x + b"\n" for x in mutar(lineas)))
+
+
+@pytest.mark.parametrize(
+    "mutar",
+    [
+        lambda ls: ls[:-1],  # se quita la ultima linea: su ejecucion queda sin anotar
+        lambda ls: ls[1:],  # se quita la primera: la cadena se rompe
+        lambda ls: [ls[1], ls[0], *ls[2:]],  # se reordenan
+        lambda ls: [ls[0], ls[0], *ls[1:]],  # se duplica
+        lambda ls: [ls[0].replace(b"sin_parche", b"dorado"), *ls[1:]],  # se edita una linea
+        lambda ls: [b"no es json", *ls[1:]],
+        lambda ls: [*ls, b"{}"],
+    ],
+)
+def test_un_diario_manipulado_es_salida_2(
+    esc: Escenario, mutar: Callable[[list[bytes]], list[bytes]]
+) -> None:
+    cortada(esc)
+    reescribir_diario(esc, mutar)
+    falso = Falso()
+    assert esc.correr(falso) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+
+
+def test_un_diario_truncado_o_de_otra_corrida_es_salida_2(esc: Escenario) -> None:
+    cortada(esc)
+    ruta = esc.crudo / "diario.jsonl"
+    original = ruta.read_bytes()
+    ruta.write_bytes(original[:-1])  # sin el salto de linea final
+    assert esc.correr(Falso()) == kv.EXIT_INVALID
+    ruta.write_bytes(original.replace(b'"corrida":"', b'"corrida":"x'))
+    assert esc.correr(Falso()) == kv.EXIT_INVALID
+    ruta.write_bytes(original)
+    assert esc.correr(Falso()) == kv.EXIT_OK  # el diario original sigue valiendo
+
+
+def test_borrar_el_diario_entero_es_salida_2(esc: Escenario) -> None:
+    cortada(esc)
+    (esc.crudo / "diario.jsonl").unlink()
+    assert esc.correr(Falso()) == kv.EXIT_INVALID  # las ejecuciones en disco no estan anotadas
+
+
+def test_el_hash_final_del_diario_cambia_si_cambia_una_ejecucion(tmp_path: Path) -> None:
+    a = nuevo(tmp_path, "a", spec_un_repo(3))
+    b = nuevo(tmp_path, "b", spec_un_repo(3))
+    assert a.correr(Falso()) == kv.EXIT_OK
+    ids = [i for i, _ in b.spec]
+    assert b.correr(verificador_con_clases(b, {ids[2]: CLASE_PASA})) == kv.EXIT_OK
+    assert a.registro()["diario_sha256"] != b.registro()["diario_sha256"]
+
+
+# ---------------------------------------------------------------------------
+# fecha_utc del crudo: el unico texto libre que podria cruzar la frontera
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "valor",
+    [
+        POISON_TEST,
+        "",
+        "2026-10-05T12:00:00",
+        "2026-10-05 12:00:00Z",
+        "2026-13-45T00:00:00Z",
+        FECHA_UTC + "\n",
+        5,
+        None,
+    ],
+)
+def test_validar_fecha_utc_rechaza_todo_lo_que_no_es_el_formato(valor: object) -> None:
+    with pytest.raises(ValidezError) as info:
+        kv.validar_fecha_utc(valor)
+    assert POISON_TEST not in str(info.value)
+
+
+def test_validar_fecha_utc_acepta_el_formato() -> None:
+    assert kv.validar_fecha_utc(FECHA_UTC) == FECHA_UTC
+
+
+def test_registro_de_ejecucion_rechaza_una_fecha_envenenada() -> None:
+    with pytest.raises(ValidezError):
+        kv.registro_de_ejecucion(ok(), "sin_parche", 1, 1, POISON_TEST)
+
+
+def test_una_fecha_envenenada_en_el_crudo_no_llega_al_registro_y_es_salida_2(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ids = cortada(esc)
+    ruta = esc.crudo / "ejecuciones" / ids[0] / "sin_parche_1_1.json"
+    obj = json.loads(ruta.read_text(encoding="utf-8"))
+    obj["registro"]["fecha_utc"] = POISON_TEST
+    ruta.write_text(json.dumps(obj), encoding="utf-8")
+    rehacer_diario(esc.crudo)
+    assert esc.correr(Falso()) == kv.EXIT_INVALID
+    capturado = capsys.readouterr()
+    assert POISON_TEST not in capturado.out + capturado.err
+    assert not esc.salida.exists()
+
+
+def test_una_fecha_envenenada_en_el_diario_es_salida_2(esc: Escenario) -> None:
+    cortada(esc)
+    reescribir_diario(esc, lambda ls: [ls[0].replace(FECHA_UTC.encode(), POISON_TEST.encode()), *ls[1:]])
+    assert esc.correr(Falso()) == kv.EXIT_INVALID
+
+
+# ---------------------------------------------------------------------------
+# Snapshots, manifiesto y loggers
+# ---------------------------------------------------------------------------
+
+
+def resolver_falso(snapshots_dir: Path, instance_id: str, repo: str) -> tuple[Path, Path | None, Path | None]:
+    return snapshots_dir / f"{instance_id}.tgz", None, None
+
+
+def test_snapshots_faltantes_con_las_dos_ubicaciones(tmp_path: Path) -> None:
+    principal = tmp_path / "snapshots"
+    secreta = tmp_path / "secret"
+    (secreta / "sandbox" / "snapshots").mkdir(parents=True)
+    principal.mkdir()
+    tareas = [Tarea(f"x__y-{i}", "o/r") for i in range(4)]
+    (principal / "x__y-0.tgz").write_bytes(b"")
+    (secreta / "sandbox" / "snapshots" / "x__y-1.tgz").write_bytes(b"")
+    (secreta / "sandbox" / "snapshots" / "x__y-0.tgz").write_bytes(b"")
+    assert kv.contar_snapshots_faltantes(tareas, resolver_falso, principal, secreta) == 2  # 2 y 3
+    assert kv.contar_snapshots_faltantes(tareas, resolver_falso, principal, None) == 3  # sin la segunda
+    ruta, _, _ = kv.ubicar_snapshot(resolver_falso, principal, secreta, tareas[1])
+    assert ruta == secreta / "sandbox" / "snapshots" / "x__y-1.tgz"
+    # si el directorio secreto no tiene sandbox/snapshots, se queda con la ruta principal
+    ruta, _, _ = kv.ubicar_snapshot(resolver_falso, principal, tmp_path, tareas[1])
+    assert ruta == principal / "x__y-1.tgz"
+    assert kv.contar_snapshots_faltantes([], resolver_falso, principal, secreta) == 0
+
+
+def test_buscar_secret_dir_sube_por_los_ancestros(tmp_path: Path) -> None:
+    secret = tmp_path / "datos" / "secret"
+    secret.mkdir(parents=True)
+    profundo = tmp_path / "datos" / "a" / "b"
+    profundo.mkdir(parents=True)
+    assert kv.buscar_secret_dir(profundo) is None  # sin solution.*
+    (secret / "solution.csv").write_text("x", encoding="utf-8")
+    assert kv.buscar_secret_dir(profundo) == secret.resolve()
+    assert kv.buscar_secret_dir(tmp_path / "otro", profundo) == secret.resolve()
+    otro = tmp_path / "datos2" / "secret"
+    otro.mkdir(parents=True)
+    (otro / "solution.parquet").write_bytes(b"")
+    assert kv.buscar_secret_dir(tmp_path / "datos2", profundo) == otro.resolve()  # el primero que se da
+
+
+def test_faltan_snapshots_es_salida_2_con_el_conteo_y_sin_crear_el_manifiesto(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    falso = Falso()
+    codigo = kv.main(esc.argv(), verificador=falso, reloj=reloj, faltan_snapshots=lambda ts: 2)
+    assert codigo == kv.EXIT_INVALID
+    err = capsys.readouterr().err
+    assert "2 de las 3 tareas" in err
+    assert falso.llamadas == []
+    assert not (esc.crudo / "manifiesto.json").exists()
+    assert not esc.salida.exists()
+    # con todos presentes, se mide
+    assert kv.main(esc.argv(), verificador=falso, reloj=reloj, faltan_snapshots=lambda ts: 0) == kv.EXIT_OK
+    # solo cuenta las tareas elegidas
+    vistas: list[int] = []
+    otro = nuevo(esc.base, "otro", esc.spec)
+    kv.main(
+        otro.argv("--task-ids", esc.spec[0][0], salida=False),
+        verificador=Falso(),
+        reloj=reloj,
+        faltan_snapshots=lambda ts: vistas.append(len(ts)) or 0,
+    )
+    assert vistas == [1]
+
+
+def test_cambiar_el_directorio_de_snapshots_a_mitad_es_salida_2(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    corte = Falso()
+    corte.explotar_en = 2
+    assert esc.correr(corte) == kv.EXIT_INVALID
+    argv = esc.argv()
+    argv[argv.index("--snapshots-dir") + 1] = str(esc.base / "otros_snapshots")
+    falso = Falso()
+    assert kv.main(argv, verificador=falso, reloj=reloj) == kv.EXIT_INVALID
+    assert falso.llamadas == []
+    assert "snapshots_dir" in capsys.readouterr().err
+    # el mismo directorio, escrito con un rodeo, es el mismo
+    argv[argv.index("--snapshots-dir") + 1] = str(esc.base / "x" / ".." / "snapshots")
+    assert kv.main(argv, verificador=falso, reloj=reloj) == kv.EXIT_OK
+
+
+def test_el_manifiesto_guarda_modo_corrida_y_snapshots(esc: Escenario) -> None:
+    assert esc.correr(Falso()) == kv.EXIT_OK
+    m = json.loads((esc.crudo / "manifiesto.json").read_text(encoding="utf-8"))
+    assert m["modo"] == "medicion"
+    assert re.fullmatch(r"[0-9a-f]{32}", m["corrida"])
+    assert m["snapshots_dir"] == str(esc.snapshots.resolve())
+    assert m["referencia_sha256"] is None
+    assert {x["corrida"] for x in lineas_diario(esc.crudo)} == {m["corrida"]}
+
+
+def test_redirigir_registros_lleva_los_loggers_del_arnes_a_un_archivo(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    nombres = ("swegemma", "swegemma.harness", "adk_submission", "adk")
+    previos = {n: (logging.getLogger(n).handlers[:], logging.getLogger(n).propagate) for n in nombres}
+    archivo = tmp_path / "crudo" / "arnes.log"
+    manejador = kv.redirigir_registros(archivo)
+    try:
+        logging.getLogger("swegemma.harness").error("Failed to apply agent patch %s", POISON_PARCHE)
+        logging.getLogger("adk_submission").warning(POISON_LOG)
+        logging.getLogger("adk.tools").exception("fallo %s", POISON_TEST)
+        manejador.flush()
+        consola = capsys.readouterr()
+        assert POISON_PARCHE not in consola.out + consola.err
+        assert POISON_LOG not in consola.out + consola.err
+        assert POISON_TEST not in consola.out + consola.err
+        texto = archivo.read_text(encoding="utf-8")
+        assert POISON_PARCHE in texto and POISON_LOG in texto and POISON_TEST in texto
+        assert logging.getLogger("swegemma").propagate is False
+    finally:
+        manejador.close()
+        for n, (handlers, propaga) in previos.items():
+            logging.getLogger(n).handlers[:] = handlers
+            logging.getLogger(n).propagate = propaga
+        for n in ("swegemma.harness", "adk.tools"):
+            logging.getLogger(n).handlers.clear()
+
+
+# ---------------------------------------------------------------------------
+# Mensajes sin texto de excepciones, codigos sin categoria
+# ---------------------------------------------------------------------------
+
+
+def test_una_validez_error_del_verificador_no_imprime_su_texto(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def malo(_t: Tarea, _v: str) -> ResultadoVerificacion:
+        raise ValidezError(f"contenido {POISON_PARCHE} {POISON_ERROR}")
+
+    assert esc.correr(malo) == kv.EXIT_INVALID
+    err = capsys.readouterr().err
+    assert POISON_PARCHE not in err and POISON_ERROR not in err
+    assert "ValidezError" in err and esc.spec[0][0] in err
+
+
+def test_un_fallo_con_codigo_cerrado_imprime_el_codigo(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def sin_parche(_t: Tarea, v: str) -> ResultadoVerificacion:
+        raise kv.FalloVerificador("sin_parche_referencia")
+
+    assert esc.correr(sin_parche) == kv.EXIT_INVALID
+    assert "sin_parche_referencia" in capsys.readouterr().err
+    assert set(kv.CODIGOS_FALLO) == {"sin_parche_referencia", "tarea_ausente"}
+
+
+def test_la_salida_3_no_imprime_el_texto_de_la_excepcion_sino_tipo_y_punto(
+    esc: Escenario, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def roto(*_a: object, **_k: object) -> None:
+        raise KeyError(POISON_ERROR)
+
+    monkeypatch.setattr(kv, "medir_tarea", roto)
+    assert esc.correr(Falso()) == kv.EXIT_UNEXPECTED
+    err = capsys.readouterr().err
+    assert POISON_ERROR not in err
+    assert "KeyError" in err and "test_kaggle_validez.py" in err
+
+
+def test_un_codigo_de_salida_fuera_de_la_lista_aborta_con_la_tarea_y_pide_enmienda(
+    esc: Escenario, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ids = [i for i, _ in esc.spec]
+    extrano = ResultadoVerificacion(False, 139, None, 1.0)  # segmentation fault: ni agente ni lista
+    falso = Falso({(ids[1], kv.VERIF_DORADO): [extrano]})
+    assert esc.correr(falso) == kv.EXIT_INVALID
+    err = capsys.readouterr().err
+    assert ids[1] in err and "enmienda" in err and "dorado" in err
+    assert not esc.salida.exists()
+
+
+# ---------------------------------------------------------------------------
+# Huecos de la primera version: UTC, redondeo, muestra ausente, rutas, resumenes
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("hora_local", "utc", "fecha"),
+    [
+        (
+            datetime(2026, 10, 5, 23, 30, tzinfo=timezone(timedelta(hours=-5))),
+            "2026-10-06T04:30:00Z",
+            "2026-10-06",
+        ),
+        (
+            datetime(2026, 10, 6, 3, 0, tzinfo=timezone(timedelta(hours=14))),
+            "2026-10-05T13:00:00Z",
+            "2026-10-05",
+        ),
+    ],
+)
+def test_fecha_y_fecha_utc_se_convierten_a_utc_con_un_reloj_no_utc(
+    esc: Escenario, hora_local: datetime, utc: str, fecha: str
+) -> None:
+    assert kv.main(esc.argv(), verificador=Falso(), reloj=lambda: hora_local) == kv.EXIT_OK
+    assert esc.registro()["fecha"] == fecha
+    crudo = json.loads(
+        (esc.crudo / "ejecuciones" / esc.spec[0][0] / "sin_parche_1_1.json").read_text(encoding="utf-8")
+    )
+    assert crudo["registro"]["fecha_utc"] == utc
+    assert lineas_diario(esc.crudo)[0]["fecha_utc"] == utc
+
+
+@pytest.mark.parametrize(("bruto", "esperado"), [(1.23449, 1.234), (1.2346, 1.235), (2, 2.0), (0.0004, 0.0)])
+def test_la_duracion_se_redondea_a_milesimas(bruto: float, esperado: float) -> None:
+    res = ResultadoVerificacion(True, 0, None, bruto)
+    registro = kv.registro_de_ejecucion(res, "sin_parche", 1, 1, FECHA_UTC)
+    assert registro["duracion_segundos"] == esperado
+    assert isinstance(registro["duracion_segundos"], float)
+    assert kv.registro_versionable(registro)["duracion_segundos"] == esperado
+
+
+def test_una_tarea_de_la_muestra_ausente_de_la_referencia_es_error() -> None:
+    referencia = {"tareas": [{"instance_id": "a__b-1", "clase": CLASE_DISCRIMINA}]}
+    with pytest.raises(ValidezError, match="no esta en el registro de referencia"):
+        kv._comparar_muestra(referencia, [{"instance_id": "a__b-9", "clase": CLASE_DISCRIMINA}])
+    comparacion = kv._comparar_muestra(referencia, [{"instance_id": "a__b-1", "clase": CLASE_PASA}])
+    assert comparacion["coincide"] is False
+    assert comparacion["tareas"] == [
+        {
+            "instance_id": "a__b-1",
+            "clase_referencia": CLASE_DISCRIMINA,
+            "clase_repeticion": CLASE_PASA,
+            "coincide": False,
+        }
+    ]
+
+
+def test_crudo_con_rodeos_y_enlaces_se_resuelve_antes_de_comprobar(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    (repo / "otro").mkdir(parents=True)
+    git(repo, "init", "-q")
+    (repo / ".gitignore").write_text("datos/\n", encoding="utf-8")
+    # un rodeo con ``..`` que acaba en la ruta ignorada, y otro que acaba en una versionable
+    kv.comprobar_crudo_ignorado(repo / "otro" / ".." / "datos" / "crudo")
+    with pytest.raises(ValidezError):
+        kv.comprobar_crudo_ignorado(repo / "datos" / ".." / "visible" / "crudo")
+    # un enlace desde fuera del repositorio hacia una ruta versionable
+    (repo / "visible").mkdir()
+    enlace = tmp_path / "enlace"
+    try:
+        enlace.symlink_to(repo / "visible", target_is_directory=True)
+    except OSError:
+        pytest.skip("sin permiso para crear enlaces simbolicos")
+    with pytest.raises(ValidezError):
+        kv.comprobar_crudo_ignorado(enlace / "crudo")
+    # y uno hacia la ruta ignorada si se acepta
+    (repo / "datos").mkdir()
+    bueno = tmp_path / "bueno"
+    bueno.symlink_to(repo / "datos", target_is_directory=True)
+    kv.comprobar_crudo_ignorado(bueno / "crudo")
+
+
+def test_la_salida_dentro_del_crudo_se_detecta_aunque_se_escriba_con_rodeos(esc: Escenario) -> None:
+    argv = esc.argv()
+    argv[argv.index("--salida") + 1] = str(esc.base / "otro" / ".." / "crudo" / "x_v1.json")
+    assert kv.main(argv, verificador=Falso(), reloj=reloj) == kv.EXIT_INVALID
+
+
+def test_contar_pruebas_con_varias_lineas_de_resumen_usa_la_ultima() -> None:
+    texto = "1 passed in 0.1s\nruido\n2 failed, 5 passed in 1s\nlinea sin cifras\n"
+    assert kv.contar_pruebas(texto) == (5, 2, 0)
+    assert kv.contar_pruebas("3 failed in 1s\n7 passed in 2s") == (7, 0, 0)
+    assert kv.contar_pruebas("2 passed and 1 passed in 1s") == (
+        3,
+        0,
+        0,
+    )  # varias cifras en una linea se suman
