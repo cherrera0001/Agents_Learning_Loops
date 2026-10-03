@@ -12,7 +12,11 @@ from typing import Any
 
 import pytest
 
-from scripts.kaggle_split import allocate_proportional_seats, split_tasks
+from scripts.kaggle_split import (
+    allocate_proportional_seats,
+    split_leave_one_repo_out,
+    split_tasks,
+)
 
 
 def generate_synthetic_tasks(counts_per_repo: dict[str, int], seed: int = 42) -> list[dict[str, Any]]:
@@ -142,3 +146,59 @@ def test_largest_remainder_hamilton_exactness() -> None:
     counts = {"A": 10, "B": 10, "C": 10}
     seats = allocate_proportional_seats(counts, total_seats=7)
     assert sum(seats.values()) == 7
+
+
+def test_leave_one_repo_out_basic(synthetic_tasks: list[dict[str, Any]]) -> None:
+    """Comprueba que leave-one-repo-out aisla completamente el repo objetivo en test."""
+    res = split_leave_one_repo_out(synthetic_tasks, held_out_repo="repo_beta")
+
+    assert res["rule"]["name"] == "leave_one_repo_out"
+    assert res["rule"]["held_out_repo"] == "repo_beta"
+
+    train_set = set(res["train"])
+    test_set = set(res["test"])
+
+    # Disjuntos y completos
+    assert not (train_set & test_set)
+    assert len(train_set) + len(test_set) == len(synthetic_tasks)
+
+    # 20 tareas de repo_beta deben estar exactamente en test
+    assert len(test_set) == 20
+    assert len(train_set) == 40
+
+    tasks_by_id = {t["instance_id"]: t for t in synthetic_tasks}
+    for tid in test_set:
+        assert tasks_by_id[tid]["repo"] == "repo_beta"
+    for tid in train_set:
+        assert tasks_by_id[tid]["repo"] != "repo_beta"
+
+
+def test_leave_one_repo_out_deterministic(synthetic_tasks: list[dict[str, Any]]) -> None:
+    """Comprueba que leave-one-repo-out produce salidas identicas entre ejecuciones."""
+    res1 = split_leave_one_repo_out(synthetic_tasks, held_out_repo="repo_alpha")
+    res2 = split_leave_one_repo_out(synthetic_tasks, held_out_repo="repo_alpha")
+
+    assert res1["train"] == res2["train"]
+    assert res1["test"] == res2["test"]
+    assert res1["counts"] == res2["counts"]
+
+
+def test_leave_one_repo_out_with_exclusions(synthetic_tasks: list[dict[str, Any]]) -> None:
+    """Comprueba que tareas excluidas se ignoran tanto del repo reservado como de los de entrenamiento."""
+    excluded = {"repo_alpha_task_001", "repo_beta_task_005"}
+    res = split_leave_one_repo_out(synthetic_tasks, held_out_repo="repo_beta", excluded_ids=excluded)
+
+    all_assigned = set(res["train"]) | set(res["test"])
+    for ex in excluded:
+        assert ex not in all_assigned
+
+    assert res["counts"]["total_excluidas"] == 2
+    assert res["counts"]["total_validas"] == 58
+    assert res["counts"]["by_repo"]["repo_beta"]["test"] == 19
+    assert res["counts"]["by_repo"]["repo_alpha"]["train"] == 29
+
+
+def test_leave_one_repo_out_unknown_repo(synthetic_tasks: list[dict[str, Any]]) -> None:
+    """Comprueba que solicitar un repo inexistente lanza ValueError."""
+    with pytest.raises(ValueError, match="El repositorio 'repo_fantasma' no existe"):
+        split_leave_one_repo_out(synthetic_tasks, held_out_repo="repo_fantasma")

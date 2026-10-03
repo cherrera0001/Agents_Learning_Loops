@@ -150,6 +150,80 @@ def split_tasks(
     }
 
 
+def split_leave_one_repo_out(
+    tasks: Sequence[dict[str, Any]],
+    held_out_repo: str,
+    excluded_ids: set[str] | None = None,
+    sha256_tasks: str = "",
+) -> dict[str, Any]:
+    """Divide las tareas dejando un repositorio completo como conjunto de prueba."""
+    if excluded_ids is None:
+        excluded_ids = set()
+
+    valid_tasks: list[dict[str, Any]] = [t for t in tasks if str(t.get("instance_id")) not in excluded_ids]
+
+    train_ids: list[str] = []
+    test_ids: list[str] = []
+    repo_breakdown: dict[str, dict[str, int]] = {}
+
+    by_repo: dict[str, list[dict[str, Any]]] = {}
+    for t in valid_tasks:
+        repo = str(t.get("repo", "unknown"))
+        by_repo.setdefault(repo, []).append(t)
+
+    if held_out_repo not in by_repo:
+        available = sorted(by_repo.keys())
+        raise ValueError(
+            f"El repositorio '{held_out_repo}' no existe entre las tareas validas. "
+            f"Repositorios disponibles: {available}"
+        )
+
+    for repo in sorted(by_repo.keys()):
+        rtasks = by_repo[repo]
+        # Ordenar deterministamente
+        rtasks.sort(key=lambda x: (str(x.get("created_at", "")), str(x.get("instance_id", ""))))
+        if repo == held_out_repo:
+            test_ids.extend(str(t["instance_id"]) for t in rtasks)
+            repo_breakdown[repo] = {
+                "total_valid": len(rtasks),
+                "train": 0,
+                "test": len(rtasks),
+            }
+        else:
+            train_ids.extend(str(t["instance_id"]) for t in rtasks)
+            repo_breakdown[repo] = {
+                "total_valid": len(rtasks),
+                "train": len(rtasks),
+                "test": 0,
+            }
+
+    return {
+        "rule": {
+            "name": "leave_one_repo_out",
+            "held_out_repo": held_out_repo,
+            "n_test_efectivo": len(test_ids),
+            "n_train_efectivo": len(train_ids),
+            "descripcion": (
+                f"Particion leave-one-repo-out: todas las tareas de '{held_out_repo}' "
+                "para prueba y las de los demas repositorios para entrenamiento."
+            ),
+            "exclusiones_count": len(excluded_ids),
+            "excluded_instance_ids": sorted(list(excluded_ids)),
+        },
+        "sha256_tasks": sha256_tasks,
+        "counts": {
+            "total_tasks_recibidas": len(tasks),
+            "total_excluidas": len(tasks) - len(valid_tasks),
+            "total_validas": len(valid_tasks),
+            "total_train": len(train_ids),
+            "total_test": len(test_ids),
+            "by_repo": repo_breakdown,
+        },
+        "train": train_ids,
+        "test": test_ids,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada de la CLI de particion."""
     parser = argparse.ArgumentParser(
@@ -168,11 +242,24 @@ def main(argv: list[str] | None = None) -> int:
         help="Ruta al JSON de calibracion de fase 2 para excluir tareas invalidas.",
     )
     parser.add_argument(
+        "--rule",
+        type=str,
+        default="temporal_stratified",
+        choices=["temporal_stratified", "leave_one_repo_out"],
+        help="Regla de particion a aplicar: temporal_stratified o leave_one_repo_out.",
+    )
+    parser.add_argument(
         "--n-test",
         type=int,
         default=32,
         choices=[24, 32, 40],
-        help="Tamano objetivo del conjunto de prueba (24, 32 o 40).",
+        help="Tamano objetivo del conjunto de prueba para temporal_stratified (24, 32 o 40).",
+    )
+    parser.add_argument(
+        "--held-out-repo",
+        type=str,
+        default=None,
+        help="Repositorio a reservar para prueba cuando --rule leave_one_repo_out.",
     )
     parser.add_argument(
         "--output",
@@ -195,12 +282,22 @@ def main(argv: list[str] | None = None) -> int:
             if line.strip():
                 tasks.append(json.loads(line))
 
-    result = split_tasks(
-        tasks=tasks,
-        n_test=args.n_test,
-        excluded_ids=excluded_ids,
-        sha256_tasks=sha256_tasks,
-    )
+    if args.rule == "leave_one_repo_out":
+        if not args.held_out_repo:
+            parser.error("--held-out-repo es obligatorio cuando --rule leave_one_repo_out.")
+        result = split_leave_one_repo_out(
+            tasks=tasks,
+            held_out_repo=args.held_out_repo,
+            excluded_ids=excluded_ids,
+            sha256_tasks=sha256_tasks,
+        )
+    else:
+        result = split_tasks(
+            tasks=tasks,
+            n_test=args.n_test,
+            excluded_ids=excluded_ids,
+            sha256_tasks=sha256_tasks,
+        )
 
     formatted_json = json.dumps(result, indent=2, ensure_ascii=False)
     if args.output:
