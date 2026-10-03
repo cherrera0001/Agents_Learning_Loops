@@ -23,8 +23,9 @@ Al terminar un issue, antes de abrir el PR. El episodio viaja en el mismo PR que
 ## Procedimiento
 
 1. Crea `learning/episodes/NNN-<id>.json`. `seq` continúa la numeración: **`seq` ordena el reloj lógico**
-   de la memoria. Comprueba el último `seq` libre en `origin/main` (`git ls-tree origin/main learning/episodes/`),
-   no solo en tu rama: dos PR paralelos pueden tomar el mismo número.
+   de la memoria. Comprueba el último `seq` libre en `origin/main` (`git ls-tree origin/main learning/episodes/`)
+   y en los PR abiertos (`gh pr list --state open --json number,files`), no solo en tu rama: dos PR
+   paralelos pueden tomar el mismo número.
 2. Anota cada paso con una acción del vocabulario de `learning/README.md`, indicando `success` y un
    `error` o una `note`.
 3. **El fallo va en la acción que lo causó, no en la que lo detectó.** Si una revisión encuentra un test

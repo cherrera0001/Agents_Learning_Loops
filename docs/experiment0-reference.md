@@ -183,7 +183,7 @@ fallos reales, lecciones), y `learning/dev_memory.json` (no versionado; se gener
 
 ```bash
 python -m scripts.devlog recall "Spreading Activation: umbral de disparo y fan-out"
-python -m scripts.devlog rebuild
+python -m scripts.devlog rebuild   # opcional: escribe una copia local del grafo; no se versiona
 ```
 
 Detalles y vocabulario de acciones en [`learning/README.md`](learning/README.md).
