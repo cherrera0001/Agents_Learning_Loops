@@ -47,8 +47,9 @@ def test_missing_values_are_shown_as_unknown_not_as_a_claim():
         outcome={"used_model": "Opus 5.5"},
     )
     line = _only_line(episode)
-    assert "estimado M · ? pts, I? R?, previsto ?" in line
-    assert "usado Opus 5.5, escaló: ?, PR: ?, revisiones de estimación: ?" in line
+    provenance = "(declarado en episodio; no leído de tarjeta)"
+    assert f"estimado M · ? pts, I? R?, previsto ? {provenance}" in line
+    assert f"usado Opus 5.5, escaló: ?, PR: ?, revisiones de estimación: ? {provenance}" in line
     assert "None" not in line
 
 
@@ -70,7 +71,7 @@ def test_an_empty_planned_model_is_a_datum_and_a_missing_one_is_unknown():
 
 def test_a_missing_outcome_is_said_like_a_missing_estimate():
     line = _only_line(_episode(1, "issue-7", "Verificador de datos", "#7", estimate={"size": "S"}))
-    assert "sin resultado" in line and "sin estimación" not in line
+    assert "episodio sin resultado" in line and "sin estimación" not in line
 
 
 def test_each_line_shows_its_activation():
@@ -108,8 +109,16 @@ def test_recall_honours_top_issues_and_the_cli_option(monkeypatch, capsys):
     assert capsys.readouterr().out.rstrip("\n") == one
 
 
-def _run_with_snapshot(monkeypatch, capsys, directory):
-    episode = _episode(1, "issue-114", "Verificador de datos", "#114")
+def test_negative_issues_limit_lists_no_episodes(monkeypatch, capsys):
+    episodes = [_episode(seq, f"issue-{seq}", f"Verificador de datos {seq}", f"#{seq}") for seq in (1, 2, 3)]
+    monkeypatch.setattr(devlog, "load_episodes", lambda: episodes)
+    monkeypatch.setattr(sys, "argv", ["devlog", "recall", "verificador de datos", "--issues", "-1"])
+    devlog.main()
+    assert capsys.readouterr().out.rstrip("\n").endswith(SECTION + "\n  (ninguno)")
+
+
+def _run_with_snapshot(monkeypatch, capsys, directory, episode=None):
+    episode = episode or _episode(1, "issue-114", "Verificador de datos", "#114")
     monkeypatch.setattr(devlog, "load_episodes", lambda: [episode])
     monkeypatch.setattr(
         sys, "argv", ["devlog", "recall", "verificador de datos", "--snapshot", str(directory)]
@@ -135,7 +144,107 @@ def test_a_card_of_another_repository_is_not_taken_for_this_issue(tmp_path, monk
         ],
     )
     out = _run_with_snapshot(monkeypatch, capsys, snapshot).out
-    assert "tablero: Done, verificación Verificada" in out and "tablero: Todo" not in out
+    assert "tablero: Done, verificación Verificada (snapshot)" in out and "estado Todo" not in out
+
+
+def test_snapshot_marks_episode_provenance_and_warns_on_discrepancies(tmp_path, monkeypatch, capsys):
+    episode = _episode(
+        1,
+        "issue-114",
+        "Verificador de datos",
+        "#114",
+        estimate={"size": "S", "points": 2, "uncertainty": 1, "risk": 1, "planned_model": "Sonnet"},
+        outcome={"used_model": "Sonnet", "escalated": True, "prs": 2},
+    )
+    snapshot = _write_snapshot(
+        tmp_path,
+        [
+            {
+                "content": {"number": 114, "type": "Issue", "repository": REPO},
+                "status": "Done",
+                "verificación": "Verificada",
+                "talla": "M",
+                "puntos": 2,
+                "incertidumbre": 2,
+                "riesgo": 2,
+                "modelo": "Opus",
+                "modelo usado": "Fable",
+                "escaló": "No",
+                "linked pull requests": ["https://github.com/example/repo/pull/1"],
+            }
+        ],
+    )
+    out = _run_with_snapshot(monkeypatch, capsys, snapshot, episode).out
+    assert "estimado S · 2 pts" in out and "(declarado en episodio; no leído de tarjeta)" in out
+    assert "usado Sonnet" in out
+    assert "tablero: Done, verificación Verificada (snapshot)" in out
+    assert "estimate.size=S; talla=M" in out
+    assert "estimate.uncertainty=1; incertidumbre=2" in out
+    assert "estimate.risk=1; riesgo=2" in out
+    assert "estimate.planned_model=Sonnet; modelo=Opus" in out
+    assert "outcome.used_model=Sonnet; modelo usado=Fable" in out
+    assert "outcome.escalated=Sí; escaló=No" in out
+    assert "outcome.prs=2; PR vinculados=1" in out
+    assert "discrepancias episodio/snapshot" in out
+
+
+def test_snapshot_does_not_report_matching_episode_and_card_values(tmp_path, monkeypatch, capsys):
+    episode = _episode(
+        1,
+        "issue-114",
+        "Verificador de datos",
+        "#114",
+        estimate={"size": "S", "points": 2, "uncertainty": 1, "risk": 1, "planned_model": "Sonnet"},
+        outcome={"used_model": "Sonnet", "escalated": False, "prs": 1},
+    )
+    card = {
+        "content": {"number": 114, "type": "Issue", "repository": REPO},
+        "status": "Done",
+        "verificación": "Verificada",
+        "talla": "S",
+        "puntos": 2,
+        "incertidumbre": 1,
+        "riesgo": 1,
+        "modelo": "Sonnet",
+        "modelo usado": "Sonnet",
+        "escaló": "No",
+        "linked pull requests": ["https://github.com/example/repo/pull/1"],
+    }
+    snapshot = _write_snapshot(tmp_path, [card])
+    out = _run_with_snapshot(monkeypatch, capsys, snapshot, episode).out
+    assert "tablero: Done, verificación Verificada (snapshot)" in out
+    assert "discrepancias episodio/snapshot" not in out
+
+
+def test_recall_without_snapshot_keeps_episode_provenance_and_no_board_claim():
+    line = _only_line(
+        _episode(
+            1,
+            "issue-7",
+            "Verificador de datos",
+            "#7",
+            estimate={"size": "S"},
+            outcome={"used_model": "Sonnet"},
+        )
+    )
+    assert "estimado S" in line and "(declarado en episodio; no leído de tarjeta)" in line
+    assert "usado Sonnet" in line
+    assert "(snapshot)" not in line
+
+
+def test_transcript_sourced_outcome_is_described_as_declared_not_self_reported():
+    line = _only_line(
+        _episode(
+            1,
+            "issue-7",
+            "Verificador de datos",
+            "#7",
+            outcome={"used_model": "Opus", "model_source": "transcript"},
+        )
+    )
+    assert "usado Opus" in line
+    assert "(declarado en episodio; no leído de tarjeta)" in line
+    assert "autoinformado" not in line
 
 
 @pytest.mark.parametrize(
