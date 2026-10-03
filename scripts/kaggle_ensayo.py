@@ -53,6 +53,7 @@ import argparse
 import atexit
 import contextlib
 import hashlib
+import http.client
 import json
 import math
 import os
@@ -64,12 +65,13 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import traceback
 import urllib.error
 import urllib.request
 from collections.abc import Callable, Iterator, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from functools import partial
 from importlib import metadata
@@ -124,6 +126,9 @@ VARIABLES_SIN_RED: tuple[tuple[str, str], ...] = (
     ("DO_NOT_TRACK", "1"),
     ("LITELLM_LOCAL_MODEL_COST_MAP", "True"),
 )
+# Solo para el servidor: que su registro de accesos se escriba linea a linea, porque la sonda del
+# agente cuenta en el los rechazos mientras el servidor sigue vivo.
+VARIABLES_SERVIDOR: tuple[tuple[str, str], ...] = (("PYTHONUNBUFFERED", "1"),)
 
 # --- Rechazo por contexto y errores del arnes: las mismas listas cerradas que scripts/kaggle_replicas.py
 # (este archivo no puede importarlo en el notebook; las pruebas comprueban que coinciden).
@@ -172,7 +177,12 @@ CATEGORIAS: tuple[str, ...] = (
     "no_necesaria",
     "dependencia_no_medida",
     "dependencia_ausente",
+    "tope_global",
     # error
+    "puerto_ocupado",
+    "respuesta_http_invalida",
+    "log_sin_peticiones",
+    "rechazos_incoherentes",
     "tiempo_agotado",
     "comando_fallo",
     "lanzamiento_fallo",
@@ -198,6 +208,8 @@ INTERVALO_SALUD = 2.0
 ESPERA_RENDIMIENTO = 120.0
 ESPERA_CONTROL = 300.0
 ESPERA_RECHAZO = 120.0
+ESPERA_CALIBRACION = 120.0
+ESPERA_CALIBRADO = 600.0
 ESPERA_AGENTE_MIN_POR_TAREA = 15.0  # 5 del agente mas montaje y verificacion
 GRACIA_TERMINAR = 20.0
 GRACIA_MATAR = 10.0
@@ -213,6 +225,25 @@ PROMPT_RENDIMIENTO = (
 PROMPT_CONTROL = "Responde solo con la palabra: listo"
 PALABRA_RELLENO = "tornillo "
 PALABRAS_RELLENO = 60000  # muy por encima de CONTEXTO_MAXIMO aunque cada palabra fuera un solo token
+# Rechazo calibrado: un prompt que cabe en el contexto pero, con el tope del kit, no deja sitio a la
+# salida. 20 000 + 16 384 excede 32 768; 20 000 + 8 192 no.
+PALABRAS_CALIBRACION: tuple[int, int] = (500, 2000)
+TOKENS_OBJETIVO = 20000
+MIN_TOKENS_POR_PALABRA = 0.25
+MAX_TOKENS_POR_PALABRA = 8.0
+FRACCION_TRUNCADO = 0.9
+RESULTADOS_CALIBRADO: tuple[str, ...] = (
+    "rechazado",
+    "rechazo_sin_marcador",
+    "aceptado",
+    "truncado",
+    "aceptado_sin_conteo",
+    "otro",
+)
+REGISTRO_SERVIDOR = "servidor.log"
+# Linea del registro de accesos del servidor para una peticion de chat, con su codigo HTTP.
+ACCESO_CHAT = re.compile(r'"POST /v1/chat/completions HTTP/[0-9.]+" ([0-9]{3})\b')
+MARGEN_TOPE_GLOBAL = 600.0
 
 PAQUETES: tuple[str, ...] = ("vllm", "swegemma", "adk-submission", "adk-eval-core", "google-adk", "docker")
 HERRAMIENTAS_ARNES: tuple[str, ...] = (
@@ -304,6 +335,8 @@ class Proceso(Protocol):
     def matar(self) -> None: ...
 
     def esperar(self, segundos: float) -> bool: ...
+
+    def grupo_vivo(self) -> bool: ...
 
 
 @dataclass(frozen=True)
@@ -959,7 +992,10 @@ def hash_guion_servidor(cfg: ConfigServidor) -> str:
     No depende de las rutas de la maquina, asi que dos sesiones con los mismos parametros dan el
     mismo hash; cualquier parametro distinto (puerto, opcion extra, adaptador) lo cambia.
     """
-    canon = {"argv": list(publico(comando_servidor("python", cfg))), "variables": dict(VARIABLES_SIN_RED)}
+    canon = {
+        "argv": list(publico(comando_servidor("python", cfg))),
+        "variables": {**dict(VARIABLES_SIN_RED), **dict(VARIABLES_SERVIDOR)},
+    }
     return sha256_bytes(json.dumps(canon, sort_keys=True, separators=(",", ":")).encode("utf-8"))
 
 
@@ -972,6 +1008,13 @@ def _variables_hijo(ent: Entorno, cfg: ConfigServidor | None) -> dict[str, str]:
             variables[nombre] = f"{cfg.base}/v1"
         for nombre in ("MODEL_PROXY_API_KEY", "LITELLM_API_KEY", "LOCAL_API_KEY", "OPENAI_API_KEY"):
             variables[nombre] = "EMPTY"
+    return variables
+
+
+def _variables_servidor(ent: Entorno) -> dict[str, str]:
+    """Variables del proceso del servidor: sin red y con la salida sin bufer."""
+    variables = _variables_hijo(ent, None)
+    variables.update(dict(VARIABLES_SERVIDOR))
     return variables
 
 
@@ -991,18 +1034,23 @@ class Guardia:
         self.lanzados += 1
 
     def detener(self) -> bool:
-        """Termina el proceso; si no muere, lo mata. Devuelve ``True`` si no queda vivo."""
+        """Pide al proceso que termine, espera y despues mata **siempre** a todo su grupo.
+
+        El servidor reparte el modelo entre las GPU con procesos hijos: que el lider haya terminado
+        no dice nada de ellos. Devuelve ``True`` solo si no queda vivo ni el lider ni nadie del
+        grupo; si no se puede comprobar, no se da por muerto.
+        """
         p = self.proceso
         if p is None:
             return True
         with contextlib.suppress(Exception):
             p.terminar()
-        if not self._termino(p, GRACIA_TERMINAR):
-            with contextlib.suppress(Exception):
-                p.matar()
-            self._termino(p, GRACIA_MATAR)
+        self._termino(p, GRACIA_TERMINAR)
+        with contextlib.suppress(Exception):
+            p.matar()
+        self._termino(p, GRACIA_MATAR)
         try:
-            vivo = p.vivo()
+            vivo = p.vivo() or p.grupo_vivo()
         except Exception:
             vivo = True  # no se pudo comprobar: no se da por muerto
         if not vivo:
@@ -1024,13 +1072,21 @@ def sonda_servidor(
 
     El tiempo va desde que se lanza el proceso hasta la primera respuesta 200 de ``/health``. Que el
     proceso termine o que se agote la espera son valores medidos (``arranca`` falso), sin tiempo.
+
+    Antes de lanzar nada, el puerto debe estar libre: si algo contesta ya (o deja la peticion
+    colgada), lo que respondiera despues no seria el servidor de este guion, y la sonda queda en
+    ``error`` (``puerto_ocupado``) sin lanzar. Por lo mismo, una respuesta 200 solo cuenta si el
+    proceso lanzado sigue vivo en ese momento.
     """
     tokens = comando_servidor(ent.python, cfg)
     comandos = [publico(tokens)]
     guion = hash_guion_servidor(cfg)
+    previa = ent.http("GET", f"{cfg.base}/health", None, ESPERA_SALUD)
+    if previa.estado != "sin_conexion":
+        return sin_valor(ERROR, "puerto_ocupado", comandos)
     inicio = ent.reloj()
     try:
-        proceso = ent.lanzar(real(tokens), crudo.ruta("servidor.log"), _variables_hijo(ent, None))
+        proceso = ent.lanzar(real(tokens), crudo.ruta(REGISTRO_SERVIDOR), _variables_servidor(ent))
     except OSError:
         return sin_valor(ERROR, "lanzamiento_fallo", comandos)
     guardia.asignar(proceso)
@@ -1040,9 +1096,20 @@ def sonda_servidor(
         r = ent.http("GET", f"{cfg.base}/health", None, ESPERA_SALUD)
         if r.estado == "ok" and r.codigo == 200:
             segundos = round(ent.reloj() - inicio, 1)
+            if not proceso.vivo():
+                return sin_valor(ERROR, "puerto_ocupado", comandos)
             return medido({"arranca": True, "carga_segundos": segundos, "guion_sha256": guion}, comandos)
         ent.dormir(INTERVALO_SALUD)
     return medido({"arranca": False, "motivo": "tiempo_agotado", "guion_sha256": guion}, comandos)
+
+
+def limpieza_correcta(limpieza: Resultado | None) -> bool:
+    """La limpieza no bloquea el registro: servidor detenido y ningun proceso visto en la GPU."""
+    if limpieza is None:
+        return True  # no se lanzo ningun servidor
+    if limpieza.estado != MEDIDO or limpieza.valores.get("servidor_detenido") is not True:
+        return False
+    return bool(limpieza.valores.get("procesos_en_gpu", 0) == 0)
 
 
 def sonda_limpieza(ent: Entorno, crudo: Crudo, detenido: bool) -> Parcial:
@@ -1074,6 +1141,8 @@ def _json_objeto(cuerpo: bytes) -> dict[str, Any] | None:
 def _fallo_http(r: Respuesta) -> Parcial | None:
     if r.estado == "tiempo_agotado":
         return sin_valor(ERROR, "tiempo_agotado")
+    if r.estado == "protocolo":
+        return sin_valor(ERROR, "respuesta_http_invalida")
     if r.estado != "ok" or r.codigo is None:
         return sin_valor(ERROR, "sin_conexion")
     return None
@@ -1188,6 +1257,109 @@ def sonda_rechazo(ent: Entorno, crudo: Crudo, cfg: ConfigServidor, max_tokens: i
     )
 
 
+def _tokens_del_prompt(cuerpo: bytes) -> int | None:
+    """``usage.prompt_tokens`` de una respuesta de chat, o ``None`` si no viene como entero."""
+    obj = _json_objeto(cuerpo)
+    uso = obj.get("usage") if obj is not None else None
+    tokens = uso.get("prompt_tokens") if isinstance(uso, dict) else None
+    if isinstance(tokens, bool) or not isinstance(tokens, int) or tokens < 0:
+        return None
+    return tokens
+
+
+def sonda_calibracion(ent: Entorno, crudo: Crudo, cfg: ConfigServidor) -> Parcial:
+    """Cuantos tokens ocupa cada palabra del relleno, medido con el propio servidor.
+
+    Dos peticiones cortas de distinto tamano y un solo token de salida; de la diferencia de
+    ``usage.prompt_tokens`` sale la pendiente (tokens por palabra) y, de ahi, lo que anade la
+    plantilla del chat. Con eso se calcula cuantas palabras hacen un prompt de ``TOKENS_OBJETIVO``.
+    """
+    url = f"{cfg.base}/v1/chat/completions"
+    medidas: list[int] = []
+    for i, palabras in enumerate(PALABRAS_CALIBRACION, start=1):
+        r = ent.http("POST", url, _peticion_chat(PALABRA_RELLENO * palabras, 1), ESPERA_CALIBRACION)
+        crudo.guardar(f"calibracion_{i}.txt", r.cuerpo)
+        fallo = _fallo_http(r)
+        if fallo is not None:
+            return fallo
+        if r.codigo != 200:
+            return sin_valor(ERROR, "respuesta_inesperada")
+        tokens = _tokens_del_prompt(r.cuerpo)
+        if tokens is None:
+            return sin_valor(ERROR, "salida_ilegible")
+        medidas.append(tokens)
+    corto, largo = PALABRAS_CALIBRACION
+    por_palabra = (medidas[1] - medidas[0]) / (largo - corto)
+    if not MIN_TOKENS_POR_PALABRA <= por_palabra <= MAX_TOKENS_POR_PALABRA:
+        return sin_valor(ERROR, "respuesta_inesperada")
+    sobrecarga = round(medidas[0] - por_palabra * corto)
+    palabras_objetivo = round((TOKENS_OBJETIVO - sobrecarga) / por_palabra)
+    if sobrecarga < 0 or palabras_objetivo < 1:
+        return sin_valor(ERROR, "respuesta_inesperada")
+    return medido(
+        {
+            "tokens_por_palabra": round(por_palabra, 4),
+            "sobrecarga_tokens": sobrecarga,
+            "tokens_objetivo": TOKENS_OBJETIVO,
+            "palabras": palabras_objetivo,
+        }
+    )
+
+
+def esperado_calibrado(max_tokens: int) -> str:
+    """Lo esperable, a confirmar: rechazo si el prompt mas la salida no caben en el contexto."""
+    return "rechazado" if TOKENS_OBJETIVO + max_tokens > CONTEXTO_MAXIMO else "aceptado"
+
+
+def sonda_rechazo_calibrado(
+    ent: Entorno, crudo: Crudo, cfg: ConfigServidor, max_tokens: int, palabras: int
+) -> Parcial:
+    """El caso que decide entre los candidatos: un prompt que cabe en el contexto pero no deja sitio.
+
+    Envia un prompt inventado de unos ``TOKENS_OBJETIVO`` tokens con ``max_tokens`` de salida. El
+    ``resultado`` es explicito: ``rechazado`` (400 con marcador), ``rechazo_sin_marcador`` (400 sin
+    el), ``aceptado`` (200 y el servidor conto el prompt entero), ``truncado`` (200 pero conto
+    bastante menos de lo enviado), ``aceptado_sin_conteo`` (200 sin ``usage``) u ``otro``. El texto
+    exacto queda solo en el volcado crudo.
+    """
+    prompt = PALABRA_RELLENO * palabras + PROMPT_CONTROL
+    url = f"{cfg.base}/v1/chat/completions"
+    r = ent.http("POST", url, _peticion_chat(prompt, max_tokens), ESPERA_CALIBRADO)
+    crudo.guardar(f"calibrado_{max_tokens}_cuerpo.txt", r.cuerpo)
+    fallo = _fallo_http(r)
+    if fallo is not None:
+        return fallo
+    assert r.codigo is not None
+    texto = r.cuerpo.decode("utf-8", errors="replace").lower()
+    marcadores = {m.replace(" ", "_"): m in texto for m in CONTEXT_ERROR_MARKERS}
+    contados = _tokens_del_prompt(r.cuerpo) if r.codigo == 200 else None
+    if r.codigo == 400:
+        resultado = "rechazado" if any(marcadores.values()) else "rechazo_sin_marcador"
+    elif r.codigo != 200:
+        resultado = "otro"
+    elif contados is None:
+        resultado = "aceptado_sin_conteo"
+    elif contados < FRACCION_TRUNCADO * TOKENS_OBJETIVO:
+        resultado = "truncado"
+    else:
+        resultado = "aceptado"
+    valores: dict[str, Any] = {
+        "max_tokens": max_tokens,
+        "palabras": palabras,
+        "tokens_estimados": TOKENS_OBJETIVO,
+        "http": r.codigo,
+        "resultado": resultado,
+        "esperado": esperado_calibrado(max_tokens),
+        "coincide_con_lo_esperado": resultado == esperado_calibrado(max_tokens),
+        "marcadores": marcadores,
+        "cuerpo_sha256": sha256_bytes(r.cuerpo),
+        "cuerpo_bytes": len(r.cuerpo),
+    }
+    if contados is not None:
+        valores["prompt_tokens"] = contados
+    return medido(valores)
+
+
 # ---------------------------------------------------------------------------
 # Sonda del agente (A.0): cuatro tareas, kit original, limites de A.0
 # ---------------------------------------------------------------------------
@@ -1248,6 +1420,19 @@ def leer_turnos(ruta: Path, esperadas: Sequence[str]) -> tuple[list[int], dict[s
     if vistos != set(esperadas):
         return None
     return sorted(turnos), clases
+
+
+def contar_chat(registro: Path) -> tuple[int, int] | None:
+    """Peticiones de chat que anota el registro del servidor: ``(todas, las respondidas con 400)``.
+
+    Solo salen dos numeros; el texto del registro no se guarda. ``None`` si no se puede leer.
+    """
+    try:
+        texto = registro.read_bytes().decode("utf-8", errors="replace")
+    except OSError:
+        return None
+    codigos = ACCESO_CHAT.findall(texto)
+    return len(codigos), sum(1 for c in codigos if c == "400")
 
 
 def preparar_envio(envio: Path, crudo: Crudo, max_tokens: int) -> Path | None:
@@ -1342,10 +1527,19 @@ def sonda_agente(
 
     No lee ni guarda si las tareas se resolvieron. Si alguna tarea da un error de infraestructura en
     la fase del agente, sus turnos no significan nada y la sonda queda en ``error``.
+
+    Los rechazos se cuentan por dos caminos y deben coincidir en si los hubo: las respuestas 400 a
+    la ruta de chat que el servidor anota en su registro durante la corrida (peticiones rechazadas,
+    que es lo que pide A.0) y las tareas cuyo error del arnes es un rechazo por contexto. Si un
+    camino ve rechazos y el otro no, o el registro no muestra ninguna peticion pese a haber
+    turnos, la sonda queda en ``error``: no se elige a cual creer.
     """
     preparado = preparar_envio(envio, crudo, max_tokens)
     if preparado is None:
         return sin_valor(ERROR, "entrada_inesperada")
+    antes = contar_chat(crudo.ruta(REGISTRO_SERVIDOR))
+    if antes is None:
+        return sin_valor(ERROR, "salida_ilegible")
     resultados = crudo.ruta(f"agente_{max_tokens}")
     tokens = comando_agente(
         ent.python,
@@ -1371,6 +1565,15 @@ def sonda_agente(
         return sin_valor(ERROR, "error_sin_categoria", comandos)
     if clases.get("infraestructura", 0):
         return sin_valor(ERROR, "infraestructura_arnes", comandos)
+    despues = contar_chat(crudo.ruta(REGISTRO_SERVIDOR))
+    if despues is None or despues[0] < antes[0] or despues[1] < antes[1]:
+        return sin_valor(ERROR, "salida_ilegible", comandos)
+    en_registro, rechazadas = despues[0] - antes[0], despues[1] - antes[1]
+    tareas_con_rechazo = clases.get("rechazo_contexto", 0)
+    if sum(turnos) > 0 and en_registro == 0:
+        return sin_valor(ERROR, "log_sin_peticiones", comandos)
+    if (rechazadas > 0) != (tareas_con_rechazo > 0):
+        return sin_valor(ERROR, "rechazos_incoherentes", comandos)
     return medido(
         {
             "max_output_tokens": max_tokens,
@@ -1378,7 +1581,9 @@ def sonda_agente(
             "tareas": len(turnos),
             "turnos_por_tarea": turnos,
             "peticiones_al_modelo": sum(turnos),
-            "rechazos_por_contexto": clases.get("rechazo_contexto", 0),
+            "peticiones_en_el_registro_del_servidor": en_registro,
+            "rechazos_por_contexto": rechazadas,
+            "tareas_con_rechazo": tareas_con_rechazo,
             "errores_de_verificacion": clases.get("verificacion", 0),
             "max_time_minutes": MAX_TIME_MINUTES,
         },
@@ -1401,28 +1606,59 @@ def _es_numero(v: object, minimo: float, *, estricto: bool = False) -> bool:
     return v > minimo if estricto else v >= minimo
 
 
-# El mismo esquema que ``ENSAYO`` en scripts/kaggle_prereg.py; las pruebas comprueban que coinciden.
+def _o_nulo(ok: Callable[[Any], bool]) -> Callable[[Any], bool]:
+    return lambda v: v is None or ok(v)
+
+
+def _es_lista_de_turnos(v: object) -> bool:
+    return isinstance(v, list) and bool(v) and all(_es_entero(x, 0) for x in v)
+
+
+# El mismo esquema que ``ENSAYO`` en scripts/kaggle_prereg.py (Enmienda 1 del pre-registro); las
+# pruebas comprueban que coinciden. Los campos que admiten nulo son las medidas que no existen
+# cuando el servidor no arranca o el envio no compila.
 ESQUEMA: dict[str, Callable[[Any], bool]] = {
     "schema_version": lambda v: v == ESQUEMA_REGISTRO,
     "fecha": lambda v: isinstance(v, str) and FECHA_RE.fullmatch(v) is not None,
     "notebook": lambda v: isinstance(v, str) and bool(v.strip()),
-    "modelo": lambda v: isinstance(v, str) and bool(v.strip()),
+    "modelo": _o_nulo(lambda v: isinstance(v, str) and bool(v.strip())),
     "guion_servidor_sha256": lambda v: isinstance(v, str) and SHA_RE.fullmatch(v) is not None,
+    "informe_sha256": lambda v: isinstance(v, str) and SHA_RE.fullmatch(v) is not None,
     "docker_disponible": lambda v: isinstance(v, bool),
-    "backend": lambda v: v in BACKENDS,
+    "backend": _o_nulo(lambda v: v in BACKENDS),
     "servidor_arranca": lambda v: isinstance(v, bool),
     "envio_compila": lambda v: isinstance(v, bool),
-    "carga_modelo_segundos": lambda v: _es_numero(v, 0),
+    "carga_modelo_segundos": _o_nulo(lambda v: _es_numero(v, 0)),
     "sesion_max_horas": lambda v: _es_numero(v, 0, estricto=True),
-    "tokens_por_segundo": lambda v: _es_numero(v, 0),
+    "tokens_por_segundo": _o_nulo(lambda v: _es_numero(v, 0)),
     "max_time_minutes_ensayo": lambda v: _es_entero(v, 1),
-    "turnos_por_tarea": lambda v: isinstance(v, list) and bool(v) and all(_es_entero(x, 0) for x in v),
-    "peticiones_al_modelo": lambda v: _es_entero(v, 0),
-    "rechazos_por_contexto": lambda v: (
-        isinstance(v, dict)
-        and bool(v)
-        and all(isinstance(k, str) and k.isdigit() and _es_entero(n, 0) for k, n in v.items())
+    "turnos_por_tarea": _o_nulo(_es_lista_de_turnos),
+    "turnos_por_tarea_repeticion": _o_nulo(_es_lista_de_turnos),
+    "peticiones_al_modelo": _o_nulo(lambda v: _es_entero(v, 0)),
+    "rechazos_por_contexto": _o_nulo(
+        lambda v: (
+            isinstance(v, dict)
+            and bool(v)
+            and all(isinstance(k, str) and k.isdigit() and _es_entero(n, 0) for k, n in v.items())
+        )
     ),
+}
+# Con servidor arrancado y envio compilado, estas medidas no pueden faltar.
+EXIGIDOS_SI_VIABLE: tuple[str, ...] = (
+    "modelo",
+    "backend",
+    "carga_modelo_segundos",
+    "tokens_por_segundo",
+    "turnos_por_tarea",
+    "peticiones_al_modelo",
+    "rechazos_por_contexto",
+)
+REGISTRO_COMPLETO = "completo"
+REGISTRO_FALLO_TEMPRANO = "fallo_temprano"
+REGISTRO_NINGUNO = "ninguno"
+NOTAS_DEL_INFORME: dict[str, str] = {
+    "peticiones_al_modelo": "turnos completados segun el arnes",
+    "rechazos_por_contexto": "respuestas 400 a la ruta de chat en el registro del servidor",
 }
 
 
@@ -1432,88 +1668,150 @@ def validar_registro(obj: object) -> list[str]:
         return ["el registro no es un objeto"]
     if set(obj) != set(ESQUEMA):
         return [f"claves distintas de las del esquema: {sorted(set(obj) ^ set(ESQUEMA))}"]
-    return [f"valor invalido en {k}" for k, ok in ESQUEMA.items() if not ok(obj[k])]
+    problemas = [f"valor invalido en {k}" for k, ok in ESQUEMA.items() if not ok(obj[k])]
+    if not problemas and obj["servidor_arranca"] and obj["envio_compila"]:
+        problemas.extend(
+            f"falta {k} en un ensayo que llego al agente" for k in EXIGIDOS_SI_VIABLE if obj[k] is None
+        )
+    return problemas
 
 
 def nombre_agente(max_tokens: int) -> str:
     return f"agente:{max_tokens}"
 
 
-def construir_registro(
-    resultados: Sequence[Resultado], *, fecha: str, notebook: str | None
-) -> tuple[dict[str, Any] | None, list[str]]:
-    """Registro de la compuerta a partir de las sondas, o ``None`` y la lista de lo que falta.
+def nombre_calibrado(max_tokens: int) -> str:
+    return f"rechazo_calibrado:{max_tokens}"
 
-    Cada campo sale de una sonda ``medido``. Si una sola falta, no hay registro: ningun campo se
-    rellena con un valor por defecto.
+
+def campos_del_registro(
+    resultados: Sequence[Resultado], *, fecha: str, notebook: str | None
+) -> tuple[dict[str, Any] | None, list[str], str]:
+    """Campos del registro (todos menos ``informe_sha256``), lo que falta y la clase de registro.
+
+    Tres desenlaces:
+
+    * ``completo``: el servidor arranco, el envio compila y **todas** las sondas que deciden algo
+      en A.0 estan medidas (servidor, modelo, rendimiento, rechazo calibrado y agente).
+    * ``fallo_temprano``: esta medido que el servidor no arranca o que el envio no compila. Las
+      medidas que por eso no existen van nulas; ninguna se rellena con un numero.
+    * ``ninguno``: falta alguna medida necesaria, o la limpieza no fue correcta. No hay registro.
     """
     por_nombre = {r.sonda: r for r in resultados}
     faltan: list[str] = []
 
-    def valor(sonda: str, clave: str, campo: str) -> Any:
+    def estado_de(sonda: str, clave: str | None) -> str | None:
         r = por_nombre.get(sonda)
-        if r is None or r.estado != MEDIDO or clave not in r.valores:
-            estado = "ausente" if r is None else r.estado if r.estado != MEDIDO else "sin ese valor"
-            faltan.append(f"{campo} (sonda {sonda}: {estado})")
-            return None
-        return r.valores[clave]
+        if r is None:
+            return "ausente"
+        if r.estado != MEDIDO:
+            return r.estado
+        return "sin ese valor" if clave is not None and clave not in r.valores else None
 
-    primero = CANDIDATOS_TOKENS[0]
-    agente = nombre_agente(primero)
+    def valor(sonda: str, clave: str, campo: str) -> Any:
+        problema = estado_de(sonda, clave)
+        if problema is not None:
+            faltan.append(f"{campo} (sonda {sonda}: {problema})")
+            return None
+        return por_nombre[sonda].valores[clave]
+
+    def opcional(sonda: str, clave: str) -> Any:
+        return por_nombre[sonda].valores[clave] if estado_de(sonda, clave) is None else None
+
     registro: dict[str, Any] = {"schema_version": ESQUEMA_REGISTRO, "fecha": fecha}
     if notebook is None or not texto_seguro(notebook):
         faltan.append("notebook (no declarado o con caracteres no admitidos)")
     registro["notebook"] = notebook
-    identificador, version = valor("modelo", "id", "modelo"), valor("modelo", "version", "modelo")
-    registro["modelo"] = f"{identificador}@{version}"
     registro["guion_servidor_sha256"] = valor("servidor", "guion_sha256", "guion_servidor_sha256")
     registro["docker_disponible"] = valor("docker", "disponible", "docker_disponible")
-    registro["backend"] = valor(agente, "backend", "backend")
     registro["servidor_arranca"] = valor("servidor", "arranca", "servidor_arranca")
     registro["envio_compila"] = valor("compila", "compila", "envio_compila")
-    registro["carga_modelo_segundos"] = valor("servidor", "carga_segundos", "carga_modelo_segundos")
     registro["sesion_max_horas"] = valor("sesion", "horas", "sesion_max_horas")
+    registro["max_time_minutes_ensayo"] = MAX_TIME_MINUTES
+    if not limpieza_correcta(por_nombre.get("limpieza")):
+        faltan.append("limpieza (el servidor sigue vivo o quedan procesos en la GPU)")
+    if faltan:
+        return None, faltan, REGISTRO_NINGUNO
+
+    primero = CANDIDATOS_TOKENS[0]
+    agente = nombre_agente(primero)
+    if not (registro["servidor_arranca"] is True and registro["envio_compila"] is True):
+        identificador, version = opcional("modelo", "id"), opcional("modelo", "version")
+        registro["modelo"] = f"{identificador}@{version}" if identificador and version else None
+        registro["carga_modelo_segundos"] = opcional("servidor", "carga_segundos")
+        registro["tokens_por_segundo"] = opcional("rendimiento", "tokens_por_segundo")
+        for campo in ("backend", "turnos_por_tarea", "turnos_por_tarea_repeticion"):
+            registro[campo] = None
+        registro["peticiones_al_modelo"] = None
+        registro["rechazos_por_contexto"] = None
+        return registro, [], REGISTRO_FALLO_TEMPRANO
+
+    identificador, version = valor("modelo", "id", "modelo"), valor("modelo", "version", "modelo")
+    registro["modelo"] = f"{identificador}@{version}"
+    registro["carga_modelo_segundos"] = valor("servidor", "carga_segundos", "carga_modelo_segundos")
     registro["tokens_por_segundo"] = valor("rendimiento", "tokens_por_segundo", "tokens_por_segundo")
-    registro["max_time_minutes_ensayo"] = valor(agente, "max_time_minutes", "max_time_minutes_ensayo")
+    for candidato in CANDIDATOS_TOKENS:
+        valor(nombre_calibrado(candidato), "resultado", f"rechazo calibrado con {candidato}")
+    registro["backend"] = valor(agente, "backend", "backend")
     turnos = valor(agente, "turnos_por_tarea", "turnos_por_tarea")
     registro["turnos_por_tarea"] = list(turnos) if isinstance(turnos, list | tuple) else turnos
     registro["peticiones_al_modelo"] = valor(agente, "peticiones_al_modelo", "peticiones_al_modelo")
     rechazos: dict[str, Any] = {}
     con_el_kit = valor(agente, "rechazos_por_contexto", f"rechazos_por_contexto[{primero}]")
     rechazos[str(primero)] = con_el_kit
+    registro["turnos_por_tarea_repeticion"] = None
     if isinstance(con_el_kit, int) and con_el_kit > 0:
         # A.0: si hay algun rechazo con el valor del kit, el ensayo se repite con el siguiente candidato
         for candidato in CANDIDATOS_TOKENS[1:]:
+            repeticion = nombre_agente(candidato)
             rechazos[str(candidato)] = valor(
-                nombre_agente(candidato), "rechazos_por_contexto", f"rechazos_por_contexto[{candidato}]"
+                repeticion, "rechazos_por_contexto", f"rechazos_por_contexto[{candidato}]"
+            )
+            otros = valor(repeticion, "turnos_por_tarea", "turnos_por_tarea_repeticion")
+            registro["turnos_por_tarea_repeticion"] = (
+                list(otros) if isinstance(otros, list | tuple) else otros
             )
     registro["rechazos_por_contexto"] = rechazos
     if faltan:
-        return None, faltan
+        return None, faltan, REGISTRO_NINGUNO
+    return registro, [], REGISTRO_COMPLETO
+
+
+def cerrar_registro(campos: Mapping[str, Any], informe_sha256: str) -> dict[str, Any]:
+    """El registro definitivo: los campos mas el hash del informe de sondas que lo acompana."""
+    registro = {**campos, "informe_sha256": informe_sha256}
     problemas = validar_registro(registro)
     if problemas:
         raise RuntimeError("El registro propio no pasa su esquema: " + "; ".join(problemas))
-    return registro, []
+    return registro
 
 
 def construir_informe(
     resultados: Sequence[Resultado],
     *,
     fecha: str,
-    registro_sha256: str | None,
+    clase_registro: str,
     faltan: Sequence[str],
     servidor_detenido: bool,
 ) -> dict[str, Any]:
-    """Informe versionable de las sondas. Lo comprueba ``comprobar_versionable`` antes de escribirse."""
+    """Informe versionable de las sondas. Lo comprueba ``comprobar_versionable`` antes de escribirse.
+
+    No cita al registro: es el registro quien cita al informe por su SHA-256. ``sin_medir`` lista
+    toda sonda que no dio valor, bloquee o no el registro.
+    """
     informe: dict[str, Any] = {
         "schema_version": ESQUEMA_INFORME,
         "fecha": fecha,
-        "registro": {"escrito": registro_sha256 is not None, "faltan": len(faltan)},
+        "registro": {"clase": clase_registro, "faltan": len(faltan)},
         "servidor_detenido": servidor_detenido,
+        "notas": dict(NOTAS_DEL_INFORME),
+        "sin_medir": [
+            {"sonda": r.sonda, "estado": r.estado, "categoria": r.categoria}
+            for r in resultados
+            if r.estado != MEDIDO
+        ],
         "sondas": [r.versionable() for r in resultados],
     }
-    if registro_sha256 is not None:
-        informe["registro"]["sha256"] = registro_sha256
     comprobar_versionable(informe)
     return informe
 
@@ -1626,6 +1924,26 @@ def plan(args: argparse.Namespace, python: str = "python") -> list[PasoDelPlan]:
         )
         for t in CANDIDATOS_TOKENS
     )
+    pasos.append(
+        PasoDelPlan(
+            "calibracion",
+            "tokens por palabra del relleno, con dos peticiones cortas de un token de salida",
+            True,
+            (),
+            len(PALABRAS_CALIBRACION) * ESPERA_CALIBRACION,
+        )
+    )
+    pasos.extend(
+        PasoDelPlan(
+            nombre_calibrado(t),
+            f"prompt inventado de unos {TOKENS_OBJETIVO} tokens con max_tokens {t}: "
+            f"lo esperable, a confirmar, es {esperado_calibrado(t)}",
+            True,
+            (),
+            ESPERA_CALIBRADO,
+        )
+        for t in CANDIDATOS_TOKENS
+    )
     if not args.sin_agente:
         comando = publico(
             comando_agente(
@@ -1666,7 +1984,36 @@ def plan(args: argparse.Namespace, python: str = "python") -> list[PasoDelPlan]:
     return pasos
 
 
-def texto_del_plan(pasos: Sequence[PasoDelPlan]) -> str:
+def tope_global(args: argparse.Namespace, pasos: Sequence[PasoDelPlan]) -> float:
+    """Segundos que puede durar el ensayo entero: lo declarado o la suma de esperas mas un margen."""
+    if args.tope_total_min is not None:
+        return float(args.tope_total_min) * 60.0
+    return sum(p.espera_segundos for p in pasos) + MARGEN_TOPE_GLOBAL
+
+
+def con_tope(ent: Entorno, limite: float) -> Entorno:
+    """``Entorno`` cuyas esperas nunca pasan del instante ``limite`` del reloj.
+
+    Un comando o una peticion que empezaria despues del limite no se lanza y cuenta como tiempo
+    agotado; los que empiezan antes reciben como espera lo que quede.
+    """
+
+    def ejecutar(argv: Sequence[str], espera: float, variables: Mapping[str, str] | None) -> Salida:
+        resta = limite - ent.reloj()
+        if resta <= 0:
+            return Salida("tiempo_agotado", None, "", "")
+        return ent.ejecutar(argv, min(espera, resta), variables)
+
+    def http(metodo: str, url: str, cuerpo: bytes | None, espera: float) -> Respuesta:
+        resta = limite - ent.reloj()
+        if resta <= 0:
+            return Respuesta("tiempo_agotado", None, b"")
+        return ent.http(metodo, url, cuerpo, min(espera, resta))
+
+    return replace(ent, ejecutar=ejecutar, http=http)
+
+
+def texto_del_plan(pasos: Sequence[PasoDelPlan], tope: float | None = None) -> str:
     """Texto que imprime ``--plan``."""
     lineas = ["PLAN del ensayo de notebook: no se ha ejecutado nada.", ""]
     for i, p in enumerate(pasos, start=1):
@@ -1686,6 +2033,11 @@ def texto_del_plan(pasos: Sequence[PasoDelPlan]) -> str:
             "La cuota de GPU corre mientras la sesion este abierta, no solo durante las sondas.",
         ]
     )
+    if tope is not None:
+        lineas.append(
+            f"Tope global: {tope / 60:.0f} min. Al agotarse, las sondas que falten no se ejecutan y "
+            "el servidor se detiene."
+        )
     return "\n".join(lineas)
 
 
@@ -1710,12 +2062,21 @@ def _version_del_modelo(args: argparse.Namespace) -> str | None:
     return ultimo if ultimo.isdigit() else None
 
 
-def medir(args: argparse.Namespace, ent: Entorno, crudo: Crudo, guardia: Guardia) -> list[Resultado]:
-    """Ejecuta las sondas en orden. El llamador detiene el servidor con ``guardia`` al terminar."""
+def medir(
+    args: argparse.Namespace, sistema: Entorno, crudo: Crudo, guardia: Guardia, tope: float
+) -> list[Resultado]:
+    """Ejecuta las sondas en orden. El llamador detiene el servidor con ``guardia`` al terminar.
+
+    ``tope`` son los segundos que puede durar todo: pasado ese tiempo, ninguna sonda mas se
+    ejecuta (quedan ``no_disponible`` por ``tope_global``) y las que esten en curso se cortan.
+    """
     out: list[Resultado] = []
+    limite = sistema.reloj() + tope
+    ent = con_tope(sistema, limite)
 
     def hacer(nombre: str, sonda: Callable[[], Parcial]) -> Resultado:
-        r = correr(nombre, sonda, ent)
+        agotado = sistema.reloj() >= limite
+        r = omitida(nombre, "tope_global") if agotado else correr(nombre, sonda, ent)
         out.append(r)
         print(f"  {nombre}: {r.estado}" + (f" ({r.categoria})" if r.categoria else "") + f" [{r.segundos} s]")
         return r
@@ -1739,8 +2100,16 @@ def medir(args: argparse.Namespace, ent: Entorno, crudo: Crudo, guardia: Guardia
         return out
 
     nombres_rechazo = [f"rechazo_sintetico:{t}" for t in CANDIDATOS_TOKENS]
+    nombres_calibrado = [nombre_calibrado(t) for t in CANDIDATOS_TOKENS]
     nombres_agente = [nombre_agente(t) for t in CANDIDATOS_TOKENS]
-    con_servidor = ["modelo", "rendimiento", *nombres_rechazo, *nombres_agente]
+    con_servidor = [
+        "modelo",
+        "rendimiento",
+        *nombres_rechazo,
+        "calibracion",
+        *nombres_calibrado,
+        *nombres_agente,
+    ]
     if versiones["vllm"].estado != MEDIDO or not args.modelo.is_dir():
         saltar(
             "servidor", "entrada_ausente" if versiones["vllm"].estado == MEDIDO else "dependencia_no_medida"
@@ -1752,7 +2121,8 @@ def medir(args: argparse.Namespace, ent: Entorno, crudo: Crudo, guardia: Guardia
     cfg = ConfigServidor(
         args.modelo, descubrir_adaptadores(args.envio), args.puerto, tuple(args.servidor_arg)
     )
-    servidor = hacer("servidor", lambda: sonda_servidor(ent, crudo, cfg, guardia, args.espera_servidor))
+    espera_arranque = min(float(args.espera_servidor), max(0.0, limite - sistema.reloj()))
+    servidor = hacer("servidor", lambda: sonda_servidor(ent, crudo, cfg, guardia, espera_arranque))
     if servidor.estado != MEDIDO or servidor.valores["arranca"] is not True:
         for nombre in con_servidor:
             saltar(nombre)
@@ -1762,6 +2132,12 @@ def medir(args: argparse.Namespace, ent: Entorno, crudo: Crudo, guardia: Guardia
     hacer("rendimiento", lambda: sonda_rendimiento(ent, crudo, cfg))
     for t, nombre in zip(CANDIDATOS_TOKENS, nombres_rechazo, strict=True):
         hacer(nombre, partial(sonda_rechazo, ent, crudo, cfg, t))
+    calibracion = hacer("calibracion", lambda: sonda_calibracion(ent, crudo, cfg))
+    for t, nombre in zip(CANDIDATOS_TOKENS, nombres_calibrado, strict=True):
+        if calibracion.estado != MEDIDO:
+            saltar(nombre)
+            continue
+        hacer(nombre, partial(sonda_rechazo_calibrado, ent, crudo, cfg, t, calibracion.valores["palabras"]))
 
     backend = _elegir_backend(args.sandbox, docker)
     listo = (
@@ -1813,8 +2189,12 @@ def ejecutar(args: argparse.Namespace, ent: Entorno, guardia: Guardia) -> int:
         raise EnsayoError("--puerto fuera de rango.")
     if args.espera_servidor <= 0 or args.espera_agente_min <= 0:
         raise EnsayoError("Las esperas deben ser mayores que cero.")
+    if args.tope_total_min is not None and not args.tope_total_min > 0:
+        raise EnsayoError("--tope-total-min debe ser mayor que cero.")
+    pasos = plan(args, "python")
+    tope = tope_global(args, pasos)
     if args.plan:
-        print(texto_del_plan(plan(args, "python")))
+        print(texto_del_plan(pasos, tope))
         return EXIT_OK
     for nombre in ("salida", "informe", "crudo"):
         if getattr(args, nombre) is None:
@@ -1834,46 +2214,61 @@ def ejecutar(args: argparse.Namespace, ent: Entorno, guardia: Guardia) -> int:
     crudo.crear()
     print("Ensayo de notebook: sondas")
     try:
-        resultados = medir(args, ent, crudo, guardia)
+        resultados = medir(args, ent, crudo, guardia, tope)
     finally:
         detenido = guardia.detener()
     if guardia.lanzados:
-        resultados.append(correr("limpieza", lambda: sonda_limpieza(ent, crudo, detenido), ent))
+        limpieza = correr("limpieza", lambda: sonda_limpieza(ent, crudo, detenido), ent)
+        resultados.append(limpieza)
+        en_gpu = limpieza.valores.get("procesos_en_gpu", 0) if limpieza.estado == MEDIDO else 0
+        if en_gpu:
+            print(
+                f"ATENCION: quedan {en_gpu} procesos usando la GPU tras detener el servidor: "
+                "detenga la sesion del notebook.",
+                file=sys.stderr,
+            )
+    if not detenido:
+        pid = guardia.proceso.pid if guardia.proceso is not None else "?"
+        print(
+            f"ATENCION: el servidor (pid {pid}) sigue vivo: detenga la sesion del notebook.", file=sys.stderr
+        )
 
     fecha = ent.ahora().astimezone(timezone.utc).date().isoformat()  # noqa: UP017
-    registro, faltan = construir_registro(resultados, fecha=fecha, notebook=args.notebook)
+    campos, faltan, clase = campos_del_registro(resultados, fecha=fecha, notebook=args.notebook)
     crudo.guardar(
         "sondas.json",
         a_json(
             {
                 "resultados": [{**r.versionable(), "privado": _copia(r.parcial.privado)} for r in resultados],
                 "faltan": faltan,
+                "clase_del_registro": clase,
             }
         ),
     )
-    registro_sha: str | None = None
-    datos_registro = a_json(registro) if registro is not None else None
-    if datos_registro is not None:
-        registro_sha = sha256_bytes(datos_registro)
     informe = construir_informe(
-        resultados, fecha=fecha, registro_sha256=registro_sha, faltan=faltan, servidor_detenido=detenido
+        resultados, fecha=fecha, clase_registro=clase, faltan=faltan, servidor_detenido=detenido
     )
-    if datos_registro is not None:
-        escribir_sin_sobrescribir(args.salida, datos_registro)
-        print(f"Registro escrito: {args.salida.name} (SHA-256 {registro_sha})")
-    else:
+    datos_informe = a_json(informe)
+    datos_registro = (
+        a_json(cerrar_registro(campos, sha256_bytes(datos_informe))) if campos is not None else None
+    )
+    escribir_sin_sobrescribir(args.informe, datos_informe)
+    print(f"Informe de sondas escrito: {args.informe.name}")
+    if datos_registro is None:
         print("Registro NO escrito: faltan medidas y no se inventan.", file=sys.stderr)
         for f in faltan:
             print(f"  falta: {f}", file=sys.stderr)
-    escribir_sin_sobrescribir(args.informe, a_json(informe))
-    print(f"Informe de sondas escrito: {args.informe.name}")
-    if not detenido:
-        pid = guardia.proceso.pid if guardia.proceso is not None else "?"
+        return EXIT_INCOMPLETO
+    escribir_sin_sobrescribir(args.salida, datos_registro)
+    print(f"Registro escrito: {args.salida.name} (SHA-256 {sha256_bytes(datos_registro)})")
+    if clase == REGISTRO_FALLO_TEMPRANO:
         print(
-            f"ATENCION: el servidor (pid {pid}) sigue vivo: detenga la sesion del notebook.", file=sys.stderr
+            "HALLAZGO: el servidor no arranca o el envio no compila. El registro lo dice y deja nulas las "
+            "medidas que no existen: la compuerta lo cerrara como ensayo no viable.",
+            file=sys.stderr,
         )
         return EXIT_INCOMPLETO
-    return EXIT_OK if registro is not None else EXIT_INCOMPLETO
+    return EXIT_OK
 
 
 # ---------------------------------------------------------------------------
@@ -1882,20 +2277,70 @@ def ejecutar(args: argparse.Namespace, ent: Entorno, guardia: Guardia) -> int:
 
 
 def _matar_grupo(proc: subprocess.Popen[Any], senal: int) -> None:
-    """Envia la senal al grupo del proceso si la plataforma lo permite; si no, al proceso."""
+    """Envia la senal al grupo del proceso si la plataforma lo permite; si no, al proceso.
+
+    El proceso se lanza con sesion propia, asi que su grupo tiene su mismo numero y sigue
+    existiendo mientras quede algun hijo, aunque el lider ya haya terminado.
+    """
     killpg = getattr(os, "killpg", None)
     if killpg is not None:
         with contextlib.suppress(ProcessLookupError, PermissionError):
             killpg(proc.pid, senal)
         return
-    if senal == signal.SIGTERM:
-        proc.terminate()
-    else:
-        proc.kill()
+    with contextlib.suppress(OSError):
+        if senal == signal.SIGTERM:
+            proc.terminate()
+        else:
+            proc.kill()
 
 
 def _senal_matar() -> int:
     return int(getattr(signal, "SIGKILL", signal.SIGTERM))
+
+
+def grupo_vivo(pgid: int) -> bool:
+    """Si queda algun proceso vivo (no zombi) en el grupo ``pgid``. Fuera de POSIX, ``False``.
+
+    Mira ``/proc`` para no contar zombis, que ya no usan nada; sin ``/proc`` pregunta al nucleo con
+    la senal 0, que si los cuenta. Si no se puede leer un proceso, se sigue con los demas.
+    """
+    killpg = getattr(os, "killpg", None)
+    if killpg is None:
+        return False
+    try:
+        entradas = [e for e in os.listdir("/proc") if e.isdigit()]
+    except OSError:
+        try:
+            killpg(pgid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        return True
+    for entrada in entradas:
+        try:
+            with open(f"/proc/{entrada}/stat", encoding="utf-8", errors="replace") as f:
+                campos = f.read().rpartition(")")[2].split()
+        except OSError:
+            continue
+        # tras el nombre entre parentesis: estado, padre, grupo, ...
+        if len(campos) >= 3 and campos[2] == str(pgid) and campos[0] not in ("Z", "X"):
+            return True
+    return False
+
+
+def _esperar_grupo(proc: subprocess.Popen[Any], segundos: float) -> bool:
+    """Espera a que termine el lider y a que no quede nadie vivo en su grupo."""
+    limite = time.monotonic() + segundos
+    try:
+        proc.wait(timeout=max(0.0, segundos))
+    except subprocess.TimeoutExpired:
+        return False
+    while grupo_vivo(proc.pid):
+        if time.monotonic() >= limite:
+            return False
+        time.sleep(0.05)
+    return True
 
 
 class ProcesoReal:
@@ -1909,6 +2354,9 @@ class ProcesoReal:
     def vivo(self) -> bool:
         return self._proc.poll() is None
 
+    def grupo_vivo(self) -> bool:
+        return grupo_vivo(self._proc.pid)
+
     def terminar(self) -> None:
         _matar_grupo(self._proc, signal.SIGTERM)
 
@@ -1916,9 +2364,7 @@ class ProcesoReal:
         _matar_grupo(self._proc, _senal_matar())
 
     def esperar(self, segundos: float) -> bool:
-        try:
-            self._proc.wait(timeout=segundos)
-        except subprocess.TimeoutExpired:
+        if not _esperar_grupo(self._proc, segundos):
             return False
         with contextlib.suppress(Exception):
             self._registro.close()
@@ -1963,16 +2409,57 @@ def ejecutar_real(argv: Sequence[str], espera: float, variables: Mapping[str, st
     try:
         stdout, stderr = proc.communicate(timeout=espera)
     except subprocess.TimeoutExpired:
-        _matar_grupo(proc, _senal_matar())
-        stdout, stderr = proc.communicate()
-        return Salida("tiempo_agotado", None, stdout or "", stderr or "")
+        stdout, stderr = _matar_y_recoger(proc)
+        return Salida("tiempo_agotado", None, stdout, stderr)
+    except BaseException:
+        # una interrupcion (KeyboardInterrupt, SystemExit) tampoco deja al hijo ni a su grupo vivos
+        _matar_y_recoger(proc)
+        raise
+    if os.name == "posix":
+        _matar_grupo(proc, _senal_matar())  # lo que el comando haya dejado atras en su grupo
     return Salida("ok", proc.returncode, stdout or "", stderr or "")
 
 
+def _matar_y_recoger(proc: subprocess.Popen[Any]) -> tuple[str, str]:
+    """Mata al grupo del proceso y recoge su salida sin quedarse esperando para siempre."""
+    _matar_grupo(proc, _senal_matar())
+    try:
+        stdout, stderr = proc.communicate(timeout=GRACIA_MATAR)
+    except subprocess.TimeoutExpired:
+        return "", ""
+    return stdout or "", stderr or ""
+
+
 def http_real(metodo: str, url: str, cuerpo: bytes | None, espera: float) -> Respuesta:
-    """Peticion HTTP sin proxy y solo a ``127.0.0.1``: el guion no habla con nadie mas."""
+    """Peticion HTTP sin proxy y solo a ``127.0.0.1``, con ``espera`` como tope **total**.
+
+    El tope de ``urllib`` vale para cada operacion del socket, no para la peticion entera: un
+    servidor que gotea bytes podria alargarla sin fin. Por eso la peticion corre en un hilo y aqui
+    se espera como mucho ``espera`` segundos; si no ha terminado, cuenta como tiempo agotado.
+    """
     if not url.startswith(f"http://{HOST}:"):
         raise ValueError("el ensayo solo hace peticiones al servidor local")
+    caja: list[Respuesta | BaseException] = []
+
+    def trabajo() -> None:
+        try:
+            caja.append(_peticion_http(metodo, url, cuerpo, espera))
+        except BaseException as exc:
+            caja.append(exc)
+
+    hilo = threading.Thread(target=trabajo, daemon=True)
+    hilo.start()
+    hilo.join(espera)
+    if not caja:
+        return Respuesta("tiempo_agotado", None, b"")
+    resultado = caja[0]
+    if isinstance(resultado, BaseException):
+        raise resultado
+    return resultado
+
+
+def _peticion_http(metodo: str, url: str, cuerpo: bytes | None, espera: float) -> Respuesta:
+    """La peticion en si. ``estado`` ``protocolo`` si lo que contesta no habla HTTP valido."""
     peticion = urllib.request.Request(url, data=cuerpo, method=metodo)
     if cuerpo is not None:
         peticion.add_header("Content-Type", "application/json")
@@ -1987,6 +2474,8 @@ def http_real(metodo: str, url: str, cuerpo: bytes | None, espera: float) -> Res
     except urllib.error.URLError as exc:
         estado = "tiempo_agotado" if isinstance(exc.reason, TimeoutError) else "sin_conexion"
         return Respuesta(estado, None, b"")
+    except http.client.HTTPException:
+        return Respuesta("protocolo", None, b"")
     except OSError:
         return Respuesta("sin_conexion", None, b"")
 
@@ -2071,6 +2560,11 @@ def _parser() -> argparse.ArgumentParser:
         default=ESPERA_AGENTE_MIN_POR_TAREA,
         help="Minutos de espera por tarea en la sonda del agente.",
     )
+    p.add_argument(
+        "--tope-total-min",
+        type=float,
+        help="Minutos que puede durar el ensayo entero; por defecto, la suma de esperas mas 10.",
+    )
     p.add_argument("--solo-anfitrion", action="store_true", help="Solo las sondas que no usan GPU.")
     p.add_argument("--sin-agente", action="store_true", help="No correr el agente (no habra registro).")
     p.add_argument("--plan", action="store_true", help="Imprime que haria cada sonda y no ejecuta nada.")
@@ -2082,23 +2576,34 @@ def _parser() -> argparse.ArgumentParser:
 
 @contextlib.contextmanager
 def _senales(activas: bool) -> Iterator[None]:
-    """Convierte SIGTERM en una salida ordenada, para que el servidor se detenga."""
+    """Convierte SIGTERM, SIGHUP y SIGINT en una salida ordenada, para que el servidor se detenga.
+
+    SIGINT se instala de forma explicita porque un proceso lanzado en segundo plano puede heredarla
+    ignorada, y entonces la interrupcion del notebook no llegaria a nadie.
+    """
     if not activas:
         yield
         return
 
     def manejar(numero: int, _marco: object) -> None:
+        if numero == signal.SIGINT:
+            raise KeyboardInterrupt
         raise SystemExit(128 + numero)
 
-    anterior: Any = None
-    with contextlib.suppress(ValueError, OSError):
-        anterior = signal.signal(signal.SIGTERM, manejar)
+    anteriores: list[tuple[int, Any]] = []
+    for nombre in ("SIGTERM", "SIGHUP", "SIGINT"):
+        numero = getattr(signal, nombre, None)
+        if numero is None:
+            continue
+        with contextlib.suppress(ValueError, OSError):
+            anteriores.append((int(numero), signal.signal(numero, manejar)))
     try:
         yield
     finally:
-        if anterior is not None:
-            with contextlib.suppress(ValueError, OSError):
-                signal.signal(signal.SIGTERM, anterior)
+        for numero, anterior in anteriores:
+            if anterior is not None:
+                with contextlib.suppress(ValueError, OSError):
+                    signal.signal(numero, anterior)
 
 
 def main(argv: Sequence[str] | None = None, *, entorno: Entorno | None = None) -> int:

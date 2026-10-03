@@ -7,10 +7,17 @@ archivos versionables (el registro de la compuerta y el informe de sondas).
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import json
 import math
+import os
+import signal
+import socket
+import subprocess
 import sys
+import threading
+import time
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -55,9 +62,11 @@ class ProcesoFalso:
         obedece_matar: bool = True,
         muere_tras: int | None = None,
         vivo_lanza: bool = False,
+        hijos: bool = True,
     ) -> None:
         self.pid = pid
         self.esta_vivo = True
+        self.hijos_vivos = hijos  # el resto del grupo: solo muere con ``matar``
         self.eventos: list[str] = []
         self.consultas = 0
         self.obedece_terminar = obedece_terminar
@@ -82,10 +91,14 @@ class ProcesoFalso:
         self.eventos.append("matar")
         if self.obedece_matar:
             self.esta_vivo = False
+            self.hijos_vivos = False
 
     def esperar(self, segundos: float) -> bool:
         self.eventos.append(f"esperar:{segundos:g}")
-        return not self.esta_vivo
+        return not self.esta_vivo and not self.hijos_vivos
+
+    def grupo_vivo(self) -> bool:
+        return self.hijos_vivos
 
 
 class Doble:
@@ -122,6 +135,14 @@ class Doble:
         self.http_manejador: Callable[[str, str, bytes | None], ke.Respuesta | None] | None = None
         self.ahora_falla = False
         self.tokens_vistos: list[int] = []
+        self.esperas: list[tuple[str, float]] = []
+        self.esperas_http: list[tuple[str, float]] = []
+        self.puerto_ocupado: ke.Respuesta | None = None  # lo que contesta /health antes de lanzar nada
+        self.tokens_por_palabra = 2
+        self.sobrecarga = 20
+        self.log_peticiones = True  # el servidor anota cada peticion de chat en su registro
+        self.log_400_por_rechazo = 1
+        self.log_400_extra = 0
 
     # -- reloj: solo avanza al dormir y con la latencia de cada peticion al modelo
     def reloj(self) -> float:
@@ -157,6 +178,7 @@ class Doble:
         tipo = self.tipo(lista)
         self.comandos.append(lista)
         self.variables_de[tipo] = dict(variables) if variables is not None else None
+        self.esperas.append((tipo, espera))
         assert espera > 0
         if tipo in self.manejadores:
             return self.manejadores[tipo](lista)
@@ -224,6 +246,17 @@ class Doble:
         resultados.mkdir(parents=True)
         lineas = [json.dumps(f) for f in self.filas(ids, tokens)]
         (resultados / "task_results.jsonl").write_text("\n".join(lineas) + "\n", encoding="utf-8")
+        # lo que el servidor anotaria en su registro de accesos durante la corrida
+        acceso = 'INFO:     127.0.0.1:50000 - "POST /v1/chat/completions HTTP/1.1" '
+        anotado: list[str] = []
+        if self.log_peticiones:
+            anotado += [f"{acceso}200 OK"] * sum(self.turnos[tokens])
+            anotado += [f"{acceso}400 Bad Request"] * (
+                self.rechazos_agente[tokens] * self.log_400_por_rechazo
+            )
+        anotado += [f"{acceso}400 Bad Request"] * self.log_400_extra
+        with (resultados.parent / ke.REGISTRO_SERVIDOR).open("a", encoding="utf-8") as f:
+            f.write("".join(f"{linea}\n{POISON_LOG}\n" for linea in anotado))
         return self.ok(f"Evaluation complete {POISON_LOG}")
 
     # -- procesos
@@ -239,6 +272,11 @@ class Doble:
     def http(self, metodo: str, url: str, cuerpo: bytes | None, espera: float) -> ke.Respuesta:
         assert url.startswith("http://127.0.0.1:")
         self.peticiones.append((metodo, url, cuerpo))
+        self.esperas_http.append((url.rsplit("/", 1)[-1], espera))
+        assert espera > 0
+        if url.endswith("/health") and not self.lanzados:
+            # antes de lanzar nada: el puerto esta libre salvo que la prueba diga otra cosa
+            return self.puerto_ocupado or ke.Respuesta("sin_conexion", None, b"")
         if self.http_manejador is not None:
             r = self.http_manejador(metodo, url, cuerpo)
             if r is not None:
@@ -252,13 +290,15 @@ class Doble:
         assert metodo == "POST" and cuerpo is not None
         peticion = json.loads(cuerpo)
         contenido = peticion["messages"][0]["content"]
-        if len(contenido) > 100_000:
+        # un servidor de mentira que cuenta tokens: tantos por palabra de relleno mas la plantilla
+        en_prompt = self.sobrecarga + self.tokens_por_palabra * contenido.count(ke.PALABRA_RELLENO.strip())
+        if en_prompt + peticion["max_tokens"] > ke.CONTEXTO_MAXIMO:
             error = {"error": {"message": RECHAZO_400, "type": "BadRequestError", "code": 400}}
             return ke.Respuesta("ok", 400, json.dumps(error).encode())
         self.t += self.latencia
         respuesta = {
             "choices": [{"message": {"content": POISON_RESPUESTA}}],
-            "usage": {"prompt_tokens": 30, "completion_tokens": self.tokens_generados},
+            "usage": {"prompt_tokens": en_prompt, "completion_tokens": self.tokens_generados},
         }
         return ke.Respuesta("ok", 200, json.dumps(respuesta).encode())
 
@@ -461,54 +501,6 @@ def test_listas_de_errores_coinciden_con_kaggle_replicas() -> None:
     infra = {p for p, _ in kaggle_replicas.INFRA_ERROR_PREFIXES}
     assert set(ke.INFRA_FASE_AGENTE) | set(ke.INFRA_FASE_VERIFICACION) == infra
     assert not set(ke.INFRA_FASE_AGENTE) & set(ke.INFRA_FASE_VERIFICACION)
-
-
-VALORES_DE_PRUEBA: tuple[Any, ...] = (
-    None,
-    True,
-    False,
-    0,
-    1,
-    -1,
-    0.0,
-    0.5,
-    -0.5,
-    float("nan"),
-    float("inf"),
-    "",
-    " ",
-    "x",
-    "docker",
-    "subprocess",
-    "otro",
-    "2026-10-06",
-    "2026-13-40",
-    "a" * 64,
-    "A" * 64,
-    "g" * 64,
-    ke.ESQUEMA_REGISTRO,
-    [],
-    [0],
-    [5, 7],
-    [-1],
-    [True],
-    [1.5],
-    {},
-    {"16384": 0},
-    {"16384": 2, "8192": 0},
-    {"x": 0},
-    {"16384": -1},
-    {"16384": True},
-    {"16384": 1.0},
-)
-
-
-@pytest.mark.parametrize("clave", sorted(kaggle_prereg.ENSAYO))
-def test_esquema_propio_decide_igual_que_el_de_la_compuerta(clave: str) -> None:
-    for valor in VALORES_DE_PRUEBA:
-        if clave == "fecha" and valor == "2026-13-40":
-            continue  # la compuerta ademas interpreta la fecha; aqui solo se comprueba la forma
-        assert bool(ke.ESQUEMA[clave](valor)) == bool(kaggle_prereg.ENSAYO[clave](valor)), (clave, valor)
 
 
 # ---------------------------------------------------------------------------
@@ -1014,29 +1006,6 @@ def test_variables_de_los_hijos_cortan_la_red_y_apuntan_al_servidor(doble: Doble
     assert con["OPENAI_API_KEY"] == "EMPTY"
 
 
-def test_sonda_servidor_mide_los_segundos_hasta_la_primera_respuesta_200(
-    doble: Doble, crudo: ke.Crudo, esc: Escenario
-) -> None:
-    doble.salud_tras = 4
-    guardia = ke.Guardia()
-    cfg = cfg_de(esc)
-    r = ke.sonda_servidor(doble.entorno(), crudo, cfg, guardia, 60.0)
-    # tres consultas fallidas, cada una seguida de una pausa de INTERVALO_SALUD, y la cuarta responde
-    assert r.valores == {
-        "arranca": True,
-        "carga_segundos": 3 * ke.INTERVALO_SALUD,
-        "guion_sha256": ke.hash_guion_servidor(cfg),
-    }
-    assert guardia.proceso is doble.proceso and guardia.lanzados == 1
-    assert doble.proceso.eventos == []  # la sonda no lo detiene: lo usan las sondas siguientes
-    argv, registro, variables = doble.lanzados[0]
-    assert argv == ke.real(ke.comando_servidor("/usr/bin/python3", cfg))
-    assert registro == crudo.ruta("servidor.log")
-    assert variables["HF_HUB_OFFLINE"] == "1" and variables["VLLM_NO_USAGE_STATS"] == "1"
-    assert [u for _, u, _ in doble.peticiones] == ["http://127.0.0.1:8000/health"] * 4
-    assert r.comandos == (ke.publico(ke.comando_servidor("x", cfg)),)
-
-
 def test_sonda_servidor_proceso_que_termina_es_un_valor_medido_sin_tiempo(
     doble: Doble, crudo: ke.Crudo, esc: Escenario
 ) -> None:
@@ -1104,17 +1073,6 @@ def test_la_guardia_tiene_el_proceso_aunque_la_espera_reviente(
     assert guardia.proceso is doble.proceso and doble.proceso.esta_vivo
     assert guardia.detener() is True
     assert not doble.proceso.esta_vivo and guardia.proceso is None
-
-
-def test_guardia_termina_y_no_mata_si_basta() -> None:
-    guardia = ke.Guardia()
-    assert guardia.detener() is True  # sin proceso no hay nada que hacer
-    p = ProcesoFalso()
-    guardia.asignar(p)
-    assert guardia.detener() is True
-    assert p.eventos == ["terminar", f"esperar:{ke.GRACIA_TERMINAR:g}"]
-    assert guardia.proceso is None
-    assert guardia.detener() is True and p.eventos.count("terminar") == 1  # idempotente
 
 
 def test_guardia_mata_si_terminar_no_basta() -> None:
@@ -1416,22 +1374,6 @@ def test_clasificar_error(error: Any, clase: str) -> None:
     assert ke.clasificar_error(error) == clase
 
 
-def agente(
-    doble: Doble, crudo: ke.Crudo, esc: Escenario, max_tokens: int = 16384, **cambios: Any
-) -> ke.Parcial:
-    base: dict[str, Any] = {
-        "max_tokens": max_tokens,
-        "tasks": esc.tasks,
-        "snapshots": esc.snapshots,
-        "envio": esc.envio,
-        "backend": "subprocess",
-        "imagen": "swebench-sandbox:latest",
-        "ids": ELEGIDAS,
-        "espera": 3600.0,
-    }
-    return ke.sonda_agente(doble.entorno(), crudo, cfg_de(esc), **{**base, **cambios})
-
-
 def test_comando_agente_lleva_los_limites_de_a0(doble: Doble, crudo: ke.Crudo, esc: Escenario) -> None:
     r = agente(doble, crudo, esc)
     assert doble.comandos[0] == [
@@ -1492,33 +1434,6 @@ def test_comando_agente_con_docker_pasa_la_imagen(esc: Escenario) -> None:
         "tercero/imagen:1",
     ]
     assert "tercero" not in json.dumps(ke.publico(tokens))
-
-
-def test_sonda_agente_da_turnos_ordenados_sin_identificador_ni_resultado(
-    doble: Doble, crudo: ke.Crudo, esc: Escenario
-) -> None:
-    r = agente(doble, crudo, esc)
-    assert r.valores == {
-        "max_output_tokens": 16384,
-        "backend": "subprocess",
-        "tareas": 4,
-        "turnos_por_tarea": [3, 7, 9, 12],
-        "peticiones_al_modelo": 31,
-        "rechazos_por_contexto": 0,
-        "errores_de_verificacion": 0,
-        "max_time_minutes": 5,
-    }
-    texto = json.dumps([dict(r.valores), dict(r.privado), r.comandos])
-    assert not any(p in texto for p in POISON_TODOS)
-    assert not any(i in texto for i in ELEGIDAS)
-
-
-def test_sonda_agente_cuenta_los_rechazos_por_contexto(doble: Doble, crudo: ke.Crudo, esc: Escenario) -> None:
-    doble.rechazos_agente[16384] = 2
-    doble.error_extra[16384] = "Failed to apply test_patch: x"
-    r = agente(doble, crudo, esc)
-    assert (r.valores["rechazos_por_contexto"], r.valores["errores_de_verificacion"]) == (2, 1)
-    assert r.valores["turnos_por_tarea"] == [3, 7, 9, 12]
 
 
 @pytest.mark.parametrize(
@@ -1737,14 +1652,6 @@ def test_comprobar_versionable_admite_lo_tipado() -> None:
     )
 
 
-def test_el_informe_no_se_construye_con_una_cadena_de_log() -> None:
-    envenenado = ke.Resultado("gpu", ke.medido({"modelos": [f"NVIDIA L4\n{POISON_LOG}"]}), 0.1)
-    with pytest.raises(RuntimeError):
-        ke.construir_informe(
-            [envenenado], fecha="2026-10-06", registro_sha256=None, faltan=[], servidor_detenido=True
-        )
-
-
 # ---------------------------------------------------------------------------
 # Archivos
 # ---------------------------------------------------------------------------
@@ -1813,167 +1720,6 @@ def test_crudo_existente_o_versionable_se_rechaza(tmp_path: Path, doble: Doble) 
 # ---------------------------------------------------------------------------
 
 
-def resultados_completos(**cambios: ke.Resultado) -> list[ke.Resultado]:
-    base = {
-        "docker": ke.medido({"disponible": False, "motivo": "binario_ausente", "backend": "subprocess"}),
-        "sesion": ke.medido({"horas": 12.0, "origen": "declarada", "fuente": "x"}),
-        "compila": ke.medido({"compila": True}),
-        "servidor": ke.medido({"arranca": True, "carga_segundos": 480.5, "guion_sha256": "a" * 64}),
-        "modelo": ke.medido({"id": ke.MODELO, "version": "2", "adaptadores_servidos": 2}),
-        "rendimiento": ke.medido({"tokens_por_segundo": 34.0}),
-        "agente:16384": ke.medido(
-            {
-                "backend": "subprocess",
-                "turnos_por_tarea": [3, 7, 9, 12],
-                "peticiones_al_modelo": 31,
-                "rechazos_por_contexto": 0,
-                "max_time_minutes": 5,
-            }
-        ),
-        "agente:8192": ke.sin_valor(ke.NO_DISPONIBLE, "no_necesaria"),
-    }
-    out = [ke.Resultado(n, p, 1.0) for n, p in base.items()]
-    return [cambios.get(r.sonda, r) for r in out]
-
-
-REGISTRO_ESPERADO: dict[str, Any] = {
-    "schema_version": "kaggle-notebook-trial/1",
-    "fecha": "2026-10-06",
-    "notebook": "cherrera0001/ensayo-a0 v1",
-    "modelo": "gemma-4-31b-it-qat-w4a16-ct@2",
-    "guion_servidor_sha256": "a" * 64,
-    "docker_disponible": False,
-    "backend": "subprocess",
-    "servidor_arranca": True,
-    "envio_compila": True,
-    "carga_modelo_segundos": 480.5,
-    "sesion_max_horas": 12.0,
-    "tokens_por_segundo": 34.0,
-    "max_time_minutes_ensayo": 5,
-    "turnos_por_tarea": [3, 7, 9, 12],
-    "peticiones_al_modelo": 31,
-    "rechazos_por_contexto": {"16384": 0},
-}
-
-
-def construir(resultados: Sequence[ke.Resultado], notebook: str | None = "cherrera0001/ensayo-a0 v1") -> Any:
-    return ke.construir_registro(resultados, fecha="2026-10-06", notebook=notebook)
-
-
-def test_registro_completo_tiene_exactamente_el_esquema_de_la_compuerta() -> None:
-    registro, faltan = construir(resultados_completos())
-    assert faltan == []
-    assert registro == REGISTRO_ESPERADO
-    assert list(registro) == list(REGISTRO_ESPERADO)
-    assert set(registro) == set(kaggle_prereg.ENSAYO)
-    assert all(ok(registro[k]) for k, ok in kaggle_prereg.ENSAYO.items())
-    assert ke.validar_registro(registro) == []
-
-
-@pytest.mark.parametrize(
-    ("sonda", "campos"),
-    [
-        ("docker", ["docker_disponible"]),
-        ("sesion", ["sesion_max_horas"]),
-        ("compila", ["envio_compila"]),
-        ("servidor", ["guion_servidor_sha256", "servidor_arranca", "carga_modelo_segundos"]),
-        ("modelo", ["modelo", "modelo"]),
-        ("rendimiento", ["tokens_por_segundo"]),
-        (
-            "agente:16384",
-            [
-                "backend",
-                "max_time_minutes_ensayo",
-                "turnos_por_tarea",
-                "peticiones_al_modelo",
-                "rechazos_por_contexto[16384]",
-            ],
-        ),
-    ],
-)
-@pytest.mark.parametrize("estado", [ke.NO_DISPONIBLE, ke.ERROR, "ausente"])
-def test_sin_una_medida_no_hay_registro(sonda: str, campos: list[str], estado: str) -> None:
-    if estado == "ausente":
-        resultados = [r for r in resultados_completos() if r.sonda != sonda]
-    else:
-        categoria = "dependencia_no_medida" if estado == ke.NO_DISPONIBLE else "tiempo_agotado"
-        resultados = resultados_completos(
-            **{sonda: ke.Resultado(sonda, ke.sin_valor(estado, categoria), 0.0)}
-        )
-    registro, faltan = construir(resultados)
-    assert registro is None
-    assert [f.split(" (")[0] for f in faltan] == campos
-    assert all(f"sonda {sonda}: {estado}" in f for f in faltan)
-
-
-def test_servidor_que_no_arranca_no_tiene_tiempo_de_carga_y_no_hay_registro() -> None:
-    """El esquema exige un numero de segundos; sin arranque no existe y no se inventa un 0."""
-    parado = ke.Resultado(
-        "servidor", ke.medido({"arranca": False, "motivo": "tiempo_agotado", "guion_sha256": "a" * 64}), 9.0
-    )
-    registro, faltan = construir(resultados_completos(servidor=parado))
-    assert registro is None
-    assert faltan == ["carga_modelo_segundos (sonda servidor: sin ese valor)"]
-
-
-@pytest.mark.parametrize("notebook", [None, "", f"nb {POISON_LOG}\n", "/kaggle/working/nb"])
-def test_sin_notebook_declarado_no_hay_registro(notebook: str | None) -> None:
-    registro, faltan = construir(resultados_completos(), notebook)
-    assert registro is None and len(faltan) == 1 and faltan[0].startswith("notebook")
-
-
-def con_rechazos(n_kit: int, segundo: ke.Parcial) -> list[ke.Resultado]:
-    kit = ke.medido(
-        {
-            "backend": "subprocess",
-            "turnos_por_tarea": [3, 7, 9, 12],
-            "peticiones_al_modelo": 31,
-            "rechazos_por_contexto": n_kit,
-            "max_time_minutes": 5,
-        }
-    )
-    return resultados_completos(
-        **{
-            "agente:16384": ke.Resultado("agente:16384", kit, 1.0),
-            "agente:8192": ke.Resultado("agente:8192", segundo, 1.0),
-        }
-    )
-
-
-def test_con_rechazos_el_registro_exige_el_segundo_candidato() -> None:
-    registro, faltan = construir(con_rechazos(2, ke.sin_valor(ke.ERROR, "tiempo_agotado")))
-    assert registro is None
-    assert faltan == ["rechazos_por_contexto[8192] (sonda agente:8192: error)"]
-    segundo = ke.medido({"rechazos_por_contexto": 0, "turnos_por_tarea": [1, 1, 1, 1]})
-    registro, faltan = construir(con_rechazos(2, segundo))
-    assert faltan == []
-    assert registro["rechazos_por_contexto"] == {"16384": 2, "8192": 0}
-    # turnos y peticiones son los del kit original, no los de la repeticion
-    assert registro["turnos_por_tarea"] == [3, 7, 9, 12] and registro["peticiones_al_modelo"] == 31
-    registro, _ = construir(con_rechazos(1, ke.medido({"rechazos_por_contexto": 3})))
-    assert registro["rechazos_por_contexto"] == {"16384": 1, "8192": 3}
-
-
-def test_sin_rechazos_no_se_lee_el_segundo_candidato() -> None:
-    registro, faltan = construir(con_rechazos(0, ke.medido({"rechazos_por_contexto": 4})))
-    assert faltan == [] and registro["rechazos_por_contexto"] == {"16384": 0}
-
-
-def test_un_registro_que_no_pasa_su_esquema_no_se_devuelve() -> None:
-    malo = ke.Resultado("rendimiento", ke.medido({"tokens_por_segundo": -1.0}), 0.0)
-    with pytest.raises(RuntimeError, match="tokens_por_segundo"):
-        construir(resultados_completos(rendimiento=malo))
-
-
-def test_validar_registro() -> None:
-    assert ke.validar_registro(REGISTRO_ESPERADO) == []
-    assert ke.validar_registro([]) == ["el registro no es un objeto"]
-    assert "claves" in ke.validar_registro({**REGISTRO_ESPERADO, "extra": 1})[0]
-    sin_una = {k: v for k, v in REGISTRO_ESPERADO.items() if k != "backend"}
-    assert "claves" in ke.validar_registro(sin_una)[0]
-    assert ke.validar_registro({**REGISTRO_ESPERADO, "backend": "otro"}) == ["valor invalido en backend"]
-
-
 # ---------------------------------------------------------------------------
 # La compuerta acepta el registro producido y rechaza uno alterado
 # ---------------------------------------------------------------------------
@@ -1996,33 +1742,6 @@ def alterar(datos: bytes, **cambios: Any) -> bytes:
         else:
             registro[k] = v
     return ke.a_json(registro)
-
-
-@pytest.mark.parametrize(
-    ("cambios", "fragmento"),
-    [
-        ({"turnos_por_tarea": [4, 4, 4, 9]}, "no es viable"),
-        ({"servidor_arranca": False}, "no es viable"),
-        ({"envio_compila": False}, "no es viable"),
-        ({"rechazos_por_contexto": {"16384": 1, "8192": 1}}, "rechazos por contexto con todos"),
-        ({"rechazos_por_contexto": {"16384": 1}}, "falta el conteo de rechazos con 8192"),
-        ({"backend": "docker"}, "el notebook no tiene Docker"),
-        ({"fecha": "2026-10-02"}, "anterior"),
-        ({"fecha": "2026-11-06"}, "posterior al corte"),
-        ({"tokens_por_segundo": -1}, "valores invalidos"),
-        ({"turnos_por_tarea": []}, "valores invalidos"),
-        ({"guion_servidor_sha256": "abc"}, "valores invalidos"),
-        ({"schema_version": "kaggle-notebook-trial/2"}, "valores invalidos"),
-        ({"carga_modelo_segundos": ...}, "debe tener las claves"),
-        ({"hardware": "NVIDIA L4"}, "debe tener las claves"),
-    ],
-)
-def test_la_compuerta_rechaza_el_registro_alterado(
-    esc: Escenario, doble: Doble, tmp_path: Path, cambios: dict[str, Any], fragmento: str
-) -> None:
-    assert correr_main(esc, doble) == ke.EXIT_OK
-    res = compuerta(tmp_path, alterar(esc.salida.read_bytes(), **cambios))
-    assert len(res.problemas) == 1 and fragmento in res.problemas[0]
 
 
 def test_la_compuerta_acepta_el_minimo_viable(esc: Escenario, doble: Doble, tmp_path: Path) -> None:
@@ -2050,75 +1769,9 @@ def test_la_compuerta_rechaza_un_registro_cuyo_hash_no_coincide(
     assert len(res.problemas) == 1 and "SHA-256" in res.problemas[0]
 
 
-def test_la_compuerta_acepta_la_repeticion_con_el_segundo_candidato(
-    esc: Escenario, doble: Doble, tmp_path: Path
-) -> None:
-    doble.rechazos_agente[16384] = 1
-    assert correr_main(esc, doble) == ke.EXIT_OK
-    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
-    assert registro["rechazos_por_contexto"] == {"16384": 1, "8192": 0}
-    assert registro["turnos_por_tarea"] == [3, 7, 9, 12]
-    assert doble.tokens_vistos == [16384, 8192]
-    assert compuerta(tmp_path, esc.salida.read_bytes()).problemas == []
-    fijos = kaggle_prereg.load_params(kaggle_prereg.DEFAULT_PARAMS)["fijos"]
-    assert kaggle_prereg.output_tokens(fijos, registro) == 8192
-
-
 # ---------------------------------------------------------------------------
 # main() de punta a punta
 # ---------------------------------------------------------------------------
-
-
-def test_main_de_punta_a_punta(esc: Escenario, doble: Doble, capsys: pytest.CaptureFixture[str]) -> None:
-    assert correr_main(esc, doble) == ke.EXIT_OK
-    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
-    cfg = cfg_de(esc)
-    assert registro == {
-        "schema_version": "kaggle-notebook-trial/1",
-        "fecha": "2026-10-06",
-        "notebook": "cherrera0001/ensayo-a0 v1",
-        "modelo": "gemma-4-31b-it-qat-w4a16-ct@2",
-        "guion_servidor_sha256": ke.hash_guion_servidor(cfg),
-        "docker_disponible": False,
-        "backend": "subprocess",
-        "servidor_arranca": True,
-        "envio_compila": True,
-        "carga_modelo_segundos": 4.0,  # /health responde a la tercera consulta: dos pausas de 2 s
-        "sesion_max_horas": 12.0,
-        "tokens_por_segundo": 50.0,
-        "max_time_minutes_ensayo": 5,
-        "turnos_por_tarea": [3, 7, 9, 12],
-        "peticiones_al_modelo": 31,
-        "rechazos_por_contexto": {"16384": 0},
-    }
-    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
-    assert informe["schema_version"] == "kaggle-notebook-trial-probes/1"
-    assert informe["fecha"] == "2026-10-06" and informe["servidor_detenido"] is True
-    assert informe["registro"] == {
-        "escrito": True,
-        "faltan": 0,
-        "sha256": hashlib.sha256(esc.salida.read_bytes()).hexdigest(),
-    }
-    sondas = esc.sondas()
-    assert sondas["agente:8192"]["categoria"] == "no_necesaria"
-    assert sondas["version:docker"]["categoria"] == "paquete_ausente"
-    assert sondas["gpu"]["valores"]["cantidad"] == 4
-    assert sondas["limpieza"]["valores"] == {"servidor_detenido": True, "procesos_en_gpu": 0}
-    assert sondas["rechazo_sintetico:16384"]["valores"]["rechazado"] is True
-    assert sondas["rechazo_sintetico:8192"]["valores"]["http"] == 400
-    for s in sondas.values():
-        assert s["estado"] in ke.ESTADOS
-        assert (s["categoria"] is None) == (s["estado"] == ke.MEDIDO)
-        assert bool(s["valores"]) == (s["estado"] == ke.MEDIDO)
-        assert isinstance(s["segundos"], float) and s["segundos"] >= 0
-    assert sondas["servidor"]["segundos"] == 4.0 and sondas["rendimiento"]["segundos"] == 30.0
-    # el servidor se detuvo, una sola vez, y despues de la ultima sonda que lo usa
-    assert doble.proceso.eventos == ["terminar", f"esperar:{ke.GRACIA_TERMINAR:g}"]
-    assert len(doble.lanzados) == 1 and doble.tokens_vistos == [16384]
-    assert Doble.tipo(doble.comandos[-1]) == "nvidia_apps"
-    salida = capsys.readouterr()
-    assert "Registro escrito: ensayo_notebook_v1.json" in salida.out
-    assert not any(p in salida.out + salida.err for p in POISON_TODOS)
 
 
 def test_ninguna_cadena_envenenada_llega_a_lo_versionable(esc: Escenario, doble: Doble) -> None:
@@ -2147,22 +1800,6 @@ def test_ninguna_cadena_envenenada_llega_a_lo_versionable(esc: Escenario, doble:
         assert privado not in versionables, privado
     assert "<tarea>" in versionables and "<modelo>" in versionables and "<imagen>" in versionables
     ke.comprobar_versionable(json.loads(esc.informe.read_text(encoding="utf-8")))
-
-
-def test_el_volcado_crudo_guarda_el_detalle(esc: Escenario, doble: Doble) -> None:
-    assert correr_main(esc, doble) == ke.EXIT_OK
-    nombres = sorted(p.name for p in esc.crudo.iterdir())
-    assert "servidor.log" in nombres and "agente_16384" in nombres
-    sondas = json.loads(
-        next(p for p in esc.crudo.iterdir() if p.name.endswith("_sondas.json")).read_text("utf-8")
-    )
-    tareas = next(r for r in sondas["resultados"] if r["sonda"] == "tareas")
-    assert tareas["privado"] == {"ids": ELEGIDAS}
-    assert sondas["faltan"] == []
-    comando = json.loads(
-        next(p for p in esc.crudo.iterdir() if p.name.endswith("_gpu.json")).read_text("utf-8")
-    )
-    assert comando["argv"][0] == "nvidia-smi" and POISON_LOG in comando["stderr"]
 
 
 def test_plan_y_corrida_nombran_las_mismas_sondas(esc: Escenario, doble: Doble) -> None:
@@ -2203,41 +1840,11 @@ def test_plan_no_ejecuta_nada(esc: Escenario, capsys: pytest.CaptureFixture[str]
     assert not esc.crudo.exists() and not esc.salida.exists() and not esc.informe.exists()
 
 
-def test_plan_suma_el_caso_peor(esc: Escenario) -> None:
-    args = ke._parser().parse_args(esc.args("--plan"))
-    pasos = ke.plan(args)
-    por_nombre = {p.sonda: p for p in pasos}
-    assert por_nombre["servidor"].espera_segundos == ke.ESPERA_SERVIDOR == 1200.0
-    assert por_nombre["agente:16384"].espera_segundos == 4 * 15 * 60
-    assert por_nombre["servidor"].usa_gpu and not por_nombre["docker"].usa_gpu
-    total = sum(p.espera_segundos for p in pasos)
-    assert total == 60 + 240 + 300 + 1200 + 60 + 360 + 2 * 420 + 2 * 3600 + 90
-    texto = ke.texto_del_plan(pasos)
-    assert f"{total / 60:.0f} min de sesion" in texto
-    corto = ke.plan(
-        ke._parser().parse_args(esc.args("--plan", "--espera-agente-min", "8", "--espera-servidor", "600"))
-    )
-    assert {p.sonda: p for p in corto}["agente:8192"].espera_segundos == 4 * 8 * 60
-    assert {p.sonda: p for p in corto}["servidor"].espera_segundos == 600
-
-
 def test_plan_solo_anfitrion_y_sin_agente(esc: Escenario) -> None:
     anfitrion = ke.plan(ke._parser().parse_args(esc.args("--solo-anfitrion")))
     assert not any(p.usa_gpu for p in anfitrion) and anfitrion[-1].sonda == "tareas"
     sin_agente = [p.sonda for p in ke.plan(ke._parser().parse_args(esc.args("--sin-agente")))]
     assert "agente:16384" not in sin_agente and "servidor" in sin_agente and sin_agente[-1] == "limpieza"
-
-
-def test_main_solo_anfitrion_no_lanza_el_servidor_ni_escribe_registro(esc: Escenario, doble: Doble) -> None:
-    assert correr_main(esc, doble, "--solo-anfitrion") == ke.EXIT_INCOMPLETO
-    assert doble.lanzados == [] and doble.peticiones == []
-    assert not esc.salida.exists() and esc.informe.exists()
-    sondas = esc.sondas()
-    assert "servidor" not in sondas and "limpieza" not in sondas
-    assert sondas["tareas"]["valores"] == {"tareas": 4}
-    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
-    assert informe["registro"]["escrito"] is False and informe["registro"]["faltan"] > 0
-    assert "sha256" not in informe["registro"]
 
 
 def test_main_sin_agente_no_escribe_registro_y_detiene_el_servidor(esc: Escenario, doble: Doble) -> None:
@@ -2249,52 +1856,23 @@ def test_main_sin_agente_no_escribe_registro_y_detiene_el_servidor(esc: Escenari
     assert doble.tokens_vistos == [] and not doble.proceso.esta_vivo
 
 
-def test_main_sin_vllm_no_lanza_nada_y_no_inventa(
-    esc: Escenario, doble: Doble, capsys: pytest.CaptureFixture[str]
-) -> None:
-    doble.paquetes["vllm"] = None
-    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
-    assert doble.lanzados == [] and not esc.salida.exists()
-    sondas = esc.sondas()
-    for nombre in ("servidor", "modelo", "rendimiento", "rechazo_sintetico:16384", "agente:16384"):
-        assert (sondas[nombre]["estado"], sondas[nombre]["categoria"]) == (
-            ke.NO_DISPONIBLE,
-            "dependencia_no_medida",
-        )
-        assert sondas[nombre]["valores"] == {}
-    assert "limpieza" not in sondas
-    err = capsys.readouterr().err
-    assert "Registro NO escrito" in err and "carga_modelo_segundos" in err
-
-
 def test_main_sin_directorio_del_modelo(esc: Escenario, doble: Doble) -> None:
     esc.modelo.rmdir()
     assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
     assert esc.sondas()["servidor"]["categoria"] == "entrada_ausente" and doble.lanzados == []
 
 
-def test_main_servidor_que_no_arranca_no_da_registro_y_se_detiene(esc: Escenario, doble: Doble) -> None:
-    doble.salud_tras = 10**9
-    assert correr_main(esc, doble, "--espera-servidor", "10") == ke.EXIT_INCOMPLETO
-    assert not esc.salida.exists()
-    sondas = esc.sondas()
-    assert sondas["servidor"]["valores"]["arranca"] is False
-    assert sondas["rendimiento"]["categoria"] == "dependencia_no_medida"
-    assert not doble.proceso.esta_vivo and doble.tokens_vistos == []
-    assert sondas["limpieza"]["valores"]["servidor_detenido"] is True
-
-
 @pytest.mark.parametrize(
     "romper",
-    ["kit_alterado", "no_compila", "tareas_ilegibles", "docker_sin_medir"],
+    ["kit_alterado", "compila_sin_medir", "tareas_ilegibles", "docker_sin_medir"],
 )
 def test_main_no_corre_el_agente_si_falta_una_condicion_de_a0(
     esc: Escenario, doble: Doble, romper: str
 ) -> None:
     if romper == "kit_alterado":
         (esc.envio / "agent.yaml").write_text("name: otro\n", encoding="utf-8")
-    elif romper == "no_compila":
-        doble.manejadores["compila"] = lambda argv: ke.Salida("ok", 4, "", "")
+    elif romper == "compila_sin_medir":
+        doble.manejadores["compila"] = lambda argv: ke.Salida("tiempo_agotado", None, "", "")
     elif romper == "tareas_ilegibles":
         esc.tasks.write_text("{\n", encoding="utf-8")
     else:
@@ -2409,27 +1987,6 @@ def test_main_detiene_el_servidor_si_falla_la_escritura_final(
     err = capsys.readouterr().err
     assert "ERROR INESPERADO (RuntimeError) en test_kaggle_ensayo.py" in err and POISON_LOG not in err
     assert not esc.salida.exists() and not esc.informe.exists()
-
-
-def test_main_mata_al_servidor_que_no_obedece(esc: Escenario, doble: Doble) -> None:
-    doble.proceso = ProcesoFalso(obedece_terminar=False)
-    assert correr_main(esc, doble) == ke.EXIT_OK
-    assert doble.proceso.eventos[:3] == ["terminar", f"esperar:{ke.GRACIA_TERMINAR:g}", "matar"]
-    assert not doble.proceso.esta_vivo
-
-
-def test_main_avisa_y_sale_con_1_si_el_servidor_sigue_vivo(
-    esc: Escenario, doble: Doble, capsys: pytest.CaptureFixture[str]
-) -> None:
-    doble.proceso = ProcesoFalso(pid=777, obedece_terminar=False, obedece_matar=False)
-    doble.manejadores["nvidia_apps"] = lambda argv: ke.Salida("ok", 0, "777\n778\n779\n780\n", "")
-    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
-    assert doble.proceso.eventos.count("matar") >= 1
-    assert "pid 777" in capsys.readouterr().err
-    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
-    assert informe["servidor_detenido"] is False
-    assert esc.sondas()["limpieza"]["valores"] == {"servidor_detenido": False, "procesos_en_gpu": 4}
-    assert esc.salida.exists()  # lo medido vale; lo que falla es la limpieza
 
 
 # -- salida 2: nada se sobrescribe y nada se lanza
@@ -2654,3 +2211,1547 @@ def test_el_guion_es_un_solo_archivo_de_biblioteca_estandar() -> None:
             modulos.add((nodo.module or "").split(".")[0])
     assert modulos <= set(sys.stdlib_module_names), sorted(modulos - set(sys.stdlib_module_names))
     assert "scripts" not in modulos
+
+
+# ===========================================================================
+# Segunda ronda (revision del PR #119)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# D1. Puerto ocupado: lo que contesta debe ser el servidor que lanzo el guion
+# ---------------------------------------------------------------------------
+
+
+def test_sonda_servidor_mide_los_segundos_hasta_la_primera_respuesta_200(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    doble.salud_tras = 4
+    guardia = ke.Guardia()
+    cfg = cfg_de(esc)
+    r = ke.sonda_servidor(doble.entorno(), crudo, cfg, guardia, 60.0)
+    # tres consultas fallidas, cada una seguida de una pausa de INTERVALO_SALUD, y la cuarta responde
+    assert r.valores == {
+        "arranca": True,
+        "carga_segundos": 3 * ke.INTERVALO_SALUD,
+        "guion_sha256": ke.hash_guion_servidor(cfg),
+    }
+    assert guardia.proceso is doble.proceso and guardia.lanzados == 1
+    assert doble.proceso.eventos == []  # la sonda no lo detiene: lo usan las sondas siguientes
+    argv, registro, variables = doble.lanzados[0]
+    assert argv == ke.real(ke.comando_servidor("/usr/bin/python3", cfg))
+    assert registro == crudo.ruta("servidor.log")
+    assert variables["HF_HUB_OFFLINE"] == "1" and variables["VLLM_NO_USAGE_STATS"] == "1"
+    assert variables["PYTHONUNBUFFERED"] == "1"  # el registro de accesos se lee con el servidor vivo
+    # una consulta previa con el puerto libre y cuatro tras lanzar; todas con el tope de /health
+    assert [u for _, u, _ in doble.peticiones] == ["http://127.0.0.1:8000/health"] * 5
+    assert doble.esperas_http == [("health", ke.ESPERA_SALUD)] * 5
+    assert r.comandos == (ke.publico(ke.comando_servidor("x", cfg)),)
+
+
+@pytest.mark.parametrize(
+    "previa",
+    [
+        ke.Respuesta("ok", 200, b""),
+        ke.Respuesta("ok", 503, b""),
+        ke.Respuesta("ok", 404, b""),
+        ke.Respuesta("tiempo_agotado", None, b""),
+        ke.Respuesta("protocolo", None, b""),
+    ],
+)
+def test_sonda_servidor_con_el_puerto_ocupado_no_lanza_nada(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, previa: ke.Respuesta
+) -> None:
+    """Si algo contesta ya en el puerto, un «arranca» posterior mediria a otro servidor."""
+    doble.puerto_ocupado = previa
+    doble.salud_tras = 1
+    guardia = ke.Guardia()
+    r = ke.sonda_servidor(doble.entorno(), crudo, cfg_de(esc), guardia, 60.0)
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, "puerto_ocupado", {})
+    assert doble.lanzados == [] and guardia.proceso is None and guardia.lanzados == 0
+    assert len(doble.peticiones) == 1
+
+
+def test_sonda_servidor_no_cuenta_un_200_si_el_proceso_lanzado_ya_murio(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    """Doble del revisor: /health responde a la primera y el proceso muere justo entonces."""
+    doble.salud_tras = 1
+    doble.proceso = ProcesoFalso(muere_tras=1)
+    guardia = ke.Guardia()
+    r = ke.sonda_servidor(doble.entorno(), crudo, cfg_de(esc), guardia, 60.0)
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, "puerto_ocupado", {})
+    assert guardia.proceso is doble.proceso  # lo lanzado queda a cargo de la guardia
+
+
+def test_main_con_el_puerto_ocupado_no_da_registro(esc: Escenario, doble: Doble) -> None:
+    doble.puerto_ocupado = ke.Respuesta("ok", 200, b"")
+    doble.salud_tras = 1
+    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
+    assert doble.lanzados == [] and not esc.salida.exists()
+    sondas = esc.sondas()
+    assert (sondas["servidor"]["estado"], sondas["servidor"]["categoria"]) == (ke.ERROR, "puerto_ocupado")
+    assert sondas["rendimiento"]["categoria"] == "dependencia_no_medida"
+    assert "limpieza" not in sondas
+
+
+# ---------------------------------------------------------------------------
+# D2. Parada: siempre se mata al grupo, y se comprueba el grupo
+# ---------------------------------------------------------------------------
+
+PARADA_COMPLETA = ["terminar", f"esperar:{ke.GRACIA_TERMINAR:g}", "matar", f"esperar:{ke.GRACIA_MATAR:g}"]
+
+
+def test_guardia_mata_siempre_al_grupo_aunque_el_lider_termine() -> None:
+    guardia = ke.Guardia()
+    assert guardia.detener() is True  # sin proceso no hay nada que hacer
+    p = ProcesoFalso()  # el lider obedece a ``terminar``; sus hijos solo mueren con ``matar``
+    guardia.asignar(p)
+    assert guardia.detener() is True
+    assert p.eventos == PARADA_COMPLETA
+    assert not p.hijos_vivos and guardia.proceso is None
+    assert guardia.detener() is True and p.eventos == PARADA_COMPLETA  # idempotente
+
+
+def test_guardia_no_da_por_detenido_un_grupo_con_hijos_vivos() -> None:
+    guardia = ke.Guardia()
+    p = ProcesoFalso(obedece_matar=False)  # el lider muere con ``terminar``, pero los hijos siguen
+    guardia.asignar(p)
+    assert guardia.detener() is False
+    assert not p.esta_vivo and p.hijos_vivos and guardia.proceso is p
+
+
+def test_main_detiene_al_grupo_entero(esc: Escenario, doble: Doble) -> None:
+    assert correr_main(esc, doble) == ke.EXIT_OK
+    assert doble.proceso.eventos == PARADA_COMPLETA
+    assert not doble.proceso.esta_vivo and not doble.proceso.hijos_vivos
+
+
+@pytest.mark.parametrize(
+    ("proceso", "en_gpu", "aviso"),
+    [
+        (ProcesoFalso(pid=777, obedece_terminar=False, obedece_matar=False), "", "pid 777"),
+        (ProcesoFalso(pid=778, obedece_matar=False), "", "pid 778"),  # lider muerto, hijos vivos
+        (ProcesoFalso(), "901\n902\n903\n904\n", "quedan 4 procesos usando la GPU"),
+    ],
+)
+def test_main_sin_limpieza_correcta_no_escribe_registro(
+    esc: Escenario,
+    doble: Doble,
+    capsys: pytest.CaptureFixture[str],
+    proceso: ProcesoFalso,
+    en_gpu: str,
+    aviso: str,
+) -> None:
+    """Un vLLM vivo o procesos en la GPU tras detener: ni salida 0 ni registro «completo»."""
+    doble.proceso = proceso
+    doble.manejadores["nvidia_apps"] = lambda argv: ke.Salida("ok", 0, en_gpu, "")
+    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
+    assert not esc.salida.exists()
+    err = capsys.readouterr().err
+    assert aviso in err and "limpieza" in err
+    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
+    assert informe["registro"] == {"clase": "ninguno", "faltan": 1}
+    limpieza = esc.sondas()["limpieza"]["valores"]
+    assert limpieza["procesos_en_gpu"] == len(en_gpu.split())
+    assert limpieza["servidor_detenido"] is (en_gpu != "")
+    assert informe["servidor_detenido"] is (en_gpu != "")
+    assert esc.sondas()["agente:16384"]["estado"] == ke.MEDIDO  # lo medido queda en el informe
+
+
+def test_limpieza_correcta() -> None:
+    def con(**valores: Any) -> ke.Resultado:
+        return ke.Resultado("limpieza", ke.medido(valores), 0.0)
+
+    assert ke.limpieza_correcta(None) is True  # no se lanzo nada
+    assert ke.limpieza_correcta(con(servidor_detenido=True, procesos_en_gpu=0)) is True
+    assert ke.limpieza_correcta(con(servidor_detenido=True)) is True  # sin nvidia-smi no hay conteo
+    assert ke.limpieza_correcta(con(servidor_detenido=True, procesos_en_gpu=1)) is False
+    assert ke.limpieza_correcta(con(servidor_detenido=False, procesos_en_gpu=0)) is False
+    roto = ke.Resultado("limpieza", ke.sin_valor(ke.ERROR, "error_inesperado"), 0.0)
+    assert ke.limpieza_correcta(roto) is False
+
+
+# Escribe un byte cada 50 ms durante dos minutos como mucho: si una prueba falla, no queda para siempre.
+LATIDO = (
+    "import sys, time\nfor _ in range(2400):\n    open(sys.argv[1], 'a').write('x')\n    time.sleep(0.05)\n"
+)
+PADRE = (
+    "import subprocess, sys, time\n"
+    f"subprocess.Popen([sys.executable, '-c', {LATIDO!r}, sys.argv[1]], "
+    "stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n"
+    "time.sleep(float(sys.argv[2]))\n"
+)
+
+
+def late(ruta: Path) -> bool:
+    """Si el proceso que escribe en ``ruta`` sigue vivo: el archivo crece en medio segundo."""
+    antes = ruta.stat().st_size if ruta.exists() else 0
+    time.sleep(0.5)
+    return (ruta.stat().st_size if ruta.exists() else 0) > antes
+
+
+def esperar_latido(ruta: Path, segundos: float = 20.0) -> None:
+    limite = time.monotonic() + segundos
+    while not ruta.exists() or ruta.stat().st_size == 0:
+        assert time.monotonic() < limite, "el proceso de prueba no llego a arrancar"
+        time.sleep(0.05)
+
+
+def test_ejecutar_real_mata_al_hijo_al_agotar_la_espera(tmp_path: Path) -> None:
+    latido = tmp_path / "latido"
+    inicio = time.monotonic()
+    r = ke.ejecutar_real([sys.executable, "-c", LATIDO, str(latido)], 4.0, None)
+    assert (r.estado, r.codigo) == ("tiempo_agotado", None)
+    assert time.monotonic() - inicio < 30
+    assert latido.exists() and not late(latido)
+
+
+def test_ejecutar_real_mata_al_hijo_ante_una_interrupcion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``KeyboardInterrupt`` o ``SystemExit`` mientras se espera: el hijo no queda vivo."""
+    latido = tmp_path / "latido"
+    original = subprocess.Popen.communicate
+    llamadas = 0
+
+    def interrumpida(self: Any, *a: Any, **k: Any) -> Any:
+        nonlocal llamadas
+        llamadas += 1
+        if llamadas == 1:
+            esperar_latido(latido)
+            raise KeyboardInterrupt
+        return original(self, *a, **k)
+
+    monkeypatch.setattr(subprocess.Popen, "communicate", interrumpida)
+    with pytest.raises(KeyboardInterrupt):
+        ke.ejecutar_real([sys.executable, "-c", LATIDO, str(latido)], 60.0, None)
+    assert llamadas == 2  # tras matar se recoge la salida, con tope
+    assert not late(latido)
+
+
+def test_recoger_tras_matar_no_espera_para_siempre(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Un nieto con las tuberias abiertas no puede colgar al guion: ``communicate`` lleva tope."""
+    topes: list[Any] = []
+
+    class Colgado:
+        pid = 1
+        returncode = None
+
+        def communicate(self, timeout: float | None = None) -> tuple[str, str]:
+            topes.append(timeout)
+            raise subprocess.TimeoutExpired("x", timeout or 0)
+
+        def kill(self) -> None:
+            topes.append("kill")
+
+        def terminate(self) -> None:
+            topes.append("terminate")
+
+    monkeypatch.setattr(ke.os, "killpg", lambda pid, senal: topes.append("killpg"), raising=False)
+    assert ke._matar_y_recoger(Colgado()) == ("", "")  # type: ignore[arg-type]
+    assert topes == ["killpg", ke.GRACIA_MATAR]
+
+
+@pytest.mark.skipif(os.name != "posix", reason="grupos de procesos: solo POSIX (lo ejercita el CI de Ubuntu)")
+class TestArbolDeProcesosReal:
+    """Un padre que lanza un hijo: el hijo no puede sobrevivir a la parada ni al tiempo agotado."""
+
+    def test_tiempo_agotado_mata_tambien_al_nieto(self, tmp_path: Path) -> None:
+        latido = tmp_path / "latido"
+        r = ke.ejecutar_real([sys.executable, "-c", PADRE, str(latido), "120"], 5.0, None)
+        assert r.estado == "tiempo_agotado"
+        assert latido.exists() and not late(latido)
+
+    def test_un_comando_que_termina_no_deja_hijos_atras(self, tmp_path: Path) -> None:
+        latido = tmp_path / "latido"
+        r = ke.ejecutar_real([sys.executable, "-c", PADRE, str(latido), "3"], 60.0, None)
+        assert (r.estado, r.codigo) == ("ok", 0)
+        assert latido.exists() and not late(latido)
+
+    def test_detener_mata_al_hijo_del_servidor(self, tmp_path: Path) -> None:
+        latido = tmp_path / "latido"
+        proceso = ke.lanzar_real(
+            [sys.executable, "-c", PADRE, str(latido), "120"], tmp_path / "s.log", dict(os.environ)
+        )
+        guardia = ke.Guardia()
+        guardia.asignar(proceso)
+        try:
+            esperar_latido(latido)
+            assert proceso.vivo() and proceso.grupo_vivo()
+            assert guardia.detener() is True
+            assert not proceso.vivo() and not proceso.grupo_vivo() and not late(latido)
+        finally:
+            proceso.matar()
+
+    def test_detener_mata_al_hijo_aunque_el_lider_ya_haya_terminado(self, tmp_path: Path) -> None:
+        latido = tmp_path / "latido"
+        proceso = ke.lanzar_real(
+            [sys.executable, "-c", PADRE, str(latido), "0"], tmp_path / "s.log", dict(os.environ)
+        )
+        guardia = ke.Guardia()
+        guardia.asignar(proceso)
+        try:
+            esperar_latido(latido)
+            limite = time.monotonic() + 20
+            while proceso.vivo():
+                assert time.monotonic() < limite
+                time.sleep(0.05)
+            assert proceso.grupo_vivo()  # el lider termino y el hijo sigue: mirar solo al lider engana
+            assert guardia.detener() is True
+            assert not proceso.grupo_vivo() and not late(latido)
+        finally:
+            proceso.matar()
+
+    def test_el_proceso_lanzado_tiene_grupo_propio(self, tmp_path: Path) -> None:
+        r = ke.ejecutar_real(
+            [sys.executable, "-c", "import os; print(os.getpid(), os.getpgid(0), os.getsid(0))"], 60.0, None
+        )
+        pid, grupo, sesion = (int(x) for x in r.stdout.split())
+        assert pid == grupo == sesion and grupo != os.getpgid(0)
+
+    def test_grupo_vivo_no_cuenta_un_grupo_inexistente(self) -> None:
+        r = ke.ejecutar_real([sys.executable, "-c", "import os; print(os.getpid())"], 60.0, None)
+        assert ke.grupo_vivo(int(r.stdout)) is False
+        assert ke.grupo_vivo(os.getpgid(0)) is True
+
+    def test_sighup_tambien_es_una_salida_ordenada(self) -> None:
+        with pytest.raises(SystemExit) as info, ke._senales(True):
+            signal.raise_signal(signal.SIGHUP)
+        assert info.value.code == 128 + signal.SIGHUP
+
+
+@pytest.mark.skipif(os.name == "posix", reason="comportamiento fuera de POSIX")
+def test_grupo_vivo_fuera_de_posix_es_falso() -> None:
+    assert ke.grupo_vivo(os.getpid()) is False
+
+
+def test_senales_cubre_sigterm_sigint_y_las_restaura() -> None:
+    antes = {n: signal.getsignal(n) for n in (signal.SIGTERM, signal.SIGINT)}
+    with pytest.raises(SystemExit) as info, ke._senales(True):
+        assert all(signal.getsignal(n) is not antes[n] for n in antes)
+        signal.raise_signal(signal.SIGTERM)
+    assert info.value.code == 128 + signal.SIGTERM
+    assert {n: signal.getsignal(n) for n in antes} == antes
+    with pytest.raises(KeyboardInterrupt), ke._senales(True):
+        signal.raise_signal(signal.SIGINT)
+    assert {n: signal.getsignal(n) for n in antes} == antes
+    with ke._senales(False):
+        assert {n: signal.getsignal(n) for n in antes} == antes
+
+
+# ---------------------------------------------------------------------------
+# D3. Rechazo calibrado: el prompt que cabe en el contexto pero no deja sitio a la salida
+# ---------------------------------------------------------------------------
+
+
+def test_el_prompt_calibrado_separa_los_dos_candidatos() -> None:
+    assert ke.TOKENS_OBJETIVO + 16384 > ke.CONTEXTO_MAXIMO > ke.TOKENS_OBJETIVO + 8192
+    assert ke.esperado_calibrado(16384) == "rechazado" and ke.esperado_calibrado(8192) == "aceptado"
+    assert ke.esperado_calibrado(ke.CONTEXTO_MAXIMO - ke.TOKENS_OBJETIVO) == "aceptado"  # cabe justo
+    assert ke.esperado_calibrado(ke.CONTEXTO_MAXIMO - ke.TOKENS_OBJETIVO + 1) == "rechazado"
+    assert ke.PALABRAS_CALIBRACION == (500, 2000)
+
+
+def test_sonda_calibracion_mide_tokens_por_palabra(doble: Doble, crudo: ke.Crudo, esc: Escenario) -> None:
+    r = ke.sonda_calibracion(doble.entorno(), crudo, cfg_de(esc))
+    # el servidor de mentira cuenta 2 tokens por palabra y 20 de plantilla: 20 + 2 * 9990 = 20 000
+    assert r.valores == {
+        "tokens_por_palabra": 2.0,
+        "sobrecarga_tokens": 20,
+        "tokens_objetivo": 20000,
+        "palabras": 9990,
+    }
+    cuerpos = [json.loads(c) for _, _, c in doble.peticiones if c is not None]
+    assert [len(c["messages"][0]["content"].split()) for c in cuerpos] == [500, 2000]
+    assert [c["max_tokens"] for c in cuerpos] == [1, 1]
+    assert doble.esperas_http == [("completions", ke.ESPERA_CALIBRACION)] * 2
+
+
+@pytest.mark.parametrize(
+    ("por_palabra", "sobrecarga", "palabras"), [(1, 0, 20000), (3, 500, 6500), (4, 20, 4995)]
+)
+def test_sonda_calibracion_con_otros_tokenizadores(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, por_palabra: int, sobrecarga: int, palabras: int
+) -> None:
+    doble.tokens_por_palabra, doble.sobrecarga = por_palabra, sobrecarga
+    r = ke.sonda_calibracion(doble.entorno(), crudo, cfg_de(esc))
+    assert (r.valores["tokens_por_palabra"], r.valores["palabras"]) == (float(por_palabra), palabras)
+
+
+@pytest.mark.parametrize(
+    ("respuesta", "categoria"),
+    [
+        (ke.Respuesta("sin_conexion", None, b""), "sin_conexion"),
+        (ke.Respuesta("tiempo_agotado", None, b""), "tiempo_agotado"),
+        (ke.Respuesta("protocolo", None, b""), "respuesta_http_invalida"),
+        (ke.Respuesta("ok", 400, RECHAZO_400.encode()), "respuesta_inesperada"),
+        (ke.Respuesta("ok", 200, b"{}"), "salida_ilegible"),
+        (ke.Respuesta("ok", 200, b'{"usage": {"prompt_tokens": "muchos"}}'), "salida_ilegible"),
+        (ke.Respuesta("ok", 200, b'{"usage": {"prompt_tokens": true}}'), "salida_ilegible"),
+        (ke.Respuesta("ok", 200, b'{"usage": {"prompt_tokens": -3}}'), "salida_ilegible"),
+        (
+            ke.Respuesta("ok", 200, b'{"usage": {"prompt_tokens": 700}}'),
+            "respuesta_inesperada",
+        ),  # pendiente 0
+    ],
+)
+def test_sonda_calibracion_sin_valor(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, respuesta: ke.Respuesta, categoria: str
+) -> None:
+    doble.http_manejador = lambda m, u, c: respuesta
+    r = ke.sonda_calibracion(doble.entorno(), crudo, cfg_de(esc))
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, categoria, {})
+
+
+@pytest.mark.parametrize(("por_palabra", "sobrecarga"), [(0, 20), (9, 20), (2, -3000)])
+def test_sonda_calibracion_rechaza_una_pendiente_o_una_plantilla_absurdas(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, por_palabra: int, sobrecarga: int
+) -> None:
+    doble.tokens_por_palabra, doble.sobrecarga = por_palabra, sobrecarga
+    doble.http_manejador = None
+
+    def contar(metodo: str, url: str, cuerpo: bytes | None) -> ke.Respuesta:
+        assert cuerpo is not None
+        palabras = json.loads(cuerpo)["messages"][0]["content"].count("tornillo")
+        uso = {"usage": {"prompt_tokens": max(0, sobrecarga + por_palabra * palabras)}}
+        return ke.Respuesta("ok", 200, json.dumps(uso).encode())
+
+    doble.http_manejador = contar
+    r = ke.sonda_calibracion(doble.entorno(), crudo, cfg_de(esc))
+    assert (r.estado, r.categoria) == (ke.ERROR, "respuesta_inesperada")
+
+
+def test_sonda_rechazo_calibrado_distingue_16384_de_8192(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    """Lo que la sonda de exceso total no ve: el mismo prompt, rechazado con un tope y no con el otro."""
+    ent, cfg = doble.entorno(), cfg_de(esc)
+    con_kit = ke.sonda_rechazo_calibrado(ent, crudo, cfg, 16384, 9990)
+    cuerpo = json.dumps({"error": {"message": RECHAZO_400, "type": "BadRequestError", "code": 400}}).encode()
+    assert con_kit.valores == {
+        "max_tokens": 16384,
+        "palabras": 9990,
+        "tokens_estimados": 20000,
+        "http": 400,
+        "resultado": "rechazado",
+        "esperado": "rechazado",
+        "coincide_con_lo_esperado": True,
+        "marcadores": {"contextwindowexceedederror": False, "maximum_context_length": True},
+        "cuerpo_sha256": hashlib.sha256(cuerpo).hexdigest(),
+        "cuerpo_bytes": len(cuerpo),
+    }
+    con_menos = ke.sonda_rechazo_calibrado(ent, crudo, cfg, 8192, 9990)
+    assert con_menos.valores["resultado"] == "aceptado" and con_menos.valores["http"] == 200
+    assert con_menos.valores["prompt_tokens"] == 20000
+    assert (
+        con_menos.valores["esperado"] == "aceptado" and con_menos.valores["coincide_con_lo_esperado"] is True
+    )
+    for r in (con_kit, con_menos):
+        assert not any(p in json.dumps(dict(r.valores)) for p in POISON_TODOS)
+        assert r.valores["resultado"] in ke.RESULTADOS_CALIBRADO
+    peticiones = [json.loads(c) for _, _, c in doble.peticiones if c is not None]
+    assert [p["max_tokens"] for p in peticiones] == [16384, 8192]
+    for p in peticiones:
+        contenido = p["messages"][0]["content"]
+        assert contenido.endswith(ke.PROMPT_CONTROL) and contenido.count("tornillo") == 9990
+    assert doble.esperas_http == [("completions", ke.ESPERA_CALIBRADO)] * 2
+    # el texto exacto del rechazo queda en el volcado crudo
+    assert RECHAZO_400 in (crudo.raiz / "001_calibrado_16384_cuerpo.txt").read_text(encoding="utf-8")
+
+
+def uso(prompt_tokens: Any) -> bytes:
+    return json.dumps({"usage": {"prompt_tokens": prompt_tokens, "completion_tokens": 3}}).encode()
+
+
+@pytest.mark.parametrize(
+    ("respuesta", "resultado", "contados"),
+    [
+        (ke.Respuesta("ok", 400, b"litellm.ContextWindowExceededError"), "rechazado", None),
+        (ke.Respuesta("ok", 400, b'{"error": "otra cosa"}'), "rechazo_sin_marcador", None),
+        (ke.Respuesta("ok", 200, uso(20000)), "aceptado", 20000),
+        (ke.Respuesta("ok", 200, uso(18000)), "aceptado", 18000),  # 0,9 del objetivo: todavia entero
+        (ke.Respuesta("ok", 200, uso(17999)), "truncado", 17999),
+        (ke.Respuesta("ok", 200, uso(4096)), "truncado", 4096),
+        (ke.Respuesta("ok", 200, b'{"choices": []}'), "aceptado_sin_conteo", None),
+        (ke.Respuesta("ok", 200, b"<html>"), "aceptado_sin_conteo", None),
+        (ke.Respuesta("ok", 413, b"maximum context length"), "otro", None),
+        (ke.Respuesta("ok", 500, b""), "otro", None),
+    ],
+)
+def test_sonda_rechazo_calibrado_nombra_cada_desenlace(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, respuesta: ke.Respuesta, resultado: str, contados: Any
+) -> None:
+    """Un servidor que trunca en vez de rechazar no se confunde con uno que acepta."""
+    doble.http_manejador = lambda m, u, c: respuesta
+    r = ke.sonda_rechazo_calibrado(doble.entorno(), crudo, cfg_de(esc), 16384, 9990)
+    assert r.estado == ke.MEDIDO and r.valores["resultado"] == resultado
+    assert r.valores.get("prompt_tokens") == contados
+    assert r.valores["coincide_con_lo_esperado"] is (resultado == "rechazado")
+    assert r.valores["http"] == respuesta.codigo
+
+
+@pytest.mark.parametrize(
+    ("respuesta", "categoria"),
+    [
+        (ke.Respuesta("sin_conexion", None, b""), "sin_conexion"),
+        (ke.Respuesta("tiempo_agotado", None, b""), "tiempo_agotado"),
+        (ke.Respuesta("protocolo", None, b""), "respuesta_http_invalida"),
+    ],
+)
+def test_sonda_rechazo_calibrado_sin_valor(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, respuesta: ke.Respuesta, categoria: str
+) -> None:
+    doble.http_manejador = lambda m, u, c: respuesta
+    r = ke.sonda_rechazo_calibrado(doble.entorno(), crudo, cfg_de(esc), 8192, 9990)
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, categoria, {})
+
+
+def test_la_sonda_de_exceso_total_no_distingue_los_candidatos(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    """Control: con 60 000 palabras los dos topes dan lo mismo; por eso existe la sonda calibrada."""
+    ent, cfg = doble.entorno(), cfg_de(esc)
+    a, b = ke.sonda_rechazo(ent, crudo, cfg, 16384), ke.sonda_rechazo(ent, crudo, cfg, 8192)
+    assert a.valores["rechazado"] is True and b.valores["rechazado"] is True
+    assert doble.esperas_http == [("completions", ke.ESPERA_CONTROL), ("completions", ke.ESPERA_RECHAZO)] * 2
+
+
+def test_main_sin_calibracion_no_hay_registro(esc: Escenario, doble: Doble) -> None:
+    def sin_uso(metodo: str, url: str, cuerpo: bytes | None) -> ke.Respuesta | None:
+        if cuerpo is not None and json.loads(cuerpo)["max_tokens"] == 1:
+            return ke.Respuesta("ok", 200, b'{"choices": []}')
+        return None
+
+    doble.http_manejador = sin_uso
+    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
+    assert not esc.salida.exists()
+    sondas = esc.sondas()
+    assert (sondas["calibracion"]["estado"], sondas["calibracion"]["categoria"]) == (
+        ke.ERROR,
+        "salida_ilegible",
+    )
+    for t in (16384, 8192):
+        assert sondas[f"rechazo_calibrado:{t}"]["categoria"] == "dependencia_no_medida"
+    assert sondas["agente:16384"]["estado"] == ke.MEDIDO  # las demas sondas siguen
+
+
+# ---------------------------------------------------------------------------
+# D4. Los rechazos son peticiones rechazadas por el servidor, contrastadas con el arnes
+# ---------------------------------------------------------------------------
+
+ACCESO = 'INFO:     127.0.0.1:50000 - "POST /v1/chat/completions HTTP/1.1" '
+
+
+def agente(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, max_tokens: int = 16384, **cambios: Any
+) -> ke.Parcial:
+    registro = crudo.ruta(ke.REGISTRO_SERVIDOR)
+    if not registro.exists() and not cambios.pop("sin_registro", False):
+        registro.write_text(f"vllm arrancando\n{POISON_LOG}\n", encoding="utf-8")
+    base: dict[str, Any] = {
+        "max_tokens": max_tokens,
+        "tasks": esc.tasks,
+        "snapshots": esc.snapshots,
+        "envio": esc.envio,
+        "backend": "subprocess",
+        "imagen": "swebench-sandbox:latest",
+        "ids": ELEGIDAS,
+        "espera": 3600.0,
+    }
+    return ke.sonda_agente(doble.entorno(), crudo, cfg_de(esc), **{**base, **cambios})
+
+
+def test_contar_chat(tmp_path: Path) -> None:
+    registro = tmp_path / "servidor.log"
+    assert ke.contar_chat(registro) is None
+    registro.write_bytes(
+        (
+            f"{ACCESO}200 OK\n"
+            f"{ACCESO}400 Bad Request\n"
+            f"{POISON_LOG} 400 maximum context length\n"
+            'INFO: 127.0.0.1:1 - "GET /health HTTP/1.1" 400 Bad Request\n'
+            'INFO: 127.0.0.1:1 - "POST /v1/completions HTTP/1.1" 400 Bad Request\n'
+            'INFO: 127.0.0.1:1 - "POST /v1/chat/completions HTTP/1.1" 4000\n'
+            f"{ACCESO}500 Internal Server Error\n"
+            f"{ACCESO}400 Bad Request\n"
+        ).encode()
+        + b"\xff\xfe binario \n"
+    )
+    assert ke.contar_chat(registro) == (4, 2)
+    registro.write_text("", encoding="utf-8")
+    assert ke.contar_chat(registro) == (0, 0)
+
+
+def test_sonda_agente_da_turnos_ordenados_sin_identificador_ni_resultado(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    r = agente(doble, crudo, esc)
+    assert r.valores == {
+        "max_output_tokens": 16384,
+        "backend": "subprocess",
+        "tareas": 4,
+        "turnos_por_tarea": [3, 7, 9, 12],
+        "peticiones_al_modelo": 31,
+        "peticiones_en_el_registro_del_servidor": 31,
+        "rechazos_por_contexto": 0,
+        "tareas_con_rechazo": 0,
+        "errores_de_verificacion": 0,
+        "max_time_minutes": 5,
+    }
+    texto = json.dumps([dict(r.valores), dict(r.privado), r.comandos])
+    assert not any(p in texto for p in POISON_TODOS)
+    assert not any(i in texto for i in ELEGIDAS)
+    assert doble.esperas == [("agente", 3600.0)]
+
+
+def test_sonda_agente_cuenta_las_peticiones_rechazadas_no_las_tareas(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    doble.rechazos_agente[16384] = 2
+    doble.log_400_por_rechazo = 3  # p. ej. reintentos: tres peticiones rechazadas por tarea
+    doble.error_extra[16384] = "Failed to apply test_patch: x"
+    r = agente(doble, crudo, esc)
+    assert r.valores["rechazos_por_contexto"] == 6 and r.valores["tareas_con_rechazo"] == 2
+    assert r.valores["peticiones_en_el_registro_del_servidor"] == 31 + 6
+    assert r.valores["errores_de_verificacion"] == 1
+    assert r.valores["turnos_por_tarea"] == [3, 7, 9, 12]
+
+
+def test_sonda_agente_solo_cuenta_lo_anotado_durante_la_corrida(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    """Los 400 de las sondas sinteticas, anteriores a la corrida, no son rechazos del agente."""
+    crudo.ruta(ke.REGISTRO_SERVIDOR).write_text(f"{ACCESO}400 Bad Request\n" * 5, encoding="utf-8")
+    r = agente(doble, crudo, esc)
+    assert r.valores["rechazos_por_contexto"] == 0
+    assert r.valores["peticiones_en_el_registro_del_servidor"] == 31
+
+
+@pytest.mark.parametrize(
+    ("filas", "por_rechazo", "extra", "categoria"),
+    [
+        (0, 1, 1, "rechazos_incoherentes"),  # el servidor rechazo y el arnes no anoto ningun rechazo
+        (0, 1, 7, "rechazos_incoherentes"),
+        (1, 0, 0, "rechazos_incoherentes"),  # el arnes anota un rechazo y el servidor no rechazo nada
+        (3, 0, 0, "rechazos_incoherentes"),
+    ],
+)
+def test_sonda_agente_no_elige_entre_dos_conteos_que_se_contradicen(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario, filas: int, por_rechazo: int, extra: int, categoria: str
+) -> None:
+    doble.rechazos_agente[16384] = filas
+    doble.log_400_por_rechazo, doble.log_400_extra = por_rechazo, extra
+    r = agente(doble, crudo, esc)
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, categoria, {})
+
+
+def test_sonda_agente_sin_peticiones_en_el_registro_no_da_valor(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    """Si el registro no anota peticiones, un cero de rechazos no significaria nada."""
+    doble.log_peticiones = False
+    r = agente(doble, crudo, esc)
+    assert (r.estado, r.categoria, dict(r.valores)) == (ke.ERROR, "log_sin_peticiones", {})
+    doble.turnos[8192] = [0, 0, 0, 0]  # sin turnos no hay peticiones que anotar: no es un error
+    assert agente(doble, crudo, esc, 8192).estado == ke.MEDIDO
+
+
+def test_sonda_agente_sin_registro_del_servidor_no_corre(
+    doble: Doble, crudo: ke.Crudo, esc: Escenario
+) -> None:
+    r = agente(doble, crudo, esc, sin_registro=True)
+    assert (r.estado, r.categoria) == (ke.ERROR, "salida_ilegible")
+    assert doble.comandos == []
+
+
+def test_sonda_agente_registro_que_encoge_no_da_valor(doble: Doble, crudo: ke.Crudo, esc: Escenario) -> None:
+    registro = crudo.ruta(ke.REGISTRO_SERVIDOR)
+    registro.write_text(f"{ACCESO}200 OK\n" * 50, encoding="utf-8")
+    original = doble._agente
+
+    def trunca(argv: list[str]) -> ke.Salida:
+        salida = original(argv)
+        registro.write_text(f"{ACCESO}200 OK\n", encoding="utf-8")
+        return salida
+
+    doble.manejadores["agente"] = trunca
+    r = agente(doble, crudo, esc)
+    assert (r.estado, r.categoria) == (ke.ERROR, "salida_ilegible")
+
+
+# ---------------------------------------------------------------------------
+# D5 y E1. Registro: completo, de fallo temprano o ninguno
+# ---------------------------------------------------------------------------
+
+INFORME_SHA = "c" * 64
+AGENTE_KIT = {
+    "backend": "subprocess",
+    "turnos_por_tarea": [3, 7, 9, 12],
+    "peticiones_al_modelo": 31,
+    "rechazos_por_contexto": 0,
+    "max_time_minutes": 5,
+}
+
+
+def resultados_completos(**cambios: Any) -> list[ke.Resultado]:
+    """Sondas de un ensayo que llego al agente. ``cambios``: un ``Parcial``, o ``None`` para quitar."""
+    base: dict[str, ke.Parcial] = {
+        "docker": ke.medido({"disponible": False, "motivo": "binario_ausente", "backend": "subprocess"}),
+        "sesion": ke.medido({"horas": 12.0, "origen": "declarada", "fuente": "x"}),
+        "compila": ke.medido({"compila": True}),
+        "servidor": ke.medido({"arranca": True, "carga_segundos": 480.5, "guion_sha256": "a" * 64}),
+        "modelo": ke.medido({"id": ke.MODELO, "version": "2", "adaptadores_servidos": 2}),
+        "rendimiento": ke.medido({"tokens_por_segundo": 34.0}),
+        "rechazo_calibrado:16384": ke.medido({"resultado": "rechazado"}),
+        "rechazo_calibrado:8192": ke.medido({"resultado": "aceptado"}),
+        "agente:16384": ke.medido(AGENTE_KIT),
+        "agente:8192": ke.sin_valor(ke.NO_DISPONIBLE, "no_necesaria"),
+        "limpieza": ke.medido({"servidor_detenido": True, "procesos_en_gpu": 0}),
+    }
+    for nombre, cambio in cambios.items():
+        nombre = nombre.replace("__", ":")
+        if cambio is None:
+            del base[nombre]
+        else:
+            base[nombre] = cambio.parcial if isinstance(cambio, ke.Resultado) else cambio
+    return [ke.Resultado(n, p, 1.0) for n, p in base.items()]
+
+
+CAMPOS_ESPERADOS: dict[str, Any] = {
+    "schema_version": "kaggle-notebook-trial/1",
+    "fecha": "2026-10-06",
+    "notebook": "cherrera0001/ensayo-a0 v1",
+    "modelo": "gemma-4-31b-it-qat-w4a16-ct@2",
+    "guion_servidor_sha256": "a" * 64,
+    "docker_disponible": False,
+    "backend": "subprocess",
+    "servidor_arranca": True,
+    "envio_compila": True,
+    "carga_modelo_segundos": 480.5,
+    "sesion_max_horas": 12.0,
+    "tokens_por_segundo": 34.0,
+    "max_time_minutes_ensayo": 5,
+    "turnos_por_tarea": [3, 7, 9, 12],
+    "turnos_por_tarea_repeticion": None,
+    "peticiones_al_modelo": 31,
+    "rechazos_por_contexto": {"16384": 0},
+}
+REGISTRO_ESPERADO: dict[str, Any] = {**CAMPOS_ESPERADOS, "informe_sha256": INFORME_SHA}
+FIJOS = kaggle_prereg.load_params(kaggle_prereg.DEFAULT_PARAMS)["fijos"]
+
+
+def campos(resultados: Sequence[ke.Resultado], notebook: str | None = "cherrera0001/ensayo-a0 v1") -> Any:
+    return ke.campos_del_registro(resultados, fecha="2026-10-06", notebook=notebook)
+
+
+def test_registro_completo_tiene_exactamente_el_esquema_de_la_compuerta() -> None:
+    obtenidos, faltan, clase = campos(resultados_completos())
+    assert (obtenidos, faltan, clase) == (CAMPOS_ESPERADOS, [], "completo")
+    registro = ke.cerrar_registro(obtenidos, INFORME_SHA)
+    assert registro == REGISTRO_ESPERADO
+    assert set(registro) == set(kaggle_prereg.ENSAYO)
+    assert all(ok(registro[k]) for k, ok in kaggle_prereg.ENSAYO.items())
+    assert ke.validar_registro(registro) == []
+    assert kaggle_prereg.ensayo_viable(FIJOS, registro) == 16384
+
+
+@pytest.mark.parametrize(
+    ("sonda", "faltan_campos"),
+    [
+        ("docker", ["docker_disponible"]),
+        ("sesion", ["sesion_max_horas"]),
+        ("compila", ["envio_compila"]),
+        ("servidor", ["guion_servidor_sha256", "servidor_arranca"]),
+        ("modelo", ["modelo", "modelo"]),
+        ("rendimiento", ["tokens_por_segundo"]),
+        ("rechazo_calibrado__16384", ["rechazo calibrado con 16384"]),
+        ("rechazo_calibrado__8192", ["rechazo calibrado con 8192"]),
+        (
+            "agente__16384",
+            ["backend", "turnos_por_tarea", "peticiones_al_modelo", "rechazos_por_contexto[16384]"],
+        ),
+    ],
+)
+@pytest.mark.parametrize("estado", [ke.NO_DISPONIBLE, ke.ERROR, "ausente"])
+def test_sin_una_sonda_necesaria_no_hay_registro(sonda: str, faltan_campos: list[str], estado: str) -> None:
+    """D5: servidor, modelo, rendimiento, rechazo calibrado y agente; mas docker, sesion y compila."""
+    if estado == "ausente":
+        resultados = resultados_completos(**{sonda: None})
+    else:
+        categoria = "dependencia_no_medida" if estado == ke.NO_DISPONIBLE else "tiempo_agotado"
+        resultados = resultados_completos(**{sonda: ke.sin_valor(estado, categoria)})
+    obtenidos, faltan, clase = campos(resultados)
+    assert (obtenidos, clase) == (None, "ninguno")
+    assert [f.split(" (")[0] for f in faltan] == faltan_campos
+    assert all(f"sonda {sonda.replace('__', ':')}: {estado}" in f for f in faltan)
+
+
+@pytest.mark.parametrize(
+    "sonda", ["gpu", "version__vllm", "version__docker", "memoria", "rechazo_sintetico__16384"]
+)
+def test_las_sondas_que_no_deciden_nada_no_bloquean_el_registro(sonda: str) -> None:
+    resultados = resultados_completos(**{sonda: ke.sin_valor(ke.ERROR, "error_inesperado")})
+    obtenidos, faltan, clase = campos(resultados)
+    assert (obtenidos, faltan, clase) == (CAMPOS_ESPERADOS, [], "completo")
+    informe = ke.construir_informe(
+        resultados, fecha="2026-10-06", clase_registro=clase, faltan=[], servidor_detenido=True
+    )
+    # ...pero el informe las marca
+    assert {"sonda": sonda.replace("__", ":"), "estado": "error", "categoria": "error_inesperado"} in informe[
+        "sin_medir"
+    ]
+
+
+@pytest.mark.parametrize(
+    "limpieza",
+    [
+        ke.medido({"servidor_detenido": False, "procesos_en_gpu": 0}),
+        ke.medido({"servidor_detenido": True, "procesos_en_gpu": 2}),
+        ke.sin_valor(ke.ERROR, "error_inesperado"),
+    ],
+)
+def test_sin_limpieza_correcta_no_hay_registro(limpieza: ke.Parcial) -> None:
+    obtenidos, faltan, clase = campos(resultados_completos(limpieza=limpieza))
+    assert (obtenidos, clase) == (None, "ninguno")
+    assert len(faltan) == 1 and faltan[0].startswith("limpieza")
+    # tampoco un registro de fallo temprano
+    parado = ke.medido({"arranca": False, "motivo": "tiempo_agotado", "guion_sha256": "a" * 64})
+    assert campos(resultados_completos(limpieza=limpieza, servidor=parado))[0] is None
+
+
+def test_sin_servidor_lanzado_no_hace_falta_limpieza() -> None:
+    assert campos(resultados_completos(limpieza=None))[2] == "completo"
+
+
+@pytest.mark.parametrize("notebook", [None, "", f"nb {POISON_LOG}\n", "/kaggle/working/nb"])
+def test_sin_notebook_declarado_no_hay_registro(notebook: str | None) -> None:
+    obtenidos, faltan, clase = campos(resultados_completos(), notebook)
+    assert obtenidos is None and clase == "ninguno"
+    assert len(faltan) == 1 and faltan[0].startswith("notebook")
+
+
+def test_servidor_que_no_arranca_da_un_registro_con_nulos_no_con_ceros() -> None:
+    """E1: las medidas que no existen van nulas, y la compuerta lo cierra como no viable."""
+    parado = ke.medido({"arranca": False, "motivo": "tiempo_agotado", "guion_sha256": "a" * 64})
+    saltada = ke.sin_valor(ke.NO_DISPONIBLE, "dependencia_no_medida")
+    resultados = resultados_completos(
+        servidor=parado,
+        modelo=saltada,
+        rendimiento=saltada,
+        rechazo_calibrado__16384=saltada,
+        rechazo_calibrado__8192=saltada,
+        agente__16384=saltada,
+        agente__8192=saltada,
+    )
+    obtenidos, faltan, clase = campos(resultados)
+    assert (faltan, clase) == ([], "fallo_temprano")
+    nulos = (
+        "modelo",
+        "backend",
+        "carga_modelo_segundos",
+        "tokens_por_segundo",
+        "turnos_por_tarea",
+        "turnos_por_tarea_repeticion",
+        "peticiones_al_modelo",
+        "rechazos_por_contexto",
+    )
+    assert obtenidos == {**CAMPOS_ESPERADOS, "servidor_arranca": False, **dict.fromkeys(nulos)}
+    registro = ke.cerrar_registro(obtenidos, INFORME_SHA)
+    assert all(ok(registro[k]) for k, ok in kaggle_prereg.ENSAYO.items())
+    with pytest.raises(kaggle_prereg.PreregError) as info:
+        kaggle_prereg.ensayo_viable(FIJOS, registro)
+    assert "no es viable" in str(info.value) and "Ademas" not in str(info.value)
+
+
+def test_envio_que_no_compila_conserva_lo_medido_del_servidor() -> None:
+    saltada = ke.sin_valor(ke.NO_DISPONIBLE, "dependencia_no_medida")
+    resultados = resultados_completos(
+        compila=ke.medido({"compila": False}), agente__16384=saltada, agente__8192=saltada
+    )
+    obtenidos, faltan, clase = campos(resultados)
+    assert (faltan, clase) == ([], "fallo_temprano")
+    nulos = (
+        "backend",
+        "turnos_por_tarea",
+        "turnos_por_tarea_repeticion",
+        "peticiones_al_modelo",
+        "rechazos_por_contexto",
+    )
+    assert obtenidos == {**CAMPOS_ESPERADOS, "envio_compila": False, **dict.fromkeys(nulos)}
+    assert obtenidos["carga_modelo_segundos"] == 480.5 and obtenidos["modelo"] is not None
+    with pytest.raises(kaggle_prereg.PreregError) as info:
+        kaggle_prereg.ensayo_viable(FIJOS, ke.cerrar_registro(obtenidos, INFORME_SHA))
+    assert "no es viable" in str(info.value) and "Ademas" not in str(info.value)
+
+
+def test_fallo_temprano_no_rellena_lo_que_el_servidor_no_llego_a_medir() -> None:
+    """Envio que no compila y, ademas, rendimiento con error: nulo, no un numero."""
+    resultados = resultados_completos(
+        compila=ke.medido({"compila": False}),
+        rendimiento=ke.sin_valor(ke.ERROR, "tiempo_agotado"),
+        modelo=ke.sin_valor(ke.ERROR, "sin_conexion"),
+    )
+    obtenidos, _, clase = campos(resultados)
+    assert clase == "fallo_temprano"
+    assert obtenidos["tokens_por_segundo"] is None and obtenidos["modelo"] is None
+    assert obtenidos["turnos_por_tarea"] is None  # aunque la sonda del agente trajera valores
+
+
+def con_rechazos(n_kit: int, segundo: ke.Parcial) -> list[ke.Resultado]:
+    kit = ke.medido({**AGENTE_KIT, "rechazos_por_contexto": n_kit})
+    return resultados_completos(agente__16384=kit, agente__8192=segundo)
+
+
+def test_con_rechazos_el_registro_exige_la_repeticion_y_lleva_sus_turnos() -> None:
+    obtenidos, faltan, clase = campos(con_rechazos(2, ke.sin_valor(ke.ERROR, "tiempo_agotado")))
+    assert (obtenidos, clase) == (None, "ninguno")
+    assert faltan == [
+        "rechazos_por_contexto[8192] (sonda agente:8192: error)",
+        "turnos_por_tarea_repeticion (sonda agente:8192: error)",
+    ]
+    segundo = ke.medido({"rechazos_por_contexto": 0, "turnos_por_tarea": [6, 6, 6, 6]})
+    obtenidos, faltan, clase = campos(con_rechazos(2, segundo))
+    assert (faltan, clase) == ([], "completo")
+    assert obtenidos["rechazos_por_contexto"] == {"16384": 2, "8192": 0}
+    assert obtenidos["turnos_por_tarea"] == [3, 7, 9, 12] and obtenidos["peticiones_al_modelo"] == 31
+    assert obtenidos["turnos_por_tarea_repeticion"] == [6, 6, 6, 6]
+    assert kaggle_prereg.ensayo_viable(FIJOS, ke.cerrar_registro(obtenidos, INFORME_SHA)) == 8192
+    otro, _, _ = campos(
+        con_rechazos(1, ke.medido({"rechazos_por_contexto": 3, "turnos_por_tarea": [1, 1, 1, 1]}))
+    )
+    assert otro["rechazos_por_contexto"] == {"16384": 1, "8192": 3}
+
+
+def test_sin_rechazos_no_se_lee_la_repeticion() -> None:
+    segundo = ke.medido({"rechazos_por_contexto": 4, "turnos_por_tarea": [1, 1, 1, 1]})
+    obtenidos, faltan, _ = campos(con_rechazos(0, segundo))
+    assert faltan == [] and obtenidos["rechazos_por_contexto"] == {"16384": 0}
+    assert obtenidos["turnos_por_tarea_repeticion"] is None
+
+
+def test_un_registro_que_no_pasa_su_esquema_no_se_cierra() -> None:
+    obtenidos, _, _ = campos(resultados_completos(rendimiento=ke.medido({"tokens_por_segundo": -1.0})))
+    with pytest.raises(RuntimeError, match="tokens_por_segundo"):
+        ke.cerrar_registro(obtenidos, INFORME_SHA)
+    with pytest.raises(RuntimeError, match="informe_sha256"):
+        ke.cerrar_registro(CAMPOS_ESPERADOS, "abc")
+
+
+def test_validar_registro() -> None:
+    assert ke.validar_registro(REGISTRO_ESPERADO) == []
+    assert ke.validar_registro([]) == ["el registro no es un objeto"]
+    assert "claves" in ke.validar_registro({**REGISTRO_ESPERADO, "extra": 1})[0]
+    sin_una = {k: v for k, v in REGISTRO_ESPERADO.items() if k != "informe_sha256"}
+    assert "claves" in ke.validar_registro(sin_una)[0]
+    assert ke.validar_registro({**REGISTRO_ESPERADO, "backend": "otro"}) == ["valor invalido en backend"]
+    # un ensayo que llego al agente no puede traer nulas sus medidas
+    for campo in ke.EXIGIDOS_SI_VIABLE:
+        problemas = ke.validar_registro({**REGISTRO_ESPERADO, campo: None})
+        assert problemas == [f"falta {campo} en un ensayo que llego al agente"]
+    assert ke.validar_registro({**REGISTRO_ESPERADO, "servidor_arranca": False, "modelo": None}) == []
+    assert ke.EXIGIDOS_SI_VIABLE == kaggle_prereg.ENSAYO_SI_VIABLE
+
+
+VALORES_DE_PRUEBA: tuple[Any, ...] = (
+    None,
+    True,
+    False,
+    0,
+    1,
+    -1,
+    0.0,
+    0.5,
+    -0.5,
+    float("nan"),
+    float("inf"),
+    "",
+    " ",
+    "x",
+    "docker",
+    "subprocess",
+    "otro",
+    "2026-10-06",
+    "2026-13-40",
+    "a" * 64,
+    "A" * 64,
+    "g" * 64,
+    ke.ESQUEMA_REGISTRO,
+    [],
+    [0],
+    [5, 7],
+    [-1],
+    [True],
+    [1.5],
+    {},
+    {"16384": 0},
+    {"16384": 2, "8192": 0},
+    {"x": 0},
+    {"16384": -1},
+    {"16384": True},
+    {"16384": 1.0},
+    {16384: 0},
+)
+
+
+@pytest.mark.parametrize("clave", sorted(kaggle_prereg.ENSAYO))
+def test_esquema_propio_decide_igual_que_el_de_la_compuerta(clave: str) -> None:
+    for valor in VALORES_DE_PRUEBA:
+        if clave == "fecha" and valor == "2026-13-40":
+            continue  # la compuerta ademas interpreta la fecha; aqui solo se comprueba la forma
+        assert bool(ke.ESQUEMA[clave](valor)) == bool(kaggle_prereg.ENSAYO[clave](valor)), (clave, valor)
+
+
+def test_el_informe_no_se_construye_con_una_cadena_de_log() -> None:
+    envenenado = ke.Resultado("gpu", ke.medido({"modelos": [f"NVIDIA L4\n{POISON_LOG}"]}), 0.1)
+    with pytest.raises(RuntimeError):
+        ke.construir_informe(
+            [envenenado], fecha="2026-10-06", clase_registro="ninguno", faltan=[], servidor_detenido=True
+        )
+
+
+def test_el_informe_explica_que_cuenta_cada_campo_dudoso() -> None:
+    informe = ke.construir_informe(
+        resultados_completos(),
+        fecha="2026-10-06",
+        clase_registro="completo",
+        faltan=[],
+        servidor_detenido=True,
+    )
+    assert informe["notas"] == {
+        "peticiones_al_modelo": "turnos completados segun el arnes",
+        "rechazos_por_contexto": "respuestas 400 a la ruta de chat en el registro del servidor",
+    }
+    assert informe["registro"] == {"clase": "completo", "faltan": 0}
+    assert informe["sin_medir"] == [
+        {"sonda": "agente:8192", "estado": "no_disponible", "categoria": "no_necesaria"}
+    ]
+    assert "sha256" not in json.dumps(informe["registro"])  # es el registro quien cita al informe
+
+
+# ---------------------------------------------------------------------------
+# E1. La compuerta: fallo temprano, informe citado y lista de turnos de la repeticion
+# ---------------------------------------------------------------------------
+
+
+def registro_de_una_corrida(esc: Escenario, doble: Doble) -> bytes:
+    assert correr_main(esc, doble) == ke.EXIT_OK
+    return esc.salida.read_bytes()
+
+
+@pytest.mark.parametrize(
+    ("cambios", "fragmento"),
+    [
+        ({"turnos_por_tarea": [4, 4, 4, 9]}, "no es viable"),
+        ({"rechazos_por_contexto": {"16384": 1, "8192": 1}}, "rechazos por contexto con todos"),
+        ({"rechazos_por_contexto": {"16384": 1}}, "falta el conteo de rechazos con 8192"),
+        ({"backend": "docker"}, "el notebook no tiene Docker"),
+        ({"fecha": "2026-10-02"}, "anterior"),
+        ({"fecha": "2026-11-06"}, "posterior al corte"),
+        ({"tokens_por_segundo": -1}, "valores invalidos"),
+        ({"turnos_por_tarea": []}, "valores invalidos"),
+        ({"guion_servidor_sha256": "abc"}, "valores invalidos"),
+        ({"schema_version": "kaggle-notebook-trial/2"}, "valores invalidos"),
+        ({"carga_modelo_segundos": ...}, "debe tener las claves"),
+        ({"hardware": "NVIDIA L4"}, "debe tener las claves"),
+        # Enmienda 1
+        ({"informe_sha256": ...}, "debe tener las claves"),
+        ({"informe_sha256": "abc"}, "valores invalidos"),
+        ({"informe_sha256": None}, "valores invalidos"),
+        ({"turnos_por_tarea_repeticion": ...}, "debe tener las claves"),
+        ({"turnos_por_tarea_repeticion": []}, "valores invalidos"),
+        ({"turnos_por_tarea_repeticion": [9, 9, 9, 9]}, "si y solo si"),  # sin rechazos no hay repeticion
+        ({"rechazos_por_contexto": {"16384": 1, "8192": 0}}, "si y solo si"),  # con rechazos, debe haberla
+        ({"carga_modelo_segundos": None}, "no pueden faltar ['carga_modelo_segundos']"),
+        ({"modelo": None}, "no pueden faltar ['modelo']"),
+        ({"backend": None}, "no pueden faltar ['backend']"),
+        ({"tokens_por_segundo": None}, "no pueden faltar ['tokens_por_segundo']"),
+        ({"turnos_por_tarea": None}, "no pueden faltar ['turnos_por_tarea']"),
+        ({"peticiones_al_modelo": None}, "no pueden faltar ['peticiones_al_modelo']"),
+        ({"rechazos_por_contexto": None}, "no pueden faltar ['rechazos_por_contexto']"),
+        ({"sesion_max_horas": None}, "valores invalidos"),
+        ({"docker_disponible": None}, "valores invalidos"),
+        ({"servidor_arranca": None}, "valores invalidos"),
+    ],
+)
+def test_la_compuerta_rechaza_el_registro_alterado(
+    esc: Escenario, doble: Doble, tmp_path: Path, cambios: dict[str, Any], fragmento: str
+) -> None:
+    res = compuerta(tmp_path, alterar(registro_de_una_corrida(esc, doble), **cambios))
+    assert len(res.problemas) == 1 and fragmento in res.problemas[0]
+
+
+SIN_AGENTE: dict[str, Any] = dict.fromkeys(
+    (
+        "backend",
+        "turnos_por_tarea",
+        "turnos_por_tarea_repeticion",
+        "peticiones_al_modelo",
+        "rechazos_por_contexto",
+    )
+)
+SIN_SERVIDOR: dict[str, Any] = {
+    **SIN_AGENTE,
+    **dict.fromkeys(("modelo", "carga_modelo_segundos", "tokens_por_segundo")),
+}
+
+
+@pytest.mark.parametrize(
+    ("cambios", "imposibles"),
+    [
+        # el servidor no arranca: todo lo que depende de el va nulo
+        ({"servidor_arranca": False, **SIN_SERVIDOR}, None),
+        ({"servidor_arranca": False, "envio_compila": False, **SIN_SERVIDOR}, None),
+        # el envio no compila: lo del servidor puede estar medido; lo del agente, no
+        ({"envio_compila": False, **SIN_AGENTE}, None),
+        ({"envio_compila": False, **SIN_SERVIDOR}, None),
+        # medidas que no pueden existir: se nombran
+        ({"servidor_arranca": False, **SIN_SERVIDOR, "carga_modelo_segundos": 0}, ["carga_modelo_segundos"]),
+        ({"servidor_arranca": False, **SIN_SERVIDOR, "tokens_por_segundo": 0}, ["tokens_por_segundo"]),
+        ({"servidor_arranca": False, **SIN_SERVIDOR, "modelo": "x@1"}, ["modelo"]),
+        ({"servidor_arranca": False, **SIN_SERVIDOR, "turnos_por_tarea": [0, 0, 0, 0]}, ["turnos_por_tarea"]),
+        ({"envio_compila": False, **SIN_AGENTE, "turnos_por_tarea": [9, 9, 9, 9]}, ["turnos_por_tarea"]),
+        ({"envio_compila": False, **SIN_AGENTE, "peticiones_al_modelo": 0}, ["peticiones_al_modelo"]),
+        ({"envio_compila": False, **SIN_AGENTE, "backend": "subprocess"}, ["backend"]),
+        (
+            {"envio_compila": False, **SIN_AGENTE, "rechazos_por_contexto": {"16384": 0}},
+            ["rechazos_por_contexto"],
+        ),
+        (
+            {"servidor_arranca": False},  # el registro completo de antes de la enmienda, con «arranca» falso
+            sorted(set(SIN_SERVIDOR) - {"turnos_por_tarea_repeticion"}),
+        ),
+    ],
+)
+def test_la_compuerta_cierra_un_fallo_temprano_como_no_viable(
+    esc: Escenario, doble: Doble, tmp_path: Path, cambios: dict[str, Any], imposibles: list[str] | None
+) -> None:
+    res = compuerta(tmp_path, alterar(registro_de_una_corrida(esc, doble), **cambios))
+    assert len(res.problemas) == 1
+    assert "no es viable" in res.problemas[0] and "'ensayo_no_viable'" in res.problemas[0]
+    if imposibles is None:
+        assert "Ademas" not in res.problemas[0]
+    else:
+        assert f"no pueden existir en ese caso: {imposibles}." in res.problemas[0]
+
+
+@pytest.mark.parametrize(
+    ("del_kit", "repeticion", "viable"),
+    [
+        ([9, 9, 9, 9], [5, 5, 0, 0], True),  # la mitad con 5 turnos, medida con 8192
+        ([9, 9, 9, 9], [5, 4, 4, 4], False),
+        ([0, 0, 0, 0], [5, 5, 5, 5], True),  # la lista del kit ya no decide: queda fijado 8192
+        ([9, 9, 9, 9], [0, 0, 0, 0], False),
+    ],
+)
+def test_la_viabilidad_se_juzga_con_la_lista_del_valor_que_queda_fijado(
+    esc: Escenario, doble: Doble, tmp_path: Path, del_kit: list[int], repeticion: list[int], viable: bool
+) -> None:
+    datos = alterar(
+        registro_de_una_corrida(esc, doble),
+        rechazos_por_contexto={"16384": 2, "8192": 0},
+        turnos_por_tarea=del_kit,
+        turnos_por_tarea_repeticion=repeticion,
+    )
+    res = compuerta(tmp_path, datos)
+    if viable:
+        assert res.problemas == []
+        assert kaggle_prereg.ensayo_viable(FIJOS, json.loads(datos)) == 8192
+    else:
+        assert len(res.problemas) == 1 and "no es viable" in res.problemas[0]
+
+
+def test_sin_rechazos_la_viabilidad_se_juzga_con_la_lista_del_kit(
+    esc: Escenario, doble: Doble, tmp_path: Path
+) -> None:
+    base = registro_de_una_corrida(esc, doble)
+    assert compuerta(tmp_path, alterar(base, turnos_por_tarea=[5, 5, 0, 0])).problemas == []
+    assert "no es viable" in compuerta(tmp_path, alterar(base, turnos_por_tarea=[5, 4, 0, 0])).problemas[0]
+
+
+def test_la_compuerta_acepta_la_repeticion_con_el_segundo_candidato(
+    esc: Escenario, doble: Doble, tmp_path: Path
+) -> None:
+    doble.rechazos_agente[16384] = 1
+    assert correr_main(esc, doble) == ke.EXIT_OK
+    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
+    assert registro["rechazos_por_contexto"] == {"16384": 1, "8192": 0}
+    assert registro["turnos_por_tarea"] == [3, 7, 9, 12]
+    assert registro["turnos_por_tarea_repeticion"] == [6, 6, 6, 6]
+    assert doble.tokens_vistos == [16384, 8192]
+    assert compuerta(tmp_path, esc.salida.read_bytes()).problemas == []
+    assert kaggle_prereg.output_tokens(FIJOS, registro) == 8192
+
+
+# ---------------------------------------------------------------------------
+# main() de punta a punta, segunda ronda
+# ---------------------------------------------------------------------------
+
+
+def test_main_de_punta_a_punta(esc: Escenario, doble: Doble, capsys: pytest.CaptureFixture[str]) -> None:
+    assert correr_main(esc, doble) == ke.EXIT_OK
+    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
+    assert registro == {
+        "schema_version": "kaggle-notebook-trial/1",
+        "fecha": "2026-10-06",
+        "notebook": "cherrera0001/ensayo-a0 v1",
+        "modelo": "gemma-4-31b-it-qat-w4a16-ct@2",
+        "guion_servidor_sha256": ke.hash_guion_servidor(cfg_de(esc)),
+        "informe_sha256": hashlib.sha256(esc.informe.read_bytes()).hexdigest(),
+        "docker_disponible": False,
+        "backend": "subprocess",
+        "servidor_arranca": True,
+        "envio_compila": True,
+        "carga_modelo_segundos": 4.0,  # /health responde a la tercera consulta: dos pausas de 2 s
+        "sesion_max_horas": 12.0,
+        "tokens_por_segundo": 50.0,
+        "max_time_minutes_ensayo": 5,
+        "turnos_por_tarea": [3, 7, 9, 12],
+        "turnos_por_tarea_repeticion": None,
+        "peticiones_al_modelo": 31,
+        "rechazos_por_contexto": {"16384": 0},
+    }
+    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
+    assert informe["schema_version"] == "kaggle-notebook-trial-probes/1"
+    assert informe["fecha"] == "2026-10-06" and informe["servidor_detenido"] is True
+    assert informe["registro"] == {"clase": "completo", "faltan": 0}
+    assert informe["sin_medir"] == [
+        {"sonda": "version:docker", "estado": "no_disponible", "categoria": "paquete_ausente"},
+        {"sonda": "agente:8192", "estado": "no_disponible", "categoria": "no_necesaria"},
+    ]
+    sondas = esc.sondas()
+    assert sondas["gpu"]["valores"]["cantidad"] == 4
+    assert sondas["limpieza"]["valores"] == {"servidor_detenido": True, "procesos_en_gpu": 0}
+    assert sondas["rechazo_sintetico:16384"]["valores"]["rechazado"] is True
+    assert sondas["rechazo_sintetico:8192"]["valores"]["rechazado"] is True
+    assert sondas["calibracion"]["valores"]["palabras"] == 9990
+    assert sondas["rechazo_calibrado:16384"]["valores"]["resultado"] == "rechazado"
+    assert sondas["rechazo_calibrado:8192"]["valores"]["resultado"] == "aceptado"
+    # los 400 de las sondas sinteticas no cuentan como rechazos del agente
+    assert sondas["agente:16384"]["valores"]["rechazos_por_contexto"] == 0
+    for s in sondas.values():
+        assert s["estado"] in ke.ESTADOS
+        assert (s["categoria"] is None) == (s["estado"] == ke.MEDIDO)
+        assert bool(s["valores"]) == (s["estado"] == ke.MEDIDO)
+        assert isinstance(s["segundos"], float) and s["segundos"] >= 0
+    assert sondas["servidor"]["segundos"] == 4.0 and sondas["rendimiento"]["segundos"] == 30.0
+    assert len(doble.lanzados) == 1 and doble.tokens_vistos == [16384]
+    assert Doble.tipo(doble.comandos[-1]) == "nvidia_apps"
+    salida = capsys.readouterr()
+    assert "Registro escrito: ensayo_notebook_v1.json" in salida.out
+    assert hashlib.sha256(esc.salida.read_bytes()).hexdigest() in salida.out
+    assert not any(p in salida.out + salida.err for p in POISON_TODOS)
+
+
+def test_el_volcado_crudo_guarda_el_detalle(esc: Escenario, doble: Doble) -> None:
+    assert correr_main(esc, doble) == ke.EXIT_OK
+    nombres = sorted(p.name for p in esc.crudo.iterdir())
+    assert "servidor.log" in nombres and "agente_16384" in nombres
+    sondas = json.loads(
+        next(p for p in esc.crudo.iterdir() if p.name.endswith("_sondas.json")).read_text("utf-8")
+    )
+    tareas = next(r for r in sondas["resultados"] if r["sonda"] == "tareas")
+    assert tareas["privado"] == {"ids": ELEGIDAS}
+    assert sondas["faltan"] == [] and sondas["clase_del_registro"] == "completo"
+    comando = json.loads(
+        next(p for p in esc.crudo.iterdir() if p.name.endswith("_gpu.json")).read_text("utf-8")
+    )
+    assert comando["argv"][0] == "nvidia-smi" and POISON_LOG in comando["stderr"]
+    assert any(p.name.endswith("_calibrado_16384_cuerpo.txt") for p in esc.crudo.iterdir())
+
+
+def test_main_solo_anfitrion_no_lanza_el_servidor_ni_escribe_registro(esc: Escenario, doble: Doble) -> None:
+    assert correr_main(esc, doble, "--solo-anfitrion") == ke.EXIT_INCOMPLETO
+    assert doble.lanzados == [] and doble.peticiones == []
+    assert not esc.salida.exists() and esc.informe.exists()
+    sondas = esc.sondas()
+    assert "servidor" not in sondas and "limpieza" not in sondas
+    assert sondas["tareas"]["valores"] == {"tareas": 4}
+    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
+    assert informe["registro"]["clase"] == "ninguno" and informe["registro"]["faltan"] > 0
+
+
+def test_main_sin_vllm_no_lanza_nada_y_no_inventa(
+    esc: Escenario, doble: Doble, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Sin vLLM no se sabe si el servidor arranca: ni registro completo ni de fallo temprano."""
+    doble.paquetes["vllm"] = None
+    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
+    assert doble.lanzados == [] and doble.peticiones == [] and not esc.salida.exists()
+    sondas = esc.sondas()
+    for nombre in (
+        "servidor",
+        "modelo",
+        "rendimiento",
+        "calibracion",
+        "rechazo_calibrado:8192",
+        "agente:16384",
+    ):
+        assert (sondas[nombre]["estado"], sondas[nombre]["categoria"]) == (
+            ke.NO_DISPONIBLE,
+            "dependencia_no_medida",
+        )
+        assert sondas[nombre]["valores"] == {}
+    assert "limpieza" not in sondas
+    err = capsys.readouterr().err
+    assert "Registro NO escrito" in err and "servidor_arranca" in err
+
+
+def test_main_servidor_que_no_arranca_deja_un_registro_de_fallo_temprano(
+    esc: Escenario, doble: Doble, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    doble.salud_tras = 10**9
+    assert correr_main(esc, doble, "--espera-servidor", "10") == ke.EXIT_INCOMPLETO  # hallazgo, no exito
+    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
+    assert registro["servidor_arranca"] is False and registro["envio_compila"] is True
+    for campo in SIN_SERVIDOR:
+        assert registro[campo] is None, campo
+    assert registro["informe_sha256"] == hashlib.sha256(esc.informe.read_bytes()).hexdigest()
+    informe = json.loads(esc.informe.read_text(encoding="utf-8"))
+    assert informe["registro"] == {"clase": "fallo_temprano", "faltan": 0}
+    assert esc.sondas()["rendimiento"]["categoria"] == "dependencia_no_medida"
+    assert not doble.proceso.esta_vivo and doble.tokens_vistos == []
+    assert "HALLAZGO" in capsys.readouterr().err
+    res = compuerta(tmp_path, esc.salida.read_bytes())
+    assert len(res.problemas) == 1 and "no es viable" in res.problemas[0] and "Ademas" not in res.problemas[0]
+
+
+def test_main_envio_que_no_compila_deja_un_registro_de_fallo_temprano(
+    esc: Escenario, doble: Doble, tmp_path: Path
+) -> None:
+    doble.manejadores["compila"] = lambda argv: ke.Salida("ok", 4, "", "")
+    assert correr_main(esc, doble) == ke.EXIT_INCOMPLETO
+    registro = json.loads(esc.salida.read_text(encoding="utf-8"))
+    assert registro["envio_compila"] is False and registro["servidor_arranca"] is True
+    assert registro["carga_modelo_segundos"] == 4.0 and registro["tokens_por_segundo"] == 50.0
+    for campo in SIN_AGENTE:
+        assert registro[campo] is None, campo
+    assert doble.tokens_vistos == []
+    res = compuerta(tmp_path, esc.salida.read_bytes())
+    assert len(res.problemas) == 1 and "no es viable" in res.problemas[0] and "Ademas" not in res.problemas[0]
+
+
+# ---------------------------------------------------------------------------
+# D6. Tope global y D7. Que tope recibe cada sonda
+# ---------------------------------------------------------------------------
+
+
+def test_plan_suma_el_caso_peor_y_da_el_tope_global(esc: Escenario) -> None:
+    args = ke._parser().parse_args(esc.args("--plan"))
+    pasos = ke.plan(args)
+    por_nombre = {p.sonda: p for p in pasos}
+    assert por_nombre["servidor"].espera_segundos == ke.ESPERA_SERVIDOR == 1200.0
+    assert por_nombre["agente:16384"].espera_segundos == 4 * 15 * 60
+    assert por_nombre["calibracion"].espera_segundos == 240
+    assert por_nombre["rechazo_calibrado:8192"].espera_segundos == ke.ESPERA_CALIBRADO == 600.0
+    assert por_nombre["servidor"].usa_gpu and not por_nombre["docker"].usa_gpu
+    total = sum(p.espera_segundos for p in pasos)
+    assert total == 60 + 240 + 300 + 1200 + 60 + 360 + 2 * 420 + 240 + 2 * 600 + 2 * 3600 + 90 == 11790
+    assert ke.tope_global(args, pasos) == total + ke.MARGEN_TOPE_GLOBAL == 12390
+    texto = ke.texto_del_plan(pasos, ke.tope_global(args, pasos))
+    assert "196 min de sesion" in texto and "Tope global: 206 min" in texto
+    corto = ke._parser().parse_args(
+        esc.args("--plan", "--espera-agente-min", "8", "--espera-servidor", "600", "--tope-total-min", "90")
+    )
+    assert {p.sonda: p for p in ke.plan(corto)}["agente:8192"].espera_segundos == 4 * 8 * 60
+    assert {p.sonda: p for p in ke.plan(corto)}["servidor"].espera_segundos == 600
+    assert ke.tope_global(corto, ke.plan(corto)) == 5400
+
+
+def test_con_tope_recorta_las_esperas_y_no_empieza_nada_tras_el_limite(doble: Doble) -> None:
+    doble.puerto_ocupado = ke.Respuesta("ok", 200, b"")
+    ent = ke.con_tope(doble.entorno(), doble.t + 30.0)
+    assert ent.ejecutar(["nvidia-smi"], 60.0, None).estado == "ok"
+    assert ent.ejecutar(["nvidia-smi"], 10.0, None).estado == "ok"
+    assert ent.http("GET", "http://127.0.0.1:8000/health", None, 99.0).codigo == 200
+    assert doble.esperas == [("nvidia_gpu", 30.0), ("nvidia_gpu", 10.0)]  # el menor de los dos
+    assert doble.esperas_http == [("health", 30.0)]
+    doble.t += 30.0
+    assert ent.ejecutar(["nvidia-smi"], 60.0, None) == ke.Salida("tiempo_agotado", None, "", "")
+    assert ent.http("GET", "http://127.0.0.1:8000/health", None, 5.0) == ke.Respuesta(
+        "tiempo_agotado", None, b""
+    )
+    assert len(doble.esperas) == 2 and len(doble.esperas_http) == 1  # nada llego al sistema
+    assert ent.reloj() == doble.t and ent.python == "/usr/bin/python3"
+
+
+def test_main_con_el_tope_global_agotado_corta_y_detiene_todo(esc: Escenario, doble: Doble) -> None:
+    """20 s de tope: el servidor arranca a los 4 s y el rendimiento agota el resto."""
+    assert correr_main(esc, doble, "--tope-total-min", str(20 / 60)) == ke.EXIT_INCOMPLETO
+    sondas = esc.sondas()
+    assert sondas["servidor"]["valores"]["arranca"] is True
+    assert (sondas["rendimiento"]["estado"], sondas["rendimiento"]["categoria"]) == (
+        ke.ERROR,
+        "tiempo_agotado",
+    )
+    for nombre in ("rechazo_sintetico:16384", "calibracion"):
+        assert (sondas[nombre]["estado"], sondas[nombre]["categoria"]) == (ke.NO_DISPONIBLE, "tope_global")
+    assert doble.tokens_vistos == [] and not esc.salida.exists()
+    # la parada y la limpieza no dependen del tope
+    assert doble.proceso.eventos == PARADA_COMPLETA
+    assert sondas["limpieza"]["valores"] == {"servidor_detenido": True, "procesos_en_gpu": 0}
+
+
+def test_main_el_tope_global_acorta_la_espera_del_servidor(esc: Escenario, doble: Doble) -> None:
+    doble.salud_tras = 10**9
+    assert correr_main(esc, doble, "--tope-total-min", "0.1") == ke.EXIT_INCOMPLETO  # 6 s
+    assert doble.consultas_salud == 3  # a los 0, 2 y 4 s; a los 6 ya no
+    assert esc.sondas()["servidor"]["valores"]["motivo"] == "tiempo_agotado"
+    assert not doble.proceso.esta_vivo
+
+
+@pytest.mark.parametrize("valor", ["0", "-5", "nan"])
+def test_main_rechaza_un_tope_global_que_no_es_positivo(esc: Escenario, doble: Doble, valor: str) -> None:
+    assert correr_main(esc, doble, "--tope-total-min", valor) == ke.EXIT_INVALIDO
+    assert doble.lanzados == [] and not esc.crudo.exists()
+
+
+def test_cada_sonda_recibe_su_tope(esc: Escenario, doble: Doble) -> None:
+    """D7: ni mas ni menos espera que la declarada en el plan, sonda por sonda."""
+    doble.rechazos_agente[16384] = 1
+    doble.paquetes["docker"] = "7.1.0"
+    docker_con(doble, version=Doble.ok("Docker 27"))
+    assert correr_main(esc, doble, "--espera-agente-min", "9") == ke.EXIT_OK
+    assert doble.esperas == [
+        ("nvidia_gpu", ke.ESPERA_COMANDO),
+        ("docker_version", ke.ESPERA_COMANDO),
+        ("docker_info", ke.ESPERA_COMANDO),
+        ("docker_imagen", ke.ESPERA_COMANDO),
+        ("docker_run", ke.ESPERA_COMANDO),
+        ("compila", ke.ESPERA_COMPILAR),
+        ("agente", 4 * 9 * 60.0),
+        ("agente", 4 * 9 * 60.0),
+        ("nvidia_apps", ke.ESPERA_COMANDO),
+    ]
+    assert (ke.ESPERA_COMANDO, ke.ESPERA_COMPILAR, ke.ESPERA_SALUD) == (60.0, 300.0, 5.0)
+    assert doble.esperas_http == [
+        *[("health", ke.ESPERA_SALUD)] * 4,
+        ("models", ke.ESPERA_COMANDO),
+        *[("completions", ke.ESPERA_RENDIMIENTO)] * 3,
+        *[("completions", ke.ESPERA_CONTROL), ("completions", ke.ESPERA_RECHAZO)] * 2,
+        *[("completions", ke.ESPERA_CALIBRACION)] * 2,
+        *[("completions", ke.ESPERA_CALIBRADO)] * 2,
+    ]
+    assert (ke.ESPERA_RENDIMIENTO, ke.ESPERA_CONTROL, ke.ESPERA_RECHAZO) == (120.0, 300.0, 120.0)
+    # y el plan declara esas mismas esperas
+    plan = {
+        p.sonda: p.espera_segundos
+        for p in ke.plan(ke._parser().parse_args(esc.args("--espera-agente-min", "9")))
+    }
+    assert plan["compila"] == ke.ESPERA_COMPILAR and plan["agente:16384"] == 4 * 9 * 60.0
+    assert plan["docker"] == 4 * ke.ESPERA_COMANDO and plan["gpu"] == ke.ESPERA_COMANDO
+
+
+# ---------------------------------------------------------------------------
+# D6. http_real: tope total por peticion y respuestas que no son HTTP
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def escucha() -> Any:
+    """Un socket local que atiende una conexion con la funcion que se le pase. No es un servidor HTTP."""
+    abiertos: list[socket.socket] = []
+    hilos: list[threading.Thread] = []
+
+    def abrir(atender: Callable[[socket.socket], None]) -> int:
+        s = socket.socket()
+        s.bind(("127.0.0.1", 0))
+        s.listen(1)
+        abiertos.append(s)
+
+        def trabajo() -> None:
+            try:
+                conexion, _ = s.accept()
+            except OSError:
+                return
+            with conexion, contextlib.suppress(OSError):
+                conexion.settimeout(0.3)
+                with contextlib.suppress(TimeoutError):
+                    while conexion.recv(65536):  # la peticion entera, llegue en los trozos que llegue
+                        pass
+                conexion.settimeout(None)
+                atender(conexion)
+
+        hilo = threading.Thread(target=trabajo, daemon=True)
+        hilo.start()
+        hilos.append(hilo)
+        return int(s.getsockname()[1])
+
+    yield abrir
+    for s in abiertos:
+        s.close()
+
+
+def test_http_real_tiene_un_tope_total_y_no_solo_por_operacion(escucha: Any) -> None:
+    """Un servidor que gotea un byte cada 0,2 s nunca agota el tope del socket; el total si."""
+
+    def gotear(conexion: socket.socket) -> None:
+        conexion.sendall(b"HTTP/1.1 200 OK\r\nContent-Length: 100000\r\n\r\n")
+        for _ in range(100):
+            conexion.sendall(b"x")
+            time.sleep(0.2)
+
+    puerto = escucha(gotear)
+    inicio = time.monotonic()
+    r = ke.http_real("GET", f"http://127.0.0.1:{puerto}/health", None, 1.5)
+    assert r == ke.Respuesta("tiempo_agotado", None, b"")
+    assert time.monotonic() - inicio < 6
+
+
+def test_http_real_respuesta_que_no_es_http(escucha: Any) -> None:
+    puerto = escucha(lambda conexion: conexion.sendall(b"esto no es HTTP\r\n\r\n"))
+    r = ke.http_real("GET", f"http://127.0.0.1:{puerto}/health", None, 10.0)
+    assert r == ke.Respuesta("protocolo", None, b"")
+    assert ke._fallo_http(r) == ke.sin_valor(ke.ERROR, "respuesta_http_invalida")
+
+
+def test_http_real_lee_el_codigo_y_el_cuerpo_tambien_de_un_400(escucha: Any) -> None:
+    cuerpo = b'{"error": "maximum context length"}'
+    cabecera = f"HTTP/1.1 400 Bad Request\r\nContent-Length: {len(cuerpo)}\r\nConnection: close\r\n\r\n"
+    puerto = escucha(lambda conexion: conexion.sendall(cabecera.encode() + cuerpo))
+    r = ke.http_real("POST", f"http://127.0.0.1:{puerto}/v1/chat/completions", b"{}", 10.0)
+    assert r == ke.Respuesta("ok", 400, cuerpo)
+
+
+def test_http_real_no_se_traga_un_error_del_propio_guion(monkeypatch: pytest.MonkeyPatch) -> None:
+    def rota(*a: Any, **k: Any) -> ke.Respuesta:
+        raise RuntimeError("defecto")
+
+    monkeypatch.setattr(ke, "_peticion_http", rota)
+    with pytest.raises(RuntimeError, match="defecto"):
+        ke.http_real("GET", "http://127.0.0.1:9/health", None, 5.0)
+
+
+# ---------------------------------------------------------------------------
+# D10. Escritura exclusiva: la carrera entre comprobar y crear
+# ---------------------------------------------------------------------------
+
+
+def test_escritura_exclusiva_si_el_archivo_aparece_tras_la_comprobacion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    destino = tmp_path / "registro.json"
+    destino.write_bytes(b"de otra sesion")
+    monkeypatch.setattr(Path, "exists", lambda self: False)  # la comprobacion previa no lo vio
+    with pytest.raises(ke.EnsayoError, match="no sobrescribe"):
+        ke.escribir_sin_sobrescribir(destino, b"mio")
+    monkeypatch.undo()
+    assert destino.read_bytes() == b"de otra sesion"
+    assert [p.name for p in tmp_path.iterdir()] == ["registro.json"]
+
+
+def test_escritura_exclusiva_sin_enlaces_duros_tampoco_pisa(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    destino = tmp_path / "registro.json"
+    destino.write_bytes(b"de otra sesion")
+
+    def sin_enlaces(origen: Any, final: Any) -> None:
+        raise OSError("este sistema de archivos no enlaza")
+
+    monkeypatch.setattr(ke.os, "link", sin_enlaces)
+    monkeypatch.setattr(Path, "exists", lambda self: False)
+    with pytest.raises(ke.EnsayoError, match="no sobrescribe"):
+        ke.escribir_sin_sobrescribir(destino, b"mio")
+    monkeypatch.undo()
+    assert destino.read_bytes() == b"de otra sesion"
+    assert [p.name for p in tmp_path.iterdir()] == ["registro.json"]
