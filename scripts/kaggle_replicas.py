@@ -14,11 +14,14 @@ Que cuenta como resultado (la metrica de Kaggle es resueltas / total de tareas):
 
 * ``resolved``: el arnes dijo ``resolved=True``.
 * ``unresolved``: la tarea no se resolvio por algo del agente (parche vacio, timeout o presupuesto
-  del agente agotados, parche que no aplica, pruebas que fallan). El motivo va en ``failure_reason``.
-  Cuenta como no resuelta en tasas, pares y «cambia».
-* ``infra_error``: fallo de infraestructura (sandbox, contenedor, snapshot, servidor del modelo). No
-  es un resultado del agente: se excluye de los pares y impide la salida 0, porque la tarea hay que
-  volver a correrla.
+  del agente agotados, parche que no aplica, pruebas que fallan, se cuelgan o mueren con el parche
+  del agente, o una peticion que el servidor del modelo rechaza por exceder el contexto). El motivo
+  va en ``failure_reason``. Cuenta como no resuelta en tasas, pares y «cambia».
+* ``infra_error``: fallo de infraestructura (sandbox, contenedor, snapshot, otro error del servidor
+  del modelo). No es un resultado del agente: se excluye de los pares y impide la salida 0. La
+  replica afectada se repite entera con un numero nuevo y la original se mueve a ``descartadas/``
+  (``--descartadas``). Si una misma tarea da ``infra_error`` en dos replicas, contando las
+  descartadas, deja de repetirse: cuenta como no resuelta y el reporte la lista.
 
 Codigos de salida de ``analizar``:
 
@@ -57,8 +60,8 @@ from itertools import combinations
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "kaggle-replica-receipt/2"
-REPORT_VERSION = "kaggle-replica-analysis/2"
+SCHEMA_VERSION = "kaggle-replica-receipt/3"
+REPORT_VERSION = "kaggle-replica-analysis/3"
 
 ST_RESOLVED = "resolved"
 ST_UNRESOLVED = "unresolved"
@@ -71,7 +74,12 @@ FR_AGENT_TIMEOUT = "agent_timeout"
 FR_BUDGET = "budget_exhausted"
 FR_APPLY = "patch_apply_failed"
 FR_TESTS = "tests_failed"
-FAILURE_REASONS = (FR_EMPTY, FR_AGENT_TIMEOUT, FR_BUDGET, FR_APPLY, FR_TESTS)
+FR_CONTEXT = "context_exceeded"
+FAILURE_REASONS = (FR_EMPTY, FR_AGENT_TIMEOUT, FR_BUDGET, FR_APPLY, FR_TESTS, FR_CONTEXT)
+# Motivo que solo asigna el analisis: la misma tarea dio ``infra_error`` en dos replicas o mas.
+REPEATED_INFRA = "infra_repetida"
+MAX_INFRA_PER_TASK = 2
+MAX_DISCARDED_REPLICAS = 2
 
 SHORT = {ST_RESOLVED: "R", ST_UNRESOLVED: "N", ST_INFRA: "I", MISSING: "-"}
 
@@ -101,9 +109,16 @@ INFRA_ERROR_PREFIXES: tuple[tuple[str, str], ...] = (
     ("Missing test specification", "missing_test_spec"),
     ("Failed to apply test_patch:", "test_patch_failed"),
 )
-# Sin ``error`` y con parche, el ``test_exit_code`` del comando de pruebas decide: estos codigos son
-# de infraestructura (la tarea se vuelve a correr), no del agente.
-INFRA_EXIT_CODES: dict[int, str] = {-1: "test_exec_failed", 124: "test_timeout", 137: "test_killed"}
+# Rechazo del servidor del modelo por exceder el contexto: llega dentro del error de ejecucion del
+# sandbox (HTTP 400). Es un fallo del agente, no infraestructura. Se reconoce por estos marcadores,
+# sin distinguir mayusculas; el ensayo de notebook del pre-registro confirma el texto real.
+CONTEXT_ERROR_PREFIX = "Sandbox execution error:"
+CONTEXT_ERROR_MARKERS: tuple[str, ...] = ("contextwindowexceedederror", "maximum context length")
+# Sin ``error`` y con parche, el ``test_exit_code`` del comando de pruebas decide. Solo -1 (no se pudo
+# ejecutar el comando) es infraestructura. 124 (timeout) y 137 (proceso matado) cuentan como pruebas
+# que fallan: con el parche del agente aplicado, el parche puede causarlos.
+INFRA_EXIT_CODES: dict[int, str] = {-1: "test_exec_failed"}
+AGENT_SIGNAL_EXIT_CODES: frozenset[int] = frozenset({124, 137})
 INFRA_REASONS = (*(r for _, r in INFRA_ERROR_PREFIXES), *INFRA_EXIT_CODES.values())
 
 REQUIRED_KEYS = (
@@ -125,9 +140,10 @@ REQUIRED_KEYS = (
     "harness_version",
     "sandbox_image",
     "converted_utc",
+    "run_utc",
     "harness_raw",
 )
-OPTIONAL_KEYS = ("run_utc",)
+OPTIONAL_KEYS: tuple[str, ...] = ()
 RAW_KEYS = ("resolved", "error", "test_exit_code", "agent_patch_size", "total_llm_calls")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 UTC_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -165,6 +181,7 @@ class Recibo:
     harness_version: str
     sandbox_image: str
     converted_utc: str
+    run_utc: str
 
 
 # ---------------------------------------------------------------------------
@@ -261,8 +278,10 @@ def classify_harness(raw: dict[str, Any], where: str) -> tuple[str, str | None, 
     ``resolved`` del arnes manda (tambien con parche vacio). Un ``error`` que no figure en la lista
     cerrada (``AGENT_ERROR_PREFIXES`` / ``INFRA_ERROR_PREFIXES``) o una combinacion incoherente lanzan
     ``ReplicasError``: no hay categoria por defecto. Sin ``error`` y con parche, el ``test_exit_code``
-    decide: -1, 124 y 137 son infraestructura; otro negativo o mayor que 128 (senal) no se clasifica;
-    el resto es ``tests_failed``.
+    decide: -1 es infraestructura; 124 y 137 son ``tests_failed`` (el parche del agente puede colgar
+    o matar las pruebas); otro negativo o mayor que 128 no se clasifica; el resto es ``tests_failed``.
+    Un error de ejecucion del sandbox que es un rechazo por exceder el contexto es
+    ``context_exceeded``, del agente.
     """
     resolved = raw.get("resolved")
     if not isinstance(resolved, bool):
@@ -288,12 +307,14 @@ def classify_harness(raw: dict[str, Any], where: str) -> tuple[str, str | None, 
             return ST_UNRESOLVED, FR_EMPTY, None
         if exit_code in INFRA_EXIT_CODES:
             return ST_INFRA, None, INFRA_EXIT_CODES[exit_code]
-        if exit_code < 0 or exit_code > 128:
+        if (exit_code < 0 or exit_code > 128) and exit_code not in AGENT_SIGNAL_EXIT_CODES:
             raise ReplicasError(
                 f"{where}: test_exit_code={exit_code} sin error del arnes: no se clasifica "
                 "(negativo distinto de -1 o senal distinta de 137)."
             )
         return ST_UNRESOLVED, FR_TESTS, None
+    if error.startswith(CONTEXT_ERROR_PREFIX) and any(m in error.lower() for m in CONTEXT_ERROR_MARKERS):
+        return ST_UNRESOLVED, FR_CONTEXT, None
     for prefix, reason in AGENT_ERROR_PREFIXES:
         if error.startswith(prefix):
             return ST_UNRESOLVED, reason, None
@@ -379,8 +400,10 @@ def parse_receipt(obj: object, where: str) -> Recibo:
     patch_sha = _sha(obj, "patch_sha256", where, nullable=True)
     if (patch_sha is None) != (raw["agent_patch_size"] == 0):
         raise ReplicasError(f"{where}: 'patch_sha256' debe ser null si y solo si agent_patch_size es 0.")
-    if "run_utc" in obj and obj["run_utc"] is not None:
-        parse_utc(obj["run_utc"], where, "run_utc")
+    converted = parse_utc(obj["converted_utc"], where, "converted_utc")
+    run = parse_utc(obj["run_utc"], where, "run_utc")
+    if datetime.strptime(run, UTC_FORMAT) > datetime.strptime(converted, UTC_FORMAT):
+        raise ReplicasError(f"{where}: 'run_utc' ({run}) es posterior a 'converted_utc' ({converted}).")
     return Recibo(
         instance_id=_text(obj, "instance_id", where),
         repo=_text(obj, "repo", where),
@@ -397,7 +420,8 @@ def parse_receipt(obj: object, where: str) -> Recibo:
         subset_sha256=_sha(obj, "subset_sha256", where) or "",
         harness_version=_text(obj, "harness_version", where),
         sandbox_image=_text(obj, "sandbox_image", where),
-        converted_utc=parse_utc(obj["converted_utc"], where, "converted_utc"),
+        converted_utc=converted,
+        run_utc=run,
     )
 
 
@@ -534,6 +558,55 @@ def check_integrity(receipts: Sequence[Recibo], subset: Subconjunto, tasks_sha_r
     return problems
 
 
+def check_discarded(
+    receipts: Sequence[Recibo], descartadas: Sequence[Recibo], subset: Subconjunto
+) -> list[str]:
+    """Problemas de las replicas descartadas (lista vacia = bien descartadas).
+
+    Una replica solo se descarta por infraestructura o por tareas sin recibo, nunca por su tasa:
+    una replica completa y sin ``infra_error`` en ``descartadas`` es un error. Tambien lo son mas de
+    ``MAX_DISCARDED_REPLICAS`` descartadas, un numero de replica repetido con las vigentes, recibos
+    duplicados, tareas ajenas al subconjunto y hashes distintos de los de las replicas vigentes.
+    """
+    problems: list[str] = []
+    if not descartadas:
+        return problems
+    for campo in (
+        "tasks_sha256",
+        "submission_sha256",
+        "subset_sha256",
+        "condition",
+        "harness_version",
+        "sandbox_image",
+    ):
+        if {getattr(r, campo) for r in descartadas} - {getattr(r, campo) for r in receipts}:
+            problems.append(f"Las replicas descartadas no tienen el mismo {campo} que las vigentes.")
+    fuera = sorted({r.instance_id for r in descartadas} - set(subset.ids))
+    if fuera:
+        problems.append(f"Tareas fuera del subconjunto en las replicas descartadas: {fuera}")
+    claves = [(r.instance_id, r.replica) for r in descartadas]
+    if len(set(claves)) != len(claves):
+        problems.append("Hay recibos duplicados en las replicas descartadas.")
+    numeros = sorted({r.replica for r in descartadas})
+    comunes = sorted(set(numeros) & {r.replica for r in receipts})
+    if comunes:
+        problems.append(f"Numeros de replica a la vez vigentes y descartados: {comunes}")
+    if len(numeros) > MAX_DISCARDED_REPLICAS:
+        problems.append(
+            f"Hay {len(numeros)} replicas descartadas; el tope es {MAX_DISCARDED_REPLICAS}: la linea base "
+            "no llego a un analisis valido."
+        )
+    for rep in numeros:
+        suyos = [r for r in descartadas if r.replica == rep]
+        completa = {r.instance_id for r in suyos} >= set(subset.ids)
+        if completa and not any(r.status == ST_INFRA for r in suyos):
+            problems.append(
+                f"La replica {rep} esta descartada, pero esta completa y sin errores de infraestructura: "
+                "una replica no se descarta por su tasa."
+            )
+    return problems
+
+
 # ---------------------------------------------------------------------------
 # Estadistica exacta (stdlib)
 # ---------------------------------------------------------------------------
@@ -653,19 +726,39 @@ def analyze(
     subset: Subconjunto,
     alpha: float = DEFAULT_ALPHA,
     envio_archivos: Sequence[tuple[str, str]] | None = None,
+    descartadas: Sequence[Recibo] = (),
 ) -> dict[str, Any]:
-    """Calcula el reporte agregado. Supone recibos ya comprobados con ``check_integrity``."""
+    """Calcula el reporte agregado. Supone recibos ya comprobados con ``check_integrity``.
+
+    ``descartadas`` son los recibos de las replicas descartadas por infraestructura (comprobados con
+    ``check_discarded``): no entran en tasas ni pares, pero cuentan para el tope por tarea. Una tarea
+    con ``infra_error`` en ``MAX_INFRA_PER_TASK`` replicas o mas, entre vigentes y descartadas, cuenta
+    como no resuelta (motivo ``infra_repetida``) en las replicas vigentes donde lo tiene.
+    """
     replicas = sorted({r.replica for r in receipts})
     ids = list(subset.ids)
     by_key = {(r.instance_id, r.replica): r for r in receipts}
     repo_of = {r.instance_id: r.repo for r in receipts}
+    infra_reps: dict[str, set[int]] = {}
+    for r in (*receipts, *descartadas):
+        if r.status == ST_INFRA:
+            infra_reps.setdefault(r.instance_id, set()).add(r.replica)
+    repetidas = {iid for iid, reps in infra_reps.items() if len(reps) >= MAX_INFRA_PER_TASK}
+
+    def repetida(iid: str, rep: int) -> bool:
+        r = by_key.get((iid, rep))
+        return r is not None and r.status == ST_INFRA and iid in repetidas
 
     def estado(iid: str, rep: int) -> str:
         r = by_key.get((iid, rep))
+        if repetida(iid, rep):
+            return ST_UNRESOLVED
         return r.status if r else MISSING
 
     def motivo(iid: str, rep: int) -> str | None:
         r = by_key.get((iid, rep))
+        if repetida(iid, rep):
+            return REPEATED_INFRA
         return r.failure_reason if r else None
 
     def valido(s: str) -> bool:
@@ -674,7 +767,7 @@ def analyze(
     por_replica: list[dict[str, Any]] = []
     for rep in replicas:
         cuentas = {s: 0 for s in (*STATUS_ALL, MISSING)}
-        motivos = {m: 0 for m in FAILURE_REASONS}
+        motivos = {m: 0 for m in (*FAILURE_REASONS, REPEATED_INFRA)}
         for iid in ids:
             cuentas[estado(iid, rep)] += 1
             m = motivo(iid, rep)
@@ -794,6 +887,20 @@ def analyze(
         for rep in replicas
         if estado(iid, rep) == ST_INFRA
     ]
+    descartes: list[dict[str, Any]] = []
+    for rep in sorted({r.replica for r in descartadas}):
+        suyos = {r.instance_id: r for r in descartadas if r.replica == rep}
+        descartes.append(
+            {
+                "replica": rep,
+                "infra": [
+                    {"instance_id": iid, "infra_reason": suyos[iid].infra_reason}
+                    for iid in ids
+                    if iid in suyos and suyos[iid].status == ST_INFRA
+                ],
+                "faltantes": [iid for iid in ids if iid not in suyos],
+            }
+        )
     tasas = [p["tasa_sobre_subconjunto"] for p in por_replica]
     primero = receipts[0]
     # se ordena como fecha (datetime), no como texto
@@ -810,6 +917,13 @@ def analyze(
         "tareas_subconjunto": len(ids),
         "convertido_utc_primero": min(fechas),
         "convertido_utc_ultimo": max(fechas),
+        "corrida_utc_por_replica": {
+            str(rep): {
+                "primero": min(r.run_utc for r in receipts if r.replica == rep),
+                "ultimo": max(r.run_utc for r in receipts if r.replica == rep),
+            }
+            for rep in replicas
+        },
     }
     if envio_archivos is not None:
         entrada["envio_archivos"] = [{"ruta": rel, "sha256": h} for rel, h in envio_archivos]
@@ -830,6 +944,10 @@ def analyze(
         "por_repositorio": por_repo,
         "errores_de_infraestructura": infra,
         "infra_afectadas": sorted({x["instance_id"] for x in infra}),
+        "infra_repetida": [
+            {"instance_id": iid, "replicas": sorted(infra_reps[iid])} for iid in ids if iid in repetidas
+        ],
+        "replicas_descartadas": descartes,
         "faltantes": faltantes,
         "margen": _margin(pares, tasas, alpha),
     }
@@ -939,15 +1057,14 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"{_f(p['tasa_sobre_validas'])} | {p['no_resueltas']} | {p['infra_error']} | {p['faltantes']} |"
         )
     out += ["", "No resueltas por motivo:", ""]
+    columnas = (*FAILURE_REASONS, REPEATED_INFRA)
     out += [
-        "| Replica | " + " | ".join(FAILURE_REASONS) + " |",
-        "|---|" + "---|" * len(FAILURE_REASONS),
+        "| Replica | " + " | ".join(columnas) + " |",
+        "|---|" + "---|" * len(columnas),
     ]
     for p in report["por_replica"]:
         out.append(
-            f"| {p['replica']} | "
-            + " | ".join(str(p["no_resueltas_por_motivo"][m]) for m in FAILURE_REASONS)
-            + " |"
+            f"| {p['replica']} | " + " | ".join(str(p["no_resueltas_por_motivo"][m]) for m in columnas) + " |"
         )
     cd = report["cambian_de_resultado"]
     out += [
@@ -1007,7 +1124,7 @@ def render_markdown(report: dict[str, Any]) -> str:
             + " | ".join(f"{x['resueltas']}/{x['validas']}" for x in g["por_replica"])
             + f" | {g['cambian']['numerador']}/{g['cambian']['denominador']} |"
         )
-    out += ["", "## Errores de infraestructura (hay que volver a correr estas tareas)", ""]
+    out += ["", "## Errores de infraestructura (hay que repetir la replica entera con un numero nuevo)", ""]
     if report["errores_de_infraestructura"]:
         out += ["| Tarea | Replica | Motivo |", "|---|---|---|"]
         out += [
@@ -1016,6 +1133,21 @@ def render_markdown(report: dict[str, Any]) -> str:
         ]
     else:
         out.append("Ninguno.")
+    out += ["", "## Tareas con infraestructura repetida (cuentan como no resueltas)", ""]
+    if report["infra_repetida"]:
+        out += ["| Tarea | Replicas con error de infraestructura |", "|---|---|"]
+        out += [f"| `{x['instance_id']}` | {x['replicas']} |" for x in report["infra_repetida"]]
+    else:
+        out.append("Ninguna.")
+    out += ["", "## Replicas descartadas por infraestructura (no entran en tasas ni pares)", ""]
+    if report["replicas_descartadas"]:
+        out += ["| Replica | Tareas con error de infraestructura | Tareas sin recibo |", "|---|---|---|"]
+        for x in report["replicas_descartadas"]:
+            infra_txt = ", ".join(f"`{i['instance_id']}` ({i['infra_reason']})" for i in x["infra"]) or "-"
+            falt_txt = ", ".join(f"`{i}`" for i in x["faltantes"]) or "-"
+            out.append(f"| {x['replica']} | {infra_txt} | {falt_txt} |")
+    else:
+        out.append("Ninguna.")
     out += ["", "## Faltantes (sin recibo)", ""]
     if report["faltantes"]:
         out += ["| Tarea | Replicas sin recibo |", "|---|---|"]
@@ -1106,7 +1238,7 @@ def convert_harness_results(
     harness_version: str,
     sandbox_image: str,
     converted_utc: str,
-    run_utc: str | None = None,
+    run_utc: str,
 ) -> list[dict[str, Any]]:
     """Convierte el ``task_results.jsonl`` de ``swegemma eval`` en recibos (diccionarios).
 
@@ -1126,8 +1258,7 @@ def convert_harness_results(
     permitidos = set(subset_ids)
     _int(replica, "convertir", "replica", minimum=1)
     parse_utc(converted_utc, "convertir", "converted_utc")
-    if run_utc is not None:
-        parse_utc(run_utc, "convertir", "run_utc")
+    parse_utc(run_utc, "convertir", "run_utc")
     recibos: list[dict[str, Any]] = []
     for numero, line in enumerate(lines, start=1):
         if not line.strip():
@@ -1176,10 +1307,9 @@ def convert_harness_results(
             "harness_version": harness_version,
             "sandbox_image": sandbox_image,
             "converted_utc": converted_utc,
+            "run_utc": run_utc,
             "harness_raw": raw,
         }
-        if run_utc is not None:
-            recibo["run_utc"] = run_utc
         parse_receipt(recibo, where)  # el conversor nunca emite un recibo que el analisis rechace
         recibos.append(recibo)
     if not recibos:
@@ -1262,6 +1392,9 @@ def _check_outputs(args: argparse.Namespace) -> list[tuple[Path, str]]:
     if args.envio:
         dirs.append(args.envio.resolve())
         entradas.add(args.envio.resolve())
+    if args.descartadas:
+        dirs.append(args.descartadas.resolve())
+        entradas.add(args.descartadas.resolve())
     previos: list[tuple[Path, str]] = []
     for (p, kind), r in zip(outs, resueltas, strict=True):
         if r in entradas or any(d in r.parents for d in dirs):
@@ -1294,6 +1427,12 @@ def _cmd_analizar(args: argparse.Namespace) -> int:
     subset = load_subset(args.subconjunto)
     tasks_ref = resolve_tasks_sha(subset, args.tasks_sha256)
     problems = check_integrity(receipts, subset, tasks_ref)
+    descartadas: list[Recibo] = []
+    if args.descartadas:
+        if not args.descartadas.is_dir():
+            raise ReplicasError(f"--descartadas debe ser un directorio existente: {args.descartadas}")
+        descartadas = load_receipts([args.descartadas])
+        problems += check_discarded(receipts, descartadas, subset)
     archivos: list[tuple[str, str]] | None = None
     if args.envio:
         archivos = submission_files(args.envio)
@@ -1304,7 +1443,7 @@ def _cmd_analizar(args: argparse.Namespace) -> int:
             )
     if problems:
         raise ReplicasError("Integridad de los recibos:\n- " + "\n- ".join(problems))
-    report = analyze(receipts, subset, args.alfa, archivos)
+    report = analyze(receipts, subset, args.alfa, archivos, descartadas)
     md = render_markdown(report)
     escribir: list[tuple[Path, str]] = []
     if args.salida_json:
@@ -1323,7 +1462,8 @@ def _cmd_analizar(args: argparse.Namespace) -> int:
             )
         if report["infra_afectadas"]:
             partes.append(
-                "errores de infraestructura (volver a correr): " + ", ".join(report["infra_afectadas"])
+                "errores de infraestructura (mover la replica a descartadas/ y repetirla entera): "
+                + ", ".join(report["infra_afectadas"])
             )
         print("INCOMPLETO: " + "; ".join(partes), file=sys.stderr)
         return EXIT_INCOMPLETE
@@ -1337,6 +1477,12 @@ def _cmd_convertir(args: argparse.Namespace) -> int:
         )
     subset = load_subset(args.subconjunto)
     created = args.convertido_utc or datetime.now(UTC).strftime(UTC_FORMAT)
+    try:
+        # momento de la corrida: ultima escritura del task_results.jsonl del arnes, no un dato tecleado
+        modificado = args.task_results.stat().st_mtime
+    except OSError as exc:
+        raise ReplicasError(f"No se pudo leer {args.task_results}: {exc}") from exc
+    run_utc = datetime.fromtimestamp(int(modificado), UTC).strftime(UTC_FORMAT)
     recibos = convert_harness_results(
         args.task_results,
         patches_dir=args.patches,
@@ -1349,7 +1495,7 @@ def _cmd_convertir(args: argparse.Namespace) -> int:
         harness_version=args.version_arnes,
         sandbox_image=args.imagen_sandbox,
         converted_utc=created,
-        run_utc=args.run_utc,
+        run_utc=run_utc,
     )
     text = "".join(json.dumps(r, sort_keys=True, ensure_ascii=False) + "\n" for r in recibos)
     _write_all([(args.salida, text)])
@@ -1373,6 +1519,12 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument(
         "--envio", type=Path, default=None, help="Directorio del kit: recalcula su hash y lista archivos."
     )
+    a.add_argument(
+        "--descartadas",
+        type=Path,
+        default=None,
+        help="Directorio con los recibos de las replicas descartadas por infraestructura.",
+    )
     a.add_argument("--alfa", type=float, default=DEFAULT_ALPHA, help="Nivel de las pruebas e intervalos.")
     a.add_argument("--salida-json", type=Path, default=None, help="Donde escribir el JSON agregado.")
     a.add_argument("--salida-md", type=Path, default=None, help="Donde escribir la tabla Markdown.")
@@ -1391,7 +1543,6 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument(
         "--convertido-utc", default=None, help="YYYY-MM-DDTHH:MM:SSZ de la conversion (por defecto, ahora)."
     )
-    c.add_argument("--run-utc", default=None, help="YYYY-MM-DDTHH:MM:SSZ de la corrida, si se conoce.")
     c.add_argument("--salida", type=Path, required=True)
     c.set_defaults(func=_cmd_convertir)
 

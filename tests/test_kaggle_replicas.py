@@ -5,13 +5,16 @@ competencia entra aqui: los ids, repositorios, hashes y textos de error de prueb
 son los prefijos genericos de la lista cerrada del conversor.
 
 Letras de las cuadriculas: R resuelta; N no resuelta por pruebas; E parche vacio; T timeout del
-agente; B presupuesto agotado; P parche que no aplica; I error de infraestructura; - sin recibo.
+agente; B presupuesto agotado; P parche que no aplica; I error de infraestructura; X pruebas que no
+se pudieron ejecutar (infraestructura); K pruebas colgadas con el parche del agente (no resuelta);
+C rechazo por exceder el contexto (no resuelta); - sin recibo.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 from pathlib import Path
 from typing import Any
@@ -104,14 +107,31 @@ RAWS: dict[str, tuple[str, str | None, dict[str, Any]]] = {
             "agent_patch_size": 0,
         },
     ),
-    # sin error y con parche: el codigo de salida de las pruebas es de infraestructura
+    # sin error y con parche: solo el codigo -1 (no se pudo ejecutar) es de infraestructura
     "X": (
         "infra_error",
         None,
+        {"resolved": False, "error": None, "test_exit_code": -1, "agent_patch_size": 10},
+    ),
+    # sin error y con parche: las pruebas se cuelgan (124); el parche del agente puede causarlo
+    "K": (
+        "unresolved",
+        "tests_failed",
         {"resolved": False, "error": None, "test_exit_code": 124, "agent_patch_size": 10},
     ),
+    # el servidor del modelo rechaza la peticion por exceder el contexto: fallo del agente
+    "C": (
+        "unresolved",
+        "context_exceeded",
+        {
+            "resolved": False,
+            "error": "Sandbox execution error: sintetico ContextWindowExceededError sintetico",
+            "test_exit_code": -1,
+            "agent_patch_size": 0,
+        },
+    ),
 }
-INFRA_REASON = {"I": "sandbox_error", "X": "test_timeout"}
+INFRA_REASON = {"I": "sandbox_error", "X": "test_exec_failed"}
 
 REPOS = {"t1": "o/a", "t2": "o/a", "t3": "o/a", "t4": "o/b", "t5": "o/b", "t6": "o/b"}
 # Caso a mano: tres replicas, seis tareas; t5 en la replica 2 es un timeout del agente (cuenta como N).
@@ -151,6 +171,7 @@ def receipt(iid: str, rep: int, letra: str, repo: str = "o/a", **over: Any) -> d
         "harness_version": "swegemma-0.0.0",
         "sandbox_image": "img:sintetica",
         "converted_utc": f"2026-10-0{rep}T10:00:00Z",
+        "run_utc": f"2026-10-0{rep}T09:00:00Z",
         "harness_raw": raw,
     }
     r.update(over)
@@ -369,8 +390,20 @@ def test_prefijo_de_infraestructura_se_clasifica_como_infra_error(prefijo: str, 
         (raw(agent_patch_size=0, test_exit_code=-1), ("unresolved", "empty_patch", None)),
         # sin error y con parche, el codigo de salida de las pruebas decide
         (raw(test_exit_code=-1), ("infra_error", None, "test_exec_failed")),
-        (raw(test_exit_code=124), ("infra_error", None, "test_timeout")),
-        (raw(test_exit_code=137), ("infra_error", None, "test_killed")),
+        # 124 y 137 con parche del agente: el parche puede colgar o matar las pruebas (no es infra)
+        (raw(test_exit_code=124), ("unresolved", "tests_failed", None)),
+        (raw(test_exit_code=137), ("unresolved", "tests_failed", None)),
+        # rechazo por contexto dentro del error de ejecucion del sandbox: fallo del agente
+        (
+            raw(error="Sandbox execution error: x ContextWindowExceededError y", agent_patch_size=0),
+            ("unresolved", "context_exceeded", None),
+        ),
+        (
+            raw(error="Sandbox execution error: x Maximum Context Length y", test_exit_code=-1),
+            ("unresolved", "context_exceeded", None),
+        ),
+        # el marcador fuera del error de ejecucion del sandbox no cuenta
+        (raw(error="Evaluation error: maximum context length"), ("infra_error", None, "evaluation_error")),
         (raw(test_exit_code=1), ("unresolved", "tests_failed", None)),
         (raw(test_exit_code=2), ("unresolved", "tests_failed", None)),
         (raw(test_exit_code=5), ("unresolved", "tests_failed", None)),
@@ -389,7 +422,8 @@ def test_codigo_de_salida_raro_sin_error_no_se_clasifica(codigo: int) -> None:
 
 
 def test_codigos_de_infraestructura_estan_en_la_lista_de_motivos() -> None:
-    assert kr.INFRA_EXIT_CODES == {-1: "test_exec_failed", 124: "test_timeout", 137: "test_killed"}
+    assert kr.INFRA_EXIT_CODES == {-1: "test_exec_failed"}
+    assert set(kr.AGENT_SIGNAL_EXIT_CODES) == {124, 137}
     assert set(kr.INFRA_EXIT_CODES.values()) <= set(kr.INFRA_REASONS)
     assert set(PREFIJOS_INFRA.values()) <= set(kr.INFRA_REASONS)
 
@@ -445,6 +479,8 @@ def test_tasa_principal_sobre_subconjunto_y_secundaria(tmp_path: Path) -> None:
         "budget_exhausted": 0,
         "patch_apply_failed": 0,
         "tests_failed": 3,
+        "context_exceeded": 0,
+        "infra_repetida": 0,
     }
     assert (p3["resueltas"], p3["validas"], p3["tasa_sobre_subconjunto"]) == (3, 6, 0.5)
     assert all(p["faltantes"] == 0 for p in (p1, p2, p3))
@@ -862,7 +898,16 @@ def test_recibo_valido_de_cada_tipo(letra: str) -> None:
     r = parse_receipt({**receipt("t1", 1, letra), "run_utc": "2026-10-01T09:00:00Z"}, "x:1")
     assert (r.status, r.failure_reason) == RAWS[letra][:2]
     assert (r.patch_sha256 is None) == (RAWS[letra][2]["agent_patch_size"] == 0)
-    assert parse_receipt({**receipt("t1", 1, letra), "run_utc": None}, "x:1").status == r.status
+    assert r.run_utc == "2026-10-01T09:00:00Z"
+    # run_utc es obligatorio y no puede ser posterior a la conversion
+    with pytest.raises(ReplicasError, match="run_utc"):
+        parse_receipt({**receipt("t1", 1, letra), "run_utc": None}, "x:1")
+    sin = receipt("t1", 1, letra)
+    del sin["run_utc"]
+    with pytest.raises(ReplicasError, match="faltan claves"):
+        parse_receipt(sin, "x:1")
+    with pytest.raises(ReplicasError, match="posterior"):
+        parse_receipt({**receipt("t1", 1, letra), "run_utc": "2026-10-01T10:00:01Z"}, "x:1")
 
 
 def test_status_es_el_del_recibo_no_uno_inventado() -> None:
@@ -1415,8 +1460,12 @@ def fila(iid: str, **over: Any) -> dict[str, Any]:
     return r
 
 
+MTIME_CORRIDA = 1790928000  # 2026-10-02T08:00:00Z: el conversor toma run_utc de la fecha del archivo
+
+
 def escribir_resultados(p: Path, filas: list[dict[str, Any]]) -> None:
     p.write_text("".join(json.dumps(f) + "\n" for f in filas), encoding="utf-8")
+    os.utime(p, (MTIME_CORRIDA, MTIME_CORRIDA))
 
 
 def args_conv(ids: list[str], patches: Path | None) -> dict[str, Any]:
@@ -1431,6 +1480,7 @@ def args_conv(ids: list[str], patches: Path | None) -> dict[str, Any]:
         "harness_version": "h",
         "sandbox_image": "i",
         "converted_utc": "2026-10-03T00:00:00Z",
+        "run_utc": "2026-10-02T08:00:00Z",
     }
 
 
@@ -1481,7 +1531,8 @@ def test_conversor_estados_y_crudos(tmp_path: Path) -> None:
     assert out["ok"]["patch_sha256"] == sha("parche-sintetico-ok")
     assert out["vacio"]["patch_sha256"] is None
     assert out["ok"]["tool_calls"] == 4 and out["ok"]["duration_seconds"] == 3.5
-    assert "patch" not in out["ok"] and "run_utc" not in out["ok"] and "created_utc" not in out["ok"]
+    assert "patch" not in out["ok"] and "created_utc" not in out["ok"]
+    assert out["ok"]["run_utc"] == "2026-10-02T08:00:00Z"
     assert out["ok"]["converted_utc"] == "2026-10-03T00:00:00Z"
     assert list(out) == sorted(out)
     # todo lo que emite el conversor lo acepta el analisis
@@ -1492,10 +1543,12 @@ def test_conversor_estados_y_crudos(tmp_path: Path) -> None:
 def test_conversor_run_utc_aparte(tmp_path: Path) -> None:
     res = tmp_path / "r.jsonl"
     escribir_resultados(res, [fila("x", agent_patch_size=0, test_exit_code=-1)])
-    (r,) = convert_harness_results(res, **args_conv(["x"], None), run_utc="2026-10-02T08:00:00Z")
+    (r,) = convert_harness_results(res, **args_conv(["x"], None))
     assert r["run_utc"] == "2026-10-02T08:00:00Z" and r["converted_utc"] == "2026-10-03T00:00:00Z"
     with pytest.raises(ReplicasError, match="run_utc"):
-        convert_harness_results(res, **args_conv(["x"], None), run_utc="ayer")
+        convert_harness_results(res, **{**args_conv(["x"], None), "run_utc": "ayer"})
+    with pytest.raises(ReplicasError, match="posterior"):
+        convert_harness_results(res, **{**args_conv(["x"], None), "run_utc": "2026-10-03T00:00:01Z"})
     with pytest.raises(ReplicasError, match="converted_utc"):
         convert_harness_results(res, **{**args_conv(["x"], None), "converted_utc": "2026-02-31T00:00:00Z"})
 
@@ -1677,8 +1730,6 @@ def test_convertir_y_analizar_de_punta_a_punta(tmp_path: Path, capsys: pytest.Ca
             "img:y",
             "--convertido-utc",
             "2026-10-03T00:00:00Z",
-            "--run-utc",
-            "2026-10-02T08:00:00Z",
             "--salida",
             str(rdir / f"replica_{rep}.jsonl"),
         )
@@ -1702,6 +1753,14 @@ def test_convertir_y_analizar_de_punta_a_punta(tmp_path: Path, capsys: pytest.Ca
     assert rep["cambian_de_resultado"]["tareas"] == ["t1"]
     assert rep["entrada"]["envio_sha256"] == sha256_directory(envio)
     assert rep["entrada"]["tasks_sha256"] == hashlib.sha256(tasks.read_bytes()).hexdigest()
+    # run_utc sale de la fecha de modificacion del task_results.jsonl, no de una opcion
+    assert rep["entrada"]["corrida_utc_por_replica"] == {
+        "1": {"primero": "2026-10-02T08:00:00Z", "ultimo": "2026-10-02T08:00:00Z"},
+        "2": {"primero": "2026-10-02T08:00:00Z", "ultimo": "2026-10-02T08:00:00Z"},
+    }
+    with pytest.raises(SystemExit):  # la opcion --run-utc ya no existe: no se teclea el momento de la corrida
+        main(["convertir", "--run-utc", "2026-10-02T08:00:00Z"])
+    capsys.readouterr()
 
 
 # ---------------------------------------------------------------------------
@@ -1949,10 +2008,10 @@ def test_infra_por_codigo_de_salida_deja_incompleto_con_su_motivo(
     rep = analizar(tmp_path, {"t1": ["R", "X"], "t2": ["N", "N"]}, repos={})
     assert rep["completo"] is False
     assert rep["errores_de_infraestructura"] == [
-        {"instance_id": "t1", "replica": 2, "status": "infra_error", "infra_reason": "test_timeout"}
+        {"instance_id": "t1", "replica": 2, "status": "infra_error", "infra_reason": "test_exec_failed"}
     ]
     assert rep["por_replica"][1]["infra_error"] == 1 and rep["por_replica"][1]["no_resueltas"] == 1
-    assert "| `t1` | 2 | test_timeout |" in render_markdown(rep)
+    assert "| `t1` | 2 | test_exec_failed |" in render_markdown(rep)
     otro = tmp_path / "otro"
     otro.mkdir()
     d, s = write_case(otro, {"t1": ["R", "X"], "t2": ["N", "N"]}, repos={})
@@ -1960,16 +2019,21 @@ def test_infra_por_codigo_de_salida_deja_incompleto_con_su_motivo(
 
 
 @pytest.mark.parametrize(
-    ("codigo", "motivo"), [(-1, "test_exec_failed"), (124, "test_timeout"), (137, "test_killed")]
+    ("codigo", "esperado"),
+    [
+        (-1, ("infra_error", None, "test_exec_failed")),
+        (124, ("unresolved", "tests_failed", None)),
+        (137, ("unresolved", "tests_failed", None)),
+    ],
 )
-def test_conversor_infra_por_codigo_de_salida(tmp_path: Path, codigo: int, motivo: str) -> None:
+def test_conversor_infra_por_codigo_de_salida(tmp_path: Path, codigo: int, esperado: tuple[Any, ...]) -> None:
     patches = tmp_path / "p"
     patches.mkdir()
     (patches / "x.patch").write_text("p", encoding="utf-8")
     res = tmp_path / "r.jsonl"
     escribir_resultados(res, [fila("x", test_exit_code=codigo)])
     (r,) = convert_harness_results(res, **args_conv(["x"], patches))
-    assert (r["status"], r["failure_reason"], r["infra_reason"]) == ("infra_error", None, motivo)
+    assert (r["status"], r["failure_reason"], r["infra_reason"]) == esperado
     assert r["harness_raw"]["test_exit_code"] == codigo and r["harness_raw"]["error"] is None
 
 
@@ -1985,7 +2049,13 @@ def test_conversor_infra_por_codigo_de_salida(tmp_path: Path, codigo: int, motiv
         ("N", {"failure_reason": "agent_timeout"}, "no corresponden a 'harness_raw'"),
         ("T", {"failure_reason": "tests_failed"}, "no corresponden a 'harness_raw'"),
         ("E", {"failure_reason": "budget_exhausted"}, "no corresponden a 'harness_raw'"),
-        ("I", {"infra_reason": "test_timeout"}, "no corresponden a 'harness_raw'"),
+        ("I", {"infra_reason": "test_exec_failed"}, "no corresponden a 'harness_raw'"),
+        (
+            "K",
+            {"status": "infra_error", "failure_reason": None, "infra_reason": "test_exec_failed"},
+            "harness",
+        ),
+        ("C", {"status": "infra_error", "failure_reason": None, "infra_reason": "sandbox_error"}, "harness"),
         ("X", {"infra_reason": "sandbox_error"}, "no corresponden a 'harness_raw'"),
         ("I", {"infra_reason": None}, "infra_reason"),
         ("I", {"infra_reason": "pereza"}, "infra_reason"),
@@ -2136,3 +2206,175 @@ def test_stdout_y_stderr_en_utf8(monkeypatch: pytest.MonkeyPatch, tmp_path: Path
     err.flush()
     assert code == 2
     assert "no→existe" in err_b.getvalue().decode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Replicas descartadas por infraestructura y tope por tarea (pre-registro de #103, seccion F)
+# ---------------------------------------------------------------------------
+
+
+def escribir_descartada(d: Path, subset: Path, rep: int, fila_de: dict[str, str]) -> Path:
+    """Escribe ``descartadas/replica_<rep>.jsonl`` dentro del directorio de recibos ``d``."""
+    desc = d / "descartadas"
+    desc.mkdir(exist_ok=True)
+    subset_sha = hashlib.sha256(subset.read_bytes()).hexdigest()
+    lineas = [
+        json.dumps(receipt(iid, rep, letra, subset_sha256=subset_sha)) for iid, letra in fila_de.items()
+    ]
+    (desc / f"replica_{rep}.jsonl").write_text("\n".join(lineas) + "\n", encoding="utf-8")
+    return desc
+
+
+def analizar_con_descartadas(d: Path, s: Path) -> dict[str, Any]:
+    sub = load_subset(s)
+    vigentes = load_receipts([d])
+    descartadas = load_receipts([d / "descartadas"])
+    assert check_integrity(vigentes, sub, TASKS_SHA) == []
+    assert kr.check_discarded(vigentes, descartadas, sub) == []
+    return analyze(vigentes, sub, descartadas=descartadas)
+
+
+def test_infra_en_dos_replicas_cuenta_como_no_resuelta(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    rep = analizar(tmp_path, {"t1": ["I", "X", "R"], "t2": ["N", "N", "N"]}, repos={})
+    assert rep["completo"] is True and rep["errores_de_infraestructura"] == []
+    assert rep["infra_repetida"] == [{"instance_id": "t1", "replicas": [1, 2]}]
+    p1, p2, p3 = rep["por_replica"]
+    assert (p1["no_resueltas"], p1["infra_error"], p1["validas"]) == (2, 0, 2)
+    assert p1["no_resueltas_por_motivo"]["infra_repetida"] == 1
+    assert p2["no_resueltas_por_motivo"]["infra_repetida"] == 1
+    assert p3["no_resueltas_por_motivo"]["infra_repetida"] == 0
+    assert rep["tareas"][0]["motivos"] == {"1": "infra_repetida", "2": "infra_repetida", "3": None}
+    assert rep["tareas"][0]["cambia"] is True  # N, N, R
+    assert [q["comparables"] for q in rep["pares"]] == [2, 2, 2]
+    assert "| `t1` | [1, 2] |" in render_markdown(rep)
+    otro = tmp_path / "otro"
+    otro.mkdir()
+    d, s = write_case(otro, {"t1": ["I", "X", "R"], "t2": ["N", "N", "N"]}, repos={})
+    assert run(capsys, *args_analizar(d, s))[0] == 0
+
+
+def test_una_sola_infra_sigue_dejando_el_analisis_incompleto(tmp_path: Path) -> None:
+    rep = analizar(tmp_path, {"t1": ["I", "R", "R"], "t2": ["N", "N", "N"]}, repos={})
+    assert rep["completo"] is False and rep["infra_repetida"] == []
+    assert rep["por_replica"][0]["infra_error"] == 1
+
+
+def test_replica_descartada_no_entra_en_tasas_y_se_lista(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "R"]}, repos={})
+    escribir_descartada(d, s, 3, {"t1": "I", "t2": "N"})
+    rep = analizar_con_descartadas(d, s)
+    assert rep["entrada"]["replicas"] == [1, 2] and rep["completo"] is True
+    assert rep["replicas_descartadas"] == [
+        {"replica": 3, "infra": [{"instance_id": "t1", "infra_reason": "sandbox_error"}], "faltantes": []}
+    ]
+    assert rep["infra_repetida"] == []
+    assert [p["resueltas"] for p in rep["por_replica"]] == [1, 2]
+    assert "| 3 | `t1` (sandbox_error) | - |" in render_markdown(rep)
+    # el comando literal del pre-registro: el directorio no se recorre hacia abajo
+    assert run(capsys, *args_analizar(d, s))[0] == 0
+    assert run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))[0] == 0
+    # la misma replica dentro del directorio principal deja el analisis incompleto
+    (d / "replica_3.jsonl").write_bytes((d / "descartadas" / "replica_3.jsonl").read_bytes())
+    assert run(capsys, *args_analizar(d, s))[0] == 1
+
+
+def test_descartada_cuenta_para_el_tope_por_tarea(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "I"], "t2": ["N", "N"]}, repos={})
+    assert run(capsys, *args_analizar(d, s))[0] == 1  # sin la descartada, t1 tiene una sola infra
+    escribir_descartada(d, s, 3, {"t1": "I"})
+    rep = analizar_con_descartadas(d, s)
+    assert rep["completo"] is True
+    assert rep["infra_repetida"] == [{"instance_id": "t1", "replicas": [2, 3]}]
+    assert rep["por_replica"][1]["no_resueltas_por_motivo"]["infra_repetida"] == 1
+    assert rep["replicas_descartadas"][0]["faltantes"] == ["t2"]
+    assert run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))[0] == 0
+
+
+@pytest.mark.parametrize(
+    ("descartes", "texto"),
+    [
+        ({3: {"t1": "R", "t2": "N"}}, "no se descarta por su tasa"),
+        ({2: {"t1": "I", "t2": "N"}}, "a la vez vigentes y descartados"),
+        ({3: {"t1": "I"}, 4: {"t1": "I"}, 5: {"t2": "I"}}, "el tope es 2"),
+        ({3: {"t1": "I", "ajena": "N"}}, "fuera del subconjunto"),
+    ],
+)
+def test_descartadas_invalidas_salen_con_2(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], descartes: dict[int, dict[str, str]], texto: str
+) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
+    for rep, fila_de in descartes.items():
+        escribir_descartada(d, s, rep, fila_de)
+    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(d / "descartadas"))
+    assert code == 2 and texto in err
+
+
+def test_descartadas_con_otros_hashes_o_ruta_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    d, s = write_case(tmp_path, {"t1": ["R", "R"], "t2": ["N", "N"]}, repos={})
+    desc = d / "descartadas"
+    desc.mkdir()
+    mala = receipt("t1", 3, "I", subset_sha256="d" * 64)
+    (desc / "replica_3.jsonl").write_text(json.dumps(mala) + "\n", encoding="utf-8")
+    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(desc))
+    assert code == 2 and "subset_sha256" in err
+    doble = receipt("t1", 3, "I", subset_sha256=hashlib.sha256(s.read_bytes()).hexdigest())
+    (desc / "replica_3.jsonl").write_text((json.dumps(doble) + "\n") * 2, encoding="utf-8")
+    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(desc))
+    assert code == 2 and "duplicados" in err
+    code, _, err = run(capsys, *args_analizar(d, s), "--descartadas", str(tmp_path / "no_existe"))
+    assert code == 2 and "--descartadas" in err
+    # una salida dentro del directorio de descartadas es una entrada: no se toca
+    code, _, err = run(
+        capsys, *args_analizar(d, s), "--descartadas", str(desc), "--salida-md", str(desc / "r.md")
+    )
+    assert code == 2 and "coincide con una entrada" in err
+
+
+def test_fecha_de_la_corrida_por_replica_en_el_reporte(tmp_path: Path) -> None:
+    rep = analizar(tmp_path, {"t1": ["R", "N"], "t2": ["N", "N"]}, repos={})
+    assert rep["entrada"]["corrida_utc_por_replica"] == {
+        "1": {"primero": "2026-10-01T09:00:00Z", "ultimo": "2026-10-01T09:00:00Z"},
+        "2": {"primero": "2026-10-02T09:00:00Z", "ultimo": "2026-10-02T09:00:00Z"},
+    }
+
+
+def test_convertir_toma_run_utc_del_archivo_y_falla_si_no_existe(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    envio = tmp_path / "e"
+    envio.mkdir()
+    (envio / "x").write_text("x", encoding="utf-8")
+    tasks = tmp_path / "t.jsonl"
+    tasks.write_text("{}\n", encoding="utf-8")
+    subset = tmp_path / "s.json"
+    subset.write_text(json.dumps({"test": ["t1"], "sha256_tasks": TASKS_SHA}), encoding="utf-8")
+    res = tmp_path / "r.jsonl"
+    escribir_resultados(res, [fila("t1", agent_patch_size=0, test_exit_code=-1)])
+    comun = ["--replica", "1", "--condicion", "A", "--envio", str(envio), "--tasks", str(tasks)]
+    comun += ["--subconjunto", str(subset), "--version-arnes", "h", "--imagen-sandbox", "i"]
+    salida = tmp_path / "o.jsonl"
+    assert run(capsys, "convertir", "--task-results", str(res), *comun, "--salida", str(salida))[0] == 0
+    recibo = json.loads(salida.read_text(encoding="utf-8"))
+    assert recibo["run_utc"] == "2026-10-02T08:00:00Z"
+    # una conversion fechada antes que la corrida es incoherente
+    code, _, err = run(
+        capsys, "convertir", "--task-results", str(res), *comun, "--salida", str(tmp_path / "o2.jsonl"),
+        "--convertido-utc", "2026-10-02T07:59:59Z",
+    )  # fmt: skip
+    assert code == 2 and "posterior" in err
+    code, _, err = run(
+        capsys,
+        "convertir",
+        "--task-results",
+        str(tmp_path / "nada.jsonl"),
+        *comun,
+        "--salida",
+        str(tmp_path / "o3"),
+    )
+    assert code == 2 and "No se pudo leer" in err

@@ -380,7 +380,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.rule == "leave_one_repo_out":
             result = split_leave_one_repo_out(
                 tasks=tasks,
-                held_out_repo=args.held_out_repo,
+                held_out_repo=str(args.held_out_repo),  # no vacio: lo exige el control de argumentos
                 excluded_ids=excluded_ids,
                 sha256_tasks=sha256_tasks,
             )

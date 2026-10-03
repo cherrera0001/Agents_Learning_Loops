@@ -11,12 +11,14 @@ subconjunto de tareas. Con eso se calcula qué diferencia entre dos condiciones 
 ruido. El script calcula y reporta; los umbrales de decisión se fijan en el pre-registro, no aquí.
 
 La métrica de Kaggle es resueltas / total de tareas. Por eso **un fallo del agente es «no resuelta»**
-(parche vacío, timeout o presupuesto del agente agotados, parche que no aplica, pruebas que fallan) y
-entra en las tasas, en los pares y en «cambia de resultado», con su motivo en un campo aparte. Solo un
-fallo de infraestructura (sandbox, contenedor, snapshot, servidor del modelo) queda fuera de los pares, y
-esa tarea se vuelve a correr: mientras haya alguna, el análisis sale con 1 y no con 0.
+(parche vacío, timeout o presupuesto del agente agotados, parche que no aplica, pruebas que fallan, se
+cuelgan o mueren con el parche aplicado, petición rechazada por exceder el contexto) y entra en las
+tasas, en los pares y en «cambia de resultado», con su motivo en un campo aparte. Solo un fallo de
+infraestructura (sandbox, contenedor, snapshot, otro error del servidor del modelo) queda fuera de los
+pares: mientras haya alguno sin repetir, el análisis sale con 1 y no con 0. Lo que se repite es la
+**réplica entera**, con un número nuevo (sección «Réplicas descartadas»).
 
-## Formato de recibo (`kaggle-replica-receipt/2`)
+## Formato de recibo (`kaggle-replica-receipt/3`)
 
 Un archivo **JSONL por réplica** (`replica_1.jsonl`, `replica_2.jsonl`, ...) con una línea por tarea. Se
 eligió JSONL por réplica porque es la forma del `task_results.jsonl` que escribe `swegemma eval` (el
@@ -27,13 +29,13 @@ un archivo existente.
 
 | Clave | Contenido |
 |---|---|
-| `schema_version` | `kaggle-replica-receipt/2` |
+| `schema_version` | `kaggle-replica-receipt/3` |
 | `instance_id`, `repo` | tarea y repositorio |
 | `condition` | condición (`A`) |
 | `replica` | entero ≥ 1 |
 | `status` | `resolved`, `unresolved` o `infra_error` |
-| `failure_reason` | solo con `unresolved`: `empty_patch`, `agent_timeout`, `budget_exhausted`, `patch_apply_failed` o `tests_failed`; en los demás casos `null` |
-| `infra_reason` | solo con `infra_error`: `snapshot_missing`, `sandbox_error`, `evaluation_error`, `worker_error`, `missing_test_spec`, `test_patch_failed`, `test_exec_failed`, `test_timeout` o `test_killed`; en los demás casos `null` |
+| `failure_reason` | solo con `unresolved`: `empty_patch`, `agent_timeout`, `budget_exhausted`, `patch_apply_failed`, `tests_failed` o `context_exceeded`; en los demás casos `null` |
+| `infra_reason` | solo con `infra_error`: `snapshot_missing`, `sandbox_error`, `evaluation_error`, `worker_error`, `missing_test_spec`, `test_patch_failed` o `test_exec_failed`; en los demás casos `null` |
 | `resolved` | booleano; `true` solo si `status` es `resolved` |
 | `tool_calls`, `duration_seconds` | llamadas a herramientas y duración (del arnés) |
 | `patch_sha256` | SHA-256 del parche del agente; `null` si y solo si el parche está vacío. **Nunca el parche** |
@@ -42,7 +44,7 @@ un archivo existente.
 | `subset_sha256` | SHA-256 del archivo de subconjunto (salida de `kaggle_split.py`) |
 | `harness_version`, `sandbox_image` | versión del arnés e imagen del sandbox |
 | `converted_utc` | momento de la conversión, `YYYY-MM-DDTHH:MM:SSZ` con ceros de relleno y fecha real; se ordena como fecha |
-| `run_utc` | opcional: momento de la corrida, si se conoce; el arnés no lo escribe |
+| `run_utc` | **obligatorio**: momento de la corrida. `convertir` lo toma de la fecha de modificación del `task_results.jsonl` del arnés, no de una opción; no puede ser posterior a `converted_utc`. No es una firma: copiar el archivo puede cambiar esa fecha |
 | `harness_raw` | campos crudos del arnés: `resolved`, `error`, `test_exit_code`, `agent_patch_size`, `total_llm_calls` |
 
 `harness_raw` permite reclasificar sin el `task_results.jsonl`, que git ignora: al leer un recibo, el
@@ -72,11 +74,12 @@ parche, de `<dir_parches>/<instance_id>.patch`, con «/» del id sustituido por 
   y el `error` crudos se guardan. El arnés instalado deja `error` nulo cuando resuelve; conservar el
   texto de error en una tarea resuelta es solo un caso defensivo, no algo observado.
 - Sin `error` y con parche vacío: `empty_patch`.
-- Sin `error` y con parche, decide `test_exit_code`: `-1` (falló el `exec` de Docker), `124` (timeout del
-  comando de pruebas) y `137` (proceso matado, por ejemplo por memoria) son `infra_error`, con
-  `infra_reason` `test_exec_failed`, `test_timeout` o `test_killed`: son tareas que hay que volver a
-  correr y no ruido del agente. Cualquier otro valor negativo o mayor que 128 (una señal) sin error del
-  arnés hace salir con 2 mostrando el valor. El resto de los códigos (por ejemplo 1, 2 o 5) es
+- Sin `error` y con parche, decide `test_exit_code`. Solo `-1` (no se pudo ejecutar el comando de
+  pruebas) es `infra_error`, con `infra_reason` `test_exec_failed`. `124` (timeout del comando de
+  pruebas) y `137` (proceso matado, por ejemplo por memoria) son `tests_failed`: con el parche del
+  agente aplicado sobre una tarea que discrimina, el parche puede causarlos, y excluirlos sería
+  quitar fallos del agente del denominador. Cualquier otro valor negativo o mayor que 128 sin error
+  del arnés hace salir con 2 mostrando el valor. El resto de los códigos (por ejemplo 1, 2 o 5) es
   `tests_failed`.
 - Con `error`, el texto se compara por prefijo con una **lista cerrada** derivada del código del arnés
   instalado, descrita con palabras propias:
@@ -88,7 +91,11 @@ parche, de `<dir_parches>/<instance_id>.patch`, con «/» del id sustituido por 
     no pasó → `tests_failed`;
   - snapshot ausente, error de ejecución del sandbox, error de evaluación, fallo inesperado del worker,
     especificación de pruebas ausente o `test_patch` que no aplica → `infra_error`. Un timeout del
-    servidor del modelo llega por la vía del error de ejecución del sandbox.
+    servidor del modelo llega por la vía del error de ejecución del sandbox;
+  - un error de ejecución del sandbox cuyo texto contiene `ContextWindowExceededError` o `maximum
+    context length` (sin distinguir mayúsculas) es un rechazo del servidor del modelo por exceder el
+    contexto → `context_exceeded`, fallo del agente. El texto real del rechazo se confirma en el
+    ensayo de notebook del pre-registro; hasta entonces estos dos marcadores son un supuesto.
 - Un texto de error que no figure en la lista, `resolved` que no sea booleano, `agent_patch_size` que no
   sea un entero ≥ 0 o una combinación incoherente (por ejemplo `resolved` con `test_exit_code` distinto de
   0) hacen que el comando salga con 2 y muestre el texto; no hay categoría por defecto. Tampoco se acepta
@@ -108,7 +115,7 @@ confirmar en la página del dataset de Kaggle, y la confirma el dueño del repos
 ## Comandos
 
 ```bash
-# Arnés -> recibos (una vez por réplica; no sobrescribe).
+# Arnés -> recibos (una vez por réplica; no sobrescribe; run_utc sale de la fecha del task_results.jsonl).
 python -m scripts.kaggle_replicas convertir --task-results <task_results.jsonl> --patches <dir_parches> \
   --replica 1 --condicion A --envio experiments/gemma_developer_agent/conditions/a_kit \
   --tasks <tasks.jsonl> --subconjunto <subconjunto.json> \
@@ -116,11 +123,27 @@ python -m scripts.kaggle_replicas convertir --task-results <task_results.jsonl> 
 
 # Análisis
 python -m scripts.kaggle_replicas analizar --recibos evidence/<campaña> --subconjunto <subconjunto.json> \
+  --descartadas evidence/<campaña>/descartadas \
   --envio experiments/gemma_developer_agent/conditions/a_kit \
   --salida-json analisis.json --salida-md analisis.md
 ```
 
 `convertir` comprueba antes de escribir que no haya tareas repetidas ni ajenas al subconjunto.
+`--recibos <directorio>` lee solo los `.jsonl` de ese directorio, no los de sus subdirectorios;
+`--descartadas` se omite si no hay réplicas descartadas.
+
+## Réplicas descartadas y tope por tarea
+
+Una réplica con algún `infra_error` o con tareas sin recibo se repite **entera** con un número de
+réplica nuevo, y sus recibos se mueven sin editar a `descartadas/`. No entran en tasas ni en pares; el
+reporte las lista con sus tareas afectadas. El análisis sale con 2 si una réplica descartada está
+completa y sin errores de infraestructura (**una réplica no se descarta por su tasa**), si hay más de
+2 descartadas, si un número de réplica está a la vez vigente y descartado, o si sus hashes no son los
+de las vigentes.
+
+Tope por tarea: si una misma tarea tiene `infra_error` en 2 réplicas o más, contando las descartadas,
+deja de repetirse. En las réplicas vigentes cuenta como no resuelta, con el motivo de análisis
+`infra_repetida`, y el reporte la lista aparte. El recibo no cambia: sigue diciendo `infra_error`.
 
 Salida de `analizar`: `0` completo; `1` se escribió el reporte pero está incompleto (faltan tareas en
 alguna réplica o hay errores de infraestructura, con la lista de tareas afectadas); `2` entrada inválida,
@@ -157,7 +180,9 @@ bien: o quedan los dos o ninguno.
    resueltas se desglosan por motivo.
 2. **Errores de infraestructura aparte**: solo `infra_error` se excluye de los pares y de «cambia»; una
    tarea con ese error en una réplica se compara únicamente con las réplicas donde tiene resultado válido,
-   y el análisis queda incompleto hasta volver a correrla. Los fallos del agente no se excluyen.
+   y el análisis queda incompleto hasta repetir la réplica. Los fallos del agente no se excluyen. Se
+   listan también las réplicas descartadas, las tareas con infraestructura repetida y la fecha de la
+   corrida de cada réplica.
 3. **Tareas que cambian de resultado**: de las tareas con al menos 2 réplicas válidas, cuántas tienen
    resultados mixtos (numerador / denominador), con su lista.
 4. **Pares de réplicas**, sobre las tareas válidas en ambas: tabla 2×2, acuerdo (numerador / denominador),
