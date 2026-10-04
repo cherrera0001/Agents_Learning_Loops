@@ -9,6 +9,8 @@ ejecuciones, por encima del máximo de 2 que la regla admitía.
 **La predicción se cumplió con sus dos números** (4 de 18 al primer intento y 6 citas del señuelo), incluida
 la lectura secundaria «con coste»: en las tareas originales C_S acierta 4 de 18, frente a 18 de 18 de la
 siembra léxica.
+También coincide el desglose por tarea que el pre-registro anticipó: EXP-07 sembrada con la lección de EXP-03 y
+0 de 6 al primer intento; EXP-08 y EXP-09 sin semilla y 2 de 6 cada una.
 
 ## Qué se comparó
 
@@ -59,7 +61,7 @@ las otras siete. Ningún `tie`.
 - **La señal calla casi siempre.** En 7 de las 9 tareas la traza no nombra ningún componente que esté en la
   memoria, y C_S se comporta como no usar memoria. Por eso en las engañosas sube de 0 a 4: no porque elija
   mejor, sino porque en dos de las tres tareas no elige nada.
-- **Cuando habla en una tarea engañosa, elige el señuelo.** En EXP-07 la siembra queda `seeded` en las 6
+- **En la única tarea engañosa donde la señal habla, EXP-07, elige el señuelo.** En EXP-07 la siembra queda `seeded` en las 6
   ejecuciones, cita la lección del señuelo en las 6 y no acierta al primer intento en ninguna.
 - **En las originales pierde lo que la siembra léxica daba.** De 18 de 18 a 4 de 18.
 - **No dice que una señal no léxica no pueda servir.** Se probó una señal y una política de siembra, en un
