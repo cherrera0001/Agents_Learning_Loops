@@ -73,6 +73,31 @@
       "action": "run_experiment",
       "success": true,
       "note": "Prueba subida y en cola al cerrar la sesión: notebook oficial, seis archivos exactos del zip enviado, dos tareas públicas. Sin resultado todavía"
+    },
+    {
+      "action": "submit_external",
+      "success": false,
+      "error": "La primera nota del envío fue 0,06, por debajo de los paquetes públicos comparables: se envió un zip que solo se había compilado, sin haber corrido el agente con el modelo ni una sola vez"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "La prueba con el notebook oficial falló en la primera celda: el dataset de ruedas estaba adjunto pero sin archivos en esa sesión y no había guardia que lo detectara"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall ejecutado antes de seguir: la acción run_experiment sale con valencia negativa y las lecciones de las corridas anteriores aparecen citadas"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Comparación local y sin GPU de la orden de vLLM que arma el arnés con la que armó el guion propio: el guion omitía el tipo de dato, pedía 8 adaptadores de rango 128 en vez de los 2 de rango 8 que calcula el arnés, usaba menos memoria de GPU y no pasaba la configuración de razonamiento. Es la causa probable de que el servidor cayera; falta confirmarla en GPU"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Notebook de prueba con guardia de montaje de las ruedas y captura del log del servidor en la salida; orden y sintaxis de las celdas verificados antes de subir, con la subida encadenada a esa verificación"
     }
   ],
   "lessons": [
@@ -84,6 +109,9 @@
     "Un diagnóstico que depende de un archivo de la sesión remota debe imprimirlo en la misma corrida: al cerrar la sesión se pierde",
     "Antes de redactar una enmienda, busca en el bloque de valores fijos y en los tests qué valores toca: lo que parece una página puede cambiar el resumen registrado y varios guiones",
     "Una enmienda de pre-registro se versiona antes de conocer el resultado al que afecta, y el commit deja constancia de que ese resultado seguía sin conocerse",
-    "Antes de armar un artefacto, mira si la rama del issue ya tiene uno sin commit de otra sesión"
+    "Antes de armar un artefacto, mira si la rama del issue ya tiene uno sin commit de otra sesión",
+    "Antes de escribir un lanzador propio de un servidor, construye en local la orden que arma el arnés oficial y compárala argumento por argumento: no hace falta GPU para ver la diferencia",
+    "Un notebook que depende de un dataset adjunto empieza con una guardia que cuenta sus archivos y se detiene si no están, antes de gastar cuota",
+    "Cuando un comando de varias líneas lleva saltos escapados, escríbelo en un archivo con la herramienta de escritura: pasado por la terminal, los saltos se convierten en saltos reales y rompen el código"
   ]
 }
