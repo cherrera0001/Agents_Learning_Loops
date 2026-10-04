@@ -276,3 +276,52 @@ def test_leer_la_salida_de_la_excepcion_del_servidor_no_es_un_fallo(tmp_path):
 
 def test_sin_servidor_no_se_exige_leer_la_salida_de_la_excepcion(tmp_path):
     assert _fallos(_escribir(tmp_path)) == []
+
+
+@pytest.mark.parametrize(
+    "celda",
+    [
+        "import os\nD = os.path.join('/kaggle/input', 'competitions', 'gemma')\n",
+        "R = '/kaggle/input'\nW = R + '/datasets/metric/ruedas'\n",
+        "import os\nD = os.path.join(R, 'datasets', 'metric')\n",
+        "W = '/kaggle/input/' + nombre\n",
+    ],
+)
+def test_una_ruta_armada_por_partes_tambien_es_una_ruta_fija(tmp_path, celda):
+    assert any("Rutas fijas" in texto for texto in _fallos(_escribir(tmp_path, celdas=[*CELDAS, celda])))
+
+
+@pytest.mark.parametrize(
+    ("cambio", "fragmento"),
+    [
+        ({"enable_gpu": "true", "machine_shape": ""}, "enable_gpu debe ser true o false"),
+        ({"enable_gpu": None}, "enable_gpu debe ser true o false"),
+        ({"competition_sources": "gemma-4-developer-agent"}, "competition_sources debe ser una lista"),
+        ({"competition_sources": 5}, "competition_sources debe ser una lista"),
+        ({"dataset_sources": 7}, "dataset_sources debe ser una lista"),
+    ],
+)
+def test_metadatos_de_otro_tipo_salen_con_2_sin_traza(tmp_path, capsys, cambio, fragmento):
+    directorio = _escribir(tmp_path, _meta(**cambio))
+    assert any(fragmento in texto for texto in _fallos(directorio))
+    assert main(["comprobar", str(directorio), "--tope-min", "75"]) == EXIT_INVALID
+    assert "Traceback" not in capsys.readouterr().err
+
+
+def test_un_byte_nulo_en_una_celda_es_un_fallo_y_no_una_traza(tmp_path, capsys):
+    directorio = _escribir(tmp_path, celdas=[*CELDAS, "x = 1\x00\n"])
+    assert main(["comprobar", str(directorio), "--tope-min", "75"]) == EXIT_INVALID
+    assert "Traceback" not in capsys.readouterr().err
+
+
+def test_una_credencial_en_una_celda_de_texto_o_en_una_salida_es_un_fallo(tmp_path):
+    directorio = _escribir(tmp_path)
+    nb = json.loads((directorio / "nb.ipynb").read_text(encoding="utf-8"))
+    nb["cells"].append({"cell_type": "markdown", "source": "token: KGAT_" + "a1b2c3d4e5f6"})
+    (directorio / "nb.ipynb").write_text(json.dumps(nb), encoding="utf-8")
+    assert any("credencial" in texto for texto in _fallos(directorio))
+
+
+@pytest.mark.parametrize(("tope", "pasa"), [(240, True), (241, False)])
+def test_la_frontera_del_tope_es_240_minutos(tmp_path, tope, pasa):
+    assert (not any("--tope-min" in texto for texto in _fallos(_escribir(tmp_path), tope))) is pasa

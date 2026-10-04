@@ -38,6 +38,9 @@ TOPE_MAXIMO_MIN = 240
 RAIZ_ENTRADA = "/kaggle/input"
 # Una ruta escrita a mano bajo la raíz de entrada. La raíz sola, que es lo que la guardia lista, no cuenta.
 RUTA_FIJA = re.compile(r"/kaggle/input/[A-Za-z0-9_.\-/]+")
+# La raíz unida a un componente (concatenación o join) y los componentes de una disposición concreta.
+RAIZ_UNIDA = re.compile(r"""['"]/kaggle/input/?['"]\s*(\+|,\s*['"])""")
+COMPONENTE_FIJO = re.compile(r"""['"]/?(datasets|competitions)(/[^'"]*)?['"]""")
 SECRETO = re.compile(r"KGAT_[A-Za-z0-9]{8,}|\"key\"\s*:\s*\"[0-9a-f]{32}\"")
 MODELO = "gemma-4-31b-it-qat-w4a16-ct"
 # Estructura del dataset de la competencia según su página «Data»: un archivo de relleno por carpeta.
@@ -105,6 +108,12 @@ def comprobar_metadatos(meta: Any, directorio: Path) -> list[Hallazgo]:
         if meta.get("enable_internet") is False
         else _mal("enable_internet debe ser false: las sesiones con L4 lo exigen.")
     )
+    for clave in ("competition_sources", "dataset_sources"):
+        valor = meta.get(clave)
+        if valor is not None and not (isinstance(valor, list) and all(isinstance(x, str) for x in valor)):
+            return [*out, _mal(f"{clave} debe ser una lista de textos.")]
+    if not isinstance(meta.get("enable_gpu"), bool):
+        return [*out, _mal("enable_gpu debe ser true o false, no otro tipo de valor.")]
     competencias = meta.get("competition_sources") or []
     out.append(
         _bien("La competencia está adjunta.")
@@ -258,8 +267,9 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
     for numero, fuente in enumerate(fuentes, 1):
         try:
             compile(codigo_comprobable(fuente), f"celda {numero}", "exec")
-        except SyntaxError as exc:
-            rotas.append(f"celda {numero}, línea {exc.lineno}: {exc.msg}")
+        except (SyntaxError, ValueError) as exc:
+            linea, motivo = getattr(exc, "lineno", None), getattr(exc, "msg", None) or str(exc)
+            rotas.append(f"celda {numero}, línea {linea}: {motivo}")
     out.append(
         _mal("Celdas que no compilan: " + "; ".join(rotas))
         if rotas
@@ -267,11 +277,15 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
     )
     todo = "\n".join(fuentes)
     out.append(
-        _mal("El notebook contiene algo con forma de credencial de Kaggle.")
-        if SECRETO.search(todo)
+        _mal("El notebook (código, texto o salidas) contiene algo con forma de credencial de Kaggle.")
+        if SECRETO.search(json.dumps(notebook, ensure_ascii=False))
         else _bien("Sin credenciales en el notebook.")
     )
     fijas = sorted({ruta for fuente in fuentes for ruta in RUTA_FIJA.findall(fuente)})
+    if any(RAIZ_UNIDA.search(fuente) for fuente in fuentes):
+        fijas.append("/kaggle/input unida a un componente escrito a mano")
+    if any(COMPONENTE_FIJO.search(fuente) for fuente in fuentes):
+        fijas.append("un componente de disposición (datasets o competitions) escrito a mano")
     out.append(
         _mal(
             "Rutas fijas bajo /kaggle/input: "

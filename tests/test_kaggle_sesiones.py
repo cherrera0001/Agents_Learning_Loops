@@ -160,3 +160,9 @@ def test_listar_sin_edge_abierto_sale_con_2(capsys: pytest.CaptureFixture[str]) 
     codigo = ks.main(["listar", "--usuario", "yo", "--notebook", "prueba", "--puerto", "1"])
     assert codigo == ks.EXIT_ENTRADA
     assert capsys.readouterr().err.startswith("ENTRADA INVÁLIDA")
+
+
+def test_una_lectura_rechazada_no_se_lee_como_sin_sesiones() -> None:
+    with pytest.raises(ks.SesionesError, match="401"):
+        ks.rechazar_errores({"sesiones": {"__error": 401}, "cuota": {}, "notebook": {}})
+    ks.rechazar_errores({"sesiones": {}, "cuota": {"x": 1}, "notebook": {"kernel": {"id": 1}}})

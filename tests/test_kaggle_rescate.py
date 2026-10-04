@@ -197,3 +197,19 @@ def test_sin_red_resume_un_directorio_ya_bajado(tmp_path: Path, capsys: pytest.C
     assert kr.main(["--destino", str(tmp_path), "--sin-red"]) == kr.EXIT_OK
     assert json.loads(capsys.readouterr().out)["tabla"]["tareas_de_la_tabla"] == 58
     assert kr.main(["--destino", str(tmp_path / "vacio"), "--sin-red"]) == kr.EXIT_ENTRADA
+
+
+def test_el_token_solo_viaja_por_https_a_kaggle() -> None:
+    assert kr.cabeceras_para(f"{kr.API}/kernels/list", "secreto") == {"Authorization": "Bearer secreto"}
+    assert kr.cabeceras_para("https://www.kaggle.com/x", "secreto") == {"Authorization": "Bearer secreto"}
+    assert kr.cabeceras_para("https://storage.example.invalid/archivo?firma=1", "secreto") == {}
+    with pytest.raises(kr.RescateError, match="https"):
+        kr.cabeceras_para("http://www.kaggle.com/x", "secreto")
+
+
+def test_un_destino_anidado_dentro_del_repositorio_se_rechaza(tmp_path: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    with pytest.raises(kr.RescateError, match="dentro de un repositorio"):
+        kr.comprobar_destino_fuera_de_git(tmp_path / "nuevo" / "sub")

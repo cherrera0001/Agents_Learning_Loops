@@ -38,6 +38,7 @@ from pathlib import Path
 from typing import Any
 
 API = "https://www.kaggle.com/api/v1"
+HOSTS_CON_TOKEN = frozenset({urllib.parse.urlsplit(API).hostname, "www.kaggle.com", "api.kaggle.com"})
 COMPETITION_SLUG = "gemma-4-developer-agent"
 TOPE_S = 120
 
@@ -165,9 +166,19 @@ def texto_del_log(crudo: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def cabeceras_para(url: str, token: str) -> dict[str, str]:
+    """El token solo viaja por https y solo a Kaggle; a cualquier otro host, la petición va sin él."""
+    partes = urllib.parse.urlsplit(url)
+    if partes.scheme != "https":
+        raise RescateError("Solo se piden direcciones https.")
+    if partes.hostname in HOSTS_CON_TOKEN:
+        return {"Authorization": f"Bearer {token}"}
+    return {}
+
+
 def pedir(ruta: str, token: str) -> bytes:
     url = ruta if ruta.startswith("http") else f"{API}/{ruta}"
-    peticion = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+    peticion = urllib.request.Request(url, headers=cabeceras_para(url, token))
     try:
         with urllib.request.urlopen(peticion, timeout=TOPE_S) as resp:
             return bytes(resp.read())
@@ -178,7 +189,9 @@ def pedir(ruta: str, token: str) -> bytes:
 
 
 def comprobar_destino_fuera_de_git(destino: Path) -> None:
-    padre = destino if destino.exists() else destino.parent
+    padre = destino
+    while not padre.exists() and padre != padre.parent:
+        padre = padre.parent
     try:
         dentro = subprocess.run(
             ["git", "-C", str(padre), "rev-parse", "--is-inside-work-tree"], capture_output=True, text=True

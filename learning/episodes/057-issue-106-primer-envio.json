@@ -3,6 +3,23 @@
   "id": "issue-106-primer-envio",
   "goal": "Conseguir el primer número real del experimento Kaggle Gemma 4: primer envío a la pista de código, lectura del foro y ensayo del modelo en un notebook de Kaggle con L4",
   "ref": "#106",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
   "steps": [
     {
       "action": "recall_memory",

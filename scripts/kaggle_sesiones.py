@@ -144,6 +144,15 @@ def cancelar(sesion: int, token: str) -> None:
         raise SesionesError(f"Kaggle no canceló la sesión: {str(error)[:200]}")
 
 
+def rechazar_errores(respuestas: dict[str, Any]) -> None:
+    """Una lectura que Kaggle rechazó no es «no hay sesiones»: se detiene con el código de la respuesta."""
+    for nombre, respuesta in respuestas.items():
+        if isinstance(respuesta, dict) and "__error" in respuesta:
+            raise SesionesError(
+                f"Kaggle respondió {respuesta['__error']} al leer {nombre}: no se sabe qué sesiones hay."
+            )
+
+
 def leer_con_sesion_web(usuario: str, notebook: str, puerto: int) -> dict[str, Any]:
     """Sesiones, cuota y versiones leídas desde un Edge en el que el dueño ya inició sesión."""
     try:
@@ -168,12 +177,13 @@ def leer_con_sesion_web(usuario: str, notebook: str, puerto: int) -> dict[str, A
                 const cabeceras = {'content-type': 'application/json', 'x-xsrf-token': xsrf};
                 const r = await fetch('/api/i/kernels.' + metodo,
                     {method: 'POST', headers: cabeceras, body: JSON.stringify(cuerpo)});
-                return r.ok ? await r.json() : {};
+                return r.ok ? await r.json() : {__error: r.status};
             }"""
             quien = {"authorUserName": usuario, "kernelSlug": notebook}
             sesiones = pagina.evaluate(guion, ["KernelsService/ListKernelSessions", quien, xsrf])
             cuota = pagina.evaluate(guion, ["KernelsService/GetAcceleratorQuotaStatistics", {}, xsrf])
             vista = pagina.evaluate(guion, ["LegacyKernelsService/GetKernelViewModel", quien, xsrf])
+            rechazar_errores({"sesiones": sesiones, "cuota": cuota, "notebook": vista})
             identificador = (vista.get("kernel") or {}).get("id")
             versiones = (
                 pagina.evaluate(
