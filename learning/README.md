@@ -34,13 +34,19 @@ issue* de [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-pro
 
 Hasta el issue [#96](https://github.com/cherrera0001/Agents_Learning_Loops/issues/96) el grafo se commiteaba
 en cada PR. Siendo un archivo derivado de los episodios, cada PR paralelo lo regeneraba y chocaba con los
-demás: siete PR del piloto tuvieron que integrar `main` y regenerarlo a mano, y el PR #90 y los #61 y #57
-chocaron en él. El dueño eligió (2026-10-03) dejar de versionarlo: los episodios son la única fuente de
-verdad, y dos PR con episodios distintos ya no tocan un archivo común.
+demás: siete PR del piloto tuvieron que integrar `main` y regenerarlo a mano (el #90 entre ellos), y antes
+los PR #61 y #57 chocaron en él. El dueño eligió (2026-10-03) dejar de versionarlo: los episodios son la
+única fuente de verdad, y dos PR con episodios distintos ya no tocan un archivo común.
 
 - `python -m scripts.devlog recall` reconstruye el grafo en memoria desde `learning/episodes/`; nunca lee
   el archivo, así que un `dev_memory.json` local desactualizado no puede engañarlo.
-- `python -m scripts.devlog rebuild` escribe `learning/dev_memory.json` en tu copia local.
+- `python -m scripts.devlog rebuild` escribe `learning/dev_memory.json` en tu copia local. Si ya existe uno,
+  aunque esté corrupto, lo sobrescribe sin avisar; `recall` lo ignora, también sin avisar.
+- **El archivo guardado y `recall` pueden ordenar distinto las lecciones.** Guardar y releer el grafo
+  conserva su contenido, pero no el orden interno que el recuperador usa para desempatar. En una muestra de
+  52 consultas, 5 dieron otra lista de lecciones al cargar el archivo; por ejemplo,
+  `"conflicto de merge entre PR paralelos en CI"`. La respuesta de `recall` es la de referencia. El defecto
+  de orden está en el paquete de memoria y queda fuera de #96.
 - CI comprueba que `rebuild` funciona desde los episodios y que dos reconstrucciones dan los mismos bytes
   (`tests/integration/test_devlog_memory_unversioned.py` y un paso del workflow), no que un archivo
   versionado esté sincronizado.
@@ -48,7 +54,7 @@ verdad, y dos PR con episodios distintos ya no tocan un archivo común.
   ya no lo encontrarás en `main`: genéralo con `python -m scripts.devlog rebuild`.
 - Lo que no cambió: el formato de los episodios, la consolidación y la numeración `seq`. `seq` sigue siendo
   un posible punto de choque entre PR paralelos (dos PR que toman el mismo número): comprueba el último
-  libre en `origin/main`.
+  libre en `origin/main` **y en los PR abiertos** (`gh pr list --state open --json number,files`).
 
 Los episodios son la **fuente de verdad**. [`skills/`](../skills/README.md) contiene skills de entorno
 ([glosario](../docs/entorno/glosario.md)): una **proyección legible** de procedimientos ya fijados en este
@@ -75,8 +81,21 @@ Registra los fallos **tal como ocurrieron**: son la señal de aprendizaje.
 
 ### Bloques opcionales: `estimate` y `outcome`
 
-Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteriores no los tienen) y
-`rebuild` los ignora: la presencia de estos bloques no cambia el grafo generado.
+Conservan lo que se predijo y lo que pasó. Son opcionales (los episodios anteriores no los tienen).
+Desde el issue [#122](https://github.com/cherrera0001/Agents_Learning_Loops/issues/122), `rebuild` los copia
+en la metadata del nodo `Goal` del episodio (`metadata["board"]`), junto con el issue citado y el número de
+pasos y de pasos fallidos. No crean nodos ni aristas, no cambian pesos y no cambian las acciones ni las
+lecciones que `recall` recupera: lo fija `tests/integration/test_devlog.py`.
+
+`recall` usa ese registro para decir, de los episodios más activados por la consulta, **cómo se estimaron y
+cómo salieron** (sección «Issues parecidos»): talla, puntos, incertidumbre, riesgo y modelo previsto; modelo
+usado, si escaló, PR y revisiones de la estimación; y pasos fallidos. Un dato que falta se muestra como
+`?`. Son episodios, no issues, y no hay umbral de parecido: cada línea muestra su activación, y `--issues N`
+cambia cuántos se listan (3 por defecto). Con `--snapshot <directorio>` (una
+instantánea del tablero con `items.json` e `issues.json`, la misma que acepta `devlog board`) añade el
+estado y la verificación de la tarjeta. Sin instantánea no consulta GitHub ni inventa ese estado. Son datos
+de una población chica y autoinformada: sirven para preguntar «¿cómo nos fue con algo parecido?», no para
+validar las tallas.
 
 ```json
 "estimate": {"version": 1, "date": "2026-10-02", "size": "S", "points": 2, "uncertainty": 2, "risk": 1, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
@@ -128,6 +147,7 @@ Mantenerlo pequeño y estable hace que la experiencia se acumule sobre los mismo
 # 0. ESTIMAR (orquestador): «Estimación v1» en el issue y campos del Project #5
 # 1. In Progress, y después RETRIEVE:
 python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: búsqueda semántica)
+#    lee también «Issues parecidos»: cómo se estimaron y cómo salieron (--snapshot <dir> añade el tablero)
 # 2. implementar en la rama issue-<n>-...
 # 3. escribir learning/episodes/NNN-issue-<n>.json (con estimate y outcome)
 # 4. commit del episodio en el PR; dev_memory.json no se versiona (opcional, copia local: devlog rebuild)

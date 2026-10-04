@@ -37,6 +37,10 @@ Antes de escribir código para un issue, al empezar el trabajo del rol **impleme
 
 3. Lee las lecciones recuperadas **antes** de elegir herramientas o enfoque. Las acciones con valencia
    negativa indican pasos que ya fallaron en contextos parecidos.
+4. Lee la sección «Issues parecidos»: cómo se estimó cada uno y cómo salió (talla, modelo previsto y usado,
+   si escaló, PR, pasos fallidos). Si un issue parecido escaló o necesitó más de un PR, dilo al orquestador
+   antes de empezar: puede cambiar la estimación. Con una instantánea del tablero a mano, añade
+   `--snapshot <directorio>` para ver también su estado y su verificación.
 
 Esta skill no escribe nada: `recall` reconstruye el grafo en memoria desde `learning/episodes/` y no lee
 `learning/dev_memory.json`, que no se versiona y puede no existir en tu checkout.

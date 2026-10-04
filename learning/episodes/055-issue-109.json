@@ -1,0 +1,82 @@
+{
+  "seq": 55,
+  "id": "issue-109",
+  "goal": "Generar figuras SVG y tablas Markdown reproducibles para el paper desde los agregados de results/ con derivación dinámica y tests de mutación",
+  "ref": "#109",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Otro agente",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall para issue 109: consultadas lecciones de determinismo, dependencias opcionales y prevención de hardcoding en generación de artefactos"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "pyproject.toml: añadido extra opcional [paper] con matplotlib>=3.8 y configuración de ignore en mypy para no contaminar el núcleo"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "La primera entrega generó las 7 figuras y 5 tablas, pero no normalizó finales de línea entre SO, no escapó family/decoy_family del SVG y dejó pies recortados y una descripción factorial sin respaldo."
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Las 13 pruebas iniciales cubrieron conteos y mutaciones de datos, pero no detectaron diferencias LF/CRLF entre SO, XML inválido con family/decoy_family, falta de denominadores visibles ni la afirmación factorial."
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisores independientes detectaron defectos concretos en el módulo y huecos en los tests. La suite inicial local había pasado (1952 passed, 7 skipped, 98.72%), pero no detectó esos defectos; CI encontró además la colisión de seq 53 contra main."
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Codex corrigió el generador para escribir LF portable, escapar family/decoy_family en SVG y evitar textos recortados; también quitó la etiqueta factorial sin respaldo y renumeró el episodio a seq 55 para coordinar con #121/#122."
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Los tests ahora detectan LF/CRLF, analizan con ElementTree un SVG con '&' y '<', exigen numeradores/denominadores y la advertencia sobre dos réplicas deterministas; se mantienen las mutaciones de datos."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Se actualizaron figuras, tablas y episodio con las correcciones. La bitácora atribuye la primera entrega a AGY/Gemini y las correcciones posteriores a Codex; el agente previsto sigue registrado en el cuerpo de #109."
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras las correcciones y rebase a origin/main actualizado: 31 pruebas focales pasaron; suite completa local: 1963 passed, 7 skipped, cobertura 98.72% en 297.92 s; ruff check/format, mypy y export_schema --check pasaron. CI del SHA final sigue pendiente."
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "devlog rebuild sobre los episodios versionados; dev_memory.json se mantuvo local y no se incluyó en el PR."
+    }
+  ],
+  "lessons": [
+    "La derivación de conteos en scripts de figuras de paper debe consultar las claves internas del JSON (p. ej. replicación, lotes y modos en task_breakdown y experiment1) para que los tests de mutación no fallen por supuestos de estructura plana.",
+    "En SVGs generados por script, mantener las líneas dentro del límite de 110 caracteres mediante concatenación de literales o división de atributos XML previene fallos de linter E501.",
+    "En Python 3.11, las f-strings no permiten reutilizar las comillas exteriores dentro de expresiones ni contener saltos de línea sin triple comilla: usar comillas alternas y precalcular llamadas complejas.",
+    "El uso de extras opcionales como [paper] permite tener utilidades de visualización sin imponer dependencias pesadas en el entorno mínimo de ejecución.",
+    "Las tablas y figuras derivadas de agregados experimentales deben presentar únicamente medidas observadas con su denominador (p. ej. Δ aciertos) y evitar columnas o notas de veredicto/causalidad pre-registradas que puedan confundir la medida empírica con interpretaciones normativas."
+  ]
+}

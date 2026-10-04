@@ -720,3 +720,56 @@ def test_main_exit_code_for_docker_failure(tmp_path: Path, monkeypatch: pytest.M
                  "--build-dir", str(build)])  # fmt: skip
 
     assert code == EXIT_DOCKER
+
+
+def test_main_exit_code_when_docker_executable_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    full, docker, build = _env(tmp_path)
+    lock = _write_lock(tmp_path)
+    monkeypatch.setattr(build_sandbox, "download_and_verify_wheels", lambda pk, cache: [])
+
+    def missing(*args: Any, **kwargs: Any) -> None:
+        raise FileNotFoundError("docker")
+
+    monkeypatch.setattr(subprocess, "run", missing)
+
+    code = main(["--lockfile", str(lock), "--wheels-dir", str(full), "--docker-dir", str(docker),
+                 "--build-dir", str(build)])  # fmt: skip
+
+    assert code == EXIT_DOCKER
+    assert "docker" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("root", ["null", "[]", '"texto"', "3"])
+def test_main_rejects_a_lockfile_whose_root_is_not_an_object(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], root: str
+) -> None:
+    full, docker, build = _env(tmp_path)
+    lock = tmp_path / "raiz.lock"
+    lock.write_text(root, encoding="utf-8")
+
+    code = main(["--lockfile", str(lock), "--wheels-dir", str(full), "--docker-dir", str(docker),
+                 "--build-dir", str(build), "--skip-docker-build"])  # fmt: skip
+
+    assert code == EXIT_INPUTS
+    assert "lockfile" in capsys.readouterr().err
+
+
+def test_main_second_run_on_the_same_build_dir_is_reported_not_raised(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    full, docker, build = _env(tmp_path)
+    lock = _write_lock(tmp_path)
+    monkeypatch.setattr(build_sandbox, "download_and_verify_wheels", lambda pk, cache: [])
+    argv = ["--lockfile", str(lock), "--wheels-dir", str(full), "--docker-dir", str(docker),
+            "--build-dir", str(build), "--skip-docker-build"]  # fmt: skip
+
+    assert main(argv) == 0
+    before = sorted(p.name for p in (build / "wheels").iterdir())
+    capsys.readouterr()
+
+    assert main(argv) == EXIT_INPUTS
+    err = capsys.readouterr().err
+    assert "ya existe" in err and "--build-dir" in err
+    assert sorted(p.name for p in (build / "wheels").iterdir()) == before  # no se tocó el contexto

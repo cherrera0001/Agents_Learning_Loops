@@ -1,0 +1,34 @@
+{
+  "schema_version": "kaggle-submission-registry/1",
+  "competition_id": 149921,
+  "competition_slug": "gemma-4-developer-agent",
+  "last_updated": "2026-10-04",
+  "submissions": [
+    {
+      "submission_id": "sub-001",
+      "date": "2026-10-03",
+      "condition": "A",
+      "zip_filename": "a_kit_submission.zip",
+      "sha256": "bcc4bf4efd2b064257194e470f85c6cde0b4bfa0a50a68b80a6b9f20beccdf5b",
+      "size_bytes": 172770,
+      "is_exploratory": false,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "Kit oficial sin cambios (con los adaptadores del kit). NO enviado: preparado y descartado como primer envío tras leer el foro (#103)."
+    },
+    {
+      "submission_id": "sub-002",
+      "date": "2026-10-03",
+      "condition": "A",
+      "zip_filename": "submission_a_ajustado.zip",
+      "sha256": "d8a3e1d3558f03b72b3f86037ff53b462a8f66566e1bb7907240bcb0ce4d7182",
+      "size_bytes": 3495,
+      "is_exploratory": true,
+      "status": "scored",
+      "public_score": 0.06,
+      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
+      "notes": "Ref. Kaggle 56808559, enviado 2026-10-03 23:46 UTC. Kit ajustado: sin adaptadores, max_output_tokens 8192, include_thoughts false, 4 min, 40 llamadas, 100 turnos, 60 s por comando. Nota pública 0,06, leída el 2026-10-04 14:39 UTC (estado COMPLETE, sin error). Antes de enviar solo se había comprobado que el zip compila."
+    }
+  ]
+}

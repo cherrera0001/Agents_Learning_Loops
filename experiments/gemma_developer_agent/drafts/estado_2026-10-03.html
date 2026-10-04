@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Gemma 4 Developer Agent: en qué estamos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#1c2430; --mute:#5b6675; --line:#d5dbe3; --bg:#f6f7f9; --ok:#1f7a4d; --warn:#b26a00; --no:#b3261e; --acc:#1d4ed8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width: 1060px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.15rem; margin: 34px 0 10px; padding-top: 14px; border-top: 2px solid var(--line); }
+  p { margin: 8px 0; }
+  .sub { color: var(--mute); margin-bottom: 18px; }
+  .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .card b.n { display:block; font-size:1.6rem; line-height:1.2; }
+  .card span { color:var(--mute); font-size:.92rem; }
+  .flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:6px; }
+  .box { flex:1 1 150px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:.93rem; }
+  .box h3 { margin:0 0 4px; font-size:.95rem; }
+  .arrow { align-self:center; color:var(--mute); font-size:1.3rem; }
+  .ok { border-left:5px solid var(--ok); } .warn { border-left:5px solid var(--warn); } .no { border-left:5px solid var(--no); } .acc { border-left:5px solid var(--acc); }
+  .tag { display:inline-block; font-size:.78rem; padding:1px 8px; border-radius:99px; color:#fff; vertical-align:middle; }
+  .tag.ok { background:var(--ok); border:0; } .tag.warn { background:var(--warn); border:0; } .tag.no { background:var(--no); border:0; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:.93rem; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#eef1f5; }
+  .bar { display:flex; height:26px; border-radius:6px; overflow:hidden; border:1px solid var(--line); font-size:.78rem; color:#fff; }
+  .bar div { display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+  .note { color:var(--mute); font-size:.88rem; }
+  code { background:#eef1f5; padding:1px 5px; border-radius:4px; font-size:.9em; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Gemma 4 Developer Agent: en qué estamos</h1>
+<p class="sub">Experimento <code>experiments/gemma_developer_agent</code> de Agents Learning Loops. Estado al cierre del 2026-10-03 (madrugada del 4 UTC), día 11 de la competencia. Esta página no contiene datos de la competencia: solo cifras agregadas y públicas.</p>
+
+<div class="grid">
+  <div class="card warn"><b class="n">1</b><span>envío a Kaggle, pendiente de nota</span></div>
+  <div class="card no"><b class="n">0</b><span>corridas guardadas en las que el modelo se ejecutó</span></div>
+  <div class="card ok"><b class="n">4 × L4</b><span>la cuenta obtiene cuatro GPU L4 en un notebook de Kaggle</span></div>
+  <div class="card ok"><b class="n">36 s</b><span>compilación del kit en un notebook de Kaggle sin GPU (primera medida hecha en Kaggle)</span></div>
+</div>
+
+<h2>1. El desafío</h2>
+<p>Google entrega un modelo fijo, <code>gemma-4-31b-it-qat-w4a16-ct</code>, y un arnés. Cada participante entrega la <b>configuración de un agente</b> en un <code>submission.zip</code>: prompts, subagentes, skills y, si quiere, adaptadores LoRA. No se entrega código propio. El agente recibe un issue de un repositorio y debe producir un parche que haga pasar pruebas ocultas.</p>
+
+<div class="flow">
+  <div class="box acc"><h3>submission.zip</h3><code>agent.yaml</code> en la raíz, prompts, subagentes, skills, <code>eval_config.yaml</code></div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>Puntuador de Kaggle</h3>Unas 120 tareas de repositorios privados, una tras otra, en L4</div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>Por tarea</h3>El agente lee, edita y entrega un parche</div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>Nota</h3>Proporción de tareas cuyo parche pasa las pruebas ocultas</div>
+</div>
+
+<table style="margin-top:12px">
+  <tr><th>Regla</th><th>Valor</th></tr>
+  <tr><td>Tiempo total</td><td>12 horas para todas las tareas. Si se pasa, el envío entero queda sin nota</td></tr>
+  <tr><td>Envíos</td><td>1 al día; 2 envíos finales</td></tr>
+  <tr><td>Fechas</td><td>Pista de artículo: 2026-11-12. Pista de código: 2026-12-02</td></tr>
+  <tr><td>Datos</td><td>Prohibido redistribuir enunciados, parches, pruebas o salidas de las tareas</td></tr>
+  <tr><td>Tabla pública hoy</td><td>Primer lugar 0,24; cinco equipos en 0,17; 26 en 0,15; 1587 equipos. La tabla pública tiene 58 tareas: una tarea vale 0,017</td></tr>
+</table>
+
+<h2>2. Qué datos usamos</h2>
+<p><b>129 tareas públicas</b> de cuatro repositorios abiertos. Viven fuera del control de versiones (<code>data/</code> está ignorado) y nunca se copian al repositorio.</p>
+<div class="bar">
+  <div style="width:52%;background:#1d4ed8">fastapi · 67</div>
+  <div style="width:37%;background:#0f766e">rich · 48</div>
+  <div style="width:10%;background:#b26a00">requests · 13</div>
+  <div style="width:1%;background:#b3261e"></div>
+</div>
+<p class="note">httpx aporta 1 tarea (la franja roja). La nota oficial sale de repositorios privados que nadie ve: lo que midamos con las tareas públicas no afirma nada sobre el conjunto oculto.</p>
+
+<table>
+  <tr><th>Dato</th><th>Para qué sirve</th><th>Límite</th></tr>
+  <tr><td>Tareas públicas</td><td>Medir cuánto varía el kit al repetirlo</td><td>Solo agregados salen del equipo</td></tr>
+  <tr><td>Partición por repositorio</td><td>Lo aprendido en tres repositorios se prueba en el cuarto</td><td>Unas 62 tareas de prueba: solo se distinguen diferencias de unos 10 puntos</td></tr>
+  <tr><td>Parche de referencia</td><td>Solo para comprobar que una tarea es válida</td><td>Nunca llega al prompt ni a las skills</td></tr>
+  <tr><td>Tabla pública y foro</td><td>Saber qué puntúa y qué falla</td><td>Las configuraciones de 0,17 y 0,24 no son públicas</td></tr>
+</table>
+
+<h2>3. Qué preguntas resolvemos</h2>
+<table>
+  <tr><th>Pregunta</th><th>Estado</th></tr>
+  <tr><td><b>Línea base A.</b> Con el kit oficial, ¿cuánto varía el resultado al repetir la misma corrida, y qué diferencia entre dos condiciones no se distingue de esa variación?</td><td><span class="tag warn">pre-registrada, sin ejecutar</span></td></tr>
+  <tr><td><b>Campaña A/B/C/D.</b> ¿Unas skills consolidadas a partir de episodios con Gemma mejoran la resolución en otro repositorio, frente al kit (A) y frente a un texto de relleno de igual longitud (B)?</td><td><span class="tag no">propuesta (#104), sin pre-registro; detenida hasta tener la variación de A</span></td></tr>
+</table>
+<p class="note">Lo que el experimento no es: no prueba la memoria asociativa de ALL (en este arnés cada tarea corre aislada), no entrena LoRA y no busca una nota alta. Prueba si unos documentos estáticos derivados de experiencia ayudan.</p>
+
+<h2>4. Qué planteamos como solución</h2>
+<p>Hasta hoy se construyó el aparato de análisis antes de tener un solo dato. El plan invierte el orden: <b>primero un número real, después el aparato</b>.</p>
+<div class="flow">
+  <div class="box warn"><h3>1. Primer envío de A</h3>Enviado el kit ajustado (ref. 56808559). Pendiente de nota. Solo se había comprobado que compila</div>
+  <div class="arrow">→</div>
+  <div class="box ok"><h3>2. Foro y notebooks</h3>Hecho: una página con fuentes en el issue #103</div>
+  <div class="arrow">→</div>
+  <div class="box warn"><h3>3. Ensayo en Kaggle</h3>Con el guion propio, el servidor del modelo no arranca en L4. Una prueba con el notebook oficial quedó en cola</div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>4. Desde el 10 de octubre</h3>Validez de tareas y dos réplicas de A, con el costo en cuota a la vista</div>
+</div>
+
+<table style="margin-top:12px">
+  <tr><th>Lo que ya sabemos por el foro</th><th>Consecuencia</th></tr>
+  <tr><td>La puntuación corre las tareas una tras otra</td><td>El presupuesto por tarea decide si se cumplen las 12 horas</td></tr>
+  <tr><td>El kit sin cambios trae 1 minuto y 10 llamadas por tarea, y dio error en septiembre</td><td>El primer número del kit puede ser muy bajo o un error</td></tr>
+  <tr><td>Los adaptadores del kit no hacen nada y un tope de salida de 16 384 tokens rechaza prompts largos</td><td>Hay una variante ajustada, también compilada, como alternativa</td></tr>
+  <tr><td>El mismo zip dio 0,12 y 0,15</td><td>Un solo envío es una sola muestra: por eso la pregunta de A es la variación</td></tr>
+</table>
+
+<h2>5. Lo que está detenido y lo que falta decidir</h2>
+<div class="grid">
+  <div class="card no"><b>Detenido</b><br><span>Sandbox Docker en Windows, instrumentos y enmiendas nuevos, campaña B/C/D</span></div>
+  <div class="card warn"><b>Decide el dueño</b><br><span>Reenviar el mismo zip cuando llegue la nota, para medir cuánto varía</span></div>
+  <div class="card warn"><b>Decide el dueño</b><br><span>Si la validez de tareas corre con 60 s por comando, efecto de la Enmienda 2. Cuota usada: 0,87 de 30 horas</span></div>
+</div>
+
+</main>
+</body>
+</html>

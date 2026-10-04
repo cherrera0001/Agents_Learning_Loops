@@ -1,0 +1,97 @@
+{
+  "seq": 54,
+  "id": "issue-122-entrega-1",
+  "goal": "Que devlog recall diga cómo se estimaron y cómo salieron los issues parecidos, con la estimación y el resultado del tablero en el nodo Goal (primera de tres entregas del issue 122)",
+  "ref": "#122",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Estimación v1 del issue (L, 5 puntos, I2, R2, Opus 5.5) y plan de tres entregas en un comentario del issue; esta es la primera. El episodio copia la estimación del issue entero, no la de este tramo"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "No se ejecutó devlog recall antes de implementar: el paso RETRIEVE del flujo se saltó y el contrato previo sobre estimate y outcome apareció recién al correr los tests"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Guion de sustituciones pasado por heredoc en Git Bash: una aserción falló a mitad y scripts/devlog.py quedó parcheado a medias"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Ediciones restantes hechas una a una con la herramienta de edición; board_record, similar_issues, recall con --snapshot y cards_from_snapshot en board_check"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "test_estimate_and_outcome_blocks_do_not_change_the_graph falla: el cambio rompe el contrato de que estimate y outcome no alteran el grafo"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Contrato reescrito de forma explícita: los bloques solo cambian metadata[board] del Goal; nodos, aristas, pesos, acciones y lecciones recuperadas no cambian"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Test nuevo afirmaba que un episodio no parecido no aparece en la lista; con tres episodios y top 3 aparece al final, porque la activación se propaga por las acciones compartidas"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Aserción cambiada al orden: los dos episodios parecidos primero y el no parecido al final. Nueve tests nuevos en tests/integration/test_devlog_board_recall.py"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "pytest completo: 1959 pasan, 7 omitidos; ruff check, ruff format --check y mypy limpios"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "learning/README.md, skill recall-antes-de-issue y la sección 6.2 del documento de entrada del experimento: qué entra hoy del tablero en la memoria y qué sigue faltando"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente encontró que la línea afirmaba lo que el dato no dice (escaló: no sin el campo, None impreso) y que un ref de otro repositorio se atribuía a un issue de este tablero"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Valores ausentes como ?, sin resultado explícito, activación en cada línea, opción --issues, ref de otro repositorio sin issue, tarjetas filtradas por repositorio e instantánea mal formada con salida 2; tests de bordes"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall ejecutado con el título del issue, tarde: después de implementar, no antes"
+    }
+  ],
+  "lessons": [
+    "Ejecuta devlog recall antes de tocar scripts/devlog.py o el formato de los episodios: los contratos sobre qué entra en el grafo están fijados en tests y en learning/README.md",
+    "Para cambiar un contrato fijado por un test, reescribe el test diciendo el contrato nuevo y añade un control que muestre que el viejo ya no vale; no lo relajes ni lo borres",
+    "En Git Bash sobre Windows escribe los parches y los archivos con la herramienta de escritura o un guion en disco, nunca con un heredoc que contenga comillas",
+    "Un episodio de un tramo de un issue grande copia la estimación del issue entero y lo dice en la nota; la talla del tramo no tiene todavía dónde registrarse",
+    "Una línea de informe muestra ? cuando falta el dato; nunca convierte una clave ausente en un no, un ninguno o un cero"
+  ]
+}
