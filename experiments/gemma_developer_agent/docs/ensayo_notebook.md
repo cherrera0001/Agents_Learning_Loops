@@ -133,7 +133,8 @@ contexto queda **solo en `--crudo`**.
 **Chequeo previo obligatorio si el notebook se sube por API.** Antes de `kaggle kernels push`, corre
 `python -m scripts.kaggle_preflight comprobar <directorio> --tope-min <minutos>` y encadena la subida con
 `&&`. Comprueba, sin GPU, que cada celda compila, que la imagen de Python está fijada, que el acelerador
-existe, que la primera celda es una guardia del dataset adjunto, que el notebook es privado y sin internet,
+existe, que ninguna celda escribe una ruta fija bajo `/kaggle/input`, que la primera celda lista esa raíz y
+localiza el único directorio con ruedas sin esperar ni reintentar, que el notebook es privado y sin internet,
 y que hay tope de ejecución. Sale con 2 y no imprime la orden si algo falla. No comprueba que el modelo
 cargue: eso exige GPU.
 
@@ -365,6 +366,28 @@ Además, un error de infraestructura en la fase del agente (snapshot ausente, er
 un rechazo por contexto) deja la sonda `agente` en `error` y **no hay registro**: los turnos de una tarea
 en la que el agente no llegó a correr no miden nada. Un texto de error que la lista cerrada no clasifica
 tiene el mismo efecto.
+
+## Disposición medida de `/kaggle/input`
+
+El supuesto S1 de abajo resultó falso como regla: la disposición **no es fija**. Hay dos medidas.
+
+| Dónde se midió | `os.listdir('/kaggle/input')` | Directorio de las ruedas |
+|---|---|---|
+| Tres corridas por lotes del 2026-10-03, lanzadas por API con la imagen fijada (dos en L4×4 y una en T4×2) | `['competitions', 'datasets', 'models']` | `/kaggle/input/datasets/metric/gemma-4-developer-agent-wheelhouse`, con 41 ruedas instaladas |
+| Sesión interactiva del dueño en `cs4all/prueba-a-ajustada`, GPU L4×4, 2026-10-04 | `['gemma-4-developer-agent', 'gemma-4-developer-agent-wheelhouse', 'models']` | `/kaggle/input/gemma-4-developer-agent-wheelhouse` |
+
+En la sesión del 2026-10-04, la ruta de la primera fila no era un directorio. `metric/gemma-4-developer-agent-wheelhouse`
+es el identificador del dataset para `dataset_sources`; no es una ruta de disco. Por API, el dataset lista 41
+archivos `.whl` (2026-10-04); eso dice que tiene ruedas, no cómo se llama su directorio en el notebook.
+
+No se sabe por qué cambia la disposición (sesión interactiva frente a corrida por lotes, o un cambio de Kaggle
+entre un día y otro). Dentro de `models` no se listó nada en la sesión interactiva.
+
+**Regla que sale de esto.** Ninguna celda escribe una ruta bajo `/kaggle/input`. La primera celda lista la raíz,
+localiza el único directorio con ruedas, el de `tasks.jsonl` y el del modelo, imprime lo que encontró y se
+detiene si falta alguno o hay más de uno. No espera ni reintenta, y no comparte celda con el servidor del
+modelo. Las rutas del notebook oficial de inicio son las de la primera fila y no se copian.
+`scripts/kaggle_preflight.py` rechaza un notebook que no cumpla esto.
 
 ## Supuestos sin verificar
 

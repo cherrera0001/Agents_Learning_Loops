@@ -2,8 +2,8 @@
 
 Comprueba, sin GPU y sin red, lo que en las corridas del 2026-10-03 y 04 falló ya dentro de Kaggle
 (episodio 057): una celda con error de sintaxis, la imagen de Python sin fijar, un nombre de acelerador
-que no existe, un notebook sin guardia del dataset adjunto y una subida hecha aunque la validación había
-fallado. No comprueba que el modelo cargue ni que el agente resuelva: eso exige GPU.
+que no existe, una ruta fija bajo /kaggle/input que no existía en la sesión, y una subida hecha aunque la
+validación había fallado. No comprueba que el modelo cargue ni que el agente resuelva: eso exige GPU.
 
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
@@ -29,6 +29,9 @@ WHEELHOUSE = "metric/gemma-4-developer-agent-wheelhouse"
 # da error al subir: Kaggle asigna otra máquina sin avisar.
 ACELERADORES = ("NvidiaL4", "NvidiaTeslaT4", "NvidiaTeslaP100")
 TOPE_MAXIMO_MIN = 240
+RAIZ_ENTRADA = "/kaggle/input"
+# Una ruta escrita a mano bajo la raíz de entrada. La raíz sola, que es lo que la guardia lista, no cuenta.
+RUTA_FIJA = re.compile(r"/kaggle/input/[A-Za-z0-9_.\-/]+")
 SECRETO = re.compile(r"KGAT_[A-Za-z0-9]{8,}|\"key\"\s*:\s*\"[0-9a-f]{32}\"")
 
 EXIT_OK = 0
@@ -110,6 +113,40 @@ def comprobar_metadatos(meta: Any, directorio: Path) -> list[Hallazgo]:
     return out
 
 
+def comprobar_guardia(primera: str) -> list[Hallazgo]:
+    """La primera celda localiza las ruedas en /kaggle/input; no espera, no arranca nada y se detiene sola.
+
+    Nombrar el dataset no basta: una guardia con una ruta inventada lo nombra y falla ya dentro de Kaggle.
+    """
+    out: list[Hallazgo] = []
+    lista = "os.listdir" in primera and RAIZ_ENTRADA in primera
+    busca = "os.walk" in primera and ".whl" in primera
+    out.append(
+        _bien("La primera celda lista /kaggle/input y busca el directorio con ruedas.")
+        if lista and busca
+        else _mal(
+            "La primera celda no es la guardia: debe listar /kaggle/input (os.listdir) y buscar con os.walk "
+            "el único directorio que contiene .whl."
+        )
+    )
+    out.append(
+        _bien("La guardia se detiene sola si no encuentra un único directorio.")
+        if "raise" in primera
+        else _mal("La guardia no se detiene (falta un raise): la corrida seguiría y gastaría cuota.")
+    )
+    out.append(
+        _mal("La guardia espera o reintenta (sleep): si el directorio no está, reintentar no lo crea.")
+        if "sleep" in primera
+        else _bien("La guardia no espera ni reintenta.")
+    )
+    out.append(
+        _mal("La guardia comparte celda con el servidor del modelo.")
+        if re.search(r"vllm|VllmServer", primera, re.IGNORECASE)
+        else _bien("La guardia no arranca el servidor del modelo.")
+    )
+    return out
+
+
 def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
     celdas = notebook.get("cells") if isinstance(notebook, dict) else None
     if not isinstance(celdas, list):
@@ -142,18 +179,17 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
         if SECRETO.search(todo)
         else _bien("Sin credenciales en el notebook.")
     )
-    if meta.get("dataset_sources"):
-        primera = fuentes[0]
-        nombres = [str(fuente).split("/")[-1] for fuente in meta["dataset_sources"]]
-        con_guardia = "assert" in primera and all(nombre in primera for nombre in nombres)
-        out.append(
-            _bien("La primera celda comprueba que el dataset adjunto está montado.")
-            if con_guardia
-            else _mal(
-                "La primera celda no es una guardia del dataset adjunto (debe nombrarlo y llevar un "
-                "assert): si llega sin montar, la corrida falla después de gastar cuota."
-            )
+    fijas = sorted({ruta for fuente in fuentes for ruta in RUTA_FIJA.findall(fuente)})
+    out.append(
+        _mal(
+            "Rutas fijas bajo /kaggle/input: "
+            + ", ".join(fijas)
+            + ". La disposición cambia entre sesiones: las rutas se localizan, no se escriben."
         )
+        if fijas
+        else _bien("Ninguna celda escribe una ruta fija bajo /kaggle/input.")
+    )
+    out += comprobar_guardia(fuentes[0])
     if meta.get("enable_gpu") is True:
         out.append(
             _bien("El notebook imprime la GPU asignada.")

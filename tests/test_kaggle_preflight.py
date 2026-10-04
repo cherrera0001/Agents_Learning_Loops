@@ -19,6 +19,18 @@ from scripts.kaggle_preflight import (
 
 GUARDIA = (
     "import os\n"
+    "def directorio_con_ruedas(raiz='/kaggle/input'):\n"
+    "    print('GUARDIA entradas:', sorted(os.listdir(raiz)))\n"
+    "    hallados = [d for d, _dirs, files in os.walk(raiz) if any(f.endswith('.whl') for f in files)]\n"
+    "    if len(hallados) != 1:\n"
+    "        raise RuntimeError('GUARDIA: se detiene antes de gastar cuota')\n"
+    "    return hallados[0]\n"
+    "W = directorio_con_ruedas()\n"
+)
+# La guardia que el chequeo aprobaba antes del 2026-10-04: nombra el dataset y lleva un assert, con una
+# ruta que no existía en la sesión real.
+GUARDIA_CON_RUTA_INVENTADA = (
+    "import os\n"
     "W = '/kaggle/input/datasets/metric/gemma-4-developer-agent-wheelhouse'\n"
     "assert os.listdir(W), 'dataset sin montar'\n"
 )
@@ -105,13 +117,53 @@ def test_las_magias_de_ipython_no_cuentan_como_error_de_sintaxis(tmp_path):
     assert codigo_comprobable("if True:\n    !ls") == "if True:\n    pass"
 
 
+def test_la_guardia_con_la_ruta_inventada_que_antes_se_aprobaba_ahora_falla(tmp_path):
+    """Nombrar el dataset y llevar un assert no basta: esa guardia falló dentro de Kaggle."""
+    directorio = _escribir(tmp_path, celdas=[GUARDIA_CON_RUTA_INVENTADA, *CELDAS[1:]])
+    fallos = _fallos(directorio)
+    assert any("Rutas fijas bajo /kaggle/input" in texto for texto in fallos)
+    assert any("no es la guardia" in texto for texto in fallos)
+    assert any("no se detiene" in texto for texto in fallos)
+
+
 @pytest.mark.parametrize(
-    "primera",
-    ["x = 1\n", "W = 'gemma-4-developer-agent-wheelhouse'\n", "assert True\n"],
+    ("primera", "fragmento"),
+    [
+        ("x = 1\n", "no es la guardia"),
+        (GUARDIA.replace("os.walk(raiz)", "[]"), "no es la guardia"),
+        (GUARDIA.replace("os.listdir(raiz)", "raiz"), "no es la guardia"),
+        (GUARDIA.replace("'.whl'", "'.zip'"), "no es la guardia"),
+        (GUARDIA.replace("raise RuntimeError(", "print("), "no se detiene"),
+        (GUARDIA + "import time\ntime.sleep(10)\n", "espera o reintenta"),
+        (GUARDIA + "from adk_submission import VllmServer\n", "comparte celda con el servidor"),
+    ],
 )
-def test_sin_guardia_del_dataset_en_la_primera_celda_es_un_fallo(tmp_path, primera):
-    directorio = _escribir(tmp_path, celdas=[primera, "subprocess.run(['nvidia-smi'])\n", GUARDIA])
-    assert any("no es una guardia" in texto for texto in _fallos(directorio))
+def test_cada_defecto_de_la_guardia_es_un_fallo(tmp_path, primera, fragmento):
+    directorio = _escribir(tmp_path, celdas=[primera, *CELDAS[1:]])
+    assert any(fragmento in texto for texto in _fallos(directorio))
+
+
+@pytest.mark.parametrize(
+    "celda",
+    [
+        "DATA_DIR = '/kaggle/input/competitions/gemma-4-developer-agent'\n",
+        "MODEL = '/kaggle/input/models/google/gemma-4/other/variante/2'\n",
+        "W = '/kaggle/input/gemma-4-developer-agent-wheelhouse'\n",
+    ],
+)
+def test_una_ruta_fija_bajo_la_entrada_en_cualquier_celda_es_un_fallo(tmp_path, celda):
+    fallos = _fallos(_escribir(tmp_path, celdas=[*CELDAS, celda]))
+    assert len(fallos) == 1 and "Rutas fijas bajo /kaggle/input" in fallos[0]
+
+
+def test_la_raiz_de_entrada_y_el_directorio_de_trabajo_no_son_rutas_fijas(tmp_path):
+    celdas = [*CELDAS, "import os\nprint(os.listdir('/kaggle/input'))\nopen('/kaggle/working/r.txt', 'w')\n"]
+    assert _fallos(_escribir(tmp_path, celdas=celdas)) == []
+
+
+def test_la_guardia_se_exige_aunque_no_haya_datasets_adjuntos(tmp_path):
+    directorio = _escribir(tmp_path, _meta(dataset_sources=[], docker_image=""), ["x = 1\n", CELDAS[1]])
+    assert any("no es la guardia" in texto for texto in _fallos(directorio))
 
 
 def test_con_gpu_y_sin_nvidia_smi_es_un_fallo(tmp_path):
