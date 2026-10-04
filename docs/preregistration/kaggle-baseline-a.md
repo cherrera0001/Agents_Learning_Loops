@@ -142,10 +142,10 @@ Antes de medir la validez se hace un ensayo en un notebook de Kaggle con L4×4. 
 son resultados**: no se registra qué tareas se resuelven. Usa cuatro tareas que nunca serán de prueba: las
 tres primeras de requests por `instance_id` y la de httpx.
 
-El ensayo corre con el **kit original** (`conditions/a_kit/`, verificado contra el manifiesto), sin
-presupuesto propio: el `eval_config.yaml` de la línea base no existe hasta C5. Los límites se pasan por
-las opciones de la CLI: `--max-time-minutes 5 --max-tool-calls 100 --max-turns 500 --timeout-seconds
-300`.
+El ensayo corre con la condición A de la Enmienda 2, no con el kit sin cambios. El `eval_config.yaml`
+de la línea base no existe hasta C5, así que los límites se pasan por las opciones de la CLI:
+`--max-time-minutes 5 --max-tool-calls 40 --max-turns 100 --timeout-seconds 60`. Los 5 minutos son los
+de esta sonda; los 4 minutos de A son los del envío.
 
 Deja un registro versionado (`preregistro/ensayo_notebook_v1.json`, esquema `kaggle-notebook-trial/1`):
 
@@ -417,8 +417,8 @@ esta sección se conserva como comprobación: si el piloto muestra que 4 minutos
 con el montaje medido, se corrige con otra enmienda antes de cualquier réplica.
 
 **Diferencia con el kit.** El `eval_config.yaml` del kit trae valores de ejemplo mucho menores en los
-cuatro límites (HARNESS § 7.1). La línea base cambia ese archivo y nada más. Es una desviación declarada:
-la condición A es «el kit con el presupuesto que cabe en 12 h».
+cuatro límites (HARNESS § 7.1). Antes de la Enmienda 2, la línea base cambiaba ese archivo y nada más.
+Desde la Enmienda 2, A es el zip enviado (sección I.4): no es «el kit con un solo archivo cambiado».
 
 **Cómo se pasa.** El presupuesto queda en `conditions/a_linea_base/eval_config.yaml`, un archivo propio
 que se versiona. `comprobar` no interpreta ese YAML: exige que sus bytes sean exactamente los que genera
@@ -436,7 +436,7 @@ además por opciones:
 swegemma eval --tasks <tasks.jsonl> --snapshots-dir <snapshots> --results-dir <directorio nuevo> \
   --submission-dir experiments/gemma_developer_agent/conditions/a_linea_base \
   --sandbox <backend declarado> --image <imagen declarada> --task-ids <lista test del subconjunto> \
-  --concurrency <c> --max-time-minutes <b> --max-tool-calls 100 --max-turns 500 --timeout-seconds 300 \
+  --concurrency <c> --max-time-minutes 4 --max-tool-calls 40 --max-turns 100 --timeout-seconds 60 \
   --display quiet
 ```
 
