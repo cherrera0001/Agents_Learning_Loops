@@ -1398,11 +1398,11 @@ def test_comando_agente_lleva_los_limites_de_a0(doble: Doble, crudo: ke.Crudo, e
         "--max-time-minutes",
         "5",
         "--max-tool-calls",
-        "100",
+        "40",
         "--max-turns",
-        "500",
+        "100",
         "--timeout-seconds",
-        "300",
+        "60",
         "--display",
         "quiet",
     ]
@@ -1835,7 +1835,7 @@ def test_plan_no_ejecuta_nada(esc: Escenario, capsys: pytest.CaptureFixture[str]
     for nombre in ("docker", "servidor", "rendimiento", "rechazo_sintetico:8192", "agente:16384", "limpieza"):
         assert f". {nombre} [" in salida
     assert "vllm.entrypoints.openai.api_server" in salida and "--gpu-memory-utilization 0.80" in salida
-    assert "--max-time-minutes 5 --max-tool-calls 100 --max-turns 500 --timeout-seconds 300" in salida
+    assert "--max-time-minutes 5 --max-tool-calls 40 --max-turns 100 --timeout-seconds 60" in salida
     assert str(esc.raiz) not in salida and "kaggle/input" not in salida
     assert not esc.crudo.exists() and not esc.salida.exists() and not esc.informe.exists()
 

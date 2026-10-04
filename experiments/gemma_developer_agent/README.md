@@ -290,7 +290,8 @@ y el segundo rich; lo decide la escalera de cómputo del pre-registro con la val
 supone mientras la concurrencia real no esté medida, el pre-registro lo deriva en 3 a 5 minutos por tarea
 (fórmula en la sección D.1; `python -m scripts.kaggle_prereg presupuesto`). Las 100 llamadas a herramientas,
 los 500 turnos y los 300 s por comando son valores por defecto del guion de puntuación (HARNESS § 7.1) y cada
-participante puede cambiarlos. Los 60 minutos por tarea que citan algunos borradores son el valor por defecto
+participante puede cambiarlos; desde la Enmienda 2 del pre-registro, A usa 4 minutos, 40 llamadas, 100 turnos y
+60 s. Los 60 minutos por tarea que citan algunos borradores son el valor por defecto
 del arnés y el tope de la fórmula, no una regla del concurso.
 
 **Tres observaciones distintas.** Son tres cosas distintas; ninguna implica a las otras.
@@ -680,7 +681,8 @@ flowchart TD
     style S stroke-dasharray: 5 5
 ```
 
-La condición A es la línea base: el kit con un solo archivo cambiado, `eval_config.yaml`, y el brazo A de la
+La condición A es la línea base: desde la Enmienda 2, el kit ajustado que se envió (sin adaptadores, 8 192 tokens
+de salida, razonamiento desactivado y `eval_config.yaml` propio), y el brazo A de la
 campaña son todas las réplicas completas de la línea base (pre-registro, G5). B, C y D son propuestas del
 issue #104 y por eso llevan borde discontinuo. B se escribiría después de congelar C, con una longitud
 comparable. C son skills `SKILL.md` consolidadas de episodios de un pase de A sobre las tareas de
@@ -862,7 +864,7 @@ entorno del experimento, que fija el ensayo de notebook.
 
 | Documento | Qué es | Estado |
 |---|---|---|
-| [`docs/preregistration/kaggle-baseline-a.md`](../../docs/preregistration/kaggle-baseline-a.md) | Pre-registro de la línea base A | **Fijado**: cambia solo por enmienda (Enmienda 1 del 2026-10-03) |
+| [`docs/preregistration/kaggle-baseline-a.md`](../../docs/preregistration/kaggle-baseline-a.md) | Pre-registro de la línea base A | **Fijado**: cambia solo por enmienda (Enmiendas 1 a 3, del 2026-10-03 y 04) |
 | [`preregistro/linea_base_a.json`](preregistro/linea_base_a.json) | Valores fijados y nueve parámetros abiertos | **Fijado** |
 | [`docs/kaggle_specifications.md`](docs/kaggle_specifications.md) | Ficha de fechas, reglas y presupuesto | Vigente; manda la página oficial |
 | [`docs/kaggle_api_2026-10-02.json`](docs/kaggle_api_2026-10-02.json) | Instantánea de la API del 2026-10-02 | Registro fechado: dice que la cuenta no estaba inscrita en la pista de artículo; hoy sí lo está |
@@ -925,7 +927,7 @@ python -m scripts.kaggle_prereg comprobar
 Sale con 1; eso es lo esperado hoy porque quedan parámetros abiertos. Lista nueve (`ensayo_notebook`,
 `entorno_sandbox`, `validez_tareas`, `cuota`, `subconjunto`, `piloto`, `presupuesto`, `corrida`,
 `decisiones_dueno`) y el resumen
-`fijos_sha256: 588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7`. Con `--tasks <tasks.jsonl>`
+`fijos_sha256: f0fdb8caeedb145fd5443a649026ce83766e981fd3664a80d0608689d3d0f346`. Con `--tasks <tasks.jsonl>`
 también sale con 1.
 
 **Fórmulas del pre-registro:**

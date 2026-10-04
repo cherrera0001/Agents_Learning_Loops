@@ -1514,7 +1514,7 @@ def test_el_arnes_real_recibe_el_timeout_del_preregistro(
     monkeypatch.setattr(kv, "construir_arnes_swegemma", arnes)
     assert esc.correr(None, "--params", str(params_para(esc))) == kv.EXIT_OK
     fijos = json.loads(kaggle_prereg.DEFAULT_PARAMS.read_text(encoding="utf-8"))["fijos"]
-    assert recibido["timeout_seconds"] == fijos["timeout_seconds"] == 300
+    assert recibido["timeout_seconds"] == fijos["timeout_seconds"] == 60
     assert recibido["version_arnes"] == "0.2.7"
 
 

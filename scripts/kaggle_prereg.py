@@ -55,7 +55,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PARAMS = REPO_ROOT / "experiments/gemma_developer_agent/preregistro/linea_base_a.json"
 # Resumen del bloque ``fijos`` registrado en el pre-registro. Cambiarlo es una enmienda: exige una
 # entrada en ``enmiendas`` y el mismo valor en el documento.
-FIJOS_SHA256 = "588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7"
+FIJOS_SHA256 = "f0fdb8caeedb145fd5443a649026ce83766e981fd3664a80d0608689d3d0f346"
 
 EXIT_OK = 0
 EXIT_OPEN = 1

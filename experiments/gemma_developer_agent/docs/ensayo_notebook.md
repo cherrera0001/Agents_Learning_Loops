@@ -42,7 +42,7 @@ escribe como un número. Una sonda que falla no detiene las demás.
 | `rechazo_sintetico:16384` y `:8192` | Control del observable: código HTTP y marcadores ante un prompt inventado que excede **el contexto entero**. Con los dos topes mide lo mismo; sirve para fijar el texto del rechazo, no para elegir entre ellos | Sí | No |
 | `calibracion` | Cuántos tokens ocupa cada palabra del relleno, con dos peticiones cortas y el conteo que devuelve el propio servidor | Sí | Sí |
 | `rechazo_calibrado:16384` y `:8192` | El caso que decide entre los dos topes: un prompt inventado de unos 20 000 tokens, que cabe en el contexto pero con 16 384 de salida no deja sitio. Da un resultado explícito: `rechazado`, `rechazo_sin_marcador`, `aceptado`, `truncado`, `aceptado_sin_conteo` u `otro` | Sí | Sí |
-| `agente:16384` | Lo que A.0 delimita: `swegemma eval` sobre las cuatro tareas, con el kit original y `--max-time-minutes 5 --max-tool-calls 100 --max-turns 500 --timeout-seconds 300`. Lee por tarea los turnos y la clase del error, y cuenta en el registro del servidor las peticiones rechazadas | Sí | Sí |
+| `agente:16384` | Lo que A.0 delimita: `swegemma eval` sobre las cuatro tareas, con la condición A de la Enmienda 2 y `--max-time-minutes 5 --max-tool-calls 40 --max-turns 100 --timeout-seconds 60`. Los 5 minutos son los de la sonda; los 4 minutos de A son los del envío. Lee por tarea los turnos y la clase del error, y cuenta en el registro del servidor las peticiones rechazadas | Sí | Sí |
 | `agente:8192` | La misma corrida con una copia del kit cuyo único cambio es `max_output_tokens: 8192`. **Solo se corre si hubo algún rechazo con 16 384** (A.0) | Sí | Solo si hubo rechazos |
 | `limpieza` | Que el servidor quedó detenido y cuántos procesos siguen usando la GPU | Sí | Sí: debe quedar limpio |
 
@@ -129,6 +129,14 @@ contexto queda **solo en `--crudo`**.
 ## Paso a paso para el dueño
 
 ### 0. Antes de gastar cuota
+
+**Chequeo previo obligatorio si el notebook se sube por API.** Antes de `kaggle kernels push`, corre
+`python -m scripts.kaggle_preflight comprobar <directorio> --tope-min <minutos>` y encadena la subida con
+`&&`. Comprueba, sin GPU, que cada celda compila, que la imagen de Python está fijada, que el acelerador
+existe, que ninguna celda escribe una ruta fija bajo `/kaggle/input`, que la primera celda lista esa raíz y
+localiza el único directorio con ruedas sin esperar ni reintentar, que el notebook es privado y sin internet,
+y que hay tope de ejecución. Sale con 2 y no imprime la orden si algo falla. No comprueba que el modelo
+cargue: eso exige GPU.
 
 1. Lee el plan en tu máquina, sin Kaggle. Las rutas pueden ser inventadas: `--plan` solo imprime.
 
@@ -358,6 +366,74 @@ Además, un error de infraestructura en la fase del agente (snapshot ausente, er
 un rechazo por contexto) deja la sonda `agente` en `error` y **no hay registro**: los turnos de una tarea
 en la que el agente no llegó a correr no miden nada. Un texto de error que la lista cerrada no clasifica
 tiene el mismo efecto.
+
+## Disposición medida de `/kaggle/input`
+
+El supuesto S1 de abajo resultó falso como regla: la disposición **no es fija**. Hay dos medidas.
+
+| Dónde se midió | `os.listdir('/kaggle/input')` | Directorio de las ruedas |
+|---|---|---|
+| Tres corridas por lotes del 2026-10-03, lanzadas por API con la imagen fijada (dos en L4×4 y una en T4×2) | `['competitions', 'datasets', 'models']` | `/kaggle/input/datasets/metric/gemma-4-developer-agent-wheelhouse`, con 41 ruedas instaladas |
+| Sesión interactiva del dueño en `cs4all/prueba-a-ajustada`, GPU L4×4, 2026-10-04 | `['gemma-4-developer-agent', 'gemma-4-developer-agent-wheelhouse', 'models']` | `/kaggle/input/gemma-4-developer-agent-wheelhouse` |
+
+En la sesión del 2026-10-04, la ruta de la primera fila no era un directorio. `metric/gemma-4-developer-agent-wheelhouse`
+es el identificador del dataset para `dataset_sources`; no es una ruta de disco. Por API, el dataset lista 41
+archivos `.whl` (2026-10-04); eso dice que tiene ruedas, no cómo se llama su directorio en el notebook.
+
+No se sabe por qué cambia la disposición (sesión interactiva frente a corrida por lotes, o un cambio de Kaggle
+entre un día y otro). Dentro de `models` no se listó nada en la sesión interactiva.
+
+### Qué hay dentro, listado por API (2026-10-04)
+
+| Fuente | Contenido | Para la guardia |
+|---|---|---|
+| Datos de la competencia (524 archivos) | `tasks.jsonl`, `snapshots/` (129), `graphs/` (127), `embeddings/` (127), `sample_submission/` (10), **`wheels/` (124)**, `docker/` (4), `sandbox/` (1), `HARNESS_README.md` | El directorio de datos es el que contiene `tasks.jsonl`. La celda de las tareas necesita también `graphs`, `embeddings` y `snapshots` |
+| Dataset `metric/gemma-4-developer-agent-wheelhouse` (41 archivos, sin subcarpetas) | Las ruedas del arnés: incluye la de `swegemma` y la de `vllm` | Es el único directorio con una rueda `swegemma-*.whl` |
+| Modelo `google/gemma-4`, variante `gemma-4-31b-it-qat-w4a16-ct`, versión 2 (8 archivos) | `config.json`, `model.safetensors` y archivos del tokenizador | Directorio con `config.json` y un archivo de pesos |
+
+**Hay dos directorios con ruedas, no uno.** Los datos de la competencia traen su propia carpeta `wheels/`, con las
+dependencias de las tareas y sin ninguna rueda del arnés. Una guardia que se quede con «el único directorio que
+contiene `.whl`» se detiene siempre en una sesión sana. La guardia correcta lista todos los directorios con
+ruedas y se queda con el que contiene la de `swegemma`.
+
+Esto se encontró al construir el árbol del ensayo local con los nombres reales de la API en vez de un árbol
+supuesto: con el árbol supuesto la guardia pasaba, y con el real se detenía.
+
+**Regla que sale de esto.** Ninguna celda escribe una ruta bajo `/kaggle/input`. La primera celda lista la raíz,
+localiza el directorio con las ruedas del arnés, el de `tasks.jsonl` y el del modelo, imprime lo que encontró y se
+detiene si falta alguno o hay más de uno. No espera ni reintenta, y no comparte celda con el servidor del
+modelo. Las rutas del notebook oficial de inicio son las de la primera fila y no se copian.
+`scripts/kaggle_preflight.py` rechaza un notebook que no cumpla esto.
+
+## Medidas cosechadas de las corridas (2026-10-03 y 04)
+
+Todo lo que dejaron las cinco corridas guardadas: los informes de sondas con sus valores y los tiempos del
+log de Kaggle. Copias locales en `data/ensayo_kaggle/` (no se versionan). Ninguna es una medida del modelo.
+
+| Corrida | Máquina | CPU | Memoria | GPU | Instalar 41 ruedas | Compilar el kit | Servidor del modelo | Duración total |
+|---|---|---|---|---|---|---|---|---|
+| `ensayo-a0-anfitrion` v3 | sin GPU | 4 | 32 099 MiB | — | 70,4 s | 36,2 s | no se arranca | 130 s |
+| `ensayo-a0-l4` v1 | T4×2 (pedido inválido) | 4 | 32 099 MiB | 2 × Tesla T4, 15 360 MiB | 65,7 s | 29,7 s | termina a los 62,1 s | 176 s |
+| `ensayo-a0-l4` v2 | L4×4 | 48 | 193 221 MiB | 4 × NVIDIA L4, 23 034 MiB | 66,0 s | 36,4 s | termina a los 474,4 s | 600 s |
+| `ensayo-a0-l4` v3 | L4×4 | 48 | 193 221 MiB | 4 × NVIDIA L4, 23 034 MiB | 67,6 s | 35,4 s | termina a los 752,6 s | 877 s |
+| `prueba-a-ajustada` v1 | L4 | — | — | — | 0 ruedas: la ruta no existía | — | — | 22 s |
+
+Comunes a las cuatro primeras: Python 3.12.13; `vllm` 0.19.1, `swegemma` 0.2.7, `adk-submission` 0.2.12,
+`adk-eval-core` 0.1.0, `google-adk` 1.36.1; disco libre 1 092 669 MiB; el binario de Docker no está, así que el
+backend del sandbox es `subprocess`; el kit de la competencia coincide con el manifiesto (10 archivos, 0
+distintos); la sesión tarda entre 11 y 15 s en ejecutar la primera celda.
+
+Qué se lee de esto:
+
+- **Costo fijo de una sesión antes de tocar el modelo:** unos 2 minutos (instalación de 66 a 70 s más compilación
+  de 30 a 36 s).
+- **El servidor no cae al arrancar: muere después de varios minutos de carga**, y en dos corridas iguales tardó
+  474 s y 753 s. No es un error de argumentos, que fallaría en segundos; es coherente con quedarse sin memoria
+  durante o después de la carga. El motivo exacto no quedó registrado.
+- **La disposición de `/kaggle/input` no depende de que la sesión sea interactiva.** `prueba-a-ajustada` v1 fue
+  una corrida por lotes del 2026-10-04 y ya no encontró la ruta que las corridas por lotes del día 3 sí tenían.
+  Las dos diferencias que quedan son la fecha y que es otro notebook.
+- **La máquina L4×4 trae 48 CPU y 193 GB de memoria**, no los 4 CPU y 32 GB de la sesión sin GPU.
 
 ## Supuestos sin verificar
 

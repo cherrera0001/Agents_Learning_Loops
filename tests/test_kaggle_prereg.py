@@ -46,7 +46,7 @@ from scripts.kaggle_prereg import (
 
 VERSIONADO = kp.DEFAULT_PARAMS
 CANONICO_4 = (
-    b"evaluation:\n  timeout_seconds: 300\n  max_tool_calls: 100\n  max_time_minutes: 4\n  max_turns: 500\n"
+    b"evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 40\n  max_time_minutes: 4\n  max_turns: 100\n"
 )
 SAMPLING_KIT = b"temperature: 0.5\nmax_output_tokens: 16384\n"  # inventado: no es el del kit
 CONTEOS = {"fastapi/fastapi": 67, "Textualize/rich": 48, "psf/requests": 13, "encode/httpx": 1}
@@ -78,7 +78,7 @@ def test_archivo_versionado_bien_formado_y_coherente(versionado: dict[str, Any])
 def test_decisiones_fijadas_no_cambian_en_silencio(fijos: dict[str, Any]) -> None:
     """Cambiar una decision del pre-registro obliga a cambiar el resumen del script y el del documento."""
     assert fijos["limite_envio_minutos"] == 720 and fijos["tareas_envio"] == 120 and fijos["reserva"] == 0.1
-    assert (fijos["max_tool_calls"], fijos["max_turns"], fijos["timeout_seconds"]) == (100, 500, 300)
+    assert (fijos["max_tool_calls"], fijos["max_turns"], fijos["timeout_seconds"]) == (40, 100, 60)
     assert (fijos["replicas_minimo"], fijos["replicas_extra_maximo"], fijos["min_tareas_prueba"]) == (
         2,
         2,
@@ -689,10 +689,10 @@ def test_archivo_citado_alterado_o_ausente(arbol: Arbol) -> None:
     [
         CANONICO_4.replace(b"minutes: 4", b"minutes: 3"),
         CANONICO_4.replace(b"minutes: 4", b"minutes: 5"),
-        CANONICO_4.replace(b"seconds: 300", b"seconds: 3e2"),
+        CANONICO_4.replace(b"seconds: 60", b"seconds: 6e1"),
         CANONICO_4 + b"evaluation: {max_time_minutes: 60}\n",
-        b"evaluation:\r\n  timeout_seconds: 300\r\n  max_tool_calls: 100\r\n  max_time_minutes: 4\r\n"
-        b"  max_turns: 500\r\n",
+        b"evaluation:\r\n  timeout_seconds: 60\r\n  max_tool_calls: 40\r\n  max_time_minutes: 4\r\n"
+        b"  max_turns: 100\r\n",
         b"\xff\xfe no es utf-8",
     ],
 )
