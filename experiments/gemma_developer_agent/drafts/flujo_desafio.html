@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Gemma 4 Developer Agent: cómo opera el desafío y cómo respondemos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#1c2430; --mute:#5b6675; --line:#d5dbe3; --bg:#f6f7f9; --ok:#1f7a4d; --warn:#b26a00; --no:#b3261e; --acc:#1d4ed8; --g:#0f766e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width: 1060px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.2rem; margin: 36px 0 10px; padding-top: 14px; border-top: 2px solid var(--line); }
+  h2 small { color: var(--mute); font-weight: 400; font-size: .9rem; }
+  p { margin: 8px 0; }
+  .sub { color: var(--mute); margin-bottom: 18px; }
+  .four { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .card h3 { margin:0 0 4px; font-size:1rem; }
+  .card p { margin:0; font-size:.93rem; }
+  .flow { display:flex; flex-wrap:wrap; align-items:stretch; gap:6px; margin:10px 0; }
+  .box { flex:1 1 150px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:.92rem; }
+  .box h3 { margin:0 0 4px; font-size:.95rem; }
+  .arrow { align-self:center; color:var(--mute); font-size:1.3rem; }
+  .ok { border-left:5px solid var(--ok); } .warn { border-left:5px solid var(--warn); } .no { border-left:5px solid var(--no); } .acc { border-left:5px solid var(--acc); } .g { border-left:5px solid var(--g); }
+  .lane { display:grid; grid-template-columns: 120px 1fr; gap:8px; align-items:center; margin:6px 0; }
+  .lane > b { font-size:.9rem; color:var(--mute); }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); font-size:.93rem; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#eef1f5; }
+  .bar { display:flex; height:26px; border-radius:6px; overflow:hidden; border:1px solid var(--line); font-size:.78rem; color:#fff; }
+  .bar div { display:flex; align-items:center; justify-content:center; white-space:nowrap; }
+  .note { color:var(--mute); font-size:.88rem; }
+  .tag { display:inline-block; font-size:.78rem; padding:1px 8px; border-radius:99px; color:#fff; }
+  .tag.ok { background:var(--ok); border:0; } .tag.warn { background:var(--warn); border:0; } .tag.no { background:var(--no); border:0; }
+  code { background:#eef1f5; padding:1px 5px; border-radius:4px; font-size:.9em; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Cómo opera el desafío y cómo respondemos</h1>
+<p class="sub">Google – The Gemma 4 Developer Agent Competition (Kaggle) y el experimento <code>experiments/gemma_developer_agent</code>. Estado al 2026-10-03. Sin datos de la competencia: solo cifras agregadas y públicas.</p>
+
+<div class="four">
+  <div class="card no"><h3>El problema</h3><p>Un modelo fijo debe arreglar issues de repositorios que nunca vio, con tiempo limitado. Y nosotros no teníamos ningún número: cero corridas con el modelo.</p></div>
+  <div class="card acc"><h3>La propuesta</h3><p>Primero medir el kit y cuánto varía al repetirlo. Después probar si unas skills escritas desde la experiencia ayudan en otro repositorio.</p></div>
+  <div class="card g"><h3>Los datos</h3><p>129 tareas públicas de cuatro repositorios abiertos, más la tabla pública y el foro. Nunca salen del equipo.</p></div>
+  <div class="card warn"><h3>La hipótesis</h3><p>Las skills consolidadas mejoran la resolución frente al kit y frente a un texto de relleno del mismo largo. Aún sin pre-registro.</p></div>
+</div>
+
+<h2>1. Cómo opera el desafío <small>lo que pone Google</small></h2>
+<p>Google fija el modelo (<code>gemma-4-31b-it-qat-w4a16-ct</code>), el arnés y las tareas. El participante solo entrega <b>la configuración del agente</b> en un zip. No entrega código propio.</p>
+
+<div class="lane"><b>Tú entregas</b>
+  <div class="flow">
+    <div class="box acc"><h3>submission.zip</h3><code>agent.yaml</code> en la raíz</div>
+    <div class="box acc"><h3>Prompts</h3>Instrucciones del agente y de sus subagentes</div>
+    <div class="box acc"><h3>Skills</h3>Documentos que el agente puede leer</div>
+    <div class="box acc"><h3>Presupuesto</h3><code>eval_config.yaml</code>: minutos, llamadas y turnos por tarea</div>
+    <div class="box acc"><h3>Adaptadores</h3>LoRA, opcionales</div>
+  </div>
+</div>
+<div class="lane"><b>Kaggle ejecuta</b>
+  <div class="flow">
+    <div class="box"><h3>1. Carga</h3>Sirve el modelo en GPU L4</div>
+    <div class="arrow">→</div>
+    <div class="box"><h3>2. Tarea</h3>Entrega al agente un issue y el repositorio</div>
+    <div class="arrow">→</div>
+    <div class="box"><h3>3. Agente</h3>Lee, busca, edita, corre comandos y entrega un parche</div>
+    <div class="arrow">→</div>
+    <div class="box"><h3>4. Pruebas ocultas</h3>El parche pasa o no pasa</div>
+    <div class="arrow">→</div>
+    <div class="box"><h3>5. Nota</h3>Proporción de tareas resueltas</div>
+  </div>
+</div>
+<p class="note">Los pasos 2 a 4 se repiten unas 120 veces, una tarea tras otra, sobre repositorios privados. Cada tarea corre aislada: el agente no recuerda la anterior.</p>
+
+<table>
+  <tr><th>Regla</th><th>Valor</th><th>Qué implica</th></tr>
+  <tr><td>Tiempo total</td><td>12 horas</td><td>Si se pasa, el envío entero queda sin nota. Con 120 tareas en serie, el tope sano es de 4 a 5 minutos por tarea</td></tr>
+  <tr><td>Envíos</td><td>1 al día, 2 finales</td><td>Un error de infraestructura también gasta el envío</td></tr>
+  <tr><td>Tabla pública</td><td>58 tareas</td><td>Una tarea vale 0,017. El mismo zip ha dado 0,12 y 0,15</td></tr>
+  <tr><td>Datos</td><td>No redistribuir</td><td>Ni enunciados, ni parches, ni pruebas, ni salidas</td></tr>
+  <tr><td>Fechas</td><td>Artículo 2026-11-12, código 2026-12-02</td><td>Quedan unas ocho semanas</td></tr>
+  <tr><td>Estado de la tabla</td><td>Primer lugar 0,24; cinco equipos en 0,17; 26 en 0,15</td><td>Toda la distancia entre la línea base y el primero es de 9 puntos</td></tr>
+</table>
+
+<h2>2. ¿Cuál es el problema?</h2>
+<div class="four">
+  <div class="card"><h3>El del concurso</h3><p>Que un modelo pequeño y fijo resuelva issues reales en repositorios que no conoce, en pocos minutos y sin memoria entre tareas.</p></div>
+  <div class="card"><h3>El de medir</h3><p>La nota es gruesa y ruidosa. Sin saber cuánto varía una misma configuración, no se puede decir que un cambio mejora algo.</p></div>
+  <div class="card"><h3>El nuestro</h3><p>En cinco días se construyeron guiones y pre-registros para analizar datos que no existían. El modelo nunca se había ejecutado.</p></div>
+</div>
+
+<h2>3. ¿Qué datos usamos?</h2>
+<div class="bar">
+  <div style="width:52%;background:#1d4ed8">fastapi · 67</div>
+  <div style="width:37%;background:#0f766e">rich · 48</div>
+  <div style="width:10%;background:#b26a00">requests · 13</div>
+  <div style="width:1%;background:#b3261e"></div>
+</div>
+<p class="note">129 tareas públicas; httpx aporta 1 (franja roja).</p>
+<div class="flow">
+  <div class="box g"><h3>Aprender</h3>Tareas de tres repositorios: de ahí salen los episodios y las skills</div>
+  <div class="arrow">→</div>
+  <div class="box g"><h3>Probar</h3>Tareas del cuarto repositorio, que no se usó para aprender</div>
+  <div class="arrow">→</div>
+  <div class="box no"><h3>Nota oficial</h3>Repositorios privados que nadie ve</div>
+</div>
+<table>
+  <tr><th>Dato</th><th>Uso</th><th>Límite</th></tr>
+  <tr><td>Tareas públicas</td><td>Medir el kit y su variación; fuente de los episodios</td><td>Lo medido aquí no afirma nada del conjunto oculto</td></tr>
+  <tr><td>Partición por repositorio</td><td>Evita que lo aprendido se pruebe donde se aprendió</td><td>Unas 62 tareas de prueba: solo se distinguen diferencias de unos 10 puntos</td></tr>
+  <tr><td>Parche de referencia</td><td>Solo para comprobar que una tarea es válida</td><td>Nunca llega al prompt ni a las skills</td></tr>
+  <tr><td>Tabla pública y foro</td><td>Saber qué puntúa y qué falla</td><td>Las configuraciones de 0,17 y 0,24 no son públicas</td></tr>
+</table>
+
+<h2>4. ¿Cuál es nuestra propuesta?</h2>
+<p>Cuatro configuraciones del mismo agente, que solo difieren en lo que el agente puede leer:</p>
+<table>
+  <tr><th>Condición</th><th>Qué lleva</th><th>Para qué</th></tr>
+  <tr><td><b>A</b></td><td>El kit oficial</td><td>Línea base y medida del ruido</td></tr>
+  <tr><td><b>B</b></td><td>Kit más un texto de relleno del mismo largo que las skills</td><td>Control: separa «más texto» de «texto útil»</td></tr>
+  <tr><td><b>C</b></td><td>Kit más skills consolidadas desde episodios con Gemma en otros repositorios</td><td>La propuesta</td></tr>
+  <tr><td><b>D</b></td><td>C más la instrucción de usar las skills</td><td>Separa «tenerlas» de «usarlas»</td></tr>
+</table>
+<div class="flow">
+  <div class="box ok"><h3>Paso 1</h3>Un primer número real: un envío a Kaggle</div>
+  <div class="arrow">→</div>
+  <div class="box warn"><h3>Paso 2</h3>Repetir A para saber cuánto varía sola</div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>Paso 3</h3>Fijar por escrito, antes de mirar, qué diferencia cuenta</div>
+  <div class="arrow">→</div>
+  <div class="box"><h3>Paso 4</h3>Correr B, C y D y comparar contra el ruido</div>
+</div>
+
+<h2>5. ¿Qué postulamos como hipótesis?</h2>
+<table>
+  <tr><th>Pregunta</th><th>Qué se postula</th><th>Estado</th></tr>
+  <tr><td><b>Línea base A</b></td><td>No es una hipótesis sino una medida: cuánto cambia el resultado al repetir la misma corrida, y por lo tanto qué diferencia entre dos condiciones no se distingue del ruido</td><td><span class="tag warn">pre-registrada, sin ejecutar</span></td></tr>
+  <tr><td><b>Campaña: C frente a A y B</b></td><td>Unas skills derivadas de experiencia en tres repositorios mejoran la resolución en un cuarto, más que el kit y más que un relleno del mismo largo</td><td><span class="tag no">propuesta (#104), sin pre-registro</span></td></tr>
+  <tr><td><b>Campaña: D frente a C</b></td><td>Decirle al agente que use las skills cambia el resultado respecto de solo tenerlas</td><td><span class="tag no">propuesta, sin pre-registro</span></td></tr>
+</table>
+<p class="note"><b>Lo que no postulamos.</b> No se prueba la memoria asociativa de Agents Learning Loops: en este arnés cada tarea corre aislada y quien «recuerda» es el modelo leyendo un archivo fijo. No se entrena LoRA. No se afirma nada sobre el conjunto oculto ni se busca una nota alta.</p>
+<p class="note"><b>Un límite que hay que decidir.</b> Con unas 62 tareas de prueba solo se distingue una diferencia de unos 10 puntos, y toda la tabla cabe en 9. La campaña puede terminar en «sin diferencia» aunque las skills ayuden un poco.</p>
+
+<h2>6. En qué estamos hoy</h2>
+<table>
+  <tr><th>Paso</th><th>Estado</th></tr>
+  <tr><td>Primer envío a Kaggle</td><td><span class="tag warn">enviado el 2026-10-03, esperando nota</span> Es el kit con cuatro ajustes, no el kit sin cambios</td></tr>
+  <tr><td>Foro y notebooks públicos</td><td><span class="tag ok">hecho</span> Una página con fuentes en el issue #103</td></tr>
+  <tr><td>Ensayo en un notebook de Kaggle</td><td><span class="tag warn">sin resultado</span> La cuenta obtiene cuatro GPU L4; el servidor del modelo no arranca con el guion propio. Una prueba con el notebook oficial y la configuración enviada quedó en cola</td></tr>
+  <tr><td>Réplicas de A y validez de tareas</td><td>Desde el 2026-10-10, con cuota nueva</td></tr>
+  <tr><td>Campaña B, C y D</td><td><span class="tag no">detenida</span> hasta tener la variación de A</td></tr>
+</table>
+
+</main>
+</body>
+</html>
