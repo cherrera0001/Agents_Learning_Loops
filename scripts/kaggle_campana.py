@@ -421,7 +421,10 @@ def abiertos_pendientes(data: dict[str, Any]) -> list[str]:
                         validas_por_repo[task["repo"]] = validas_por_repo.get(task["repo"], 0) + 1
                 corrida = base_values["corrida"]
                 cuota = base_values["cuota"]
-                corte = kaggle_prereg.parse_date(baseline["fijos"]["fecha_corte_campana"], "fecha_corte_campana")
+                corte = kaggle_prereg.parse_date(
+                    baseline["fijos"]["fecha_corte_campana"],
+                    "fecha_corte_campana",
+                )
                 fecha = kaggle_prereg.parse_date(corrida["fecha_compuerta"], "fecha_compuerta")
                 hours = kaggle_prereg.usable_hours(
                     baseline["fijos"],
@@ -429,10 +432,16 @@ def abiertos_pendientes(data: dict[str, Any]) -> list[str]:
                     cuota["factor_l4x4"],
                     kaggle_prereg.quota_resets(fecha, corte, cuota["dia_reinicio"]),
                 )
-                steps = [step for step in kaggle_prereg.ladder(baseline["fijos"], validas_por_repo) if step.repo == heldout_repo]
+                steps = [
+                    item
+                    for item in kaggle_prereg.ladder(baseline["fijos"], validas_por_repo)
+                    if item.repo == heldout_repo
+                ]
                 step = kaggle_prereg.choose_step(steps, hours)
                 if step is None:
-                    raise CampanaError("G6: el escalón de línea base cerrado no cabe en el cómputo disponible.")
+                    raise CampanaError(
+                        "G6: el escalón de línea base cerrado no cabe en el cómputo disponible."
+                    )
             except (KeyError, TypeError, ValueError, OSError, CampanaError) as exc:
                 raise CampanaError(f"no se pudo derivar G2 desde el reporte A: {exc}") from exc
             if case == "dominante":
@@ -454,7 +463,9 @@ def abiertos_pendientes(data: dict[str, Any]) -> list[str]:
             available_total = 2 * step.por_condicion + extra_runs
             expected_d = corridas_d_g6(available_total, step.por_condicion)
             if type(b) is not int or b != step.por_condicion or type(c) is not int or c != step.por_condicion:
-                raise CampanaError("corridas B/C no coinciden con la escalera G6 derivada del presupuesto #103.")
+                raise CampanaError(
+                    "corridas B/C no coinciden con la escalera G6 derivada del presupuesto #103."
+                )
             if type(d) is not int or d != expected_d:
                 raise CampanaError("corridas D contradicen la reducción G6 derivada del presupuesto #103.")
     return pendientes
