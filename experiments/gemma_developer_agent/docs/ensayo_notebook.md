@@ -405,6 +405,36 @@ detiene si falta alguno o hay más de uno. No espera ni reintenta, y no comparte
 modelo. Las rutas del notebook oficial de inicio son las de la primera fila y no se copian.
 `scripts/kaggle_preflight.py` rechaza un notebook que no cumpla esto.
 
+## Medidas cosechadas de las corridas (2026-10-03 y 04)
+
+Todo lo que dejaron las cinco corridas guardadas: los informes de sondas con sus valores y los tiempos del
+log de Kaggle. Copias locales en `data/ensayo_kaggle/` (no se versionan). Ninguna es una medida del modelo.
+
+| Corrida | Máquina | CPU | Memoria | GPU | Instalar 41 ruedas | Compilar el kit | Servidor del modelo | Duración total |
+|---|---|---|---|---|---|---|---|---|
+| `ensayo-a0-anfitrion` v3 | sin GPU | 4 | 32 099 MiB | — | 70,4 s | 36,2 s | no se arranca | 130 s |
+| `ensayo-a0-l4` v1 | T4×2 (pedido inválido) | 4 | 32 099 MiB | 2 × Tesla T4, 15 360 MiB | 65,7 s | 29,7 s | termina a los 62,1 s | 176 s |
+| `ensayo-a0-l4` v2 | L4×4 | 48 | 193 221 MiB | 4 × NVIDIA L4, 23 034 MiB | 66,0 s | 36,4 s | termina a los 474,4 s | 600 s |
+| `ensayo-a0-l4` v3 | L4×4 | 48 | 193 221 MiB | 4 × NVIDIA L4, 23 034 MiB | 67,6 s | 35,4 s | termina a los 752,6 s | 877 s |
+| `prueba-a-ajustada` v1 | L4 | — | — | — | 0 ruedas: la ruta no existía | — | — | 22 s |
+
+Comunes a las cuatro primeras: Python 3.12.13; `vllm` 0.19.1, `swegemma` 0.2.7, `adk-submission` 0.2.12,
+`adk-eval-core` 0.1.0, `google-adk` 1.36.1; disco libre 1 092 669 MiB; el binario de Docker no está, así que el
+backend del sandbox es `subprocess`; el kit de la competencia coincide con el manifiesto (10 archivos, 0
+distintos); la sesión tarda entre 11 y 15 s en ejecutar la primera celda.
+
+Qué se lee de esto:
+
+- **Costo fijo de una sesión antes de tocar el modelo:** unos 2 minutos (instalación de 66 a 70 s más compilación
+  de 30 a 36 s).
+- **El servidor no cae al arrancar: muere después de varios minutos de carga**, y en dos corridas iguales tardó
+  474 s y 753 s. No es un error de argumentos, que fallaría en segundos; es coherente con quedarse sin memoria
+  durante o después de la carga. El motivo exacto no quedó registrado.
+- **La disposición de `/kaggle/input` no depende de que la sesión sea interactiva.** `prueba-a-ajustada` v1 fue
+  una corrida por lotes del 2026-10-04 y ya no encontró la ruta que las corridas por lotes del día 3 sí tenían.
+  Las dos diferencias que quedan son la fecha y que es otro notebook.
+- **La máquina L4×4 trae 48 CPU y 193 GB de memoria**, no los 4 CPU y 32 GB de la sesión sin GPU.
+
 ## Supuestos sin verificar
 
 Cada uno lo confirma o lo desmiente el ensayo. Ninguno es un hecho.
