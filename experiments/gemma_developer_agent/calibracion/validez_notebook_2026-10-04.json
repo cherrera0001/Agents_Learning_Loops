@@ -1,0 +1,28 @@
+{
+  "schema_version": "kaggle-validity-aggregate/1",
+  "fecha": "2026-10-04",
+  "que_es": "Validez de las 129 tareas públicas en el sandbox del notebook de la competencia, en conteos por repositorio. Una tarea discrimina si sus pruebas fallan sin parche y pasan con el parche de referencia.",
+  "entorno": {
+    "notebook": "cs4all/validez-ensayo-cpu (privado)",
+    "acelerador": "ninguno",
+    "sandbox": "subprocess",
+    "arnes": "swegemma 0.2.7"
+  },
+  "fuente": {
+    "archivo_local": "validez_ensayo.json (no se versiona: lleva un resultado por tarea)",
+    "sha256": "d37264b1c9c44937fcab4d95429c790fbfcd06c8ebf524bce77700eea2cdd5bc",
+    "completo": true
+  },
+  "por_repositorio": {
+    "fastapi": {"tareas": 67, "discrimina": 29, "dorado_falla": 36, "pasa_sin_parche": 2},
+    "rich": {"tareas": 48, "discrimina": 42, "dorado_falla": 6, "pasa_sin_parche": 0},
+    "requests": {"tareas": 13, "discrimina": 0, "dorado_falla": 12, "pasa_sin_parche": 1},
+    "httpx": {"tareas": 1, "discrimina": 0, "dorado_falla": 1, "pasa_sin_parche": 0}
+  },
+  "total": {"tareas": 129, "discrimina": 71, "dorado_falla": 55, "pasa_sin_parche": 3},
+  "limite_de_60_s_por_comando": {
+    "tareas_que_discriminan_medidas_tambien_con_60_s": 71,
+    "cambian_de_veredicto": 0
+  },
+  "limites": "Una sola medición, en un entorno. No dice por qué falla el parche de referencia ni si esas tareas serían válidas en la evaluación oculta."
+}
