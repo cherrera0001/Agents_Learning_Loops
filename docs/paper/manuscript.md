@@ -56,11 +56,11 @@ Contribuciones:
 
 **Lectura.** En este entorno, solo 71 tareas distinguen un parche correcto de uno incorrecto. En otras 55 el parche de referencia no pasa, y 3 pasan sin parche. Dos de los cuatro repositorios no aportan aquí ninguna tarea que discrimine.
 
-**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, 54 terminaron con tests fallidos y 1 con un error del entorno de ejecución. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado y no un test fallido.
+**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, en 35 el ejecutor de tests terminó con su código de ejecución interrumpida, tanto con el parche como sin él: los tests no llegaron a ejecutarse. 34 de esas 35 son del repositorio con más tareas. En otras 19 hubo tests fallidos y en 1 un error del entorno de ejecución. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado.
 
 **El tiempo por comando.** Ninguna de las 55 terminó por tiempo agotado. Las 71 que discriminan se midieron también con un límite de 60 segundos por comando, el que usa nuestra configuración, y todas siguieron pasando con el parche.
 
-**Alcance.** Es una sola medición en un entorno. No examinamos por qué falla el parche de referencia donde falla. No afirmamos que esas tareas sean inválidas en la evaluación oculta, que usa otros repositorios y cuyo entorno no vemos. Sí afirmamos que quien use las tareas públicas en este entorno solo puede comprobar un parche en 71 de ellas.
+**Alcance.** Es una sola medición en un entorno. No leímos la salida de los tests, así que no sabemos qué interrumpe la ejecución en esas 35 tareas; que ocurra igual sin parche indica un problema del entorno y no del parche. No afirmamos que esas tareas sean inválidas en la evaluación oculta, que usa otros repositorios y cuyo entorno no vemos. Sí afirmamos que quien use las tareas públicas en este entorno solo puede comprobar un parche en 71 de ellas.
 
 ## 4. Método: una línea de base preregistrada que mide la variación primero
 
@@ -110,7 +110,7 @@ Con redacción original, el acierto en el primer intento fue mayor con memoria. 
 ## 6. Amenazas a la validez
 
 - **Una medición de validez, un entorno.** La Tabla 1 no se repitió ni se contrastó con otro entorno.
-- **Causa sin examinar.** No sabemos por qué falla el parche de referencia donde falla.
+- **Causa sin examinar.** En 35 tareas los tests no llegaron a ejecutarse y no leímos por qué; en las otras 20 no sabemos por qué no pasa el parche de referencia.
 - **Contaminación.** Los repositorios públicos son de código abierto y el modelo puede haber visto su historial. Retener un repositorio no elimina esto.
 - **Un solo repositorio de prueba.** Con 42 tareas de un repositorio, lo que se mida no se extiende a otros.
 - **Presupuesto en tiempo de reloj.** Un límite de tiempo hace que los resultados dependan de la carga del servidor, que es parte de la variación que se mide y que no se puede separar.

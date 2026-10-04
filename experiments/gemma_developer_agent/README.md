@@ -26,8 +26,9 @@ y qué documento prevalece sobre cuál.
 
 ## 1. En pocas líneas
 
-**Hoy no hay ninguna corrida con el modelo ni ningún resultado.** Lo que sigue describe un diseño y lo que se
-ha hecho para poder medirlo.
+**Al 2026-10-04 no hay ninguna corrida propia con el modelo.** Hay dos mediciones que no usan el modelo
+(la validez de las tareas públicas y la lectura de la tabla) y un envío exploratorio a la pista de código,
+con nota pública 0,06. Lo demás describe un diseño y lo que se ha hecho para poder medirlo.
 
 Google ofrece en Kaggle un concurso con dos pistas, una de código y una de artículo, para el modelo Gemma 4.
 Este experimento usa ese concurso como marco para una pregunta acotada, que puede responderse en contra: si
@@ -46,10 +47,13 @@ cualquier corrida con el modelo y antes de medir A (fijado: solo cambia por enmi
 locales sin modelo y sin parche, que el propio pre-registro describe y que no miden a Gemma. Los guiones que
 lo acompañan (partición de las tareas, análisis de réplicas, validez de tareas, ensayo de notebook,
 compuerta de parámetros) están en `main` y se probaron con datos sintéticos. La cuota semanal de GPU de la
-cuenta se leyó por API.
+cuenta se leyó por API. El 2026-10-04 se midió, como ensayo y sin GPU, la validez de las 129 tareas en el
+sandbox del notebook de la competencia: 71 discriminan (sección 11).
 
-**Qué no está hecho.** No se sabe qué proporción de tareas resuelve el kit oficial, cuánto varía entre
-repeticiones, qué tareas son válidas ni si la cuenta puede usar el acelerador L4×4. Las reglas de B, C y D
+**Qué no está hecho.** No se sabe qué proporción de tareas resuelve el kit oficial ni cuánto varía entre
+repeticiones. La validez medida es un ensayo: el registro que pide el pre-registro, con el entorno
+declarado, sigue abierto. La cuenta sí obtiene L4×4, pero el modelo aún no se ha servido en un notebook
+propio. Las reglas de B, C y D
 están en el [pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md); la prueba no
 ha empezado, porque falta la variación de A. Los resultados que ALL tiene hoy
 ([H4, #58, H6 y H7](../../README.md#qué-presenta-este-experimento)) son de un solver acotado que no usa modelo
@@ -283,9 +287,11 @@ cuenta como no resuelta con el motivo `infra_repetida` (sección F.3).
 
 **En qué tareas.** Las 129 tareas públicas son de cuatro repositorios: fastapi 67, rich 48, requests 13,
 httpx 1 (página *Data*; `python -m scripts.kaggle_eda resumen`, sección 13). Solo sirve para medir una tarea
-que discrimina, y esa validez no está medida (sección 11). La prueba son las tareas válidas de un repositorio
-reservado y el entrenamiento son las de los demás (`leave_one_repo_out`). El repositorio preferido es fastapi
-y el segundo rich; lo decide la escalera de cómputo del pre-registro con la validez y la cuota medidas.
+que discrimina. Esa validez se midió como ensayo el 2026-10-04 (sección 11). La prueba son las tareas válidas
+de un repositorio reservado y el entrenamiento son las de los demás (`leave_one_repo_out`). El repositorio
+preferido es fastapi y el segundo rich; lo decide la escalera de cómputo del pre-registro con la validez y la
+cuota medidas. Con el ensayo de validez, fastapi queda con 29 tareas que discriminan, por debajo del mínimo
+de 40 del pre-registro, y rich con 42.
 
 **Con qué presupuesto.** El que cabe en las 12 horas del envío real. Con concurrencia 1, que es lo que se
 supone mientras la concurrencia real no esté medida, el pre-registro lo deriva en 3 a 5 minutos por tarea
@@ -353,8 +359,8 @@ calcula tasas, tareas que cambian de resultado y pares de réplicas; sale con 0 
 incompleto, 2 si la entrada es inválida y 3 si falla el script. Un parche vacío, un tiempo o presupuesto
 agotado y un rechazo por exceder el contexto cuentan como `unresolved`. Un `infra_error` obliga a repetir la
 réplica entera. La validez de las tareas es otro flujo, descrito en
-[`docs/validez_tareas.md`](docs/validez_tareas.md); su guion existe pero nunca se ejecutó con el verificador
-real.
+[`docs/validez_tareas.md`](docs/validez_tareas.md). Ese guion no se ha ejecutado todavía con el entorno
+declarado; la validez que hay es la del ensayo de la sección 11, medida con el mismo verificador del arnés.
 
 ---
 
@@ -811,11 +817,15 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 | Inscripción en las dos pistas | Confirmada por API | Comentario en #101 |
 | Tasa de A con el kit oficial | **Sin medir** | — |
 | Variación entre réplicas de A | **Sin medir** | — |
-| Validez de cada tarea (`discrimina` o no) | **Sin medir.** `scripts/kaggle_validez.py` nunca se ejecutó con el verificador real | [`docs/validez_tareas.md`](docs/validez_tareas.md) |
+| Validez de cada tarea (`discrimina` o no) | **Medida como ensayo** el 2026-10-04, sin GPU, en el sandbox `subprocess` del notebook: discriminan 71 de 129 (fastapi 29 de 67, rich 42 de 48, requests 0 de 13, httpx 0 de 1). En 35 de las 55 donde el parche de referencia no pasa, pytest termina con código 2 con y sin parche. El registro del pre-registro (`scripts/kaggle_validez.py`, con entorno declarado) sigue sin ejecutarse | [`calibracion/validez_notebook_2026-10-04.json`](calibracion/validez_notebook_2026-10-04.json) |
+| Límite de 60 s por comando en la verificación | **Medido** en ese ensayo: no cambia el veredicto en ninguna de las 71 tareas que discriminan | Mismo archivo |
+| Primer envío a la pista de código (kit ajustado, exploratorio) | **Nota pública 0,06**, que son 4 de 58 tareas: la tabla muestra `k/58` truncado. Una repetición del mismo zip está pendiente de nota | [`submissions/registry.json`](submissions/registry.json); [`docs/rescate_kaggle.md`](docs/rescate_kaggle.md) |
+| Tabla pública completa (1 683 equipos el 2026-10-04) | **Leída**: mediana 5 tareas, media 4,92, desviación 2,28; un equipo con un solo envío tiene de media 3,83 | [`docs/rescate_kaggle.md`](docs/rescate_kaggle.md) |
+| Parámetros que recibe el modelo | **Comprobado sin GPU**: con `include_thoughts: false` el arnés envía el razonamiento desactivado | [`docs/simulacro_sin_gpu.md`](docs/simulacro_sin_gpu.md) |
 | Ensayo de notebook: backend, carga del modelo, tokens por segundo, rechazos por contexto | **Sin medir.** El instrumento nunca se ejecutó en Kaggle | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
 | Entorno del sandbox: una variante local v2 (constructor `scripts/build_sandbox.py`, PR #120) con controles vacíos de dos tareas | Ensayo local, sin parche de referencia: no fija el entorno del experimento ni acredita la validez de ninguna tarea; su diagnóstico es una lectura estática del arnés, sin ejecutarlo | [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) |
-| Concurrencia de la puntuación real | **Sin medir** | — |
-| Acceso a L4×4 desde la cuenta | **Sin medir** | Comentario en #101 |
+| Concurrencia de la puntuación real | Sin medición propia. El staff dijo en el foro que es secuencial | Comentario en #103 |
+| Acceso a L4×4 desde la cuenta | **Medido**: la cuenta obtiene cuatro NVIDIA L4 de 23 034 MiB. La espera en cola de la única corrida con ese dato fue de 8 h 20 min | [`docs/rescate_kaggle.md`](docs/rescate_kaggle.md) |
 | Efecto de B, C o D | **Sin medir.** Las condiciones no existen | — |
 | Corridas con el arnés y sin modelo (tres tareas locales sin parche) | Hecho, pero el registro tiene conclusiones cuestionadas y no es una fuente de exclusiones | [`calibracion/fase2_sin_parche.json`](calibracion/fase2_sin_parche.json); pre-registro, A.4 |
 
