@@ -7,9 +7,9 @@
     "reserva": 0.1,
     "tope_max_time_minutes": 60,
     "minimo_max_time_minutes": 2,
-    "max_tool_calls": 100,
-    "max_turns": 500,
-    "timeout_seconds": 300,
+    "max_tool_calls": 40,
+    "max_turns": 100,
+    "timeout_seconds": 60,
     "max_output_tokens_candidatos": [16384, 8192],
     "viabilidad_turnos_minimos": 5,
     "pilotos_maximo": 2,
@@ -111,6 +111,11 @@
       "fecha": "2026-10-03",
       "motivo": "Enmienda 1. Registro del ensayo de notebook (A.0): medidas ausentes (nulas) cuando el servidor no arranca o el kit no compila; lista de turnos de la repeticion con 8192 y viabilidad juzgada con la lista del max_output_tokens que queda fijado; informe_sha256; la duracion de sesion se declara con su fuente. No cambia ningun valor de 'fijos'.",
       "commit": "PR #119 (commit de squash en main)"
+    },
+    {
+      "fecha": "2026-10-04",
+      "motivo": "Enmienda 2. La condicion A pasa a ser el kit ajustado que se envio el 2026-10-03 (envio 56808559, SHA-256 d8a3e1d3558f03b72b3f86037ff53b462a8f66566e1bb7907240bcb0ce4d7182): sin adaptadores, max_output_tokens 8192, include_thoughts false, max_time_minutes 4, max_tool_calls 40, max_turns 100 y timeout_seconds 60. Cambia tres valores de 'fijos' (max_tool_calls 100 a 40, max_turns 500 a 100, timeout_seconds 300 a 60) y su resumen. Los 4 minutos quedan fijados como valor de A; la formula de D se conserva como comprobacion. El ensayo de notebook (A.0) corre con la A redefinida. Versionada con el envio pendiente, sin conocer su nota, y antes de cualquier replica.",
+      "commit": "rama issue-106-envio-code-track (commit de esta enmienda)"
     }
   ]
 }

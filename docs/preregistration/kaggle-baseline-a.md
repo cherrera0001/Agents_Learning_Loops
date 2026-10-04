@@ -34,7 +34,7 @@ Los valores fijados están también en
 `fijos`. Su resumen SHA-256 es:
 
 ```text
-588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7
+f0fdb8caeedb145fd5443a649026ce83766e981fd3664a80d0608689d3d0f346
 ```
 
 `python -m scripts.kaggle_prereg comprobar` lo recalcula y sale con 2 si no coincide.
@@ -410,6 +410,11 @@ Valores candidatos (`python -m scripts.kaggle_prereg presupuesto`):
 Los otros tres límites quedan en los valores que el guion de puntuación aplica cuando el envío no los
 cambia (HARNESS § 7.1): **100 llamadas a herramientas, 500 turnos y 300 s por comando**. Solo el tiempo se
 deriva, porque es el único que el límite de 12 h restringe.
+
+**Enmienda 2 (2026-10-04, sección I.4).** Esos tres límites pasan a **40 llamadas a herramientas, 100
+turnos y 60 s por comando**, y `max_time_minutes` queda fijado en **4** como valor de A. La fórmula de
+esta sección se conserva como comprobación: si el piloto muestra que 4 minutos no caben en las 12 horas
+con el montaje medido, se corrige con otra enmienda antes de cualquier réplica.
 
 **Diferencia con el kit.** El `eval_config.yaml` del kit trae valores de ejemplo mucho menores en los
 cuatro límites (HARNESS § 7.1). La línea base cambia ese archivo y nada más. Es una desviación declarada:
@@ -905,6 +910,7 @@ una enmienda: un commit propio, anterior al primer recibo al que afecta, con su 
 | Fecha | Motivo | Commit |
 |---|---|---|
 | 2026-10-03 | **Enmienda 1.** Registro del ensayo de notebook (A.0): medidas ausentes cuando el servidor no arranca o el kit no compila; lista de turnos de la repetición con 8 192 y viabilidad juzgada con la lista del `max_output_tokens` que queda fijado; `informe_sha256`; y la duración de sesión se declara con su fuente. Cambia el esquema `kaggle-notebook-trial/1` en `scripts/kaggle_prereg.py`; no cambia ningún valor de `fijos` ni su resumen. Anterior a cualquier recibo y a C0.5 | PR #119 (commit de squash en `main`) |
+| 2026-10-04 | **Enmienda 2.** La condición A pasa a ser el kit ajustado. A deja de ser «el kit oficial con un solo archivo cambiado» y es el zip enviado el 2026-10-03 (envío 56808559, SHA-256 `d8a3e1d3558f03b72b3f86037ff53b462a8f66566e1bb7907240bcb0ce4d7182`), con cuatro cambios sobre el kit: (1) sin adaptadores: los del kit tienen pesos en cero y reducían el contexto de vLLM (foro, hilo 744794); (2) `max_output_tokens` 8192: con 16 384, vLLM rechaza prompts de más de 16 384 tokens (notebook público de Dariush Afshar); (3) `include_thoughts: false`: se imita una configuración pública que puntúa (notebook de Roman Rozen), sin evidencia propia de que ayude; (4) 4 minutos, 40 llamadas, 100 turnos y 60 s por comando: el kit trae 1 minuto y 10 llamadas, la puntuación es secuencial y pasar de 12 h anula el envío (hilos 743063 y 743964). **Por qué:** el kit sin cambios dio error sin nota en septiembre (hilos 743213 y 744807), así que la A original no es ejecutable. **Sección D:** los 4 minutos quedan fijados como valor de A y la fórmula se conserva como comprobación; si el piloto muestra que no caben en las 12 horas con el montaje medido, se corrige con otra enmienda antes de cualquier réplica. **A.0:** el ensayo de notebook corre con la A redefinida. **Cambia `fijos`:** `max_tool_calls` 100 → 40, `max_turns` 500 → 100, `timeout_seconds` 300 → 60, y su resumen. **No cambia:** la partición, el número de réplicas, las reglas de decisión ni la frontera de fuga. **Lo que se sabía:** el zip ya estaba enviado y su nota no se conocía (estado pendiente); los valores del presupuesto se eligieron sin regla previa. Anterior a cualquier réplica | Rama `issue-106-envio-code-track` (commit de esta enmienda) |
 
 ## Fuera de alcance
 

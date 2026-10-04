@@ -290,6 +290,8 @@ y el segundo rich; lo decide la escalera de cómputo del pre-registro con la val
 supone mientras la concurrencia real no esté medida, el pre-registro lo deriva en 3 a 5 minutos por tarea
 (fórmula en la sección D.1; `python -m scripts.kaggle_prereg presupuesto`). Las 100 llamadas a herramientas,
 los 500 turnos y los 300 s por comando son valores por defecto del guion de puntuación (HARNESS § 7.1) y cada
+participante puede cambiarlos; desde la Enmienda 2 del pre-registro, A usa 4 minutos, 40 llamadas, 100 turnos y
+60 s. Cada
 participante puede cambiarlos. Los 60 minutos por tarea que citan algunos borradores son el valor por defecto
 del arnés y el tope de la fórmula, no una regla del concurso.
 
@@ -925,7 +927,7 @@ python -m scripts.kaggle_prereg comprobar
 Sale con 1; eso es lo esperado hoy porque quedan parámetros abiertos. Lista nueve (`ensayo_notebook`,
 `entorno_sandbox`, `validez_tareas`, `cuota`, `subconjunto`, `piloto`, `presupuesto`, `corrida`,
 `decisiones_dueno`) y el resumen
-`fijos_sha256: 588bf1aad8e7d944c3c545363acb4e2da22d6901ee31243f75bfd8045b45d8f7`. Con `--tasks <tasks.jsonl>`
+`fijos_sha256: f0fdb8caeedb145fd5443a649026ce83766e981fd3664a80d0608689d3d0f346`. Con `--tasks <tasks.jsonl>`
 también sale con 1.
 
 **Fórmulas del pre-registro:**
