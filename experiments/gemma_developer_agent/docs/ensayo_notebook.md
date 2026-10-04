@@ -383,8 +383,24 @@ archivos `.whl` (2026-10-04); eso dice que tiene ruedas, no cómo se llama su di
 No se sabe por qué cambia la disposición (sesión interactiva frente a corrida por lotes, o un cambio de Kaggle
 entre un día y otro). Dentro de `models` no se listó nada en la sesión interactiva.
 
+### Qué hay dentro, listado por API (2026-10-04)
+
+| Fuente | Contenido | Para la guardia |
+|---|---|---|
+| Datos de la competencia (524 archivos) | `tasks.jsonl`, `snapshots/` (129), `graphs/` (127), `embeddings/` (127), `sample_submission/` (10), **`wheels/` (124)**, `docker/` (4), `sandbox/` (1), `HARNESS_README.md` | El directorio de datos es el que contiene `tasks.jsonl`. La celda de las tareas necesita también `graphs`, `embeddings` y `snapshots` |
+| Dataset `metric/gemma-4-developer-agent-wheelhouse` (41 archivos, sin subcarpetas) | Las ruedas del arnés: incluye la de `swegemma` y la de `vllm` | Es el único directorio con una rueda `swegemma-*.whl` |
+| Modelo `google/gemma-4`, variante `gemma-4-31b-it-qat-w4a16-ct`, versión 2 (8 archivos) | `config.json`, `model.safetensors` y archivos del tokenizador | Directorio con `config.json` y un archivo de pesos |
+
+**Hay dos directorios con ruedas, no uno.** Los datos de la competencia traen su propia carpeta `wheels/`, con las
+dependencias de las tareas y sin ninguna rueda del arnés. Una guardia que se quede con «el único directorio que
+contiene `.whl`» se detiene siempre en una sesión sana. La guardia correcta lista todos los directorios con
+ruedas y se queda con el que contiene la de `swegemma`.
+
+Esto se encontró al construir el árbol del ensayo local con los nombres reales de la API en vez de un árbol
+supuesto: con el árbol supuesto la guardia pasaba, y con el real se detenía.
+
 **Regla que sale de esto.** Ninguna celda escribe una ruta bajo `/kaggle/input`. La primera celda lista la raíz,
-localiza el único directorio con ruedas, el de `tasks.jsonl` y el del modelo, imprime lo que encontró y se
+localiza el directorio con las ruedas del arnés, el de `tasks.jsonl` y el del modelo, imprime lo que encontró y se
 detiene si falta alguno o hay más de uno. No espera ni reintenta, y no comparte celda con el servidor del
 modelo. Las rutas del notebook oficial de inicio son las de la primera fila y no se copian.
 `scripts/kaggle_preflight.py` rechaza un notebook que no cumpla esto.
