@@ -35,7 +35,15 @@ from .failure_transfer import CONDITIONS as TRANSFER_CONDITIONS
 from .failure_transfer import DECISION_INPUTS as TRANSFER_DECISION_INPUTS
 from .failure_transfer import POLICY as TRANSFER_POLICY
 from .failure_transfer import replay_decision as replay_transfer_decision
+from .nonlexical_seed import AGENT_NAME as SEED_AGENT
+from .nonlexical_seed import CONDITIONS as SEED_CONDITIONS
+from .nonlexical_seed import DECISION_INPUTS as SEED_DECISION_INPUTS
+from .nonlexical_seed import TRACE as TRACE_SIGNAL
+from .nonlexical_seed import replay_context, replay_retrieval
+from .nonlexical_seed import replay_decision as replay_seed_decision
 from .runner import ROOT, source_manifest
+from .trace_seed import POLICY as SEED_POLICY
+from .trace_seed import SEED_NODE_TYPE, trace_weights
 
 # Decision policy each known agent must declare (#58); None = the default decision, without policy.
 AGENT_POLICIES = {
@@ -43,6 +51,7 @@ AGENT_POLICIES = {
     DIAGNOSTIC_AGENT: DIAGNOSTIC_POLICY,
     FAILURE_AGENT: FAILURE_POLICY,
     TRANSFER_AGENT: TRANSFER_POLICY,
+    SEED_AGENT: SEED_POLICY,
 }
 # Agentes que llevan los campos de la memoria de fallos: el de H6 (#63) y el de H7 (#65), que la extiende.
 FAILURE_AGENTS = frozenset({FAILURE_AGENT, TRANSFER_AGENT})
@@ -59,6 +68,14 @@ FAILURE_RECORD_FIELDS = frozenset({"condition", "pass", "failure_memory_input", 
 TRANSFER_FIELDS = frozenset({"failure_scope_tau", "failure_placebo", "failure_recorded_strategies"})
 TRANSFER_RECORD_FIELDS = frozenset({"failure_scope_tau", "placebo"})
 TRANSFER_RUN_FIELDS = (FAILURE_RECORD_FIELDS - {"pass"}) | TRANSFER_RECORD_FIELDS
+# Siembra de la recuperación (H8, #98): su agente declara ``condition`` sin memoria de fallos, y solo sus
+# recibos llevan el bloque ``retrieval.seeding``.
+SEED_RECORD_FIELDS = frozenset({"condition"})
+SEED_RETRIEVAL_FIELD = "seeding"
+# Anotaciones privadas cuyo valor nombra la causa o la familia: ninguno puede aparecer en una siembra.
+CAUSAL_ANNOTATIONS = ("family", "decoy_family", "hidden_cause_id")
+PRIVATE_PATH = "benchmark/private"
+_TOKEN = re.compile(r"[^\w\-]+")
 # Orden temporal declarado de la secuencia de H6 dentro de una (lote, semilla, condición).
 TASK_ORDER = TASK_SETS["misleading-v1"]
 
@@ -142,14 +159,16 @@ def decision_policy(record):
             raise ValueError("default-agent receipt carries diagnostic-baseline fields")
     elif decision.get("policy") != expected:
         raise ValueError("agent and decision policy disagree")
-    if agent not in FAILURE_AGENTS and (
-        FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()
-    ):
+    # H8 (#98): su agente declara ``condition`` sin ser de memoria de fallos; ningún otro campo se le exime.
+    carried = record.keys() - SEED_RECORD_FIELDS if agent == SEED_AGENT else record.keys()
+    if agent not in FAILURE_AGENTS and (FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & carried):
         raise ValueError("un recibo ajeno a la memoria de fallos lleva campos de memoria de fallos")
     if agent != TRANSFER_AGENT and (
         TRANSFER_FIELDS & decision.keys() or TRANSFER_RECORD_FIELDS & record.keys()
     ):
         raise ValueError("un recibo ajeno a la transferencia de fallos lleva campos de transferencia (H7)")
+    if agent != SEED_AGENT and SEED_RETRIEVAL_FIELD in record.get("retrieval", {}):
+        raise ValueError("un recibo ajeno a la siembra de la recuperación lleva campos de siembra (H8)")
     return agent, expected
 
 
@@ -406,6 +425,116 @@ def check_failure_transfer(runs, receipts):
     )
 
 
+def strings_of(value):
+    """Todas las claves y cadenas de una estructura JSON, en profundidad."""
+    if isinstance(value, dict):
+        for key, item in value.items():
+            yield key
+            yield from strings_of(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings_of(item)
+    elif isinstance(value, str):
+        yield value
+
+
+def private_tokens(metadata):
+    """Claves de las anotaciones privadas y sus valores causales (``CAUSAL_ANNOTATIONS``), como tokens."""
+    keys = {key for annotation in metadata.values() for key in annotation}
+    values = {
+        annotation[name]
+        for annotation in metadata.values()
+        for name in CAUSAL_ANNOTATIONS
+        if isinstance(annotation.get(name), str)
+    }
+    return keys | values
+
+
+def check_seed_material(record, block, forbidden):
+    """Rechazo de una siembra con material privado o causal (H8, sección 8, punto 6).
+
+    En C_S toda semilla está en un nodo ``Component`` de ``memory_input`` y su puntuación sale de la traza
+    registrada en ``tests[0]``. Además, ni el bloque de siembra ni las rutas del contexto del agente
+    contienen una ruta de ``benchmark/private/``, una clave de las anotaciones privadas o uno de sus valores
+    causales. La búsqueda es por token exacto y solo ahí: el código fuente y el texto de la tarea tienen
+    palabras públicas que coinciden con nombres de familia.
+    """
+    paths = list(record["initial_source"])
+    found = [*strings_of(block), *paths]
+    tokens = {token for text in found for token in (text, *_TOKEN.split(text))}
+    if any(PRIVATE_PATH in text.replace("\\", "/") for text in found) or tokens & forbidden:
+        raise ValueError("la siembra o el contexto del agente contienen material privado o causal")
+    if block.get("signal") != TRACE_SIGNAL:
+        return
+    nodes = {n["id"]: n for n in (record["memory_input"] or {}).get("nodes", [])}
+    weights = trace_weights(record["tests"][0]["stderr"], paths)
+    for seed in block.get("seeds") or []:
+        node = nodes.get(seed.get("node"))
+        if node is None or node["type"] != SEED_NODE_TYPE:
+            raise ValueError("semilla en un nodo que no es Component")
+        score = max((weights.get(path, 0.0) for path in node["label"].split()), default=0.0)
+        if score <= 0 or seed.get("score") != score:
+            raise ValueError("puntuación de siembra que no sale de la traza registrada")
+
+
+def check_trace_seed(runs, metadata):
+    """Recibos de la recuperación sembrada (H8, #98), después de ``single_policy``.
+
+    Cada recibo declara exactamente ``SEED_DECISION_INPUTS`` con un ``test-0`` fallido, y una condición
+    coherente con su modo de memoria y con su señal de siembra. La siembra no usa material privado ni causal
+    (``check_seed_material``). La recuperación se repite solo con ``tests[0].stderr``, las claves de
+    ``initial_source`` y ``memory_input`` (más ``title + context`` en C_L) y debe coincidir con la registrada:
+    componentes, puntuaciones, estado y lección expuesta. El contexto hasheado es el que cubre esas entradas,
+    y la decisión se repite con el ``plan()`` por defecto. La señal extraída es la misma en las cuatro
+    condiciones de cada (lote, semilla, tarea). La repetición prueba coherencia con lo registrado, no que no
+    se consultó nada más: eso lo cubren la auditoría del módulo de siembra y el test de invariancia.
+    """
+    seed_runs = [r for r in runs if r["agent"] == SEED_AGENT]
+    if not seed_runs:
+        return
+    forbidden = private_tokens(metadata)
+    signals = defaultdict(set)
+    for r in seed_runs:
+        tests = r["tests"]
+        consecutive = [t["id"] for t in tests] == [f"test-{i}" for i in range(len(tests))]
+        reproduced = bool(tests) and tests[0]["returncode"] != 0
+        if r.get("decision_inputs") != SEED_DECISION_INPUTS or not consecutive or not reproduced:
+            raise ValueError("recuperación sembrada sin la reproducción previa declarada (test-0 fallido)")
+        block = r["retrieval"].get(SEED_RETRIEVAL_FIELD)
+        if r.get("condition") not in SEED_CONDITIONS or not isinstance(block, dict):
+            raise ValueError("recibo de siembra sin condición o bloque de siembra declarados")
+        mode, signal = SEED_CONDITIONS[r["condition"]]
+        if mode != r["memory_mode"] or block.get("policy") != SEED_POLICY or block.get("signal") != signal:
+            raise ValueError("la condición no concuerda con el modo de memoria o con la política de siembra")
+        if r["memory_input"] is not None and digest(r["memory_input"]) != r["memory_before_sha256"]:
+            raise ValueError("la memoria de entrada no es la que declara su huella")
+        check_seed_material(r, block, forbidden)
+        memories, paths, expected = replay_retrieval(r)
+        if r["retrieval"] != {"memories": memories, "paths": paths, SEED_RETRIEVAL_FIELD: expected} or r[
+            "retrieved_memories"
+        ] != [m["id"] for m in memories]:
+            raise ValueError("la recuperación sembrada no se repite desde su recibo")
+        if r["agent_context_sha256"] != digest(replay_context(r)):
+            raise ValueError("el contexto del agente no cubre lo que recibió la recuperación")
+        if r["decision"] != replay_seed_decision(r):
+            raise ValueError("la decisión de la recuperación sembrada no se repite desde su recibo")
+        signals[(r["batch_id"], r["seed"], r["task"]["id"])].add(digest(block["components"]))
+    if any(len(found) != 1 for found in signals.values()):
+        raise ValueError("las condiciones de una celda recibieron señales distintas")
+
+
+def seed_slices(runs):
+    """Cortes del informe genérico de H8: A y B con cada una de las dos asociativas (C_L o C_S).
+
+    Cada corte tiene como mucho una ejecución por (lote, semilla, tarea, modo), así que el emparejamiento
+    con NO_MEMORY y las métricas genéricas no mezclan las dos siembras.
+    """
+    return {
+        name: [r for r in runs if r["condition"] in ("A", "B", associative)]
+        for name, associative in (("lexical-seed", "C_L"), ("trace-seed", "C_S"))
+    }
+
+
 def transfer_slices(runs):
     """Cortes del informe genérico de H7: sin memoria de fallos (A y C) y cada variante real o placebo por τ.
 
@@ -493,12 +622,15 @@ def evaluate(evidence_dir=None, output=None, root=ROOT):
         check_failure_transfer(runs, receipts)
     else:
         check_failure_memory(runs, receipts)
+    check_trace_seed(runs, metadata)
     check_extra_annotations(runs, root, source_manifest(root))
     generated_from = {p.name: r["receipt_sha256"] for p, r in zip(paths, receipts, strict=True)}
     if any(r["agent"] == FAILURE_AGENT for r in runs):
         return failure_memory_report(runs, metadata, generated_from, output)
     if transfer:
         return failure_transfer_report(runs, metadata, generated_from, output)
+    if any(r["agent"] == SEED_AGENT for r in runs):
+        return seed_report(runs, metadata, generated_from, output)
     comparisons, metrics, gains = paired(runs, metadata)
     return campaign_report(runs, metadata, generated_from, comparisons, metrics, gains, output)
 
@@ -710,6 +842,29 @@ def failure_transfer_report(runs, metadata, generated_from, output):
         ),
         title="failure transfer (#65)",
         analysis="Pre-registered H7 analysis: `python -m scripts.analyze_failure_transfer`.",
+    )
+
+
+def seed_report(runs, metadata, generated_from, output):
+    """Informe genérico de una campaña de recuperación sembrada (H8, #98), por corte (``seed_slices``).
+
+    El análisis pre-registrado de H8 es ``scripts/analyze_h8.py``; este informe sirve para la auditoría
+    genérica.
+    """
+    return sliced_report(
+        runs,
+        metadata,
+        generated_from,
+        output,
+        campaign="nonlexical-seed-v1",
+        slices=seed_slices(runs),
+        definition=(
+            "A and B with each associative condition (C_L lexical seed / C_S trace-component seed); each "
+            "slice holds at most one run per batch, seed, task and memory mode, so pairs and metrics never "
+            "mix the two seeding policies"
+        ),
+        title="non-lexical seed (#98)",
+        analysis="Pre-registered H8 analysis: `python -m scripts.analyze_h8`.",
     )
 
 

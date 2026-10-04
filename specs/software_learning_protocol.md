@@ -304,3 +304,5 @@ Supplement: [diagnostic baseline (#58)](diagnostic_baseline_protocol.md), an opt
 Supplement: [failure memory with revision (#63)](failure_memory_protocol.md), an opt-in agent that also demotes strategies that already failed in a similar context.
 
 Supplement: [failure transfer and contamination (#65)](failure_transfer_protocol.md), the same opt-in agent with a declared scope threshold and a placebo, over a single transfer pass.
+
+Supplement: [retrieval seeded with trace components (H8, #98)](nonlexical_seed_protocol.md), an opt-in agent whose associative retrieval can be seeded with the application files in the traceback of the public reproduction instead of the lexical query.

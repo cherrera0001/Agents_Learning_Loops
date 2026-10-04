@@ -32,6 +32,10 @@ FAILURE_ANALYSIS = ["tests/unit/test_analyze_failure_memory.py"]
 TRANSFER_TESTS = ["tests/test_experiment_failure_transfer.py"]
 TRANSFER_HARNESS = ["tests/test_experiment_failure_transfer_harness.py"]
 TRANSFER_ANALYSIS = ["tests/unit/test_analyze_failure_transfer.py"]
+# Recuperación sembrada (H8, #98): trazas y memorias sintéticas, conexión con runner/evaluador y análisis.
+SEED_TESTS = ["tests/test_experiment_trace_seed.py"]
+SEED_HARNESS = ["tests/test_experiment_trace_seed_harness.py"]
+SEED_ANALYSIS = ["tests/unit/test_analyze_h8.py"]
 CONTROLS = (
     [PROPERTIES],
     EXPERIMENT_TESTS,
@@ -44,9 +48,13 @@ CONTROLS = (
     TRANSFER_TESTS,
     TRANSFER_HARNESS,
     TRANSFER_ANALYSIS,
+    SEED_TESTS,
+    SEED_HARNESS,
+    SEED_ANALYSIS,
 )
 FAILURE_SCRIPT = ROOT / "scripts" / "analyze_failure_memory.py"
 TRANSFER_SCRIPT = ROOT / "scripts" / "analyze_failure_transfer.py"
+SEED_SCRIPT = ROOT / "scripts" / "analyze_h8.py"
 
 # (nombre, archivo, original, mutación, destino de pytest que debe detectarla)
 # El destino es una lista de argumentos de pytest propia de cada mutación.
@@ -372,9 +380,8 @@ MUTATIONS = [
     (
         "H6: evaluador acepta campos de H6 en otros agentes",
         EXPERIMENTS / "evaluate.py",
-        "if agent not in FAILURE_AGENTS and (\n"
-        "        FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS & record.keys()\n"
-        "    ):",
+        "if agent not in FAILURE_AGENTS and (FAILURE_FIELDS & decision.keys() or FAILURE_RECORD_FIELDS"
+        " & carried):",
         "if False:",
         FAILURE_HARNESS,
     ),
@@ -674,6 +681,315 @@ MUTATIONS = [
         'c[k]["verdict"] == "el contenido importa" for k in where',
         "True for k in where",
         TRANSFER_ANALYSIS,
+    ),
+    # Recuperación sembrada con los componentes de la traza (H8, #98)
+    (
+        "H8: se usa la primera traza del bloque",
+        EXPERIMENTS / "trace_seed.py",
+        "for line in block[starts[-1] + 1 :]:",
+        "for line in block[starts[0] + 1 :]:",
+        SEED_TESTS,
+    ),
+    (
+        "H8: peso sin distancia a la excepción",
+        EXPERIMENTS / "trace_seed.py",
+        "weights[component] = max(weights.get(component, 0.0), 1 / (1 + distance))",
+        "weights[component] = max(weights.get(component, 0.0), 1.0)",
+        SEED_TESTS,
+    ),
+    (
+        "H8: cuenta la aparición más externa",
+        EXPERIMENTS / "trace_seed.py",
+        "for i, component in enumerate(chain, 1)}",
+        "for i, component in reversed(list(enumerate(chain, 1)))}",
+        SEED_TESTS,
+    ),
+    (
+        "H8: mínimo entre bloques",
+        EXPERIMENTS / "trace_seed.py",
+        "weights[component] = max(weights.get(component, 0.0), 1 / (1 + distance))",
+        "weights[component] = min(weights.get(component, 1.0), 1 / (1 + distance))",
+        SEED_TESTS,
+    ),
+    (
+        "H8: marco sin exigir el separador de ruta",
+        EXPERIMENTS / "trace_seed.py",
+        'path.endswith("/" + k)',
+        "path.endswith(k)",
+        SEED_TESTS,
+    ),
+    (
+        "H8: resumen final sin cortar",
+        EXPERIMENTS / "trace_seed.py",
+        "body = body[: i - 1]",
+        "pass",
+        SEED_TESTS,
+    ),
+    (
+        "H8: se siembran nodos que no son Component",
+        EXPERIMENTS / "trace_seed.py",
+        'if node["type"] != SEED_NODE_TYPE:',
+        "if False:",
+        SEED_TESTS,
+    ),
+    (
+        "H8: el empate se resuelve por orden",
+        EXPERIMENTS / "trace_seed.py",
+        "if len(leaders) > 1:",
+        "if False:",
+        SEED_TESTS,
+    ),
+    (
+        "H8: corte de activación ignorado",
+        EXPERIMENTS / "trace_seed.py",
+        ">= ACTIVATION_CUT][:1]",
+        ">= 0][:1]",
+        SEED_TESTS,
+    ),
+    (
+        "H8: C_S con la siembra léxica de H4",
+        EXPERIMENTS / "nonlexical_seed.py",
+        "    if signal == TRACE:\n        memories, paths, block = seeded_retrieval(",
+        "    if False:\n        memories, paths, block = seeded_retrieval(",
+        SEED_TESTS,
+    ),
+    (
+        "H8: el agente no declara su política",
+        EXPERIMENTS / "nonlexical_seed.py",
+        'return {**super().plan(view), "policy": POLICY}',
+        "return {**super().plan(view)}",
+        SEED_TESTS,
+    ),
+    (
+        "H8: la reproducción no precede a la recuperación",
+        EXPERIMENTS / "runner.py",
+        'seed_stderr = reproduce(workspace, record)["stderr"]',
+        'seed_stderr = ""',
+        SEED_HARNESS,
+    ),
+    (
+        "H8: reproducción que altera el workspace aceptada",
+        EXPERIMENTS / "runner.py",
+        'raise ValueError("la reproducción previa modificó el workspace observable")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: runner sin validar el modo de la condición",
+        EXPERIMENTS / "runner.py",
+        "or SEED_CONDITIONS[condition][0] != mode",
+        "or False",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: el contexto hasheado no cubre la traza",
+        EXPERIMENTS / "nonlexical_seed.py",
+        'inputs["stderr"] = stderr',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador no repite la recuperación",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("la recuperación sembrada no se repite desde su recibo")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador no repite la decisión",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("la decisión de la recuperación sembrada no se repite desde su recibo")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta una semilla fuera de Component",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("semilla en un nodo que no es Component")',
+        "continue",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta una puntuación que no sale de la traza",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("puntuación de siembra que no sale de la traza registrada")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta material privado o causal",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("la siembra o el contexto del agente contienen material privado o causal")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: material privado buscado solo como ruta",
+        EXPERIMENTS / "evaluate.py",
+        "or tokens & forbidden:",
+        "or False:",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: decision_inputs solo por existencia",
+        EXPERIMENTS / "evaluate.py",
+        'r.get("decision_inputs") != SEED_DECISION_INPUTS',
+        '"decision_inputs" not in r',
+        SEED_HARNESS,
+    ),
+    (
+        "H8: reproducción que no falla aceptada",
+        EXPERIMENTS / "evaluate.py",
+        'reproduced = bool(tests) and tests[0]["returncode"] != 0',
+        "reproduced = True",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador no exige test-0 como primera prueba",
+        EXPERIMENTS / "evaluate.py",
+        'consecutive = [t["id"] for t in tests] == [f"test-{i}" for i in range(len(tests))]',
+        "consecutive = True",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta una condición incoherente con su siembra",
+        EXPERIMENTS / "evaluate.py",
+        'if mode != r["memory_mode"] or block.get("policy") != SEED_POLICY or block.get("signal") != signal:',
+        "if False:",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta señales distintas por celda",
+        EXPERIMENTS / "evaluate.py",
+        "if any(len(found) != 1 for found in signals.values()):",
+        "if False:",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta un contexto que no cubre la recuperación",
+        EXPERIMENTS / "evaluate.py",
+        'raise ValueError("el contexto del agente no cubre lo que recibió la recuperación")',
+        "pass",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: evaluador acepta campos de H8 en otros agentes",
+        EXPERIMENTS / "evaluate.py",
+        'if agent != SEED_AGENT and SEED_RETRIEVAL_FIELD in record.get("retrieval", {}):',
+        "if False:",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: el agente de siembra queda exento de los campos de H6",
+        EXPERIMENTS / "evaluate.py",
+        "carried = record.keys() - SEED_RECORD_FIELDS if agent == SEED_AGENT else record.keys()",
+        "carried = record.keys() - FAILURE_RECORD_FIELDS if agent == SEED_AGENT else record.keys()",
+        SEED_HARNESS,
+    ),
+    (
+        "H8: análisis con margen estricto frente a los controles",
+        SEED_SCRIPT,
+        "if delta_ctrl < MARGIN:",
+        "if delta_ctrl <= MARGIN:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: «mejora» con margen estricto frente a A",
+        SEED_SCRIPT,
+        "if delta_a >= MARGIN:",
+        "if delta_a > MARGIN:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: «peor que sin memoria» con margen estricto",
+        SEED_SCRIPT,
+        "if delta_a <= -MARGIN:",
+        "if delta_a < -MARGIN:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: selección cumplida con S = 3",
+        SEED_SCRIPT,
+        "return decoy_cited < MARGIN",
+        "return decoy_cited <= MARGIN",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: Δ_ctrl con el control más favorable",
+        SEED_SCRIPT,
+        "delta_ctrl = min(delta_b, delta_l)",
+        "delta_ctrl = max(delta_b, delta_l)",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: «apoyada» sin exigir la selección",
+        SEED_SCRIPT,
+        '(IMPROVES, False): "no apoyada: mejora, pero sigue citando el señuelo",',
+        "(IMPROVES, False): SUPPORTED,",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: marca «sin exposición» con margen estricto",
+        SEED_SCRIPT,
+        "silent = cited_runs < MARGIN",
+        "silent = cited_runs <= MARGIN",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: coste en las originales con margen estricto",
+        SEED_SCRIPT,
+        "WITH_COST if delta_orig <= -MARGIN",
+        "WITH_COST if delta_orig < -MARGIN",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: señuelo y otra lección confundidos",
+        SEED_SCRIPT,
+        'return (DECOY if family == target.get("decoy_family") else OTHER), cited[0]',
+        'return (OTHER if family == target.get("decoy_family") else DECOY), cited[0]',
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis acepta réplicas distintas",
+        SEED_SCRIPT,
+        "if behaviour(r) != behaviour(twin):",
+        "if False:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis sin comparar los controles con la referencia",
+        SEED_SCRIPT,
+        'and behaviour(r) != behaviour(cells[(r["memory_mode"], r["task"]["id"], r["seed"])])',
+        "and False",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis acepta una sola réplica",
+        SEED_SCRIPT,
+        "if len(batches) != REPLICATES:",
+        "if len(batches) > REPLICATES:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis acepta lotes incompletos",
+        SEED_SCRIPT,
+        "if found != expected:",
+        "if not found <= expected:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis acepta un recibo ERROR",
+        SEED_SCRIPT,
+        'if r.get("result") not in ("PASS", "FAIL"):',
+        "if False:",
+        SEED_ANALYSIS,
+    ),
+    (
+        "H8: análisis sin verificar el sello",
+        SEED_SCRIPT,
+        "if checksum is None or hashlib.sha256(canonical(record)).hexdigest() != checksum:",
+        "if checksum is None:",
+        SEED_ANALYSIS,
     ),
 ]
 

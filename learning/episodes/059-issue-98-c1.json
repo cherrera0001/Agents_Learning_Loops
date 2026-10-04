@@ -1,0 +1,93 @@
+{
+  "seq": 59,
+  "id": "issue-98-c1",
+  "goal": "Recuperación sembrada con señales no léxicas frente al señuelo (H8): política de siembra opt-in con los componentes de la traza, receta, verificaciones del evaluador y análisis pre-registrado, sin campaña (tramo C1 de cuatro)",
+  "ref": "#98",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "XL",
+    "points": 8,
+    "uncertainty": 3,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "xhigh"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 2
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del issue antes de leer el código: lecciones sobre heredocs en Git Bash y sobre mensajes de fallo que no dicen el problema. El episodio copia la estimación del issue entero, no la de este tramo; prs cuenta el del pre-registro (#125) y este"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Lectura del pre-registro entero y de las plantillas de #58 y H7 (diagnostic.py, failure_transfer.py, evaluate.py, runner.py, sus tests y mutation_check) antes de escribir: el evaluador empareja por modo de memoria, así que dos condiciones asociativas exigen un informe por cortes, y condition era hasta ahora un campo exclusivo de la memoria de fallos"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "trace_seed.py (función de siembra: stderr, claves de archivo y memoria; sin tarea) y nonlexical_seed.py (agente, condiciones y repetición); agent.py y memory.py sin tocar, con la propagación duplicada y un test de equivalencia contra EvidenceMemory.retrieve"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La herramienta de escritura dejó un carácter BOM literal dentro de una cadena del test: invisible en el editor y frágil ante cualquier normalización"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "python -c con comillas dobles dentro de una orden de PowerShell: TerminatorExpectedAtEndOfString, la orden no llegó a ejecutarse"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Guion en disco fuera del repositorio para sustituir el BOM por el escape \\ufeff; los guiones auxiliares posteriores (mutaciones, reevaluación de campañas) también en disco"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Test del evaluador esperaba el rechazo por política de siembra al reetiquetar C_S como C_L; lo rechaza antes la procedencia de las lecciones (memory provenance), porque el recibo de entrenamiento cambia de sello"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La fixture que corre C_S sobre las nueve tareas imprime resultado e iteraciones; al fallar un test, pytest mostró las iteraciones de EXP-07..09 con la semilla 7 antes de la campaña"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Caso reetiquetado con su mensaje real, fixture ordenada por tarea y el resto de casos con un selector por caso para que solo falle la guarda que se prueba; el vistazo a las iteraciones se declara en el PR"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "analyze_h8.py sin importar experiments: validez (forma, ERROR, réplicas, 162 celdas de control contra reference-v2) antes del veredicto; una campaña inválida devuelve su motivo y no un veredicto"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "45 mutaciones propias (44 de H8 y la de H6 reescrita por el cambio de condition) detectadas con un guion que filtra MUTATIONS; pytest completo, ruff, mypy y los esquemas en verde; las cinco campañas publicadas reevaluadas en un directorio temporal dan los mismos agregados"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "specs/nonlexical_seed_protocol.md, una línea en el protocolo, CHANGELOG y el número de mutaciones del README (88 a 132) con su fila de H8"
+    }
+  ],
+  "lessons": [
+    "Un carácter invisible (BOM, espacio de ancho cero) se escribe en el código con su escape (\\ufeff), nunca literal",
+    "En PowerShell no pases a python -c un programa con comillas dobles: escribe el guion en disco y ejecútalo",
+    "Antes de escribir un test de rechazo del evaluador, recorre el orden de sus guardas: la primera que salta decide el mensaje, y una alteración que cambia un recibo de entrenamiento rompe antes la procedencia de las lecciones",
+    "Una fixture que ejecuta tareas de una hipótesis aún sin campaña no debe imprimir resultados: la salida capturada aparece en cuanto un test falla",
+    "Para añadir una condición opt-in al harness de experimento sin tocar el agente por defecto, duplica el paso que necesitas y fija la equivalencia con un test contra el original, en vez de refactorizar el módulo publicado",
+    "Si una guarda nueva reutiliza una expresión que ya existe en el archivo, dale un texto propio: mutation_check sustituye solo la primera aparición"
+  ]
+}

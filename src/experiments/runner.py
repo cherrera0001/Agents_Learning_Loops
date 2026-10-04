@@ -34,6 +34,10 @@ from .failure_transfer import DECISION_INPUTS as TRANSFER_DECISION_INPUTS
 from .failure_transfer import TransferView
 from .memory import EvidenceMemory
 from .models import MemoryMode, PublicTask, Reflection
+from .nonlexical_seed import CONDITIONS as SEED_CONDITIONS
+from .nonlexical_seed import DECISION_INPUTS as SEED_DECISION_INPUTS
+from .nonlexical_seed import retrieval_inputs
+from .nonlexical_seed import retrieve as seeded_retrieve
 
 ROOT = Path(__file__).resolve().parents[2]
 PHASES = (
@@ -189,12 +193,23 @@ def run_experiment(
     # Memoria de fallos opt-in (#63): solo su agente declara condición y pasada, y solo A_N y C_N
     # reciben una memoria de fallos. Las demás recetas no pasan estos argumentos.
     reads_failures = getattr(agent, "reads_failures", False)
-    if reads_failures != (condition is not None):
+    # Siembra de la recuperación opt-in (H8, #98): su agente declara una de sus cuatro condiciones, sin
+    # memoria de fallos ni pasada. La condición de las demás recetas sigue siendo la de la memoria de fallos.
+    seeded = getattr(agent, "seeds_retrieval", False)
+    if seeded and (
+        condition not in SEED_CONDITIONS
+        or SEED_CONDITIONS[condition][0] != mode
+        or failures is not None
+        or pass_number is not None
+    ):
+        raise ValueError("la siembra de la recuperación exige una de sus condiciones, con su modo de memoria")
+    failure_condition = None if seeded else condition
+    if reads_failures != (failure_condition is not None):
         raise ValueError("la memoria de fallos exige su agente y una condición declarada, y solo ellos")
     # Transferencia de fallos opt-in (#65): condiciones propias, con τ y placebo, y una sola pasada.
     transfer = getattr(agent, "failure_transfer", False)
     if (
-        condition is not None
+        failure_condition is not None
         and not transfer
         and (
             condition not in CONDITIONS
@@ -252,7 +267,7 @@ def run_experiment(
             _, _, scope_tau, placebo = TRANSFER_CONDITIONS[condition]
             record["failure_scope_tau"] = scope_tau
             record["placebo"] = placebo
-        else:
+        elif not seeded:
             record["pass"] = pass_number
     try:
         with tempfile.TemporaryDirectory(prefix="aal-task-") as directory:
@@ -264,11 +279,24 @@ def run_experiment(
             # Every source/test hash goes through normalize_source (lf/v1).
             record["initial_source_sha256"] = sources_digest(initial)
             record["acceptance_sha256"] = sources_digest(protected)
+            if seeded:
+                # H8 (#98): la reproducción pública precede a la recuperación, en las cuatro condiciones.
+                # Solo C_S la usa para sembrar. Debe dejar intacto lo que el solver verá después.
+                seed_stderr = reproduce(workspace, record)["stderr"]
+                if app_files(workspace) != initial or protected_files(workspace) != protected:
+                    raise ValueError("la reproducción previa modificó el workspace observable")
             advance(record, "RETRIEVE")
-            memories, paths = memory.retrieve(task.query(), mode)
-            record["retrieval"] = {"memories": memories, "paths": paths}
+            if seeded:
+                memories, paths, seeding = seeded_retrieve(
+                    memory, condition, task.query(), seed_stderr, tuple(initial)
+                )
+                record["retrieval"] = {"memories": memories, "paths": paths, "seeding": seeding}
+                record["decision_inputs"] = copy.deepcopy(SEED_DECISION_INPUTS)
+            else:
+                memories, paths = memory.retrieve(task.query(), mode)
+                record["retrieval"] = {"memories": memories, "paths": paths}
             record["retrieved_memories"] = [m["id"] for m in memories]
-            if condition is not None:
+            if failure_condition is not None:
                 failure_input = failures.snapshot()["records"] if failures is not None else []
                 record["failure_memory_input"] = failure_input
             context = {
@@ -276,6 +304,11 @@ def run_experiment(
                 "files": {k: normalize_source(v) for k, v in initial.items()},
                 "memories": memories,
             }
+            if seeded:
+                # El contexto hasheado cubre también lo que recibió la recuperación.
+                context["retrieval"] = retrieval_inputs(
+                    condition, task.query(), seed_stderr, tuple(initial), record["memory_before_sha256"]
+                )
             if getattr(agent, "reads_reproduction", False):
                 # Opt-in diagnostic baseline (#58): the public reproduction precedes
                 # the decision; later test output never reaches the agent.
@@ -309,7 +342,7 @@ def run_experiment(
             decision = agent.plan(view)
             record["decision"] = decision
             record["initial_hypothesis"] = decision["initial_hypothesis"]
-            if condition is not None:
+            if failure_condition is not None:
                 # Lado del controlador, después de decidir: el origen de cada registro aplicado se
                 # lee de su recibo sellado y nunca llega al agente.
                 record["failure_origins"] = [

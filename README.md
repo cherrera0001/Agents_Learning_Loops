@@ -764,7 +764,7 @@ python -m scripts.verify_experiment1 --root .   # verificación independiente
 flowchart LR
     PR["Pull request"] --> LINT["lint · tipos · spec<br/>ruff · mypy --strict<br/>export_schema --check"]
     PR --> TEST["tests · matriz 2 × 4<br/>Linux / Windows<br/>Python 3.11 – 3.14"]
-    PR --> MUT["mutaciones<br/>88 defectos inyectados"]
+    PR --> MUT["mutaciones<br/>132 defectos inyectados"]
     PR --> EMBJ["embeddings<br/>fastembed + caché del modelo"]
     TEST --> COV["cobertura ≥ 90 %<br/>(98.7 % el 2026-10-02)"]
     TEST --> BENCH["benchmark --json"]
@@ -783,7 +783,7 @@ flowchart LR
 | Integración | Agente de biblioteca completo, benchmark, CLI, bitácora de desarrollo, valencia entre dominios | `tests/integration/` |
 | Mutación | Cada propiedad debe detectar un defecto inyectado deliberadamente | `scripts/mutation_check.py` |
 
-`scripts/mutation_check.py` inyecta hoy 88 defectos, uno por uno, y exige que algún test falle con cada uno:
+`scripts/mutation_check.py` inyecta hoy 132 defectos, uno por uno, y exige que algún test falle con cada uno:
 
 | Grupo | Defectos | Qué protege |
 |---|---|---|
@@ -792,6 +792,7 @@ flowchart LR
 | Diagnóstico público (#58) | 20 | El orden entre diagnóstico y memoria, y las verificaciones del evaluador y del análisis |
 | H6 (#63) | 24 | El alcance de la memoria de fallos, sus registros y las reglas de decisión |
 | H7 (#65) | 31 | El umbral τ, el placebo y la lectura pareada contra la base |
+| H8 (#98) | 44 | La señal de la traza, los estados de la siembra, las verificaciones del evaluador y las reglas de decisión |
 
 Las cinco del Experimento 0:
 
