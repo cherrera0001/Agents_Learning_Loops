@@ -921,8 +921,10 @@ def test_comando_servidor_lleva_los_parametros_de_harness_3_1(esc: Escenario) ->
         "8000",
         "--max-model-len",
         "32768",
+        "--dtype",
+        "bfloat16",
         "--gpu-memory-utilization",
-        "0.80",
+        "0.9",
         "--tensor-parallel-size",
         "4",
         "--enable-auto-tool-choice",
@@ -930,11 +932,12 @@ def test_comando_servidor_lleva_los_parametros_de_harness_3_1(esc: Escenario) ->
         "gemma4",
         "--reasoning-parser",
         "gemma4",
-        "--default-chat-template-kwargs",
-        '{"enable_thinking": true}',
+        "--reasoning-config",
+        '{"reasoning_start_str": "<|channel>", "reasoning_end_str": "<channel|>"}',
+        "--no-scheduler-reserve-full-isl",
         "--enable-lora",
         "--max-loras",
-        "8",
+        "2",
         "--max-lora-rank",
         "128",
         "--lora-modules",
@@ -1571,7 +1574,17 @@ def test_argumento_que_parece_ruta_no_se_publica(arg: str) -> None:
     assert ke.publico([ke.Oculto("valor", arg)]) == ("<oculto>",)
 
 
-@pytest.mark.parametrize("arg", ["--port", "8000", '{"enable_thinking": true}', "{{.Id}}", "a" * 200, "0.80"])
+@pytest.mark.parametrize(
+    "arg",
+    [
+        "--port",
+        "8000",
+        '{"reasoning_start_str": "<|channel>", "reasoning_end_str": "<channel|>"}',
+        "{{.Id}}",
+        "a" * 200,
+        "0.9",
+    ],
+)
 def test_argumento_literal_se_publica(arg: str) -> None:
     assert ke.argumento_publicable(arg)
     assert ke.publico([arg]) == (arg,)
@@ -1834,7 +1847,7 @@ def test_plan_no_ejecuta_nada(esc: Escenario, capsys: pytest.CaptureFixture[str]
     assert "no se ha ejecutado nada" in salida
     for nombre in ("docker", "servidor", "rendimiento", "rechazo_sintetico:8192", "agente:16384", "limpieza"):
         assert f". {nombre} [" in salida
-    assert "vllm.entrypoints.openai.api_server" in salida and "--gpu-memory-utilization 0.80" in salida
+    assert "vllm.entrypoints.openai.api_server" in salida and "--gpu-memory-utilization 0.9" in salida
     assert "--max-time-minutes 5 --max-tool-calls 40 --max-turns 100 --timeout-seconds 60" in salida
     assert str(esc.raiz) not in salida and "kaggle/input" not in salida
     assert not esc.crudo.exists() and not esc.salida.exists() and not esc.informe.exists()
@@ -3756,3 +3769,93 @@ def test_escritura_exclusiva_sin_enlaces_duros_tampoco_pisa(
     monkeypatch.undo()
     assert destino.read_bytes() == b"de otra sesion"
     assert [p.name for p in tmp_path.iterdir()] == ["registro.json"]
+
+
+def _adaptador(raiz: Path, nombre: str, config: str) -> tuple[str, Path]:
+    directorio = raiz / "adapters" / nombre
+    directorio.mkdir(parents=True)
+    (directorio / "adapter_config.json").write_text(config, encoding="utf-8")
+    return nombre, directorio
+
+
+@pytest.mark.parametrize(
+    ("configs", "esperado"),
+    [
+        (['{"r": 4}', '{"r": 4}'], ("2", "8")),
+        (['{"r": 16}'], ("1", "16")),
+        (['{"r": 20}', '{"r": 4}'], ("2", "32")),
+        (['{"r": 4}', "no es json"], ("2", "128")),
+        (['{"r": true}'], ("1", "128")),
+    ],
+)
+def test_parametros_lora_reservan_lo_que_trae_el_envio(
+    tmp_path: Path, configs: list[str], esperado: tuple[str, str]
+) -> None:
+    adaptadores = [_adaptador(tmp_path, f"a{i}", c) for i, c in enumerate(configs)]
+    assert ke.parametros_lora(adaptadores) == (
+        "--enable-lora",
+        "--max-loras",
+        esperado[0],
+        "--max-lora-rank",
+        esperado[1],
+    )
+
+
+def test_sin_adaptadores_el_servidor_no_activa_lora(tmp_path: Path) -> None:
+    orden = ke.real(ke.comando_servidor("python", ke.ConfigServidor(tmp_path, (), 8000)))
+    assert "--enable-lora" not in orden and "--lora-modules" not in orden
+    assert orden[orden.index("--dtype") + 1] == "bfloat16"
+    assert orden[orden.index("--gpu-memory-utilization") + 1] == "0.9"
+
+
+def _opciones(orden: list[str]) -> dict[str, str | bool]:
+    opciones: dict[str, str | bool] = {}
+    i = 0
+    while i < len(orden):
+        if orden[i].startswith("--"):
+            con_valor = i + 1 < len(orden) and not orden[i + 1].startswith("--")
+            opciones[orden[i]] = orden[i + 1] if con_valor else True
+            i += 2 if con_valor else 1
+        else:
+            i += 1
+    return opciones
+
+
+@pytest.mark.parametrize("rangos", [(), (4, 4), (16,)])
+def test_la_orden_del_servidor_es_la_del_arnes(tmp_path: Path, rangos: tuple[int, ...]) -> None:
+    """Con el arnés instalado, toda opción que arma ``VllmServer.build_cmd`` está igual en este guion."""
+    adk = pytest.importorskip("adk_submission")
+    envio = tmp_path / "envio"
+    envio.mkdir()
+    for i, r in enumerate(rangos):
+        _nombre, directorio = _adaptador(envio, f"lora{i}", json.dumps({"r": r, "peft_type": "LORA"}))
+        (directorio / "adapter_model.safetensors").write_bytes(b"")
+    manifiesto = adk.discover_adapters(str(envio)) if rangos else None
+    config = adk.VllmConfig(
+        model="/modelo",
+        port=8000,
+        host="127.0.0.1",
+        tool_call_parser="gemma4",
+        reasoning_parser="gemma4",
+        max_model_len=32768,
+        dtype="bfloat16",
+        gpu_memory_utilization=0.90,
+        enable_auto_tool_choice=True,
+        enable_lora=True,
+        max_loras=8,
+        max_lora_rank=128,
+        tensor_parallel_size=4,
+    )
+    del_arnes = _opciones([str(x) for x in adk.VllmServer(config, adapter_manifest=manifiesto).build_cmd()])
+    propio = _opciones(
+        ke.real(
+            ke.comando_servidor(
+                "python", ke.ConfigServidor(Path("/modelo"), ke.descubrir_adaptadores(envio), 8000)
+            )
+        )
+    )
+    for opcion, valor in del_arnes.items():
+        if opcion in ("--model", "--lora-modules"):
+            continue
+        assert propio.get(opcion) == valor, opcion
+    assert set(propio) - set(del_arnes) == {"--served-model-name"}

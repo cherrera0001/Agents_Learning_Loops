@@ -99,14 +99,20 @@ TAREAS_DEL_PRIMERO = 3
 BACKENDS = ("docker", "subprocess")
 ARCHIVO_MUESTREO = "configs/sampling.yaml"
 
-# --- Parametros del servidor del modelo (HARNESS § 3.1), en la forma de opciones de vLLM.
+# --- Parametros del servidor del modelo: los mismos que arma el arnes (``VllmServer.build_cmd`` de
+# adk-submission 0.2.12) con la configuracion del notebook oficial de la competencia. Un test los compara
+# cuando el arnes esta instalado. Hasta el 2026-10-04 este guion armaba una orden propia: sin ``--dtype``,
+# con 0.80 de memoria y con 8 adaptadores de rango 128 reservados; con ella el servidor termino antes de
+# quedar listo en las dos corridas con L4x4.
 CONTEXTO_MAXIMO = 32768
 HOST = "127.0.0.1"
 PARAMETROS_SERVIDOR: tuple[str, ...] = (
     "--max-model-len",
     str(CONTEXTO_MAXIMO),
+    "--dtype",
+    "bfloat16",
     "--gpu-memory-utilization",
-    "0.80",
+    "0.9",
     "--tensor-parallel-size",
     "4",
     "--enable-auto-tool-choice",
@@ -114,10 +120,13 @@ PARAMETROS_SERVIDOR: tuple[str, ...] = (
     "gemma4",
     "--reasoning-parser",
     "gemma4",
-    "--default-chat-template-kwargs",
-    '{"enable_thinking": true}',
+    "--reasoning-config",
+    '{"reasoning_start_str": "<|channel>", "reasoning_end_str": "<channel|>"}',
+    "--no-scheduler-reserve-full-isl",
 )
-PARAMETROS_LORA: tuple[str, ...] = ("--enable-lora", "--max-loras", "8", "--max-lora-rank", "128")
+# Rangos que vLLM admite para reservar adaptadores; el arnes redondea hacia arriba al primero que alcanza.
+RANGOS_LORA: tuple[int, ...] = (8, 16, 32, 64, 128, 256)
+RANGO_LORA_DESCONOCIDO = 128
 # Variables que el guion fija al servidor y al arnes para que nada salga a internet.
 VARIABLES_SIN_RED: tuple[tuple[str, str], ...] = (
     ("HF_HUB_OFFLINE", "1"),
@@ -959,8 +968,30 @@ def descubrir_adaptadores(envio: Path) -> tuple[tuple[str, Path], ...]:
     return tuple(out)
 
 
+def rango_del_adaptador(directorio: Path) -> int | None:
+    """Rango ``r`` que declara ``adapter_config.json``, o ``None`` si no se puede leer."""
+    try:
+        config = json.loads((directorio / "adapter_config.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    rango = config.get("r") if isinstance(config, dict) else None
+    return rango if isinstance(rango, int) and not isinstance(rango, bool) and rango > 0 else None
+
+
+def parametros_lora(adaptadores: Sequence[tuple[str, Path]]) -> tuple[str, ...]:
+    """Opciones de LoRA como las arma el arnes: tantos adaptadores como hay y el rango que necesitan.
+
+    Reservar mas adaptadores o mas rango de los que trae el envio quita memoria al contexto del modelo.
+    """
+    rangos = [rango_del_adaptador(ruta) for _, ruta in adaptadores]
+    conocidos = [r for r in rangos if r is not None]
+    necesario = max(conocidos) if len(conocidos) == len(rangos) else max([RANGO_LORA_DESCONOCIDO, *conocidos])
+    reservado = next((r for r in RANGOS_LORA if r >= necesario), necesario)
+    return ("--enable-lora", "--max-loras", str(len(adaptadores)), "--max-lora-rank", str(reservado))
+
+
 def comando_servidor(python: str, cfg: ConfigServidor) -> list[Token]:
-    """Comando de arranque de vLLM con los parametros de HARNESS § 3.1."""
+    """Comando de arranque de vLLM con los mismos parametros que arma el arnes de la competencia."""
     tokens: list[Token] = [
         Oculto(python, "<python>"),
         "-m",
@@ -976,7 +1007,7 @@ def comando_servidor(python: str, cfg: ConfigServidor) -> list[Token]:
         *PARAMETROS_SERVIDOR,
     ]
     if cfg.adaptadores:
-        tokens.extend(PARAMETROS_LORA)
+        tokens.extend(parametros_lora(cfg.adaptadores))
         tokens.append("--lora-modules")
         tokens.extend(
             Oculto(f"{nombre}={ruta}", f"{nombre}=<envio>:adapters:{nombre}")
