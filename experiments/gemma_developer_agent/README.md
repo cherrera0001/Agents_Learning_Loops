@@ -634,9 +634,9 @@ sobre las mismas tareas:
 
 | Hipótesis | Apoyada si | Sin diferencia si | Refutada si |
 |---|---|---|---|
-| H(C, A): las skills (C) resuelven más que el kit (A) | C resuelve más que A por más de `M*` | La diferencia, en cualquier sentido, es menor que `M*` | C resuelve menos que A por más de `M*`. Solo se puede leer si A resuelve al menos 6 tareas en cada réplica (G3); si no, «refutada por empeorar» queda fuera de alcance |
-| H(C, B): las skills (C) resuelven más que el texto de relleno (B) | C resuelve más que B por más de `M*` | La diferencia es menor que `M*`. Entonces una mejora frente a A, si la hubiera, no se atribuiría a la experiencia consolidada | C resuelve menos que B por más de `M*` |
-| H(D, C): la instrucción de usar el grafo (D) añade a C | D resuelve más que C por más de `M*` | La diferencia es menor que `M*` | D resuelve menos que C por más de `M*` |
+| H(C, A): las skills (C) resuelven más que el kit (A) | `(C − A)/n > M*` | `|C − A|/n ≤ M*` | `(A − C)/n > M*`. Solo se puede leer si A resuelve al menos 6 tareas en cada réplica (G3); si no, «refutada por empeorar» queda fuera de alcance |
+| H(C, B): las skills (C) resuelven más que el texto de relleno (B) | `(C − B)/n > M*` | `|C − B|/n ≤ M*`. Entonces una mejora frente a A, si la hubiera, no se atribuiría a la experiencia consolidada | `(B − C)/n > M*` |
+| H(D, C): la instrucción de usar el grafo (D) añade a C | `(D − C)/n > M*` | `|D − C|/n ≤ M*` | `(C − D)/n > M*` |
 
 Supuestos: para C frente a B y D frente a C se usa el mismo `M*`, lo que supone que la variación entre
 corridas es la de A (la de B, C y D no se ha medido). El estimador es mayoría estricta y la predicción, una,
@@ -645,17 +645,12 @@ el cómputo (G6). Si A resuelve casi todas las tareas del subconjunto (menos de 
 campaña no puede declarar mejora sobre ese subconjunto; si la línea base cae en el caso de ruido dominante,
 la campaña no se corre, ni como confirmatoria ni como descriptiva.
 
-**B y D tenían varias definiciones en los borradores.** La elección quedó en el pre-registro de la campaña:
-B es el placebo de longitud, no unas heurísticas, y D es la instrucción literal, sin herramientas nuevas.
-
-| Condición | Definiciones en circulación | La del issue #104 |
-|---|---|---|
-| B | «Skills escritas a mano» (`drafts/preregistration_abcd.md`, `drafts/paper/manuscript_draft.md`); «texto neutro de longitud igual a C, escrito después de congelar C» (`drafts/README.md`, `drafts/skills/all_core/SKILL.md`) | «Placebo escrito a mano, misma longitud que C» |
-| D | «Grafo AST más traza de excepción» (`drafts/preregistration_abcd.md`) | «C con una instrucción que obliga a ubicar el código con las herramientas de grafo antes de aplicar una skill» |
-
-La tabla de arriba conserva las definiciones que circularon. El comentario de #100 distingue el texto neutro
-de las heurísticas humanas: el pre-registro eligió el texto neutro. El kit ya declara las tres herramientas
-de grafo y el arnés las anuncia en el prompt (HARNESS § 5.2), así que D no añade herramientas.
+La igualdad con `M*` pertenece a «sin diferencia» porque el umbral solo se supera estrictamente. El
+denominador es el conjunto completo congelado de prueba; una comparación con algún resultado ausente no
+tiene desenlace y no puede reducir `n`. `alfa = 0.05` se usa solo en G1 para la alarma McNemar A–A; no es
+un corte adicional para estas tres hipótesis. B es el placebo de longitud y D la instrucción literal
+descritos en el [pre-registro de campaña](../../docs/preregistration/kaggle-campaign-abcd.md); D no añade
+herramientas.
 
 ### Diagrama D2. Las condiciones de la campaña (fijadas; ninguna corrida)
 
