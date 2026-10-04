@@ -73,6 +73,29 @@ flowchart LR
 El texto canónico, los responsables y las reglas del registro están en
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto).
 
+### Guardián de sesión
+
+Cada sesión de Claude Code abierta en este repositorio empieza con un gancho `SessionStart`
+(`.claude/settings.json`) que ejecuta `python scripts/session_guard.py`. Su salida entra en el contexto de
+la sesión antes del primer mensaje:
+
+- los **hallazgos** del chequeo del tablero (las mismas reglas que `python -m scripts.devlog board --since 76`):
+  tarjeta en «Done» sin verificar, issue cerrado sin episodio, issue sin tarjeta;
+- los **issues abiertos**, con su talla;
+- los **PR abiertos**.
+
+Para qué: que ninguna sesión abra un issue o una rama sin ver antes lo que ya está sin resolver. Un issue no
+queda resuelto al fusionar su PR, sino cuando sus criterios están comprobados y su tarjeta dice «Verificada».
+
+Límites, dichos sin rodeos:
+
+- **Informa, no bloquea.** Sale siempre con 0. Con `--estricto` sale con 1 si hay hallazgos y con 2 si no pudo
+  leer, para usarlo a mano o en CI.
+- **Solo cubre Claude Code.** Codex, Cursor y agy no leen este gancho; para ellos vale el comando a mano.
+- **Necesita `gh` con la cuenta del proyecto.** Si no puede leer el tablero lo dice, y eso no es «sin
+  hallazgos». No imprime el token ni lo guarda.
+- Solo usa la biblioteca estándar, para funcionar con el Python del sistema aunque el paquete no esté instalado.
+
 ### Criterios de cierre por tipo de trabajo
 
 Cada issue declara su *Tipo de cierre* y su *Evidencia requerida* en la plantilla

@@ -1,0 +1,60 @@
+{
+  "seq": 58,
+  "id": "issue-122-guardian-de-sesion",
+  "goal": "Que cada sesión de Claude Code en el repositorio empiece viendo lo que el tablero dice que está sin resolver: hallazgos, issues abiertos y PR abiertos (tercera entrega del issue 122)",
+  "ref": "#122",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "no declarado"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "Durante dos días se abrieron y cerraron issues sin que ninguna sesión mirara el tablero al empezar: el chequeo existía pero solo corría cuando alguien se acordaba, y el agente guardián quedó en una rama local sin subir"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Chequeo del tablero en vivo antes de escribir nada: tres hallazgos (dos tarjetas en Done sin verificar y un issue cerrado sin episodio) y seis issues abiertos"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La primera versión importaba el módulo de devlog y falló con el Python del sistema, que no tiene instalado el paquete del proyecto: el gancho habría dado una traza en cada sesión"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Guardián con solo la biblioteca estándar, ejecutable como archivo desde la raíz, que pide el token a gh sin imprimirlo y dice no pude leer en vez de sin hallazgos"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Ocho tests sobre una instantánea del tablero y ejecución real con el Python del sistema y sin token en el entorno: lista los tres hallazgos, los seis issues y los PR abiertos"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Gancho SessionStart versionado en la configuración del proyecto y documentado con sus límites: informa y no bloquea, y solo cubre Claude Code"
+    }
+  ],
+  "lessons": [
+    "Un control que depende de que alguien se acuerde de correrlo no es un control: engánchalo al inicio de la sesión o al CI",
+    "Un guion que corre como gancho usa solo la biblioteca estándar y se prueba con el Python del sistema, no con el del entorno virtual",
+    "Una definición de agente es pasiva: para que algo vigile tiene que ejecutarse solo"
+  ]
+}
