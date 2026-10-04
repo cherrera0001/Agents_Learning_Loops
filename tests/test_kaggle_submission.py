@@ -19,9 +19,7 @@ import pytest
 
 from scripts import kaggle_submission
 from scripts.kaggle_submission import (
-    EXIT_INVALID,
     EXIT_OK,
-    REQUIRED_ROOT_FILES,
     SCHEMA_VERSION,
     SubmissionRegistry,
     compute_file_sha256,
@@ -181,7 +179,7 @@ def test_verify_zip_submission(dummy_condition_dir: Path, tmp_path: Path) -> Non
 
 def test_verify_zip_submission_corrupt_or_missing(tmp_path: Path) -> None:
     non_existent = tmp_path / "non_existent.zip"
-    valid, msgs, _, _ = verify_zip_submission(non_existent)
+    valid, _msgs, _, _ = verify_zip_submission(non_existent)
     assert valid is False
 
     corrupt = tmp_path / "corrupt.zip"

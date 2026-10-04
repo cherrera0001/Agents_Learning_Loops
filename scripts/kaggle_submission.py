@@ -18,13 +18,11 @@ import datetime
 import hashlib
 import json
 import os
-import re
 import sys
 import tempfile
 import zipfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
 
 SCHEMA_VERSION = "kaggle-submission-registry/1"
 COMPETITION_ID = 149921
@@ -241,7 +239,8 @@ def verify_zip_submission(zip_path: Path) -> tuple[bool, list[str], str, int]:
                     expected_weights = f"adapters/{adp}/adapter_model.safetensors"
                     if expected_weights not in namelist:
                         messages.append(
-                            f"[ERROR] Adaptador '{adp}' declarado en agent.yaml pero falta: {expected_weights}"
+                            f"[ERROR] Adaptador '{adp}' declarado en agent.yaml "
+                            f"pero falta: {expected_weights}"
                         )
                         valid = False
                     else:
@@ -433,7 +432,8 @@ def main(argv: list[str] | None = None) -> int:
             return EXIT_OK
         sys.stdout.write(f"Envíos registrados ({len(reg.submissions)}) en {args.registry}:\n")
         sys.stdout.write(
-            f"{'ID':<8} {'FECHA':<12} {'COND':<6} {'STATUS':<10} {'SCORE':<8} {'SHA256 (prefijo)':<18} {'ARCHIVO'}\n"
+            f"{'ID':<8} {'FECHA':<12} {'COND':<6} {'STATUS':<10} {'SCORE':<8} "
+            f"{'SHA256 (prefijo)':<18} {'ARCHIVO'}\n"
         )
         sys.stdout.write("-" * 80 + "\n")
         for s in reg.submissions:
