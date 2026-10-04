@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "congelado_en": "2026-10-04T22:30:00Z",
+  "aprobado_por": "dueño, 2026-10-04",
+  "rasgos": {
+    "busca": {
+      "regla": "hay al menos una llamada antes de la primera edición",
+      "campo": "llamada_de_la_primera_edicion",
+      "minimo": 2
+    },
+    "oye": {
+      "regla": "ejecutó al menos una prueba",
+      "campo": "comandos_con_pytest",
+      "minimo": 1,
+      "medida_incompleta_hasta_version": 1,
+      "motivo": "solo cuenta comandos que nombran pytest; no cuenta comprobaciones en línea ni guarda si ocurrió antes de entregar"
+    },
+    "observa": {
+      "regla": "ninguna llamada repite una que ya había fallado",
+      "campo": "repetidas_tras_fallo",
+      "maximo": 0
+    },
+    "espera": {
+      "regla": "terminó sin agotar el límite de llamadas",
+      "margen_bajo_el_limite": 2
+    },
+    "acierta": {
+      "regla": "entre 1 y 3 ediciones y a lo más una entrega",
+      "ediciones_minimo": 1,
+      "ediciones_maximo": 3,
+      "entregas_maximo": 1,
+      "origen_del_maximo": "percentil 75 de los bloques de cambio de las soluciones de referencia en las 71 tareas válidas (mediana 2, percentil 75 igual a 3; 54 de 71 tienen 3 o menos)"
+    }
+  },
+  "perfil": {
+    "completo": ["busca", "oye", "observa", "espera", "acierta"],
+    "sin_oye": ["busca", "observa", "espera", "acierta"],
+    "primario_mientras_oye_sea_incompleto": "sin_oye"
+  },
+  "decision": {
+    "ventaja_minima_tareas": 2,
+    "ventaja_sobre_ruido": 1,
+    "grupo_minimo_para_hz1": 5,
+    "aumento_minimo_de_sesiones_con_perfil": 2
+  },
+  "operacion": {
+    "ventana": ["2026-10-05", "2026-10-11"],
+    "subidas_por_resultado_util_maximo": 1,
+    "fallos_visibles_en_local_maximo": 0
+  }
+}
