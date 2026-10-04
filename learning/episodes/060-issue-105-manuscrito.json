@@ -1,0 +1,61 @@
+{
+  "seq": 60,
+  "id": "issue-105-manuscrito",
+  "goal": "Escribir el artículo de la pista de artículo desde lo que está medido, pasarlo por los tres vetos y dejarlo versionado, sin afirmar ningún resultado del modelo",
+  "ref": "#105",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "review_docs",
+      "success": false,
+      "error": "El borrador previo, revisado por cinco roles, no era publicable: afirmaba como hecho un mecanismo que no existe, llamaba prerregistrada a una campaña que no lo estaba y no tenía ninguna cita"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La primera reescritura describió mal el diseño del resultado previo (órdenes de tareas en vez de órdenes de operadores) y afirmó que las lecciones ayudaban en todos los umbrales tras leer solo ocho de las treinta y dos celdas del análisis"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Medición de validez de las tareas públicas bajada, recalculada desde el archivo por tarea y versionada solo como conteos por repositorio, con el resumen del archivo crudo"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Artículo reorientado a cuánto se puede creer una diferencia: validez de las tareas, diseño de la línea base y resultado previo como motivación; la comparación de skills salió porque el diseño no podía detectar un efecto del tamaño publicado"
+    },
+    {
+      "action": "review_docs",
+      "success": false,
+      "error": "Los tres vetos dieron apto con cambios: nueve frases afirmaban más de lo medido, dos cifras de obras ajenas no estaban en su resumen, el título no decía que el modelo no se ejecutó y varios términos iban sin definir"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Correcciones de los tres vetos aplicadas en una sola pasada; el texto queda en un solo idioma por indicación del dueño; PR fusionado sin envío a la competencia"
+    }
+  ],
+  "lessons": [
+    "Un artículo sin resultados del sistema que anuncia lo dice en el título, y cuenta lo que sí se midió aunque sea sobre las tareas y no sobre el sistema",
+    "Antes de resumir un análisis en una frase, cuenta cuántas celdas tiene el archivo de origen: una tabla del documento puede mostrar solo una parte",
+    "Una cifra de una obra ajena se cita con el alcance de lo que se leyó: si solo se abrió el resumen, solo lo que dice el resumen",
+    "Los vetos de un texto se aplican juntos en una pasada, cuando han llegado todos, para no reescribir tres veces"
+  ]
+}
