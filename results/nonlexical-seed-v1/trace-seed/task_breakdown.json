@@ -1,0 +1,724 @@
+{
+  "schema_id": "software-learning-task-breakdown/v1",
+  "misleading_tasks": [
+    "EXP-07",
+    "EXP-08",
+    "EXP-09"
+  ],
+  "MisleadingRetrievalRate": {
+    "ASSOCIATIVE_MEMORY": {
+      "MisleadingRetrievalRate": 1.0,
+      "CorrectFamilyRetrievalRate": 0.0,
+      "MisleadingExposureRate": 1.0,
+      "counts": {
+        "cited": 12,
+        "correct_cited": 0,
+        "decoy_cited": 12,
+        "decoy_exposed": 12,
+        "exposed": 12,
+        "runs": 36
+      }
+    },
+    "NO_MEMORY": {
+      "MisleadingRetrievalRate": null,
+      "CorrectFamilyRetrievalRate": null,
+      "MisleadingExposureRate": null,
+      "counts": {
+        "cited": 0,
+        "correct_cited": 0,
+        "decoy_cited": 0,
+        "decoy_exposed": 0,
+        "exposed": 0,
+        "runs": 36
+      }
+    },
+    "TEXT_HISTORY": {
+      "MisleadingRetrievalRate": 1.0,
+      "CorrectFamilyRetrievalRate": 0.0,
+      "MisleadingExposureRate": 0.3333333333333333,
+      "counts": {
+        "cited": 36,
+        "correct_cited": 0,
+        "decoy_cited": 36,
+        "decoy_exposed": 36,
+        "exposed": 108,
+        "runs": 36
+      }
+    }
+  },
+  "tasks": {
+    "EXP-01": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "train",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "NO_MEMORY": {
+        "split": "train",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "train",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      }
+    },
+    "EXP-02": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "train",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "NO_MEMORY": {
+        "split": "train",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "train",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "validate_optional_identity": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-01": 12
+        },
+        "cited_lessons_by_source_family": {
+          "authentication": 12
+        }
+      }
+    },
+    "EXP-03": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "train",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "NO_MEMORY": {
+        "split": "train",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "train",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "normalize_environment": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-02": 12
+        },
+        "cited_lessons_by_source_family": {
+          "configuration": 12
+        }
+      }
+    },
+    "EXP-04": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_family": {
+          "readiness": 12
+        }
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 1.0,
+        "IterationsPerTask": 1.0,
+        "IterationDeltaVsNoMemory": -1.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "validate_optional_identity": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-01": 12
+        },
+        "cited_lessons_by_source_family": {
+          "authentication": 12
+        }
+      }
+    },
+    "EXP-05": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 1.0,
+        "IterationsPerTask": 1.0,
+        "IterationDeltaVsNoMemory": -1.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "normalize_environment": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-02": 12
+        },
+        "cited_lessons_by_source_family": {
+          "configuration": 12
+        }
+      }
+    },
+    "EXP-06": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {}
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": null,
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 1.0,
+        "IterationsPerTask": 1.0,
+        "IterationDeltaVsNoMemory": -1.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_family": {
+          "readiness": 12
+        }
+      }
+    },
+    "EXP-07": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": "readiness",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_family": {
+          "readiness": 12
+        },
+        "MisleadingRetrievalRate": 1.0,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 12,
+          "decoy_cited": 12,
+          "correct_cited": 0,
+          "exposed": 12,
+          "decoy_exposed": 12
+        }
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": "readiness",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {},
+        "MisleadingRetrievalRate": null,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 0,
+          "decoy_cited": 0,
+          "correct_cited": 0,
+          "exposed": 0,
+          "decoy_exposed": 0
+        }
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "authentication",
+        "decoy_family": "readiness",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_family": {
+          "readiness": 12
+        },
+        "MisleadingRetrievalRate": 1.0,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 12,
+          "decoy_cited": 12,
+          "correct_cited": 0,
+          "exposed": 36,
+          "decoy_exposed": 12
+        }
+      }
+    },
+    "EXP-08": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": "authentication",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {},
+        "MisleadingRetrievalRate": null,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 0,
+          "decoy_cited": 0,
+          "correct_cited": 0,
+          "exposed": 0,
+          "decoy_exposed": 0
+        }
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": "authentication",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {},
+        "MisleadingRetrievalRate": null,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 0,
+          "decoy_cited": 0,
+          "correct_cited": 0,
+          "exposed": 0,
+          "decoy_exposed": 0
+        }
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "configuration",
+        "decoy_family": "authentication",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "validate_optional_identity": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-01": 12
+        },
+        "cited_lessons_by_source_family": {
+          "authentication": 12
+        },
+        "MisleadingRetrievalRate": 1.0,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 12,
+          "decoy_cited": 12,
+          "correct_cited": 0,
+          "exposed": 36,
+          "decoy_exposed": 12
+        }
+      }
+    },
+    "EXP-09": {
+      "ASSOCIATIVE_MEMORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": "configuration",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": 0.0,
+        "paired_runs": 12,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {},
+        "MisleadingRetrievalRate": null,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 0,
+          "decoy_cited": 0,
+          "correct_cited": 0,
+          "exposed": 0,
+          "decoy_exposed": 0
+        }
+      },
+      "NO_MEMORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": "configuration",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.3333333333333333,
+        "IterationsPerTask": 2.0,
+        "IterationDeltaVsNoMemory": null,
+        "paired_runs": 0,
+        "first_strategy": {
+          "initialize_storage": 4,
+          "normalize_environment": 4,
+          "validate_optional_identity": 4
+        },
+        "exposed_lessons_by_source_task": {},
+        "cited_lessons_by_source_task": {},
+        "cited_lessons_by_source_family": {},
+        "MisleadingRetrievalRate": null,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 0,
+          "decoy_cited": 0,
+          "correct_cited": 0,
+          "exposed": 0,
+          "decoy_exposed": 0
+        }
+      },
+      "TEXT_HISTORY": {
+        "split": "transfer",
+        "family": "readiness",
+        "decoy_family": "configuration",
+        "runs": 12,
+        "TaskSuccessRate": 1.0,
+        "FirstAttemptSuccessRate": 0.0,
+        "IterationsPerTask": 2.5,
+        "IterationDeltaVsNoMemory": 0.5,
+        "paired_runs": 12,
+        "first_strategy": {
+          "normalize_environment": 12
+        },
+        "exposed_lessons_by_source_task": {
+          "EXP-01": 12,
+          "EXP-02": 12,
+          "EXP-03": 12
+        },
+        "cited_lessons_by_source_task": {
+          "EXP-02": 12
+        },
+        "cited_lessons_by_source_family": {
+          "configuration": 12
+        },
+        "MisleadingRetrievalRate": 1.0,
+        "misleading_counts": {
+          "runs": 12,
+          "cited": 12,
+          "decoy_cited": 12,
+          "correct_cited": 0,
+          "exposed": 36,
+          "decoy_exposed": 12
+        }
+      }
+    }
+  },
+  "definitions": {
+    "MisleadingRetrievalRate": "cited lessons whose source training task belongs to the task's decoy_family / all cited lessons, over tasks annotated with decoy_family; null if no lesson was cited",
+    "CorrectFamilyRetrievalRate": "cited lessons from the task's true family / all cited lessons on misleading tasks",
+    "MisleadingExposureRate": "exposed decoy-family lessons / all exposed lessons on misleading tasks; TEXT_HISTORY exposes every lesson, so this is 1/3 by construction there",
+    "cited": "lessons named by decision.memory_ids (what the selection actually used)",
+    "exposed": "lessons in retrieval.memories (what the solver received)",
+    "IterationDeltaVsNoMemory": "mean(iterations - paired NO_MEMORY iterations); negative is favourable; null if unpaired"
+  }
+}
