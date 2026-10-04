@@ -56,9 +56,19 @@
       "tiempo_agotado": 3
     },
     "dorado_falla": {
-      "tests_fallidos": 54,
+      "codigo_1_tests_fallidos": 19,
+      "codigo_2_pytest_no_ejecuta_los_tests": 35,
       "error_del_entorno": 1,
-      "tiempo_agotado": 0
+      "tiempo_agotado": 0,
+      "codigo_2_por_repositorio": {
+        "fastapi": 34,
+        "httpx": 1
+      },
+      "codigo_1_por_repositorio": {
+        "fastapi": 2,
+        "requests": 12,
+        "rich": 5
+      }
     },
     "segundos_maximos_con_parche_y_limite_de_60_s": 7.6
   }

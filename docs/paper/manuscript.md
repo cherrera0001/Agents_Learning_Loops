@@ -56,7 +56,7 @@ Contribuciones:
 
 **Lectura.** En este entorno, solo 71 tareas distinguen un parche correcto de uno incorrecto. En otras 55 el parche de referencia no pasa, y 3 pasan sin parche. Dos de los cuatro repositorios no aportan aquí ninguna tarea que discrimine.
 
-**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, 54 terminaron con tests fallidos y 1 con un error del entorno de ejecución. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado y no un test fallido.
+**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, 19 terminaron con tests fallidos, 35 con el código de salida que pytest usa cuando no llega a ejecutar los tests (34 de ellas del repositorio con más tareas) y 1 con un error del entorno de ejecución. Ese segundo grupo apunta a un problema del entorno más que de las tareas, pero no lo comprobamos: la medición no guardó la salida de los tests. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado y no un test fallido.
 
 **El tiempo por comando.** Ninguna de las 55 terminó por tiempo agotado. Las 71 que discriminan se midieron también con un límite de 60 segundos por comando, el que usa nuestra configuración, y todas siguieron pasando con el parche.
 
