@@ -11,6 +11,7 @@ from .benchmark import (
     FAILURE_MEMORY_CAMPAIGN,
     FAILURE_TRANSFER_CAMPAIGN,
     HISTORICAL_CAMPAIGN,
+    NONLEXICAL_SEED_CAMPAIGN,
     REFERENCE_CAMPAIGN,
     TASK_SETS,
 )
@@ -22,6 +23,8 @@ from .failure_transfer import CONDITIONS as TRANSFER_CONDITIONS
 from .failure_transfer import FailureTransferRepairAgent, TransferFailureMemory
 from .memory import EvidenceMemory
 from .models import MemoryMode
+from .nonlexical_seed import CONDITIONS as SEED_CONDITIONS
+from .nonlexical_seed import TraceSeedRepairAgent
 from .runner import (
     ROOT,
     execute_tests,
@@ -34,7 +37,13 @@ from .runner import (
 
 CAMPAIGNS = {
     c["name"]: c
-    for c in (REFERENCE_CAMPAIGN, DIAGNOSTIC_CAMPAIGN, FAILURE_MEMORY_CAMPAIGN, FAILURE_TRANSFER_CAMPAIGN)
+    for c in (
+        REFERENCE_CAMPAIGN,
+        DIAGNOSTIC_CAMPAIGN,
+        FAILURE_MEMORY_CAMPAIGN,
+        FAILURE_TRANSFER_CAMPAIGN,
+        NONLEXICAL_SEED_CAMPAIGN,
+    )
 }
 
 
@@ -183,6 +192,61 @@ def transfer_campaign(
                         update_failure_memory(failures, path, evidence_dir)
 
 
+def seed_campaign(
+    seeds,
+    replicates,
+    evidence_dir,
+    train=NONLEXICAL_SEED_CAMPAIGN["train"],
+    transfer=NONLEXICAL_SEED_CAMPAIGN["transfer"],
+    conditions=NONLEXICAL_SEED_CAMPAIGN["conditions"],
+):
+    """Recuperación sembrada (H8, #98), pre-registro sección 3: por (réplica, semilla, condición), memoria
+    nueva; entrenamiento y transferencia en el orden declarado. Las lecciones solo se añaden en
+    entrenamiento, con ``ADD`` verificado, y quedan congeladas después. C_L y C_S construyen sus lecciones
+    igual: solo cambia qué nodos se siembran, también durante el entrenamiento. ``conditions`` solo se
+    reduce en los tests; la receta declarada usa las cuatro."""
+    if replicates < 1 or len(set(seeds)) != len(seeds):
+        raise ValueError("positive replication count and unique seeds required")
+    if (
+        not conditions
+        or len(set(conditions)) != len(conditions)
+        or not set(conditions) <= set(SEED_CONDITIONS)
+    ):
+        raise ValueError("condiciones de siembra desconocidas o repetidas")
+    sequence = [(task, "train") for task in train] + [(task, "transfer") for task in transfer]
+    for _ in range(replicates):
+        batch = "BATCH-" + uuid.uuid4().hex
+        for seed in seeds:
+            order = list(conditions)
+            random.Random(seed).shuffle(order)
+            for condition in order:
+                mode, _ = SEED_CONDITIONS[condition]
+                memory = EvidenceMemory()
+                for task_id, split in sequence:
+                    path = run_experiment(
+                        task_id,
+                        TraceSeedRepairAgent(),
+                        mode,
+                        seed,
+                        memory=memory,
+                        evidence_dir=evidence_dir,
+                        batch_id=batch,
+                        condition=condition,
+                    )
+                    receipt = read_receipt(path)
+                    print(
+                        f"{batch} seed={seed} {condition} {task_id}: "
+                        f"{receipt['result']} iterations={receipt['iterations']}",
+                        flush=True,
+                    )
+                    if receipt["result"] == "ERROR":
+                        raise RuntimeError(receipt["error"])
+                    if receipt["split"] != split:
+                        raise RuntimeError(f"{task_id} no pertenece a la partición declarada ({split})")
+                    if split == "train" and receipt["reflection"]["memory_action"] == "ADD":
+                        update_memory(memory, path, evidence_dir)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Reproducible software-learning laboratory")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -192,8 +256,9 @@ def main():
         choices=sorted(CAMPAIGNS),
         help=(
             "declared campaign: reference-v2 (#44), the opt-in diagnostic-baseline-v1 (#58), the "
-            "opt-in failure-memory-v1 (#63) or the opt-in failure-transfer-v1 (#65); fixes seeds, "
-            "replicates and task set (and the agent, conditions and passes for the opt-in ones)"
+            "opt-in failure-memory-v1 (#63), the opt-in failure-transfer-v1 (#65) or the opt-in "
+            "nonlexical-seed-v1 (#98); fixes seeds, replicates and task set (and the agent, "
+            "conditions and passes for the opt-in ones)"
         ),
     )
     run.add_argument("--seeds", nargs="+", type=int, help="default: historical 7 11 23")
@@ -202,8 +267,8 @@ def main():
         "--evidence-dir",
         type=Path,
         help=(
-            "default: evidence/runs; diagnostic-baseline-v1, failure-memory-v1 and failure-transfer-v1 "
-            "default to their own directories"
+            "default: evidence/runs; diagnostic-baseline-v1, failure-memory-v1, failure-transfer-v1 "
+            "and nonlexical-seed-v1 default to their own directories"
         ),
     )
     run.add_argument(
@@ -254,6 +319,14 @@ def main():
                 evidence_dir,
                 FAILURE_TRANSFER_CAMPAIGN["train"],
                 FAILURE_TRANSFER_CAMPAIGN["transfer"],
+            )
+        elif declared is NONLEXICAL_SEED_CAMPAIGN:
+            seed_campaign(
+                seeds,
+                replicates,
+                evidence_dir,
+                NONLEXICAL_SEED_CAMPAIGN["train"],
+                NONLEXICAL_SEED_CAMPAIGN["transfer"],
             )
         else:
             campaign(seeds, replicates, evidence_dir, TASK_SETS[task_set])

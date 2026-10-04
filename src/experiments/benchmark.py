@@ -81,6 +81,21 @@ FAILURE_TRANSFER_CAMPAIGN = {
     "agent": "bounded-ast-repair-v1+diagnostic-v1+failure-memory-v1+failure-transfer-v1",
     "evidence_dir": "evidence/failure-transfer-v1",
 }
+# Recuperación sembrada con una señal no léxica (H8, #98), opt-in: el diseño de la referencia v2 con cuatro
+# condiciones (A, B, C_L con la siembra léxica de H4 y C_S con los componentes de la traza de test-0),
+# entrenamiento EXP-01..03 y transferencia EXP-04..09 desde la memoria congelada. Pre-registrada en
+# docs/preregistration/h8-nonlexical-seed.md; sus recibos van a su propio directorio.
+NONLEXICAL_SEED_CAMPAIGN = {
+    "name": "nonlexical-seed-v1",
+    "seeds": REFERENCE_CAMPAIGN["seeds"],
+    "replicates": REFERENCE_CAMPAIGN["replicates"],
+    "task_set": REFERENCE_CAMPAIGN["task_set"],
+    "train": TASK_SETS["misleading-v1"][:3],
+    "transfer": TASK_SETS["misleading-v1"][3:],
+    "conditions": ("A", "B", "C_L", "C_S"),
+    "agent": "bounded-ast-repair-v1+trace-seed-v1",
+    "evidence_dir": "evidence/nonlexical-seed-v1",
+}
 
 
 def private_metadata(root):
