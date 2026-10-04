@@ -96,3 +96,36 @@ de una carga de duración variable, no al arrancar.
 
 Un dato sin explicar: Kaggle registra 86 883 bytes para el envío 56808559, y el zip enviado mide 3 495.
 El archivo guardado no se puede bajar por API; se puede bajar desde la página de envíos.
+
+## Sesiones: listar y cancelar
+
+`scripts/kaggle_sesiones.py` lista las sesiones activas o en cola y cancela una.
+
+```bash
+# 1. El dueño abre Edge con un perfil aparte e inicia sesión en Kaggle (una vez por perfil):
+msedge --remote-debugging-port=9333 --user-data-dir=<perfil aparte> https://www.kaggle.com/account/login
+# 2. Listar: sesiones con su identificador, cuota de GPU y versiones del notebook
+uv run --with playwright python -m scripts.kaggle_sesiones listar --usuario <usuario> --notebook <notebook>
+# 3. Cancelar, con el token de KAGGLE_API_TOKEN
+python -m scripts.kaggle_sesiones cancelar --sesion <identificador> --usuario <usuario> --notebook <notebook>
+```
+
+- **Cancelar funciona con el token.** La operación es `CancelKernelSession` y pide el identificador de la
+  sesión. Con un identificador que no es de la cuenta responde 403.
+- **Listar exige la sesión web del dueño.** Ninguna ruta de la API pública entrega el identificador: ni el
+  estado, ni los metadatos, ni el flujo de logs. La página sí (`kernelRunId`).
+- **El inicio de sesión no se automatiza.** Google rechaza iniciar sesión en un navegador controlado por
+  automatización. Por eso el dueño abre Edge normalmente y el guion se conecta después.
+
+### Lo que se hizo y se leyó el 2026-10-04
+
+- Se canceló la versión 2 de `prueba-a-ajustada`, que esperaba en cola desde las 14:42 UTC. Estado
+  posterior: `cancelAcknowledged`; sesiones en cola: 0.
+- **Por qué se canceló.** La versión 1 esperó 8 h 20 min en cola (creada 00:56 UTC, ejecutada 09:16 UTC),
+  corrió 22,7 s y terminó con error: instaló 0 ruedas desde una ruta fija. La versión 2 tenía la misma
+  ruta fija: habría fallado igual tras otra espera.
+- **Espera en cola con L4:** 8 h 20 min en la única corrida con ese dato.
+- **Cuota de GPU:** 1,89 h usadas de 30; reinicio el 2026-10-10 00:00 UTC.
+- **Límites de la cuenta:** 2 sesiones por lotes con GPU y 1 interactiva con GPU a la vez.
+- **El notebook ejecutado sí se puede bajar** con la sesión web: cada versión terminada trae una dirección
+  firmada (`renderedOutputUrl`) con las salidas celda por celda. La API pública no la entrega.
