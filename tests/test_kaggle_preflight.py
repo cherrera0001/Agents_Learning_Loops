@@ -21,12 +21,19 @@ GUARDIA = (
     "import os\n"
     "def directorio_con_ruedas(raiz='/kaggle/input'):\n"
     "    print('GUARDIA entradas:', sorted(os.listdir(raiz)))\n"
-    "    hallados = [d for d, _dirs, files in os.walk(raiz) if any(f.endswith('.whl') for f in files)]\n"
+    "    hallados = [\n"
+    "        d for d, _dirs, files in os.walk(raiz)\n"
+    "        if any(f.startswith('swegemma-') and f.endswith('.whl') for f in files)\n"
+    "    ]\n"
     "    if len(hallados) != 1:\n"
     "        raise RuntimeError('GUARDIA: se detiene antes de gastar cuota')\n"
     "    return hallados[0]\n"
     "W = directorio_con_ruedas()\n"
 )
+# La guardia de la versión 3 del notebook de prueba: busca «el único directorio con .whl». El chequeo la
+# aprobaba leyéndola; ejecutada contra la estructura real encuentra dos (el del arnés y wheels/ de los
+# datos de la competencia) y se detiene siempre.
+GUARDIA_CUALQUIER_RUEDA = GUARDIA.replace("f.startswith('swegemma-') and ", "")
 # La guardia que el chequeo aprobaba antes del 2026-10-04: nombra el dataset y lleva un assert, con una
 # ruta que no existía en la sesión real.
 GUARDIA_CON_RUTA_INVENTADA = (
@@ -134,6 +141,13 @@ def test_la_guardia_con_la_ruta_inventada_que_antes_se_aprobaba_ahora_falla(tmp_
         (GUARDIA.replace("os.listdir(raiz)", "raiz"), "no es la guardia"),
         (GUARDIA.replace("'.whl'", "'.zip'"), "no es la guardia"),
         (GUARDIA.replace("raise RuntimeError(", "print("), "no se detiene"),
+        (GUARDIA_CUALQUIER_RUEDA, "la guardia se detiene"),
+        (
+            GUARDIA.replace("len(hallados) != 1", "len(hallados) > 1").replace(
+                "return hallados[0]", "return hallados[0] if hallados else None"
+            ),
+            "sin las ruedas del arnés",
+        ),
         (GUARDIA + "import time\ntime.sleep(10)\n", "espera o reintenta"),
         (GUARDIA + "from adk_submission import VllmServer\n", "comparte celda con el servidor"),
     ],
@@ -200,3 +214,65 @@ def test_archivos_ilegibles_o_mal_formados_salen_con_2_sin_traza(tmp_path, capsy
 
 def test_un_directorio_sin_metadatos_sale_con_2(tmp_path):
     assert main(["comprobar", str(tmp_path), "--tope-min", "75"]) == EXIT_INVALID
+
+
+def test_la_guardia_de_la_version_3_se_detiene_en_las_dos_disposiciones_reales(tmp_path):
+    fallos = _fallos(_escribir(tmp_path, celdas=[GUARDIA_CUALQUIER_RUEDA, *CELDAS[1:]]))
+    assert sum("la guardia se detiene" in texto for texto in fallos) == 2
+    assert any("(lotes)" in texto for texto in fallos)
+    assert any("(plana)" in texto for texto in fallos)
+
+
+@pytest.mark.parametrize("disposicion", ["lotes", "plana"])
+def test_el_arbol_de_entrada_tiene_dos_directorios_con_ruedas_y_uno_solo_del_arnes(tmp_path, disposicion):
+    from scripts.kaggle_preflight import arbol_de_entrada
+
+    arbol_de_entrada(tmp_path, disposicion)
+    con_ruedas = {p.parent for p in tmp_path.rglob("*.whl")}
+    del_arnes = {p.parent for p in tmp_path.rglob("swegemma-*.whl")}
+    assert len(con_ruedas) == 2
+    assert len(del_arnes) == 1
+    assert next(iter(con_ruedas - del_arnes)).name == "wheels"
+    assert len(list(tmp_path.rglob("config.json"))) == 1
+
+
+def test_el_arbol_sin_ruedas_del_arnes_conserva_las_de_la_competencia(tmp_path):
+    from scripts.kaggle_preflight import arbol_de_entrada
+
+    arbol_de_entrada(tmp_path, "lotes", ruedas_arnes=False)
+    assert [p.parent.name for p in tmp_path.rglob("*.whl")] == ["wheels"]
+
+
+def test_ejecutar_guardia_devuelve_el_codigo_de_salida_y_no_cuelga(tmp_path):
+    from scripts.kaggle_preflight import arbol_de_entrada, ejecutar_guardia
+
+    arbol_de_entrada(tmp_path, "lotes")
+    assert ejecutar_guardia(GUARDIA, tmp_path) == 0
+    assert ejecutar_guardia(GUARDIA_CUALQUIER_RUEDA, tmp_path) != 0
+    assert ejecutar_guardia("raise SystemExit(7)\n", tmp_path) == 7
+
+
+def test_una_guardia_mal_escrita_no_se_ejecuta(tmp_path):
+    fallos = _fallos(_escribir(tmp_path, celdas=["import os\nos.system('echo no')\n", *CELDAS[1:]]))
+    assert any("no es la guardia" in texto for texto in fallos)
+    assert not any("Ejecutada" in texto for texto in fallos)
+
+
+SERVIDOR = "from adk_submission import VllmServer\ntry:\n    s = VllmServer(cfg)\n    s.start()\n"
+
+
+def test_un_notebook_que_arranca_el_servidor_debe_leer_la_salida_de_la_excepcion(tmp_path):
+    sin_salida = SERVIDOR + "except BaseException as exc:\n    print(open(s.log_path).read())\n    raise\n"
+    fallos = _fallos(_escribir(tmp_path, celdas=[*CELDAS, sin_salida]))
+    assert any("ServerStartupError.output" in texto for texto in fallos)
+
+
+def test_leer_la_salida_de_la_excepcion_del_servidor_no_es_un_fallo(tmp_path):
+    con_salida = (
+        SERVIDOR + "except BaseException as exc:\n    print(getattr(exc, 'output', None))\n    raise\n"
+    )
+    assert _fallos(_escribir(tmp_path, celdas=[*CELDAS, con_salida])) == []
+
+
+def test_sin_servidor_no_se_exige_leer_la_salida_de_la_excepcion(tmp_path):
+    assert _fallos(_escribir(tmp_path)) == []

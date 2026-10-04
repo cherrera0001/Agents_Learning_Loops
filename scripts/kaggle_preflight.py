@@ -5,6 +5,10 @@ Comprueba, sin GPU y sin red, lo que en las corridas del 2026-10-03 y 04 falló 
 que no existe, una ruta fija bajo /kaggle/input que no existía en la sesión, y una subida hecha aunque la
 validación había fallado. No comprueba que el modelo cargue ni que el agente resuelva: eso exige GPU.
 
+La guardia no solo se lee: **se ejecuta** contra un árbol que reproduce la estructura real de
+/kaggle/input. Los datos de la competencia traen su propia carpeta ``wheels/`` con ``.whl``, así que
+una guardia que busca «el único directorio con ruedas» encuentra dos y se detiene en toda sesión real.
+
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
 
@@ -18,7 +22,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -33,6 +39,25 @@ RAIZ_ENTRADA = "/kaggle/input"
 # Una ruta escrita a mano bajo la raíz de entrada. La raíz sola, que es lo que la guardia lista, no cuenta.
 RUTA_FIJA = re.compile(r"/kaggle/input/[A-Za-z0-9_.\-/]+")
 SECRETO = re.compile(r"KGAT_[A-Za-z0-9]{8,}|\"key\"\s*:\s*\"[0-9a-f]{32}\"")
+MODELO = "gemma-4-31b-it-qat-w4a16-ct"
+# Estructura del dataset de la competencia según su página «Data»: un archivo de relleno por carpeta.
+# La carpeta wheels/ es la que importa aquí: contiene .whl y NO es el directorio de ruedas del arnés.
+DATOS_COMPETENCIA = (
+    "tasks.jsonl",
+    "HARNESS_README.md",
+    "docker/Dockerfile.sandbox",
+    "embeddings/relleno.npz",
+    "graphs/relleno.json",
+    "sample_submission/agent.yaml",
+    "sandbox/setup.py",
+    "snapshots/relleno.tgz",
+    "wheels/pytest-8.3.4-py3-none-any.whl",
+)
+# Ruedas del arnés: lo que distingue su directorio es la rueda de swegemma.
+RUEDAS_ARNES = ("swegemma-0.2.7-py3-none-any.whl", "adk_submission-0.2.12-py3-none-any.whl")
+ARCHIVOS_MODELO = ("config.json", "model.safetensors")
+DISPOSICIONES = ("lotes", "plana")
+TOPE_GUARDIA_S = 60
 
 EXIT_OK = 0
 EXIT_INVALID = 2
@@ -113,6 +138,71 @@ def comprobar_metadatos(meta: Any, directorio: Path) -> list[Hallazgo]:
     return out
 
 
+def arbol_de_entrada(raiz: Path, disposicion: str, *, ruedas_arnes: bool = True) -> None:
+    """Crea bajo ``raiz`` un /kaggle/input de relleno con la estructura real, en una de sus dos formas.
+
+    ``lotes`` es la de las corridas por API (``competitions/``, ``datasets/<dueño>/``, ``models/``);
+    ``plana`` cuelga cada fuente de la raíz por su nombre. Los archivos están vacíos.
+    """
+    if disposicion not in DISPOSICIONES:
+        raise ValueError(f"Disposición desconocida: {disposicion}")
+    if disposicion == "lotes":
+        datos = raiz / "competitions" / COMPETITION_SLUG
+        ruedas = raiz / "datasets" / WHEELHOUSE
+    else:
+        datos = raiz / COMPETITION_SLUG
+        ruedas = raiz / WHEELHOUSE.split("/")[1]
+    modelo = raiz / "models" / "google" / "gemma-4" / "other" / MODELO / "2"
+    archivos = [datos / relativo for relativo in DATOS_COMPETENCIA]
+    archivos += [modelo / nombre for nombre in ARCHIVOS_MODELO]
+    if ruedas_arnes:
+        archivos += [ruedas / nombre for nombre in RUEDAS_ARNES]
+    for archivo in archivos:
+        archivo.parent.mkdir(parents=True, exist_ok=True)
+        archivo.write_bytes(b"")
+
+
+def ejecutar_guardia(primera: str, raiz: Path) -> int:
+    """Ejecuta la celda de la guardia en otro proceso, con ``raiz`` en lugar de /kaggle/input."""
+    fuente = codigo_comprobable(primera).replace(RAIZ_ENTRADA, raiz.as_posix())
+    try:
+        proceso = subprocess.run(
+            [sys.executable, "-c", fuente], capture_output=True, timeout=TOPE_GUARDIA_S, check=False
+        )
+    except subprocess.TimeoutExpired:
+        return -1
+    return proceso.returncode
+
+
+def comprobar_guardia_ejecutada(primera: str) -> list[Hallazgo]:
+    """La guardia, ejecutada: pasa con la estructura real y se detiene sin las ruedas del arnés."""
+    out: list[Hallazgo] = []
+    for disposicion in DISPOSICIONES:
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp) / "input"
+            arbol_de_entrada(raiz, disposicion)
+            codigo = ejecutar_guardia(primera, raiz)
+        out.append(
+            _bien(f"Ejecutada con la estructura real ({disposicion}), la guardia pasa.")
+            if codigo == 0
+            else _mal(
+                f"Ejecutada con la estructura real ({disposicion}), la guardia se detiene: los datos de la "
+                "competencia traen una carpeta wheels/ con .whl; el directorio de ruedas del arnés es el que "
+                "contiene swegemma-*.whl."
+            )
+        )
+    with tempfile.TemporaryDirectory() as tmp:
+        raiz = Path(tmp) / "input"
+        arbol_de_entrada(raiz, "lotes", ruedas_arnes=False)
+        codigo = ejecutar_guardia(primera, raiz)
+    out.append(
+        _mal("Ejecutada sin las ruedas del arnés, la guardia no se detiene: la corrida gastaría cuota.")
+        if codigo == 0
+        else _bien("Ejecutada sin las ruedas del arnés, la guardia se detiene.")
+    )
+    return out
+
+
 def comprobar_guardia(primera: str) -> list[Hallazgo]:
     """La primera celda localiza las ruedas en /kaggle/input; no espera, no arranca nada y se detiene sola.
 
@@ -126,7 +216,7 @@ def comprobar_guardia(primera: str) -> list[Hallazgo]:
         if lista and busca
         else _mal(
             "La primera celda no es la guardia: debe listar /kaggle/input (os.listdir) y buscar con os.walk "
-            "el único directorio que contiene .whl."
+            "el directorio de ruedas del arnés (el que contiene swegemma-*.whl)."
         )
     )
     out.append(
@@ -144,6 +234,8 @@ def comprobar_guardia(primera: str) -> list[Hallazgo]:
         if re.search(r"vllm|VllmServer", primera, re.IGNORECASE)
         else _bien("La guardia no arranca el servidor del modelo.")
     )
+    if all(h.ok for h in out):
+        out += comprobar_guardia_ejecutada(primera)
     return out
 
 
@@ -190,6 +282,16 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
         else _bien("Ninguna celda escribe una ruta fija bajo /kaggle/input.")
     )
     out += comprobar_guardia(fuentes[0])
+    if re.search(r"VllmServer|TransformersServer", todo):
+        out.append(
+            _bien("Si el servidor del modelo falla, el notebook toma la causa de la salida de la excepción.")
+            if re.search(r"getattr\(\s*\w+\s*,\s*['\"]output['\"]|\.output\b", todo)
+            else _mal(
+                "El notebook arranca el servidor del modelo y no lee la salida de la excepción "
+                "(ServerStartupError.output): cuando el servidor no queda sano a tiempo el arnés borra su "
+                "archivo de log, y la causa del fallo se pierde."
+            )
+        )
     if meta.get("enable_gpu") is True:
         out.append(
             _bien("El notebook imprime la GPU asignada.")
