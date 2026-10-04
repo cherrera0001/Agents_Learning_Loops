@@ -27,6 +27,38 @@ Lo que desbloquea el paso 1 es el registro del ensayo de notebook, la validez de
 versionada, el subconjunto y el piloto. Lo que desbloquea el paso 2 es ese reporte de réplicas. Mientras
 tanto `python -m scripts.kaggle_campana comprobar` sale con 1.
 
+## Contrato de cierre y procedencia
+
+Los tres `valor` abiertos se validan como datos, no como afirmaciones libres. `variacion_a` y
+`subconjunto` deben tener exactamente `{ "ruta": <ruta relativa>, "sha256": <64 hex> }`; se verifica el
+hash SHA-256 de los bytes citados antes de leerlos. La primera fuente debe ser un reporte completo
+`kaggle-replica-analysis/3` de condición A, con `alfa = 0.05`; la segunda debe ser una partición con regla
+`leave_one_repo_out`, listas `test` y `train` disjuntas, `sha256_tasks` y repositorio reservado. La
+comprobación vuelve a leer `tasks.jsonl` y la calibración `kaggle-task-validity/1`: contrasta hashes,
+pertenencia de cada ID, regla leave-one-repo-out y que las exclusiones sean exactamente las tareas
+declaradas inválidas en la calibración. El reporte A y la partición deben declarar los mismos hashes de
+subconjunto y de tareas. Toda cita debe apuntar a una ruta dentro del checkout que Git ya tenga
+versionada y limpia; una copia local sin seguimiento o modificada no acredita procedencia.
+
+`corridas_por_condicion` tiene las claves exactas `B`, `C`, `D`, `variacion_a_sha256`,
+`subconjunto_sha256` y `g6`. Sus hashes deben coincidir con las fuentes verificadas. G2 se deriva del
+`margen` del reporte A y los umbrales versionados de la línea base; no se acepta una etiqueta G2 escrita
+por el autor. La comprobación también deriva el límite G3 desde los resultados completos por réplica: si
+A deja menos de seis tareas sin resolver en cualquier réplica, la campaña para medir mejora no se corre.
+G2 dominante también bloquea el cierre. Bajo o intermedio fija el mínimo de B/C y se rechazan valores
+distintos. G6 conserva la reducción D primero y exige una cita `g6` con `{ "ruta", "sha256",
+"condicion": "D", "corridas" }` a un registro `kaggle-campaign-compute/1`. Ese registro tiene los
+campos `fuente_a_sha256`, `subconjunto_sha256`, `presupuesto_sha256`, `horas_disponibles`,
+`horas_por_condicion` y `corridas_por_condicion`; las horas disponibles son el remanente después de
+reservar la línea base A, y las horas por condición cubren una réplica completa sobre las `n` tareas. Las
+corridas disponibles son el cociente entero de esas horas. Primero deben caber los mínimos G2 de B y C;
+si no caben, no se corre la campaña. Si caben B y C pero no D, G6 elimina D; si caben las tres al mismo
+número de réplicas, D conserva ese número. Una decisión sin fuente verificable no cierra el parámetro.
+
+Este contrato no crea las fuentes. Como el reporte A, el subconjunto, `tasks.jsonl`, la calibración de
+validez y el registro de cómputo aún no existen, los valores siguen `null` y la campaña permanece
+bloqueada.
+
 ## Partición
 
 Se hereda la de la línea base, sección B: `leave_one_repo_out`. No es temporal.
@@ -88,6 +120,12 @@ No hay un número de réplicas en este documento. Sale del reporte de A, cuando 
 par de réplicas de A. Las comparaciones usan la fracción `diferencia / n`, no una tasa redondeada. Una
 diferencia igual a `M*` no lo supera.
 
+El `alfa = 0.05` fijado en los parámetros pertenece a G1: limita a 5% la probabilidad de alarma falsa
+por cada contraste exacto de McNemar entre réplicas A bajo su hipótesis nula. Si se miran los tres pares,
+la cota de unión para al menos una alarma falsa es como máximo 15%; no se presenta como un control
+familiar del 5%. Alfa no es el umbral de decisión de H(C, A), H(C, B) o H(D, C): esas hipótesis usan
+`M*` y el denominador completo fijado arriba.
+
 | Caso de G2 | Corridas de B y de C | D |
 |---|---|---|
 | Ruido bajo (`M* ≤ 6/40`) | 1; 2 si esas dos caben en las horas ya contadas | El mismo número, solo si cabe |
@@ -107,9 +145,12 @@ entrenamiento. Es mayoría estricta: la tarea cuenta como resuelta si hay más c
 resueltas. Con una corrida manda esa. Con dos hacen falta las dos. Un empate no resuelve.
 
 Un fallo de infraestructura se trata como en el análisis de réplicas de A: mientras quede uno sin
-repetir, no hay desenlace. El contraste usa solo las tareas de prueba con bit definido en las dos
-condiciones. `n` es ese número. La diferencia es el conteo de resueltas de la primera menos el de la
-segunda.
+repetir, no hay desenlace. El denominador queda fijado antes de ver resultados: `n` es exactamente el
+número total de `instance_id` del `test` congelado. Cada condición debe aportar el bit de desenlace para
+cada tarea; no se elimina una tarea por un resultado ausente, difícil o desfavorable. Si al aplicar la
+regla pre-registrada de repetición queda una tarea sin bit en alguna condición, esa comparación no tiene
+desenlace y la campaña sigue bloqueada. La diferencia es el conteo de resueltas de la primera menos el de
+la segunda, sobre el mismo conjunto completo de `n` tareas.
 
 ## Hipótesis
 
@@ -118,9 +159,9 @@ Cada una tiene tres desenlaces, y no queda ningún entero fuera. Sea `d` la dife
 
 | Hipótesis | Apoyada si | Sin diferencia si | Refutada si |
 |---|---|---|---|
-| H(C, A) | `d/n > M*` con d = C − A | no se supera `M*` en ningún sentido | `d/n > M*` con d = A − C |
-| H(C, B) | `d/n > M*` con d = C − B | no se supera `M*` en ningún sentido | `d/n > M*` con d = B − C |
-| H(D, C) | `d/n > M*` con d = D − C | no se supera `M*` en ningún sentido | `d/n > M*` con d = C − D |
+| H(C, A) | `(C − A)/n > M*` | `|C − A|/n ≤ M*` | `(A − C)/n > M*` |
+| H(C, B) | `(C − B)/n > M*` | `|C − B|/n ≤ M*` | `(B − C)/n > M*` |
+| H(D, C) | `(D − C)/n > M*` | `|D − C|/n ≤ M*` | `(C − D)/n > M*` |
 
 H(C, A) hereda G3. Si A resuelve menos de 6 tareas en alguna réplica, «refutada» de H(C, A) queda fuera
 de alcance y se dice así. Si A deja menos de 6 sin resolver, la campaña no declara mejora y H(C, A)
@@ -145,16 +186,26 @@ de los `instance_id` que salen de la regla de abajo.
 
 Regla, fijada ahora: se ordenan los `instance_id` de `test` y se toma uno de cada cinco, empezando por
 el primero. Cada señuelo es una copia con otro enunciado y con identificador `instance_id + "#senuelo"`.
+El paso de cinco es una decisión de coste preespecificada antes de los resultados: limita la carga a
+aproximadamente una evaluación adicional por cada cinco tareas y hace reproducible la selección. No es
+una muestra aleatoria ni pretende estimar un efecto poblacional. El mínimo de seis solo permite usar las
+etiquetas cualitativas de la regla; con menos, se publican conteos descriptivos. Ni el paso ni el mínimo
+se eligen o ajustan mirando resultados.
 Reescribir el enunciado modifica el benchmark: los señuelos no entran en `test`, no cambian el archivo de
 subconjunto y no entran en el denominador de H(C, A), H(C, B) ni H(D, C). Si salen menos de seis, la
 lectura de señuelos da el conteo y no usa «apoyada», «sin diferencia» ni «refutada».
 
 ## Comprobación de fuga
 
-`python -m scripts.kaggle_campana fuga --subconjunto <archivo> --raiz <directorio>` busca cada
-`instance_id` de `test` en los archivos de esas raíces. Sale con 2 si aparece alguno. Se corre sobre los
-episodios de entrenamiento y sobre las skills, y otra vez antes del merge de la campaña. El subconjunto
-mismo no se pasa como raíz: ahí los identificadores de prueba están por definición.
+`python -m scripts.kaggle_campana fuga --subconjunto <archivo> --tasks <tasks.jsonl> --raiz <directorio>`
+valida que cada `instance_id` del subconjunto aparece una sola vez en `tasks.jsonl` con enunciado y busca
+tanto el identificador como copias literales normalizadas del enunciado (completo o párrafos de al menos
+80 caracteres) en cada archivo de las raíces. La normalización ignora mayúsculas y espacios. Es una
+comprobación reproducible de copia literal; no detecta paráfrasis semánticas y no se presenta como prueba
+de ausencia de toda fuga. Sale con 2 si encuentra una coincidencia y falla explícitamente si falta una
+raíz, tarea o archivo legible: un archivo corrupto o inaccesible nunca cuenta como «sin fuga». Se corre
+sobre episodios de entrenamiento y skills, y otra vez antes del merge de la campaña. El subconjunto mismo
+no se pasa como raíz: ahí los identificadores de prueba están por definición.
 
 ## Orden de commits
 
