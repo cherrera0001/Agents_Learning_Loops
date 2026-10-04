@@ -7,8 +7,8 @@ añade los issues y los PR abiertos, para que ninguna sesión abra trabajo nuevo
     python scripts/session_guard.py              # como gancho: informa y sale siempre con 0
     python scripts/session_guard.py --estricto   # a mano: 1 si hay hallazgos, 2 si no se pudo leer
 
-Nunca bloquea una sesión: si no puede leer el tablero lo dice, y eso no es «sin hallazgos». No imprime
-el token ni lo guarda.
+Nunca bloquea una sesión: ante cualquier fallo dice que no pudo leer, y eso no es «sin hallazgos». No
+imprime el token ni lo guarda.
 """
 
 from __future__ import annotations
@@ -31,7 +31,6 @@ from scripts.board_check import (
     REPO,
     BoardReadError,
     Runner,
-    _run_gh,
     check_board,
     check_missing_cards,
     read_github,
@@ -42,20 +41,45 @@ EPISODES_DIR = Path(__file__).resolve().parent.parent / "learning" / "episodes"
 # Primer issue al que aplican las reglas de estimación y cierre verificado (inicio del piloto).
 DESDE = 76
 TOPE_LINEAS = 12
+# Cada llamada a gh tiene tope propio: el gancho no debe colgar el inicio de una sesión.
+TOPE_GH_S = 20
 
 EXIT_OK = 0
 EXIT_HALLAZGOS = 1
 EXIT_ILEGIBLE = 2
 
 
-def load_episodes(directorio: Path = EPISODES_DIR) -> list[dict[str, Any]]:
+def gh_con_tope(args: Sequence[str]) -> subprocess.CompletedProcess[str]:
+    """``gh`` con tope de tiempo. Sin ``gh`` en el PATH o sin respuesta, ``BoardReadError``."""
+    try:
+        return subprocess.run(
+            ["gh", *args], capture_output=True, text=True, encoding="utf-8", check=False, timeout=TOPE_GH_S
+        )
+    except FileNotFoundError as exc:
+        raise BoardReadError("gh no está instalado o no está en el PATH") from exc
+    except subprocess.TimeoutExpired as exc:
+        raise BoardReadError(f"gh no respondió en {TOPE_GH_S} s") from exc
+
+
+def load_episodes(directorio: Path | None = None) -> list[dict[str, Any]]:
     """Los episodios versionados. Se leen aquí, sin importar ``scripts.devlog``, para que el gancho
     funcione con cualquier Python, aunque el paquete del proyecto no esté instalado."""
-    episodios = [json.loads(p.read_text("utf-8")) for p in directorio.glob("*.json")]
+    directorio = EPISODES_DIR if directorio is None else directorio
+    if not directorio.is_dir():
+        raise BoardReadError(f"no existe el directorio de episodios: {directorio.name}")
+    episodios = []
+    for ruta in sorted(directorio.glob("*.json")):
+        try:
+            episodio = json.loads(ruta.read_text("utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise BoardReadError(f"episodio ilegible: {ruta.name}") from exc
+        if not isinstance(episodio, dict) or not isinstance(episodio.get("seq"), int):
+            raise BoardReadError(f"episodio mal formado (sin seq entero): {ruta.name}")
+        episodios.append(episodio)
     return sorted(episodios, key=lambda e: e["seq"])
 
 
-def token_de_la_cuenta(runner: Runner = _run_gh) -> str | None:
+def token_de_la_cuenta(runner: Runner) -> str | None:
     """El token de la cuenta del proyecto, sin imprimirlo. ``None`` si ``gh`` no lo entrega."""
     proc = runner(["auth", "token", "--user", OWNER])
     valor = proc.stdout.strip()
@@ -84,6 +108,8 @@ def prs_abiertos(runner: Runner) -> list[str]:
         datos = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
         raise BoardReadError("gh pr list no devolvió JSON") from exc
+    if not isinstance(datos, list) or not all(isinstance(pr, dict) and "number" in pr for pr in datos):
+        raise BoardReadError("gh pr list no devolvió una lista de PR")
     return [
         f"  PR #{pr['number']}{' (borrador)' if pr.get('isDraft') else ''} {pr.get('headRefName', '')}: "
         f"{str(pr.get('title', ''))[:70]}"
@@ -104,7 +130,7 @@ def informe(
     *,
     snapshot: Path | None,
     episodes: Sequence[Mapping[str, Any]],
-    runner: Runner = _run_gh,
+    runner: Runner = gh_con_tope,
 ) -> tuple[list[str], int]:
     """Las líneas del informe y cuántos hallazgos hay. Lanza ``BoardReadError`` si no se pudo leer."""
     if snapshot is not None:
@@ -130,7 +156,13 @@ def informe(
     return lineas, len(hallazgos)
 
 
-def main(argv: list[str] | None = None, *, runner: Runner = _run_gh, out: TextIO | None = None) -> int:
+def main(
+    argv: list[str] | None = None,
+    *,
+    runner: Runner = gh_con_tope,
+    out: TextIO | None = None,
+    episodes_dir: Path | None = None,
+) -> int:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -143,15 +175,18 @@ def main(argv: list[str] | None = None, *, runner: Runner = _run_gh, out: TextIO
             sys.stdout.reconfigure(encoding="utf-8")
         out = sys.stdout
 
-    if args.snapshot is None and not os.environ.get("GH_TOKEN"):
-        valor = token_de_la_cuenta(runner)
-        if valor:
-            os.environ["GH_TOKEN"] = valor
     try:
-        lineas, hallazgos = informe(snapshot=args.snapshot, episodes=load_episodes(), runner=runner)
-    except (BoardReadError, OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+        if args.snapshot is None and not os.environ.get("GH_TOKEN"):
+            valor = token_de_la_cuenta(runner)
+            if valor:
+                os.environ["GH_TOKEN"] = valor
+        lineas, hallazgos = informe(
+            snapshot=args.snapshot, episodes=load_episodes(episodes_dir), runner=runner
+        )
+    except Exception as exc:
         print(
-            f"GUARDIÁN DEL TABLERO: no se pudo leer el tablero ({type(exc).__name__}: {str(exc)[:200]}). "
+            f"GUARDIÁN DEL TABLERO: no se pudo leer el tablero ni los episodios "
+            f"({type(exc).__name__}: {str(exc)[:200]}). "
             "Eso no significa que no haya pendientes: corre `python -m scripts.devlog board --since 76`.",
             file=out,
         )

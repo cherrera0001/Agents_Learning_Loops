@@ -422,7 +422,8 @@ def abiertos_pendientes(data: dict[str, Any]) -> list[str]:
                 corrida = base_values["corrida"]
                 cuota = base_values["cuota"]
                 corte = kaggle_prereg.parse_date(
-                    baseline["fijos"]["fecha_corte_campana"], "fecha_corte_campana"
+                    baseline["fijos"]["fecha_corte_campana"],
+                    "fecha_corte_campana",
                 )
                 fecha = kaggle_prereg.parse_date(corrida["fecha_compuerta"], "fecha_compuerta")
                 hours = kaggle_prereg.usable_hours(
@@ -432,9 +433,9 @@ def abiertos_pendientes(data: dict[str, Any]) -> list[str]:
                     kaggle_prereg.quota_resets(fecha, corte, cuota["dia_reinicio"]),
                 )
                 steps = [
-                    step
-                    for step in kaggle_prereg.ladder(baseline["fijos"], validas_por_repo)
-                    if step.repo == heldout_repo
+                    item
+                    for item in kaggle_prereg.ladder(baseline["fijos"], validas_por_repo)
+                    if item.repo == heldout_repo
                 ]
                 step = kaggle_prereg.choose_step(steps, hours)
                 if step is None:

@@ -22,7 +22,7 @@
   },
   "steps": [
     {
-      "action": "recall_memory",
+      "action": "check_board",
       "success": false,
       "error": "Durante dos días se abrieron y cerraron issues sin que ninguna sesión mirara el tablero al empezar: el chequeo existía pero solo corría cuando alguien se acordaba, y el agente guardián quedó en una rama local sin subir"
     },
@@ -50,11 +50,22 @@
       "action": "update_docs",
       "success": true,
       "note": "Gancho SessionStart versionado en la configuración del proyecto y documentado con sus límites: informa y no bloquea, y solo cubre Claude Code"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente bloqueó el PR: como gancho daba traza y código 1 justo cuando gh no está en el PATH, tres tipos de respuesta mal formada escapaban al manejo de errores, y diez de catorce defectos inyectados sobrevivían a los tests"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Todo el camino del gancho dentro de un único manejo de errores, gh con tope de tiempo, episodios validados uno a uno, comando del gancho anclado a la raíz del proyecto y tests para cada caso que el revisor rompió"
     }
   ],
   "lessons": [
     "Un control que depende de que alguien se acuerde de correrlo no es un control: engánchalo al inicio de la sesión o al CI",
     "Un guion que corre como gancho usa solo la biblioteca estándar y se prueba con el Python del sistema, no con el del entorno virtual",
-    "Una definición de agente es pasiva: para que algo vigile tiene que ejecutarse solo"
+    "Una definición de agente es pasiva: para que algo vigile tiene que ejecutarse solo",
+    "Un gancho de inicio captura cualquier excepción y lo dice en una línea: el caso que más importa es justo aquel en que falta la herramienta de la que depende"
   ]
 }

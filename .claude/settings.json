@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python scripts/session_guard.py",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/session_guard.py\"",
             "timeout": 60
           }
         ]
