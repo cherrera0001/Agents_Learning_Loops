@@ -16,7 +16,9 @@ Uso::
 
     python -m scripts.analyze_h8 --evidence evidence/nonlexical-seed-v1
 
-La salida es JSON por la salida estándar; el código de salida es 1 si la campaña es inválida.
+La salida es JSON por la salida estándar; el código de salida es 1 si la campaña es inválida. Si un
+directorio de recibos falta o está vacío no hay informe: el motivo va a la salida de error y el código es
+2, para que «no se pudo leer» no se confunda con «inválida», que es un desenlace publicable.
 """
 
 from __future__ import annotations
@@ -510,6 +512,10 @@ def main() -> None:
     parser.add_argument("--evidence", required=True)
     parser.add_argument("--reference", default="evidence/reference-v2")
     args = parser.parse_args()
+    for option, relative in (("--evidence", args.evidence), ("--reference", args.reference)):
+        if not any((args.root / relative).glob("RUN-*.json")):
+            print(f"{option}: no hay recibos RUN-*.json en {args.root / relative}", file=sys.stderr)
+            sys.exit(2)
     receipts, generated_from = load(args.root / args.evidence)
     reference, reference_from = load(args.root / args.reference)
     report = analyze(receipts, annotations(args.root), reference)

@@ -345,6 +345,9 @@ def test_no_exposure_mark_and_secondary_rule_boundaries():
     for c_s, expected in ((15, "con coste"), (16, "sin coste"), (18, "sin coste"), (0, "con coste")):
         d = decide(fa, 0, 18, {"A": 6, "B": 18, "C_L": 18, "C_S": c_s})
         assert (d["delta_orig"], d["secondary"]) == (c_s - 18, expected)
+    # El coste se mide contra C_L, no contra B: con los dos controles distintos la lectura cambia.
+    d = decide(fa, 0, 18, {"A": 6, "B": 10, "C_L": 18, "C_S": 15})
+    assert (d["delta_orig"], d["secondary"]) == (-3, "con coste")
 
 
 # --- veredictos sobre campañas sintéticas completas -----------------------------------------------
@@ -753,3 +756,17 @@ def test_cli_prints_the_report_with_its_sources_and_fails_on_an_invalid_campaign
     report = json.loads(capsys.readouterr().out)
     assert (report["valid"], report["verdict"]) == (False, "inválida")
     assert "no reproducen la referencia" in report["invalid_reason"] and report["generated_from"]
+    # Un directorio que falta o está vacío no es una campaña inválida: sin informe y con código 2.
+    (tmp_path / "evidence/vacio").mkdir()
+    for option, missing in (
+        ("--evidence", "evidence/no-existe"),
+        ("--evidence", "evidence/vacio"),
+        ("--reference", "evidence/no-existe"),
+    ):
+        base = argv if option == "--reference" else argv[:3]
+        monkeypatch.setattr(sys, "argv", [*base, option, missing])
+        with pytest.raises(SystemExit) as stop:
+            analysis.main()
+        captured = capsys.readouterr()
+        assert stop.value.code == 2 and captured.out == ""
+        assert captured.err.startswith(f"{option}: no hay recibos")
