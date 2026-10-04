@@ -130,6 +130,13 @@ contexto queda **solo en `--crudo`**.
 
 ### 0. Antes de gastar cuota
 
+**Chequeo previo obligatorio si el notebook se sube por API.** Antes de `kaggle kernels push`, corre
+`python -m scripts.kaggle_preflight comprobar <directorio> --tope-min <minutos>` y encadena la subida con
+`&&`. Comprueba, sin GPU, que cada celda compila, que la imagen de Python está fijada, que el acelerador
+existe, que la primera celda es una guardia del dataset adjunto, que el notebook es privado y sin internet,
+y que hay tope de ejecución. Sale con 2 y no imprime la orden si algo falla. No comprueba que el modelo
+cargue: eso exige GPU.
+
 1. Lee el plan en tu máquina, sin Kaggle. Las rutas pueden ser inventadas: `--plan` solo imprime.
 
    ```bash
