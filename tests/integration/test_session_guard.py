@@ -228,3 +228,27 @@ def test_los_bloques_largos_se_recortan_justo_en_el_tope(n, resto):
     else:
         assert bloque[-1] == f"  … y {resto} más" and len(bloque) == sg.TOPE_LINEAS + 2
     assert sg._bloque("Issues abiertos", [], "ninguno") == ["Issues abiertos: ninguno"]
+
+
+@pytest.mark.parametrize("salida", ['[{"number": "abc"}]', '[{"number": null}]', '[{"number": true}]'])
+def test_un_pr_sin_numero_entero_es_un_error_de_lectura_con_su_mensaje(salida):
+    with pytest.raises(sg.BoardReadError, match="lista de PR"):
+        sg.prs_abiertos(lambda args: subprocess.CompletedProcess(args, 0, stdout=salida, stderr=""))
+
+
+def test_un_seq_booleano_no_es_un_episodio_valido(tmp_path):
+    (tmp_path / "001-malo.json").write_text('{"seq": true}', encoding="utf-8")
+    with pytest.raises(sg.BoardReadError, match="mal formado"):
+        sg.load_episodes(tmp_path)
+
+
+def test_un_issue_sin_tarjeta_aparece_entre_los_hallazgos(tmp_path):
+    """El informe suma las tarjetas que faltan a los hallazgos del tablero."""
+    directorio = _instantanea(tmp_path)
+    antes = sg.informe(snapshot=directorio, episodes=[], runner=_sin_gh)[1]
+    issues = json.loads((directorio / "issues.json").read_text(encoding="utf-8"))
+    nuevo = dict(issues[0], number=9999, state="OPEN", stateReason=None, closedAt=None, title="sin tarjeta")
+    (directorio / "issues.json").write_text(json.dumps([*issues, nuevo]), encoding="utf-8")
+    lineas, despues = sg.informe(snapshot=directorio, episodes=[], runner=_sin_gh)
+    assert despues == antes + 1
+    assert any("#9999" in linea for linea in lineas if linea.startswith("  R"))

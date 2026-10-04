@@ -76,7 +76,7 @@ El texto canónico, los responsables y las reglas del registro están en
 ### Guardián de sesión
 
 Cada sesión de Claude Code abierta en este repositorio empieza con un gancho `SessionStart`
-(`.claude/settings.json`) que ejecuta `python scripts/session_guard.py`. Su salida entra en el contexto de
+(`.claude/settings.json`) que ejecuta `python "$CLAUDE_PROJECT_DIR/scripts/session_guard.py"`. Su salida entra en el contexto de
 la sesión antes del primer mensaje:
 
 - los **hallazgos** del chequeo del tablero (las mismas reglas que `python -m scripts.devlog board --since 76`):

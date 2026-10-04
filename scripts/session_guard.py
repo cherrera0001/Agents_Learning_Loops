@@ -73,7 +73,8 @@ def load_episodes(directorio: Path | None = None) -> list[dict[str, Any]]:
             episodio = json.loads(ruta.read_text("utf-8"))
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise BoardReadError(f"episodio ilegible: {ruta.name}") from exc
-        if not isinstance(episodio, dict) or not isinstance(episodio.get("seq"), int):
+        seq = episodio.get("seq") if isinstance(episodio, dict) else None
+        if not isinstance(seq, int) or isinstance(seq, bool):
             raise BoardReadError(f"episodio mal formado (sin seq entero): {ruta.name}")
         episodios.append(episodio)
     return sorted(episodios, key=lambda e: e["seq"])
@@ -108,7 +109,10 @@ def prs_abiertos(runner: Runner) -> list[str]:
         datos = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
         raise BoardReadError("gh pr list no devolvió JSON") from exc
-    if not isinstance(datos, list) or not all(isinstance(pr, dict) and "number" in pr for pr in datos):
+    if not isinstance(datos, list) or not all(
+        isinstance(pr, dict) and isinstance(pr.get("number"), int) and not isinstance(pr["number"], bool)
+        for pr in datos
+    ):
         raise BoardReadError("gh pr list no devolvió una lista de PR")
     return [
         f"  PR #{pr['number']}{' (borrador)' if pr.get('isDraft') else ''} {pr.get('headRefName', '')}: "
