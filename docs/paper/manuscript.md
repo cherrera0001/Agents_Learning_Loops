@@ -1,4 +1,4 @@
-# Cuánto se puede creer una diferencia: validez de las tareas públicas y diseño para medir la variación de un agente de Gemma 4, sin haber ejecutado el modelo
+# Agents Learning Loops con Gemma 4: cuánto se puede creer una diferencia antes de convertir una lección en instrucción del agente
 
 **Subtítulo:** Una medición de validez de las tareas públicas, un diseño preregistrado que mide la variación antes de comparar y un resultado negativo previo de un programa sin modelo de lenguaje. No reporta ningún resultado obtenido con Gemma 4.
 
