@@ -14,15 +14,52 @@
     "completo": true
   },
   "por_repositorio": {
-    "fastapi": {"tareas": 67, "discrimina": 29, "dorado_falla": 36, "pasa_sin_parche": 2},
-    "rich": {"tareas": 48, "discrimina": 42, "dorado_falla": 6, "pasa_sin_parche": 0},
-    "requests": {"tareas": 13, "discrimina": 0, "dorado_falla": 12, "pasa_sin_parche": 1},
-    "httpx": {"tareas": 1, "discrimina": 0, "dorado_falla": 1, "pasa_sin_parche": 0}
+    "fastapi": {
+      "tareas": 67,
+      "discrimina": 29,
+      "dorado_falla": 36,
+      "pasa_sin_parche": 2
+    },
+    "rich": {
+      "tareas": 48,
+      "discrimina": 42,
+      "dorado_falla": 6,
+      "pasa_sin_parche": 0
+    },
+    "requests": {
+      "tareas": 13,
+      "discrimina": 0,
+      "dorado_falla": 12,
+      "pasa_sin_parche": 1
+    },
+    "httpx": {
+      "tareas": 1,
+      "discrimina": 0,
+      "dorado_falla": 1,
+      "pasa_sin_parche": 0
+    }
   },
-  "total": {"tareas": 129, "discrimina": 71, "dorado_falla": 55, "pasa_sin_parche": 3},
+  "total": {
+    "tareas": 129,
+    "discrimina": 71,
+    "dorado_falla": 55,
+    "pasa_sin_parche": 3
+  },
   "limite_de_60_s_por_comando": {
     "tareas_que_discriminan_medidas_tambien_con_60_s": 71,
     "cambian_de_veredicto": 0
   },
-  "limites": "Una sola medición, en un entorno. No dice por qué falla el parche de referencia ni si esas tareas serían válidas en la evaluación oculta."
+  "limites": "Una sola medición, en un entorno. No dice por qué falla el parche de referencia ni si esas tareas serían válidas en la evaluación oculta.",
+  "detalle": {
+    "discrimina_fallo_sin_parche": {
+      "tests_fallidos": 68,
+      "tiempo_agotado": 3
+    },
+    "dorado_falla": {
+      "tests_fallidos": 54,
+      "error_del_entorno": 1,
+      "tiempo_agotado": 0
+    },
+    "segundos_maximos_con_parche_y_limite_de_60_s": 7.6
+  }
 }
