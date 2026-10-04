@@ -137,7 +137,11 @@ def main(argv: list[str] | None = None, *, runner: Runner = _run_gh, out: TextIO
     parser.add_argument("--snapshot", type=Path, help="instantánea del tablero en vez de leer GitHub")
     parser.add_argument("--estricto", action="store_true", help="salir con 1 o 2 en vez de siempre con 0")
     args = parser.parse_args(argv)
-    out = out or sys.stdout
+    if out is None:
+        # La consola de Windows no es UTF-8 por defecto y el informe lleva tildes.
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        out = sys.stdout
 
     if args.snapshot is None and not os.environ.get("GH_TOKEN"):
         valor = token_de_la_cuenta(runner)
