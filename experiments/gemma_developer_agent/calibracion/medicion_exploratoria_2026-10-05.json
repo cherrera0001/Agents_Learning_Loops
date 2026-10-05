@@ -1,0 +1,226 @@
+{
+  "schema_version": "kaggle-exploratory-aggregate/1",
+  "fecha": "2026-10-05",
+  "que_es": "Primeras corridas completas con el modelo, en notebooks de Kaggle con cuatro GPU L4. Exploratorias: no son las réplicas de la línea base pre-registrada. Solo conteos.",
+  "conjunto": "tareas de rich válidas en las dos mediciones de validez",
+  "fuentes": {
+    "iteracion_01.json": {
+      "sha256": "78bbbea62fbc203280704684a7018de15b9017fd031635e885e7e673d9be1a0e",
+      "notebook": "cs4all/iteracion-01"
+    },
+    "sesion_unica.json": {
+      "sha256": "63570bb3ae4a13f7612e52984b3c6954711bda93093f059712399f5b92fbdb81",
+      "notebook": "cs4all/sesion-unica-a"
+    },
+    "nota": "no se versionan: llevan un resultado por tarea"
+  },
+  "iteracion_01": {
+    "limites_por_condicion": {
+      "A": "enviada, 40 llamadas, 4 min",
+      "R": "pública de dos etapas, 60 llamadas, 5 min",
+      "D": "enviada con 100 llamadas"
+    },
+    "carga_del_modelo_segundos": 363.6,
+    "pasadas": {
+      "A1": {
+        "condicion": "A",
+        "tareas": 15,
+        "resueltas": 3,
+        "minutos_por_tarea": 1.52,
+        "llamadas": 490,
+        "llamadas_que_repiten_una_identica": 247,
+        "sesiones_sin_llamada_de_edicion": 7,
+        "sesiones_que_ejecutan_pytest": 2,
+        "clases_de_final": {
+          "resuelta": 3,
+          "sin_parche": 2,
+          "llamadas_agotadas_sin_parche": 7,
+          "parche_no_pasa": 3
+        },
+        "llamada_de_la_primera_edicion": [
+          3,
+          5,
+          12,
+          31,
+          31,
+          32,
+          37,
+          40
+        ]
+      },
+      "R1": {
+        "condicion": "R",
+        "tareas": 15,
+        "resueltas": 3,
+        "minutos_por_tarea": 2.07,
+        "llamadas": 451,
+        "llamadas_que_repiten_una_identica": 214,
+        "sesiones_sin_llamada_de_edicion": 3,
+        "sesiones_que_ejecutan_pytest": 0,
+        "clases_de_final": {
+          "resuelta": 3,
+          "parche_no_pasa": 7,
+          "llamadas_agotadas_con_parche": 2,
+          "llamadas_agotadas_sin_parche": 1,
+          "sin_parche": 1,
+          "tiempo_agotado_sin_parche": 1
+        },
+        "llamada_de_la_primera_edicion": [
+          3,
+          7,
+          8,
+          12,
+          14,
+          14,
+          15,
+          17,
+          20,
+          21,
+          33,
+          57
+        ]
+      },
+      "A2": {
+        "condicion": "A",
+        "tareas": 15,
+        "resueltas": 3,
+        "minutos_por_tarea": 1.46,
+        "llamadas": 466,
+        "llamadas_que_repiten_una_identica": 250,
+        "sesiones_sin_llamada_de_edicion": 6,
+        "sesiones_que_ejecutan_pytest": 3,
+        "clases_de_final": {
+          "resuelta": 3,
+          "llamadas_agotadas_con_parche": 2,
+          "parche_no_pasa": 5,
+          "llamadas_agotadas_sin_parche": 5
+        },
+        "llamada_de_la_primera_edicion": [
+          3,
+          5,
+          8,
+          14,
+          31,
+          31,
+          32,
+          32,
+          40
+        ]
+      },
+      "D1": {
+        "condicion": "D",
+        "tareas": 15,
+        "resueltas": 2,
+        "minutos_por_tarea": 2.93,
+        "llamadas": 1122,
+        "llamadas_que_repiten_una_identica": 762,
+        "sesiones_sin_llamada_de_edicion": 5,
+        "sesiones_que_ejecutan_pytest": 4,
+        "clases_de_final": {
+          "resuelta": 2,
+          "parche_no_pasa": 6,
+          "tiempo_agotado_con_parche": 1,
+          "llamadas_agotadas_con_parche": 1,
+          "llamadas_agotadas_sin_parche": 1,
+          "sin_parche": 3,
+          "tiempo_agotado_sin_parche": 1
+        },
+        "llamada_de_la_primera_edicion": [
+          4,
+          5,
+          16,
+          18,
+          48,
+          69,
+          77,
+          91,
+          91,
+          92
+        ]
+      }
+    },
+    "tareas_que_cambian_entre_A1_y_A2": 2,
+    "resueltas_en_alguna_pasada": 4,
+    "resueltas_en_las_cuatro": 2
+  },
+  "sesion_unica_a": {
+    "limites": {
+      "max_time_minutes": 4.0,
+      "max_tool_calls": 40,
+      "max_turns": 100,
+      "timeout_seconds": 60
+    },
+    "carga_del_modelo_segundos": 634.9,
+    "tareas_en_la_corrida": 20,
+    "pasadas": {
+      "enviada_1": {
+        "tareas": 16,
+        "resueltas": 4,
+        "minutos_por_tarea": 1.86,
+        "llamadas_mediana": 37.0,
+        "no_resueltas_con_38_llamadas_o_mas": 8,
+        "no_resueltas_con_235_s_o_mas": 2,
+        "no_resueltas_con_parche": 7
+      },
+      "razonamiento": {
+        "tareas": 16,
+        "resueltas": 3,
+        "minutos_por_tarea": 3.76,
+        "llamadas_mediana": 20.0,
+        "no_resueltas_con_38_llamadas_o_mas": 3,
+        "no_resueltas_con_235_s_o_mas": 11,
+        "no_resueltas_con_parche": 9
+      },
+      "enviada_2": {
+        "tareas": 16,
+        "resueltas": 4,
+        "minutos_por_tarea": 1.7,
+        "llamadas_mediana": 37.0,
+        "no_resueltas_con_38_llamadas_o_mas": 7,
+        "no_resueltas_con_235_s_o_mas": 0,
+        "no_resueltas_con_parche": 8
+      }
+    }
+  },
+  "por_largo_del_enunciado": {
+    "que_es": "todas las pasadas de las dos corridas, por tarea",
+    "estratos": {
+      "250_caracteres_o_mas": {
+        "tareas": 6,
+        "resueltas_alguna_vez": 5,
+        "pasadas_resueltas": 22,
+        "pasadas": 42
+      },
+      "menos_de_250": {
+        "tareas": 10,
+        "resueltas_alguna_vez": 0,
+        "pasadas_resueltas": 0,
+        "pasadas": 66
+      }
+    },
+    "fisher_exacto_dos_colas": 0.0014,
+    "aviso": "el corte de 250 caracteres se eligió mirando estos datos; falta confirmarlo en tareas no vistas"
+  },
+  "tabla_publica": {
+    "envios_del_mismo_zip": [
+      {
+        "nota": 0.06,
+        "tareas_de_58": 4
+      },
+      {
+        "nota": 0.05,
+        "tareas_de_58": 3
+      }
+    ],
+    "leida": "2026-10-04 21:04 UTC",
+    "equipos": 1709,
+    "mediana_tareas": 5,
+    "maximo_tareas": 14
+  },
+  "limites": [
+    "15 y 16 tareas de un solo repositorio.",
+    "Las repeticiones cuentan cualquier llamada idéntica a una anterior, también las legítimas.",
+    "Las sesiones sin llamada de edición no incluyen las ediciones hechas con comandos de consola.",
+    "La tasa en tareas públicas no predice la nota: el mismo envío obtuvo 4 y 3 de 58."
+  ]
+}
