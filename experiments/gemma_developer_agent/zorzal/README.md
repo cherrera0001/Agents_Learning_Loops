@@ -58,6 +58,46 @@ artículo.
 En el resultado H8 de ALL, sin modelo de lenguaje, la señal de la ejecución calló en 7 de 9 tareas y eligió mal
 en la única tarea engañosa donde habló. Escuchar no garantiza elegir bien.
 
+## Después de la revisión independiente (2026-10-05)
+
+Los umbrales de la versión 1 no se han tocado. Lo que sigue es lo que una versión 2 tendría que recoger; espera
+la aprobación del dueño.
+
+**El nombre.** La propuesta se llama **ZorzALL**.
+
+**Tres revisores intentaron refutarla.** Veredicto: solo con cambios.
+
+| Lo que decía la versión 1 | Qué encontró la revisión |
+|---|---|
+| Ventaja exigida: el ruido más una tarea | Mal planteada: se vuelve más exigente con más tareas. Con una mejora real de 10 puntos y 43 tareas daría «apoyada» entre el 1 % y el 13 % de las veces |
+| H-Z1 | En parte una tautología: sin relación real saldría «apoyada» entre el 48 % y el 92 % de las veces. Pasa a ser exploratoria |
+| H-O | No es una hipótesis: es un indicador de operación |
+| «Busca» y «espera» como rasgos que deciden | Circulares: una etapa sin herramienta de edición cumple «busca» por construcción, y «espera» se mide contra un tope distinto en cada brazo |
+| Una etapa sin herramienta de edición no puede escribir | Falso: puede hacerlo con un comando de consola |
+
+**Lo que queda como contraste.** Uno solo: el arnés base con un texto de relleno contra el arnés ZorzALL, con
+los mismos topes, con una prueba de permutación por tarea y tres veredictos (apoyada, refutada, no
+concluyente). Con 103 tareas y dos pasadas por brazo detectaría una mejora de 10 puntos ocho de cada diez
+veces. Cuesta unas 17 horas de cuota.
+
+**La definición corregida, en discusión.** Escucha, resuelve, comprueba. Sustituye «acierta una vez» por
+«resuelve», las veces que haga falta. Rasgos: busca, oye, ubica, resuelve, comprueba.
+
+**Lo que dijeron los primeros datos** (exploratorios; agregados en
+[`calibracion/medicion_exploratoria_2026-10-05.json`](../calibracion/medicion_exploratoria_2026-10-05.json),
+que llega con el PR #141):
+
+- Las tareas resueltas tienen el perfil esperado: de 5 a 8 llamadas, sin repeticiones, una edición.
+- Pero la causa principal de no resolver no está en la conducta del agente. Está en las tareas cuyo enunciado
+  es un título y una referencia que el agente no puede abrir: ninguna configuración resolvió ninguna, en 66
+  pasadas.
+- En esas tareas, buscar las palabras del título como texto deja el archivo correcto en primer lugar en 6 de
+  9. Ubicar no es el obstáculo; falta saber qué cambiar.
+
+**Lo que eso le pide a la hipótesis.** «Oír» no puede significar solo ejecutar las pruebas. En un tercio de las
+tareas públicas no hay descripción del defecto, y el agente tiene que deducirlo del código que rodea las
+palabras del título. Ese caso todavía no está cubierto.
+
 ## Historias y criterios de aceptación
 
 Cada criterio es una prueba de [`tests/unit/test_zorzal_perfil.py`](../../../tests/unit/test_zorzal_perfil.py).

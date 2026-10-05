@@ -9,5 +9,17 @@
       {"notebook": "validez-causa-cpu", "subidas": 1, "resultados_utiles": 1, "fallos_visibles_en_local": 0, "detalle": "subida sin ensayo local ni aprobación; el dato que buscaba estaba en disco"}
     ]
   },
-  "subidas": []
+  "subidas": [
+    {
+      "fecha": "2026-10-05T02:21:00Z",
+      "notebook": "iteracion-02",
+      "sesion": "revisión",
+      "aprobada_por_el_dueno": true,
+      "ensayo_local_previo": true,
+      "resultado_util": false,
+      "fallo_visible_en_local": false,
+      "estado": "en cola; resultado_util se actualiza cuando termine",
+      "detalle": "una sola subida; tope 20, enviada y regla escrita sobre 15 tareas"
+    }
+  ]
 }
