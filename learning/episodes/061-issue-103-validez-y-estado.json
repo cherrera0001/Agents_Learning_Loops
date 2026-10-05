@@ -1,0 +1,91 @@
+{
+  "seq": 61,
+  "id": "issue-103-validez-y-estado",
+  "goal": "Revisar el experimento Kaggle Gemma 4 desde fuera, medir sin GPU lo que no necesita el modelo y dejar el repositorio diciendo lo que hoy es cierto",
+  "ref": "#103",
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La primera evaluación leyó un árbol de trabajo con un borrador sin fusionar y lo citó como regla del experimento: había un pre-registro de la campaña que no estaba en main"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Se recomendó enviar el kit sin cambios sin haber leído el foro: ese zip habría dado error o corrido con 1 minuto y 10 llamadas por tarea"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leer el código del arnés en vez de su documentación mostró que include_thoughts: false desactiva el razonamiento y que timeout_seconds rige también la verificación del parche"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Simulacro sin GPU: el arnés real contra un modelo falso que aplica el parche de referencia. El zip enviado dio el desenlace esperado en 8 de 8 corridas"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "La guardia del notebook, ejecutada contra un árbol armado con los listados reales de Kaggle, se detenía siempre: los datos de la competencia traen su propia carpeta wheels/"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "El inicio de sesión de Google rechazó la ventana de Edge abierta por automatización; hubo que abrir Edge normal y conectarse después"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Con la sesión web se obtuvo el identificador de la sesión en cola y se canceló por la API pública una versión que tenía la misma ruta fija que ya había fallado"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Se trabajó en una rama y un árbol aparte sin avisar a la sesión que llevaba el experimento: dos chequeos previos en paralelo que hubo que reconciliar"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Se añadió una enmienda al pre-registro antes de tener la aprobación del dueño; se avisó al hacerlo y quedó en un commit aparte"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Validez de las 129 tareas en un notebook sin GPU: 71 discriminan; no gastó cuota ni cola"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "A las 15 tareas se informó «5 discriminan y 10 fallan» como un problema general; con el repositorio a la vista los fallos se concentraban en uno"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "El notebook de tres corridas no se pudo subir: la cuenta ya tenía sus dos sesiones de GPU por lotes en cola, una de ellas subida por otra sesión"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El archivo de validez contaba como tests fallidos 35 casos en que pytest terminó con código 2 con y sin parche; se separaron por código"
+    }
+  ],
+  "lessons": [
+    "Antes de evaluar un experimento, compara el árbol de trabajo con main: un borrador sin fusionar no es una regla del experimento",
+    "Lee el código del sistema que ejecuta, no solo su documentación: dos de los cuatro cambios del envío hacían algo distinto de lo que decía su descripción",
+    "Una guardia o un chequeo que solo se lee aprueba lo que al ejecutarse falla: ejecútalo contra la estructura real antes de gastar una espera de horas",
+    "Lo que no necesita el modelo se mide sin GPU: la validez de las tareas y el montaje no pasan por la cola",
+    "Baja y lee todas las salidas de cada corrida y la tabla completa: la nota 0,06 eran exactamente 4 tareas y el resultado típico de un primer envío",
+    "No informes un conteo parcial sin desglosarlo por grupo: quince tareas de tres repositorios no son un resultado general",
+    "Cuando hay otra sesión trabajando en lo mismo, avisa antes de abrir una rama: el trabajo en paralelo sin coordinar se duplica",
+    "Un inicio de sesión no se automatiza: el dueño entra en su navegador y la herramienta se conecta después",
+    "Separa por código de salida lo que el ejecutor de tests devuelve: un código 2 con y sin parche es un entorno que no ejecuta los tests, no un parche que falla"
+  ]
+}

@@ -9,15 +9,17 @@
 ![Types](https://img.shields.io/badge/mypy-strict-informational)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-`associative-agent-loop` implementa una memoria episódica y semántica que permite a un agente
-**capturar trayectorias de ejecución, extraer lecciones, enlazarlas en un grafo asociativo y
-recuperarlas por activación propagada** para condicionar decisiones futuras. El objetivo operativo
-es: *el agente no debe repetir un error cuya causa ya observó*, y la experiencia adquirida en un
-contexto no debe contaminar decisiones en contextos no relacionados.
-**Ese objetivo está evaluado solo en parte**: «no repetir» se cumple en tres de los cuatro
-escenarios simulados; con señuelo y el agente por defecto no se cumple (H4), y con un diagnóstico
-público común no hay diferencia según el criterio pre-registrado (#58)
-([qué presenta este experimento](#qué-presenta-este-experimento)).
+`associative-agent-loop` implementa una memoria episódica y semántica para agentes. Con ella un agente
+**captura trayectorias de ejecución, extrae lecciones, las enlaza en un grafo asociativo y las recupera
+por activación propagada** antes de decidir.
+
+El objetivo operativo tiene dos partes: *el agente no debe repetir un error cuya causa ya observó*, y la
+experiencia adquirida en un contexto no debe contaminar decisiones en contextos no relacionados.
+
+**Ese objetivo está evaluado solo en parte.** «No repetir» se cumple en tres de los cuatro escenarios
+simulados. Con señuelo y el agente por defecto no se cumple (H4). Con un diagnóstico público común no hay
+diferencia según el criterio pre-registrado (#58). El detalle está en
+[qué presenta este experimento](#qué-presenta-este-experimento).
 
 El propio repositorio registra su desarrollo con este mecanismo: cada issue se guarda como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
@@ -106,7 +108,7 @@ tenía issue, y hoy es H8, el issue
 | **Ciclo verificable** | Máquina de estados `PLAN → RETRIEVE → ACT → OBSERVE → CONSOLIDATE` con transiciones validadas |
 | **Determinismo** | Reloj lógico, hashing estable (`blake2b`) y semillas fijas: el benchmark produce el mismo JSON en cada ejecución |
 | **Operación** | Paquete instalable, CLI `aal-benchmark`, configuración TOML/entorno, escritura atómica, logging estructurado |
-| **Calidad** | 614 tests, cobertura 98.7 % (medida el 2026-10-02; CI exige ≥ 90 %), propiedades `hypothesis` con verificación por mutación, `mypy --strict`, CI multiplataforma |
+| **Calidad** | 2 174 tests (recuento del 2026-10-04 con `pytest --collect-only`), cobertura 98.7 % (medida el 2026-10-02, cuando había 614 tests; CI exige ≥ 90 %), propiedades `hypothesis` con verificación por mutación, `mypy --strict`, CI multiplataforma |
 
 ## 2. Inicio rápido
 
@@ -561,8 +563,10 @@ tareas reales de software relacionadas.
 ### 7.1 Experimento 0: reutilización asociativa en escenarios sintéticos
 
 Todos los escenarios usan herramientas simuladas y deterministas; `aal-benchmark --json` reproduce
-exactamente los valores siguientes. La salida es idéntica a la línea base registrada en
-[`evidence/baseline/`](evidence/baseline/) (commit `ca853fd`).
+exactamente los valores siguientes. La salida tiene el mismo contenido que la línea base registrada en
+[`evidence/baseline/`](evidence/baseline/) (commit `ca853fd`): es el mismo JSON. En Windows, redirigir la
+salida a un archivo escribe saltos de línea CRLF, así que la comparación byte a byte con el archivo de la
+línea base (LF) no coincide aunque el contenido sea igual.
 
 | Escenario | Hipótesis evaluada | Condición de control | Resultado |
 |---|---|---|---|
@@ -966,7 +970,12 @@ léxicas y repetir la prueba con las mismas tareas con señuelo.
 
 Aparte de esa línea, el repositorio documenta un experimento con un modelo de lenguaje en el concurso Gemma 4
 Developer Agent de Kaggle: [`experiments/gemma_developer_agent/`](experiments/gemma_developer_agent/README.md).
-Está en fase de diseño y pre-registro: hoy no hay ninguna corrida con el modelo ni resultado alguno.
+La línea base y la campaña están pre-registradas. Al 2026-10-04 no hay ninguna corrida propia con el
+modelo. Hay una medición de validez sin modelo (71 de las 129 tareas públicas discriminan en el sandbox del
+notebook de la competencia) y un envío exploratorio a la pista de código, con nota pública 0,06, que son 4
+de 58 tareas (issue [#106](https://github.com/cherrera0001/Agents_Learning_Loops/issues/106)). Ese envío es
+una sola corrida, no una réplica de la línea base, y no permite concluir nada sobre las skills ni sobre la
+memoria.
 
 ```mermaid
 flowchart TB
@@ -1018,6 +1027,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   └── main.py                # CLI aal-benchmark
 ├── src/experiments/           # Experimento 1: solver acotado, harness de experimento, recibos, evaluación
 ├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana (no es el registro de modelos)
+├── experiments/gemma_developer_agent/  # experimento Kaggle Gemma 4: diseño y pre-registro, sin datos de la competencia
 ├── benchmark/
 │   ├── public/                # tareas y tests de aceptación visibles para el solver
 │   └── private/               # etiquetas causales, pares e inyecciones (solo el evaluador)
@@ -1028,13 +1038,17 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   ├── loop_protocol.md       # estados, fórmulas e invariantes
 │   ├── software_learning_protocol.md  # protocolo del Experimento 1
 │   └── software_memory_schema_v1.json, reflection_schema_v1.json
-├── docs/                      # verificación, estimación, pre-registro y resultados de H4, referencia histórica del Experimento 0
+├── docs/                      # verificación, estimación, referencia histórica del Experimento 0
+│   ├── preregistration/       # pre-registros: H4, #58, H6, H7, H8 y la línea base de Kaggle
+│   ├── results/               # informes de H4, #58, H6 y H7
+│   ├── paper/                 # figuras y tablas generadas desde results/
 │   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills, enrutamiento.md
 │       └── caso-real-contacto-vt.md  # caso observacional del sitio público (no es evidencia del Experimento 1)
 ├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
 ├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
 ├── learning/                  # episodios de desarrollo y memoria derivada
-├── scripts/                   # devlog, export_schema, mutation_check, verify_experiment1
+├── scripts/                   # devlog, export_schema, mutation_check, verify_experiment1,
+│                              # analyze_* (un análisis por campaña), paper_figures y kaggle_* (experimento Kaggle)
 ├── tests/
 │   ├── unit/                  # componentes y propiedades
 │   ├── integration/           # agente de biblioteca, benchmark, CLI, bitácora

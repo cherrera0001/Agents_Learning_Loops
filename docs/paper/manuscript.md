@@ -1,4 +1,4 @@
-# Cuánto se puede creer una diferencia: validez de las tareas públicas y diseño para medir la variación de un agente de Gemma 4, sin haber ejecutado el modelo
+# Agents Learning Loops con Gemma 4: cuánto se puede creer una diferencia antes de convertir una lección en instrucción del agente
 
 **Subtítulo:** Una medición de validez de las tareas públicas, un diseño preregistrado que mide la variación antes de comparar y un resultado negativo previo de un programa sin modelo de lenguaje. No reporta ningún resultado obtenido con Gemma 4.
 
@@ -34,7 +34,9 @@ Contribuciones:
 
 ## 2. Trabajos relacionados
 
-**Evaluar con issues reales.** SWE-bench [1] estableció el formato de tests ocultos que pasan o fallan, que esta competición también usa; las páginas de la competición describen sus tareas como propias. Trabajos posteriores encontraron en ese benchmark parches con fuga de la solución o aceptados por tests débiles [2], y parches dados por correctos que fallaban los tests de los desarrolladores [3]. Nuestra medición del § 3 es de otra clase: no mira si los tests son débiles, sino si la tarea funciona en el entorno donde se la ejecuta. No encontramos un trabajo que mida eso en el entorno que entrega el propio organizador.
+**Evaluar con issues reales.** SWE-bench [1] estableció el formato de tests ocultos que pasan o fallan, que esta competición también usa; las páginas de la competición describen sus tareas como propias. Trabajos posteriores encontraron en ese benchmark parches con fuga de la solución o aceptados por tests débiles [2], y parches dados por correctos que fallaban los tests de los desarrolladores [3]. Nuestra medición del § 3 es de otra clase: no mira si los tests son débiles, sino si la tarea funciona en el entorno donde se la ejecuta.
+
+**La misma medición, hecha por otro participante.** Un notebook público de esta competición [14] aplicó los mismos dos controles —sin parche y con el parche de referencia— a las 129 tareas, en un entorno local propio. Tras reparar solo dependencias en nueve entornos, sin tocar tests ni parches, informa 114 tareas válidas: fastapi 62 de 67, rich 44 de 48, requests 7 de 13 y httpx 1 de 1. Nuestra Tabla 1 da 71 con el entorno aislado del notebook oficial y sin ninguna reparación. Las dos mediciones coinciden en rich (44 y 42) y difieren en fastapi (62 y 29) y en requests (7 y 0). No las reprodujimos una contra otra. La diferencia es compatible con que las tareas que aquí no llegan a ejecutar sus tests fallen por dependencias del entorno y no por la tarea. Lo que aporta nuestra medición es el entorno: el que entrega el organizador, tal como viene. Ese notebook informa además una caída de tareas resueltas con un adaptador entrenado que sí bajaba la pérdida, y concluye lo mismo que motiva este texto: medir antes de ajustar.
 
 **Variación entre ejecuciones.** En SWE-bench Verified, con tres modelos y dos arneses de agente, la estimación de una sola ejecución varía entre 2,2 y 6,0 puntos según la ejecución elegida, y la desviación supera 1,5 puntos incluso a temperatura 0 [4]. No son cifras de Gemma 4 ni de conjuntos de 40 a 70 tareas. Para comparar dos clasificadores ejecutados una sola vez se ha recomendado el test de McNemar [5]; trasladarlo a agentes con repeticiones es un supuesto nuestro. Fijar las predicciones y el análisis antes de los datos distingue la predicción del análisis posterior [6].
 
@@ -56,11 +58,11 @@ Contribuciones:
 
 **Lectura.** En este entorno, solo 71 tareas distinguen un parche correcto de uno incorrecto. En otras 55 el parche de referencia no pasa, y 3 pasan sin parche. Dos de los cuatro repositorios no aportan aquí ninguna tarea que discrimine.
 
-**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, 54 terminaron con tests fallidos y 1 con un error del entorno de ejecución. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado y no un test fallido.
+**Detalle de los fallos.** De las 55 tareas donde el parche de referencia no pasa, en 35 el ejecutor de tests terminó con su código de ejecución interrumpida, tanto con el parche como sin él: los tests no llegaron a ejecutarse. 34 de esas 35 son del repositorio con más tareas. En otras 19 hubo tests fallidos y en 1 un error del entorno de ejecución. De las 71 que discriminan, en 3 el fallo sin parche fue un tiempo agotado.
 
 **El tiempo por comando.** Ninguna de las 55 terminó por tiempo agotado. Las 71 que discriminan se midieron también con un límite de 60 segundos por comando, el que usa nuestra configuración, y todas siguieron pasando con el parche.
 
-**Alcance.** Es una sola medición en un entorno. No examinamos por qué falla el parche de referencia donde falla. No afirmamos que esas tareas sean inválidas en la evaluación oculta, que usa otros repositorios y cuyo entorno no vemos. Sí afirmamos que quien use las tareas públicas en este entorno solo puede comprobar un parche en 71 de ellas.
+**Alcance.** Es una sola medición en un entorno. No leímos la salida de los tests, así que no sabemos qué interrumpe la ejecución en esas 35 tareas; que ocurra igual sin parche indica un problema del entorno y no del parche. No afirmamos que esas tareas sean inválidas en la evaluación oculta, que usa otros repositorios y cuyo entorno no vemos. Sí afirmamos que quien use las tareas públicas en este entorno solo puede comprobar un parche en 71 de ellas.
 
 ## 4. Método: una línea de base preregistrada que mide la variación primero
 
@@ -110,7 +112,7 @@ Con redacción original, el acierto en el primer intento fue mayor con memoria. 
 ## 6. Amenazas a la validez
 
 - **Una medición de validez, un entorno.** La Tabla 1 no se repitió ni se contrastó con otro entorno.
-- **Causa sin examinar.** No sabemos por qué falla el parche de referencia donde falla.
+- **Causa sin examinar.** En 35 tareas los tests no llegaron a ejecutarse y no leímos por qué; en las otras 20 no sabemos por qué no pasa el parche de referencia.
 - **Contaminación.** Los repositorios públicos son de código abierto y el modelo puede haber visto su historial. Retener un repositorio no elimina esto.
 - **Un solo repositorio de prueba.** Con 42 tareas de un repositorio, lo que se mida no se extiende a otros.
 - **Presupuesto en tiempo de reloj.** Un límite de tiempo hace que los resultados dependan de la carga del servidor, que es parte de la variación que se mide y que no se puede separar.
@@ -142,3 +144,4 @@ En el entorno aislado del notebook de la competición, 71 de las 129 tareas púb
 11. Xiong et al. How Memory Management Impacts LLM Agents: An Empirical Study of Experience-Following Behavior. arXiv:2505.16067.
 12. Li et al. SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks, versión v1. arXiv:2602.12670v1.
 13. Gloaguen et al. Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents? arXiv:2602.11988.
+14. Gluzdov. Gemma 4: Measure Before You Tune. Notebook público de Kaggle, consultado el 2026-10-04. kaggle.com/code/dmitriigluzdov/gemma-4-measure-before-you-tune.
