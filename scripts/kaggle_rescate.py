@@ -13,13 +13,20 @@ Lee el token de la variable ``KAGGLE_API_TOKEN`` y no lo imprime. Lo bajado pued
 notebooks con datos de la competencia: el guion se niega si ``--destino`` queda versionable. El resumen que
 imprime lleva solo agregados de la tabla pública y de los envíos propios.
 
-Salida: 0 si se bajó y resumió, 2 si la entrada es inválida o falta el token, 3 si Kaggle no respondió.
+Un notebook o un archivo de salida que no se pueda bajar o guardar no detiene el resto: queda anotado en
+``faltantes.json`` y el resumen lo repite en ``descarga_incompleta``. Un nombre de archivo que no cabe en una
+ruta de Windows se guarda acortado; ``salidas.json`` conserva el nombre que tenía en Kaggle.
+
+Salida: 0 si se bajó y resumió, 2 si la entrada es inválida o falta el token, 3 si Kaggle no respondió,
+4 si se bajó y resumió pero faltó algún notebook o archivo de salida.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
+import http.client
 import io
 import json
 import math
@@ -41,10 +48,13 @@ API = "https://www.kaggle.com/api/v1"
 HOSTS_CON_TOKEN = frozenset({urllib.parse.urlsplit(API).hostname, "www.kaggle.com", "api.kaggle.com"})
 COMPETITION_SLUG = "gemma-4-developer-agent"
 TOPE_S = 120
+# Windows rechaza rutas de 260 caracteres o más si no se activó el soporte de rutas largas.
+TOPE_RUTA = 240
 
 EXIT_OK = 0
 EXIT_ENTRADA = 2
 EXIT_RED = 3
+EXIT_PARCIAL = 4
 
 
 class RescateError(RuntimeError):
@@ -176,15 +186,31 @@ def cabeceras_para(url: str, token: str) -> dict[str, str]:
     return {}
 
 
+class RedireccionSinToken(urllib.request.HTTPRedirectHandler):
+    """Al seguir una redirección, el token no va a un host que no es Kaggle; sin https, no se sigue."""
+
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> Any:
+        nueva = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if nueva is not None:
+            partes = urllib.parse.urlsplit(newurl)
+            if partes.scheme != "https":
+                raise RescateError("Kaggle redirigió a una dirección que no es https.")
+            if partes.hostname not in HOSTS_CON_TOKEN:
+                for nombre in [n for n in nueva.headers if n.lower() == "authorization"]:
+                    del nueva.headers[nombre]
+                nueva.unredirected_hdrs.pop("Authorization", None)
+        return nueva
+
+
 def pedir(ruta: str, token: str) -> bytes:
     url = ruta if ruta.startswith("http") else f"{API}/{ruta}"
     peticion = urllib.request.Request(url, headers=cabeceras_para(url, token))
     try:
-        with urllib.request.urlopen(peticion, timeout=TOPE_S) as resp:
+        with urllib.request.build_opener(RedireccionSinToken).open(peticion, timeout=TOPE_S) as resp:
             return bytes(resp.read())
     except urllib.error.HTTPError as exc:
         raise RescateError(f"Kaggle respondió {exc.code} a {ruta.split('?')[0]}") from None
-    except (urllib.error.URLError, TimeoutError) as exc:
+    except (urllib.error.URLError, TimeoutError, http.client.HTTPException) as exc:
         raise RescateError(f"Sin respuesta de Kaggle: {type(exc).__name__}") from None
 
 
@@ -205,8 +231,72 @@ def comprobar_destino_fuera_de_git(destino: Path) -> None:
         raise RescateError("--destino está dentro de un repositorio git y no está ignorado.")
 
 
-def bajar(destino: Path, token: str, usuario: str | None) -> None:
-    """Baja envíos, tabla y, por cada notebook propio, estado, metadatos, log y archivos de salida."""
+def nombre_que_cabe(carpeta: Path, nombre: str, tope: int = TOPE_RUTA) -> str:
+    """Nombre en disco de un archivo de salida: el de Kaggle, o acortado con su huella si la ruta no cabe."""
+    completo = f"salida__{nombre}"
+    sobra = len(str(carpeta.resolve() / completo)) - tope
+    if sobra <= 0:
+        return completo
+    sufijo = "".join(Path(nombre).suffixes[-2:])
+    huella = hashlib.sha256(nombre.encode("utf-8")).hexdigest()[:10]
+    base = nombre[: len(nombre) - len(sufijo)] if sufijo else nombre
+    cabe = len(base) - sobra - len(huella) - 1
+    if cabe < 0:
+        raise RescateError(f"La ruta de salida no cabe en TOPE_RUTA ({tope}), ni sin la base del nombre.")
+    return f"salida__{base[:cabe]}~{huella}{sufijo}"
+
+
+def causa_de(exc: Exception) -> str:
+    """La causa de un fallo sin la ruta ni la dirección: una ``OSError`` las trae en su texto."""
+    if isinstance(exc, RescateError):
+        return str(exc)
+    if isinstance(exc, OSError):
+        return f"{type(exc).__name__}: no se pudo guardar"
+    return f"{type(exc).__name__}: respuesta de Kaggle ilegible"
+
+
+def bajar_notebook(carpeta: Path, consulta: str, token: str) -> list[dict[str, str]]:
+    """Baja un notebook a ``carpeta``. Devuelve los archivos de salida que no se pudieron guardar."""
+    (carpeta / "estado.json").write_bytes(pedir(f"kernels/status?{consulta}", token))
+    fuente = json.loads(pedir(f"kernels/pull?{consulta}", token))
+    (carpeta / "metadatos.json").write_text(
+        json.dumps(fuente.get("metadata", {}), ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    (carpeta / "notebook.ipynb").write_text(str(fuente.get("blob", {}).get("source", "")), encoding="utf-8")
+    salida = json.loads(pedir(f"kernels/output?{consulta}", token))
+    (carpeta / "log.txt").write_text(texto_del_log(str(salida.get("log") or "")), encoding="utf-8")
+    (carpeta / "log_crudo.json").write_text(str(salida.get("log") or ""), encoding="utf-8")
+    guardados: list[dict[str, str]] = []
+    faltantes: list[dict[str, str]] = []
+    for archivo in salida.get("files") or []:
+        nombre = Path(str(archivo.get("fileName") or "")).name
+        if not nombre or not archivo.get("url"):
+            continue
+        try:
+            en_disco = nombre_que_cabe(carpeta, nombre)
+            (carpeta / en_disco).write_bytes(pedir(str(archivo["url"]), token))
+        except (RescateError, OSError) as exc:
+            faltantes.append({"notebook": carpeta.name, "archivo": nombre, "causa": causa_de(exc)})
+            continue
+        guardados.append({"archivo": en_disco, "nombre_en_kaggle": nombre})
+    (carpeta / "salidas.json").write_text(
+        json.dumps(guardados, ensure_ascii=False, indent=1), encoding="utf-8"
+    )
+    return faltantes
+
+
+def _escribir_faltantes(destino: Path, faltantes: list[dict[str, str]]) -> None:
+    """Se escribe tras cada notebook: una bajada que muere a medias no queda como completa."""
+    texto = json.dumps(faltantes, ensure_ascii=False, indent=1)
+    (destino / "faltantes.json").write_text(texto, encoding="utf-8")
+
+
+def bajar(destino: Path, token: str, usuario: str | None) -> list[dict[str, str]]:
+    """Baja envíos, tabla y, por cada notebook propio, estado, metadatos, log y archivos de salida.
+
+    Devuelve lo que faltó, que también queda en ``faltantes.json``. Si fallan los envíos, la tabla o la
+    lista de notebooks, lanza: sin eso no hay rescate.
+    """
     envios = json.loads(pedir(f"competitions/submissions/list/{COMPETITION_SLUG}?page=1", token))
     (destino / "envios.json").write_text(json.dumps(envios, ensure_ascii=False, indent=1), encoding="utf-8")
     (destino / "tabla_publica.zip").write_bytes(
@@ -214,33 +304,34 @@ def bajar(destino: Path, token: str, usuario: str | None) -> None:
     )
     usuario = usuario or next((e.get("submittedByRef") for e in envios if e.get("submittedByRef")), None)
     if not usuario:
-        return
+        return []
     (destino / "usuario.txt").write_text(usuario, encoding="utf-8")
     lista = json.loads(pedir(f"kernels/list?user={urllib.parse.quote(usuario)}&pageSize=100", token))
     (destino / "notebooks.json").write_text(json.dumps(lista, ensure_ascii=False, indent=1), encoding="utf-8")
+    faltantes: list[dict[str, str]] = []
     for nb in lista:
         ref = str(nb.get("ref") or "")
         if "/" not in ref:
             continue
         slug = ref.split("/", 1)[1]
         carpeta = destino / "notebooks" / slug
-        carpeta.mkdir(parents=True, exist_ok=True)
         consulta = f"userName={urllib.parse.quote(usuario)}&kernelSlug={urllib.parse.quote(slug)}"
-        (carpeta / "estado.json").write_bytes(pedir(f"kernels/status?{consulta}", token))
-        fuente = json.loads(pedir(f"kernels/pull?{consulta}", token))
-        (carpeta / "metadatos.json").write_text(
-            json.dumps(fuente.get("metadata", {}), ensure_ascii=False, indent=1), encoding="utf-8"
-        )
-        (carpeta / "notebook.ipynb").write_text(
-            str(fuente.get("blob", {}).get("source", "")), encoding="utf-8"
-        )
-        salida = json.loads(pedir(f"kernels/output?{consulta}", token))
-        (carpeta / "log.txt").write_text(texto_del_log(str(salida.get("log") or "")), encoding="utf-8")
-        (carpeta / "log_crudo.json").write_text(str(salida.get("log") or ""), encoding="utf-8")
-        for archivo in salida.get("files") or []:
-            nombre = Path(str(archivo.get("fileName") or "")).name
-            if nombre and archivo.get("url"):
-                (carpeta / f"salida__{nombre}").write_bytes(pedir(str(archivo["url"]), token))
+        try:
+            carpeta.mkdir(parents=True, exist_ok=True)
+            faltantes += bajar_notebook(carpeta, consulta, token)
+        except (RescateError, OSError, ValueError, AttributeError) as exc:
+            faltantes.append({"notebook": slug, "archivo": "", "causa": causa_de(exc)})
+        _escribir_faltantes(destino, faltantes)
+    _escribir_faltantes(destino, faltantes)
+    return faltantes
+
+
+def salidas_de(carpeta: Path) -> list[str]:
+    """Nombres de los archivos de salida tal como estaban en Kaggle, aunque en disco estén acortados."""
+    indice = carpeta / "salidas.json"
+    if indice.is_file():
+        return sorted(str(x["nombre_en_kaggle"]) for x in json.loads(indice.read_text(encoding="utf-8")))
+    return sorted(p.name[8:] for p in carpeta.glob("salida__*"))
 
 
 def resumir(destino: Path, n: int | None) -> dict[str, Any]:
@@ -249,7 +340,9 @@ def resumir(destino: Path, n: int | None) -> dict[str, Any]:
     filas = leer_tabla((destino / "tabla_publica.zip").read_bytes())
     notas = [float(f["Score"]) for f in filas]
     candidatos = tamanos_compatibles(notas)
+    origen = "indicado con --tareas-tabla"
     if n is None:
+        origen = "el menor de los compatibles; las tareas de cada nota dependen de este tamaño"
         if not candidatos:
             raise RescateError("Ningún tamaño de tabla explica las notas observadas.")
         n = candidatos[0]
@@ -257,6 +350,8 @@ def resumir(destino: Path, n: int | None) -> dict[str, Any]:
     usuario = usuario_txt.read_text(encoding="utf-8").strip() if usuario_txt.exists() else None
     notebooks = []
     for carpeta in sorted((destino / "notebooks").glob("*")) if (destino / "notebooks").is_dir() else []:
+        if not (carpeta / "estado.json").is_file() or not (carpeta / "metadatos.json").is_file():
+            continue  # notebook que no se alcanzó a bajar: está en faltantes.json
         estado = json.loads((carpeta / "estado.json").read_text(encoding="utf-8"))
         meta = json.loads((carpeta / "metadatos.json").read_text(encoding="utf-8"))
         notebooks.append(
@@ -266,12 +361,19 @@ def resumir(destino: Path, n: int | None) -> dict[str, Any]:
                 "version": meta.get("currentVersionNumber"),
                 "maquina": meta.get("machineShape"),
                 "privado": meta.get("isPrivate"),
-                "lineas_de_log": (carpeta / "log.txt").read_text(encoding="utf-8").count("\n"),
-                "archivos_de_salida": sorted(p.name[8:] for p in carpeta.glob("salida__*")),
+                "lineas_de_log": (carpeta / "log.txt").read_text(encoding="utf-8").count("\n")
+                if (carpeta / "log.txt").is_file()
+                else None,
+                "archivos_de_salida": salidas_de(carpeta),
             }
         )
+    faltantes = destino / "faltantes.json"
     return {
+        "descarga_incompleta": json.loads(faltantes.read_text(encoding="utf-8"))
+        if faltantes.is_file()
+        else [],
         "tamanos_de_tabla_compatibles": candidatos,
+        "tamano_de_tabla_usado": {"n": n, "origen": origen},
         "envios_propios": [
             {
                 "ref": e.get("ref"),
@@ -317,7 +419,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ENTRADA INVÁLIDA: {exc}", file=sys.stderr)
         return EXIT_ENTRADA
     print(json.dumps({"directorio": str(carpeta), **resumen}, ensure_ascii=False, indent=2))
-    return EXIT_OK
+    return EXIT_PARCIAL if resumen["descarga_incompleta"] else EXIT_OK
 
 
 if __name__ == "__main__":

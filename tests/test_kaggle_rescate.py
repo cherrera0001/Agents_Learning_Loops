@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -213,3 +214,166 @@ def test_un_destino_anidado_dentro_del_repositorio_se_rechaza(tmp_path: Path) ->
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     with pytest.raises(kr.RescateError, match="dentro de un repositorio"):
         kr.comprobar_destino_fuera_de_git(tmp_path / "nuevo" / "sub")
+
+
+def test_un_nombre_de_salida_que_no_cabe_en_la_ruta_se_acorta_y_conserva_su_extension(tmp_path: Path) -> None:
+    corto = kr.nombre_que_cabe(tmp_path, "s.json")
+    assert corto == "salida__s.json"
+    largo = "tarea_" + "x" * 300 + "-run_id_Run_1.atif.json"
+    en_disco = kr.nombre_que_cabe(tmp_path, largo)
+    assert len(str(tmp_path.resolve() / en_disco)) <= kr.TOPE_RUTA
+    assert en_disco.startswith("salida__tarea_") and en_disco.endswith(".atif.json")
+    otro = kr.nombre_que_cabe(tmp_path, "tarea_" + "x" * 300 + "-run_id_Run_2.atif.json")
+    assert otro != en_disco, "dos nombres largos distintos no pueden caer en el mismo archivo"
+
+
+def test_una_salida_de_nombre_largo_se_guarda_y_el_resumen_muestra_el_nombre_de_kaggle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    largo = "tarea_" + "x" * 300 + ".result.json"
+    respuestas = _respuestas(_tabla(FILAS))
+    respuestas["kernels/output"] = json.dumps(
+        {"log": "[]", "files": [{"fileName": largo, "url": "http://x/s"}]}
+    ).encode()
+    monkeypatch.setattr(kr, "pedir", lambda ruta, token: next(v for k, v in respuestas.items() if k in ruta))
+    assert kr.bajar(tmp_path, "secreto", None) == []
+    carpeta = tmp_path / "notebooks" / "mi-notebook"
+    guardados = list(carpeta.glob("salida__*"))
+    assert len(guardados) == 1 and guardados[0].read_bytes() == b'{"sonda": 1}'
+    resumen = kr.resumir(tmp_path, None)
+    assert resumen["notebooks"][0]["archivos_de_salida"] == [largo]
+    assert resumen["descarga_incompleta"] == []
+
+
+def test_un_notebook_que_falla_no_impide_bajar_los_siguientes_y_sale_con_4(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    respuestas = _respuestas(_tabla(FILAS))
+    respuestas["kernels/list"] = json.dumps([{"ref": "yo/roto"}, {"ref": "yo/mi-notebook"}]).encode()
+    salida = {
+        "log": "[]",
+        "files": [{"fileName": "a.json", "url": "http://x/a"}, {"fileName": "s.json", "url": "http://x/s"}],
+    }
+    respuestas["kernels/output"] = json.dumps(salida).encode()
+
+    def pedir_falso(ruta: str, token: str) -> bytes:
+        if "kernelSlug=roto" in ruta and "kernels/pull" in ruta:
+            raise kr.RescateError("Kaggle respondió 404 a kernels/pull")
+        if ruta == "http://x/a":
+            raise OSError("ruta secreta C:/Users/alguien")
+        return next(v for k, v in respuestas.items() if k in ruta)
+
+    monkeypatch.setattr(kr, "pedir", pedir_falso)
+    monkeypatch.setenv("KAGGLE_API_TOKEN", "secreto")
+    assert kr.main(["--destino", str(tmp_path / "rescate")]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == [
+        {"notebook": "roto", "archivo": "", "causa": "Kaggle respondió 404 a kernels/pull"},
+        {"notebook": "mi-notebook", "archivo": "a.json", "causa": "OSError: no se pudo guardar"},
+    ]
+    assert [n["notebook"] for n in resumen["notebooks"]] == ["mi-notebook"]
+    assert resumen["notebooks"][0]["archivos_de_salida"] == ["s.json"]
+    assert kr.main(["--destino", resumen["directorio"], "--sin-red"]) == kr.EXIT_PARCIAL
+
+
+def test_el_resumen_dice_de_donde_sale_el_tamano_de_la_tabla(tmp_path: Path) -> None:
+    (tmp_path / "envios.json").write_text("[]", encoding="utf-8")
+    (tmp_path / "tabla_publica.zip").write_bytes(_tabla(FILAS))
+    assert "menor de los compatibles" in kr.resumir(tmp_path, None)["tamano_de_tabla_usado"]["origen"]
+    assert kr.resumir(tmp_path, 58)["tamano_de_tabla_usado"] == {
+        "n": 58,
+        "origen": "indicado con --tareas-tabla",
+    }
+
+
+NOMBRE_SALIDA_REAL = (
+    "printer_queue_minimize_average_wait_time-run_id_Run_1_anthropic_claude-sonnet-5-5default.atif.json"
+)
+
+
+def _ruta_de_longitud(tmp_path: Path, longitud: int) -> Path:
+    carpeta = tmp_path / ("x" * (longitud - len(str(tmp_path.resolve())) - 1))
+    assert len(str(carpeta.resolve())) == longitud
+    return carpeta
+
+
+@pytest.mark.parametrize("longitud", [180, 210])
+def test_nombre_real_cabe_incluso_sin_espacio_para_la_base(tmp_path: Path, longitud: int) -> None:
+    carpeta = _ruta_de_longitud(tmp_path, longitud)
+    nombre = kr.nombre_que_cabe(carpeta, NOMBRE_SALIDA_REAL)
+    assert len(str(carpeta.resolve() / nombre)) <= kr.TOPE_RUTA
+    assert nombre.endswith(".atif.json")
+    assert nombre != kr.nombre_que_cabe(carpeta, NOMBRE_SALIDA_REAL.replace("Run_1", "Run_2"))
+
+
+def test_nombre_real_imposible_se_rechaza_antes_de_guardar(tmp_path: Path) -> None:
+    carpeta = _ruta_de_longitud(tmp_path, 211)
+    with pytest.raises(kr.RescateError, match="TOPE_RUTA"):
+        kr.nombre_que_cabe(carpeta, NOMBRE_SALIDA_REAL)
+
+
+@pytest.mark.parametrize("longitud", [210, 211])
+def test_bajar_nombre_real_en_ruta_larga_continua_con_el_segundo_notebook(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, longitud: int
+) -> None:
+    # La carpeta del primer notebook deja justo cero caracteres de base, o ni eso.
+    destino = _ruta_de_longitud(tmp_path, longitud - len("/notebooks/primero"))
+    destino.mkdir()
+    respuestas = _respuestas(_tabla(FILAS))
+    respuestas["kernels/list"] = json.dumps([{"ref": "yo/primero"}, {"ref": "yo/segundo"}]).encode()
+
+    def pedir_falso(ruta: str, token: str) -> bytes:
+        if "kernels/output" in ruta and "kernelSlug=primero" in ruta:
+            return json.dumps(
+                {"log": "[]", "files": [{"fileName": NOMBRE_SALIDA_REAL, "url": "http://x/s"}]}
+            ).encode()
+        return next(v for k, v in respuestas.items() if k in ruta)
+
+    monkeypatch.setattr(kr, "pedir", pedir_falso)
+    faltantes = kr.bajar(destino, "secreto", None)
+    primero = destino / "notebooks" / "primero"
+    assert len(str(primero.resolve())) == longitud >= 180
+    assert (destino / "notebooks" / "segundo" / "salida__s.json").read_bytes() == b'{"sonda": 1}'
+    assert json.loads((destino / "faltantes.json").read_text()) == faltantes
+    if longitud == 210:
+        assert faltantes == []
+        archivo = next(primero.glob("salida__*"))
+        assert len(str(archivo.resolve())) <= kr.TOPE_RUTA
+        assert archivo.read_bytes() == b'{"sonda": 1}'
+    else:
+        assert len(faltantes) == 1
+        assert faltantes[0]["notebook"] == "primero"
+        assert faltantes[0]["archivo"] == NOMBRE_SALIDA_REAL
+        assert "TOPE_RUTA" in faltantes[0]["causa"]
+        assert not list(primero.glob("salida__*"))
+
+
+def test_una_redireccion_fuera_de_kaggle_no_lleva_el_token() -> None:
+    manejador = kr.RedireccionSinToken()
+    original = urllib.request.Request(f"{kr.API}/x", headers=kr.cabeceras_para(f"{kr.API}/x", "secreto"))
+    fuera = manejador.redirect_request(original, None, 302, "Found", {}, "https://storage.example.com/firma")
+    assert "secreto" not in str(fuera.header_items())
+    dentro = manejador.redirect_request(original, None, 302, "Found", {}, "https://www.kaggle.com/otra")
+    assert ("Authorization", "Bearer secreto") in dentro.header_items()
+    with pytest.raises(kr.RescateError, match="no es https"):
+        manejador.redirect_request(original, None, 302, "Found", {}, "http://www.kaggle.com/otra")
+
+
+def test_una_respuesta_ilegible_a_media_bajada_queda_en_faltantes_y_sale_con_4(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    respuestas = _respuestas(_tabla(FILAS))
+    respuestas["kernels/list"] = json.dumps([{"ref": "yo/roto"}, {"ref": "yo/mi-notebook"}]).encode()
+
+    def pedir_falso(ruta: str, token: str) -> bytes:
+        if "kernelSlug=roto" in ruta and "kernels/pull" in ruta:
+            return b"<html>no es json</html>"
+        return next(v for k, v in respuestas.items() if k in ruta)
+
+    monkeypatch.setattr(kr, "pedir", pedir_falso)
+    monkeypatch.setenv("KAGGLE_API_TOKEN", "secreto")
+    assert kr.main(["--destino", str(tmp_path / "rescate")]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert [f["notebook"] for f in resumen["descarga_incompleta"]] == ["roto"]
+    assert "ilegible" in resumen["descarga_incompleta"][0]["causa"]
+    assert [n["notebook"] for n in resumen["notebooks"]] == ["mi-notebook"]

@@ -26,6 +26,15 @@ Lee el token de `KAGGLE_API_TOKEN`. Se niega si `--destino` queda versionable (`
 Imprime un resumen: los envíos propios y la tabla **en tareas**, el puesto propio, y cada notebook con su
 estado, su versión y lo que dejó.
 
+**La carpeta fechada la crea el guion.** `--destino` es la carpeta madre; si se le pasa una ya fechada,
+queda una dentro de otra.
+
+**Si algo falta, sigue.** Un notebook o un archivo de salida que no se pueda bajar o guardar no detiene el
+resto: queda en `faltantes.json`, el resumen lo repite en `descarga_incompleta` y el guion sale con 4. Un
+archivo de salida cuyo nombre no cabe en una ruta de Windows se guarda acortado, con una huella; su nombre
+en Kaggle queda en `notebooks/<nombre>/salidas.json`. El 2026-10-06 un nombre así cortó la descarga a
+mitad de la lista y dejó cuatro notebooks sin bajar.
+
 **Lo que no puede bajar.** El archivo que Kaggle guarda de cada envío (la API responde 401 a esa ruta) y
 los logs de notebooks ya borrados. De esos solo queda lo que se haya guardado antes.
 
@@ -71,6 +80,43 @@ La nota 0,06 del envío 56808559 son **4 tareas**, no «3 o 4».
 
 **Qué no dice esta lectura.** No mide el ruido de reenviar un mismo zip: eso exige reenviarlo. Tampoco
 dice qué configuración usan los equipos de arriba.
+
+## Lectura del 2026-10-06, 19:10 UTC
+
+Descarga completa: 12 notebooks, ninguno faltante. Carpeta `data/rescate_kaggle/2026-10-06T1910Z/`.
+
+**Envíos propios.** Son dos, del mismo zip (`registry.json`, `sub-002` y `sub-003`):
+
+| Ref. Kaggle | Enviado (UTC) | Estado | Nota | Tareas con n = 58 | Bytes que guarda Kaggle |
+|---|---|---|---|---|---|
+| 56808559 | 2026-10-03 23:46 | complete | 0,06 | 4 | 86 883 |
+| 56830336 | 2026-10-04 17:41 | complete | 0,05 | 3 | 72 047 |
+
+- El mismo zip dio 4 y 3: una tarea de diferencia entre dos envíos iguales. La mejor nota no cambió.
+- El zip local pesa 3 495 bytes. Kaggle guarda otro tamaño, distinto en cada envío, y la API no deja bajar
+  ese archivo: su identidad con el zip local no está comprobada.
+- Los dos zips locales compilan con `adk-submission` (`python -m scripts.kaggle_submission verify`, salida
+  0). El compilador no está en el `.venv` del repositorio, donde `verify` sale con 3: hay que correrlo
+  con el entorno del arnés.
+
+**El tamaño de la tabla.** Con las notas de hoy son compatibles 58, 79, 86 y todos los tamaños desde 90.
+El resumen usa el menor y ahora lo dice en `tamano_de_tabla_usado`. Las tareas de cada nota valen si la
+tabla tiene 58.
+
+**La tabla, en tareas** (1 935 equipos):
+
+| Tareas | 14 | 11 | 10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Equipos | 1 | 3 | 14 | 64 | 218 | 367 | 366 | 324 | 189 | 137 | 73 | 48 | 131 |
+
+- Mediana 6 tareas (era 5), media 5,30, desviación 2,34; la binomial con esa media daría 2,19.
+- El envío propio: 4 tareas, puesto 1 503, con dos envíos. 1 357 equipos tienen más tareas.
+- Media con un envío: 3,94 tareas (449 equipos); con dos: 4,56 (364 equipos).
+
+**Notebooks.** Once terminados y `iteracion-04` en ejecución, sin log todavía. Los dos
+`new-benchmark-task-*` son de otro benchmark y de otro modelo: no cuentan para este experimento.
+
+**Sin medir.** Sesiones activas y cuota de GPU: exigen la sesión web del dueño.
 
 ## Lo que había en los logs y no se había usado
 
