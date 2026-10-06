@@ -1,0 +1,87 @@
+{
+  "seq": 62,
+  "id": "issue-146-rescate-ruta-larga",
+  "goal": "Que el rescate de Kaggle no muera con un nombre de salida largo, que una bajada parcial se vea como parcial y que el token no viaje a otro host; registrar el reenvío 56830336",
+  "ref": "#146",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-06",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "La estimación y el issue se escribieron después de implementar: el arreglo empezó por orden directa del dueño sobre el informe de otra sesión, sin issue abierto"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall antes de editar; devolvió la lección del heredoc largo en Git Bash"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "heredoc largo en Git Bash para parchear kaggle_rescate.py: unexpected EOF while looking for matching quote; no se aplicó nada. La lección ya estaba en el recall y no se siguió"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Con ediciones puntuales: nombre_que_cabe acorta con huella, faltantes.json, salidas.json y código de salida 4"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Nombre largo, notebook que falla sin cortar los siguientes, origen del tamaño de la tabla"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Bajada real con el guion corregido: 12 notebooks, 0 faltantes, salida 0"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Dos sesiones (esta y otra con Codex) editaron scripts/kaggle_rescate.py y su test en el mismo árbol de trabajo a la vez: dos pruebas mías duplicaban las suyas y fallaban contra su mensaje de error; hubo que retirarlas"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisor SAST independiente, en solo lectura. Encontró lo que la autorrevisión no vio: el token seguía a las redirecciones, y una respuesta ilegible dejaba la bajada truncada como completa"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "RedireccionSinToken; ValueError y AttributeError quedan como faltante; faltantes.json se escribe tras cada notebook"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "tests/test_kaggle_rescate.py y la suite completa en verde; ruff limpio en los archivos del cambio"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "rescate_kaggle.md con la lectura del 2026-10-06 y registry.json con el reenvío 56830336 como sub-003"
+    }
+  ],
+  "lessons": [
+    "Una sesión por árbol de trabajo: si dos agentes van a tocar el mismo guion, cada uno en su worktree",
+    "Un guion que baja en bucle escribe su lista de faltantes tras cada elemento, no al final: una bajada que muere a medias no puede parecer completa",
+    "Con urllib, las cabeceras de autorización siguen a las redirecciones: validar el host de la primera dirección no basta",
+    "Pedir una revisión de seguridad independiente antes del PR cuando el código maneja un token: encontró dos defectos altos que la autorrevisión no vio",
+    "Parchear archivos con la herramienta de edición o con un guion en un archivo, no con un heredoc largo en Git Bash"
+  ]
+}

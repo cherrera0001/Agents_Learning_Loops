@@ -22,6 +22,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 - Campaña `diagnostic-baseline-v1` (#58): 396 recibos en `evidence/diagnostic-baseline-v1/`, agregados en `results/diagnostic-baseline-v1/` y lectura en `docs/results/diagnostic-baseline.md`: con el mismo diagnóstico, la memoria aporta en las tareas originales (+6/18 al primer intento en B y en C) y no hay diferencia en las engañosas (−2/18).
 
 ### Corregido
+- Rescate de Kaggle (#146): un archivo de salida cuyo nombre no cabe en una ruta de Windows ya no corta la descarga; se guarda acortado y `salidas.json` conserva su nombre. Un notebook o archivo que falle queda en `faltantes.json` y el guion sigue y sale con 4. El resumen dice de dónde sale el tamaño de la tabla. Al seguir una redirección, el token no va a un host que no es Kaggle. El registro de envíos incorpora el reenvío 56830336 (nota 0,05).
 - Análisis y evaluador de la línea base de diagnóstico (#58), antes de la campaña: el análisis valida la campaña completa declarada, el evaluador exige `decision_inputs` exacto con `test-0` fallido y la coherencia agente↔política en los dos sentidos.
 
 ### Corregido
