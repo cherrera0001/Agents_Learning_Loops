@@ -1,0 +1,114 @@
+{
+  "seq": 64,
+  "id": "issue-103-estado-medido-y-ciclo-kaggle",
+  "goal": "Dejar en los README el estado medido del experimento Kaggle Gemma 4 y en la memoria las lecciones del ciclo de mejora (corridas en notebooks con GPU, envíos, razonamiento del agente, tiempo agotado, edit_file), que hasta ahora vivían en una bitácora fuera del repositorio",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/103 (tramo: estado medido en los README y lecciones del ciclo de mejora; el issue sigue abierto y es de talla L)",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-07",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Notebook de Kaggle con GPU detenido al arrancar: buscaba las ruedas del arnés en una ruta fija de /kaggle/input, y Kaggle monta las entradas en dos disposiciones distintas según la sesión; una versión más se canceló con la misma ruta fija y la cola de GPU costó más de 8 horas"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Guardia en la primera celda que lista /kaggle/input y usa lo que encuentra; el chequeo previo la ejecuta en local contra las dos disposiciones reales antes de subir"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Un mismo notebook de medición se subió cuatro veces antes de ejecutarse, tres de ellas resubidas para cambiar el plan o añadir medidas con la corrida ya en cola"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Desde entonces cada notebook pasa chequeo previo y un ensayo completo en Docker con el arnés real y el parche de referencia antes de subir: cinco subidas para cinco resultados, y ninguna corrida perdida por una causa visible sin GPU"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se descartó el razonamiento del modelo tras medirlo con 4 minutos por tarea, donde 11 de 13 sesiones no resueltas agotaron el tiempo: la medición no respondía la pregunta y el descarte se anotó como si la respondiera"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Razonamiento encendido con 60 llamadas y 4,5 minutos por tarea: 9 de 19 tareas frente a 6, 7 y 7 de la base; por el umbral de 10 fijado antes de correr, no decide. 9 de sus 10 fallos agotan el tiempo"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Tras esa corrida se propuso subir el tope de tiempo o bajar el presupuesto de razonamiento sin mirar los parches cortados ni contar los turnos largos: ninguno de los 6 parches cortados por tiempo era correcto (5 eran solo guiones propios) y solo 7 de 509 turnos superaban la mitad del presupuesto"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Concilio de seis roles en solo lectura sobre las mismas trazas (tiempo, QA de parches, arnés, tabla y foro, método, tablero): corrigió tres lecturas y una propuesta de la vuelta anterior y separó el desenlace (tiempo agotado) de la causa (el agente lee el archivo de la corrección y no lo edita: 8 de 10 no resueltas)"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Entre la primera corrida con el modelo (2026-10-04) y el 2026-10-07 el README de la raíz y el del experimento siguieron diciendo que no había ninguna corrida, también después de fusionarse el manuscrito que decía lo contrario; el ciclo se anotaba en una bitácora fuera del control de versiones y ninguna de sus corridas medidas tenía episodio"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "README de la raíz (§ 7.3 nueva y § 13) y README del experimento (§ 1, § 11, § 13 y avisos de vigencia sobre el diseño pre-registrado que no se corrió), con cada cifra referida a una sección del manuscrito"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "Antes de este episodio, tres consultas de las que haría un operador al empezar la vuelta siguiente devolvían 1 de 5 lecciones que el ciclo ya había pagado: solo la de fijar la imagen de Python"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Tras devlog rebuild con este episodio en una copia local, las mismas tres consultas devuelven las 5 lecciones. La prueba no es ciega: las lecciones se redactaron conociendo las consultas, y la primera redacción de un paso las citaba literalmente y copaba dos de cada cinco resultados; se reescribió. Las tres consultas: «subir notebook a Kaggle con GPU», «el agente agota el tiempo con razonamiento encendido» y «editar archivo falla por parámetro»; las cinco lecciones buscadas: ruta fija de /kaggle/input, resubidas, imagen de Python, razonamiento con 4 minutos y la línea de edit_file"
+    },
+    {
+      "action": "confirm_closure",
+      "success": true,
+      "note": "Hallazgos del tablero resueltos de paso: #146 y #148 estaban en Done sin talla ni verificación; criterio de cierre comprobado contra main, campos escritos y comentario de evidencia en cada issue"
+    },
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "El tramo no tuvo estimación propia antes de empezar: el issue #103 tiene la suya, de talla L, para la línea base completa; la de este episodio se escribió al implementar, y lo hizo la sesión del orquestador (Opus 5.5) en vez del modelo de la talla M, porque el contexto de 37 vueltas ya estaba cargado"
+    },
+    {
+      "action": "submit_external",
+      "success": false,
+      "error": "El tercer envío a la competencia no quedó en registry.json: kaggle_submission register rechaza el zip tanto en el entorno local como dentro de la imagen de ensayo, donde adk_submission sí se importa; no se forzó y queda sin anotar"
+    }
+  ],
+  "lessons": [
+    "Antes de cada vuelta de un experimento largo, ejecuta devlog recall con la pregunta del operador y pega cuántas lecciones conocidas devuelve: si la memoria no devuelve lo que ya se pagó, falta el episodio, no la lección",
+    "Cada corrida con GPU y cada envío a una competencia dejan un episodio en el repositorio el mismo día: una bitácora fuera del control de versiones no alimenta recall ni sella las predicciones",
+    "Un notebook de Kaggle nunca lleva una ruta fija bajo /kaggle/input: la primera celda lista lo que hay y el chequeo previo ejecuta esa guardia en local contra las dos disposiciones reales",
+    "Una subida a Kaggle por resultado: el plan y las medidas se cierran antes de subir; resubir con la corrida en cola pierde el turno en una cola de GPU que tarda horas",
+    "Antes de descartar un cambio del agente, comprueba que la corrida no terminó casi entera por tiempo agotado: el razonamiento medido con 4 minutos por tarea no dice nada del razonamiento",
+    "Tiempo agotado es un desenlace, no una causa: antes de subir el tope, mira si los parches cortados eran correctos y si la sesión estaba ejecutando pruebas o esperando al modelo",
+    "Antes de bajar el presupuesto de razonamiento para ganar tiempo, cuenta cuántos turnos lo alcanzan: si son pocos, el ahorro máximo es de segundos",
+    "Si la herramienta de editar un archivo falla porque el modelo omite un parámetro obligatorio (edit_file sin old_string), una línea en la instrucción lo elimina; pero quitar ese fallo mecánico no resolvió más tareas: mide las resueltas, no solo el mecanismo",
+    "Si el agente lee el archivo de la corrección y no lo edita, más llamadas, más tiempo o más búsqueda no son la palanca: mira qué hace con los turnos entre la lectura y el corte",
+    "Un subagente que comparte el reloj y corre sin compactación puede costar un parche ya correcto: cualquier excepción distinta del tiempo agotado entrega parche vacío",
+    "Cuando dos roles de un concilio recomiendan cosas opuestas, busca en el informe de uno la medida que el otro dejó como «sin verse» antes de elegir",
+    "Un README que resume resultados cita la sección del documento que los mide y lleva fecha de corte; cuando ese documento cambia, el README cambia en el mismo paso"
+  ]
+}

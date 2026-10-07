@@ -26,8 +26,43 @@ y qué documento prevalece sobre cuál.
 
 ## 1. En pocas líneas
 
-**Hoy no hay ninguna corrida con el modelo ni ningún resultado.** Lo que sigue describe un diseño y lo que se
-ha hecho para poder medirlo.
+**Estado al 2026-10-07 (corte de datos: 02:30 UTC, salvo el estado del tercer envío, leído a las 15:55
+UTC).** El modelo ya se ejecutó: hay corridas propias en notebooks de Kaggle, tres envíos (dos con nota, en `submissions/registry.json`; el tercero terminó en error y
+no está registrado todavía) y un manuscrito
+con lo medido. Una *corrida* es una ejecución completa de una configuración sobre una lista fija de tareas
+públicas; un *envío* es el archivo comprimido que se entrega al concurso para que lo puntúe. **El diseño
+pre-registrado de las secciones 4 a 9 no se corrió.** Preveía reservar las tareas de un repositorio para la
+prueba y comparar dos configuraciones tarea a tarea (la «prueba pareada»); el repositorio reservado se usó
+para desarrollo y la prueba nunca se aplicó. Todo lo medido es exploratorio. Las condiciones B, C y D
+(definidas más abajo) no existen todavía, así que la pregunta de la campaña sigue sin respuesta.
+
+Las cifras salen del manuscrito ([`docs/paper/manuscript_en.md`](../../docs/paper/manuscript_en.md)), que las
+da en conteos agregados; la tabla indica la sección. «El agente» es aquí el agente del envío.
+
+| Qué se midió | Resultado | Fuente |
+|---|---|---|
+| Tareas públicas que sirven para medir en el notebook de la competencia | 71 de 129 con el entorno tal como viene; 103 al instalar tres paquetes que solo usan las pruebas | Manuscrito § 4.1; los 71, también en [`calibracion/validez_notebook_2026-10-04.json`](calibracion/validez_notebook_2026-10-04.json) |
+| Variación entre dos corridas iguales (tres pares) | Cambian de resultado 1 o 2 tareas; el total de resueltas cambia en 0 o 1; la clase de fallo cambia en 13 de 30 tareas | Manuscrito § 4.2 |
+| El mismo zip local enviado dos veces | Puntuaciones 0,06 y 0,05 en la tabla pública (fracción de tareas resueltas). Kaggle guardó archivos de distinto tamaño y su identidad no se comprobó | [`submissions/registry.json`](submissions/registry.json) |
+| Siete condiciones, una corrida por condición, cada una contra la configuración de referencia (la «base»: el kit sin adaptadores, razonamiento apagado, 4 minutos y 40 llamadas por tarea) en las mismas tareas | Ninguna mejora establecida; ningún aumento observado se replicó. No es evidencia de que no haya efecto | Manuscrito § 4.3 |
+| Una línea más en la instrucción, para la herramienta de edición | Las llamadas sin el argumento obligatorio pasan de 107 de 134 y 49 de 75 a 0 de 26; se resuelven las mismas 7 de 30 tareas que en la segunda corrida de la base | Manuscrito § 4.3 |
+| Séptima condición (cambia tres ajustes a la vez): razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | 9 de 19 tareas (las 19 se eligieron a partir de los resultados de la base). Las tres corridas anteriores sobre esas mismas 19 (dos de la base y una con la línea de la herramienta de edición) resolvieron 6, 7 y 7. El umbral fijado antes de correr era 10: no se alcanzó, y no permite afirmar una mejora. 9 de sus 10 fallos agotan el tiempo | Manuscrito § 4.3 |
+| Dónde se pierde el agente | De 30 tareas, 23 no se resolvieron en ninguna de tres corridas. Un revisor juzgó 12 resolubles (juicio retrospectivo, con la solución a la vista); en 10 de esas 12 el agente no llega a una edición relevante para el defecto en al menos dos de tres corridas | Manuscrito § 4.4 |
+| Predicciones escritas antes de cada corrida | 40, anotadas en una bitácora que estuvo fuera del control de versiones; de las 31 evaluadas, 20 se cumplieron y 11 se refutaron | Manuscrito § 4.3 |
+
+**Lo que sigue sin medirse.** El efecto de las skills (C y D) frente al texto de relleno (B). El efecto del razonamiento separado del
+tiempo y de las llamadas: la séptima condición movió las tres cosas a la vez y se corrió una sola vez. Si las
+tres tareas que esa condición resolvió por primera vez se repiten en una segunda corrida. Cómo puntúa esa
+configuración en el concurso: el tercer envío la llevaba, se envió el 2026-10-07 a las 00:26 UTC y a las
+15:55 UTC figuraba con estado de error y sin nota (lectura de la API de Kaggle, que no da la causa; no está
+en el registro de envíos). Y nada de esto
+dice cómo le irá en las tareas ocultas con que el concurso puntúa el envío: los organizadores declaran que
+las seleccionaron y revisaron aparte (manuscrito § 5).
+
+**Cómo leer el resto del documento.** Las secciones 2 y 3 (reglas y estado del área) siguen vigentes. Las
+secciones 4 a 9 describen el diseño pre-registrado, que se conserva como referencia de lo que se quiso
+medir: sus compuertas (los controles previos a cada paso) y sus fechas no se cumplieron y el manuscrito declara esa desviación (§ 3, «Deviations»).
+La sección 11 separa lo medido de lo que no.
 
 Google ofrece en Kaggle un concurso con dos pistas, una de código y una de artículo, para el modelo Gemma 4.
 Este experimento usa ese concurso como marco para una pregunta acotada, que puede responderse en contra: si
@@ -40,20 +75,20 @@ experiencia.
 Las condiciones que se compararían son cuatro: **A**, el kit oficial; **B**, un texto de relleno de longitud
 comparable a las skills; **C**, las skills; y **D**, las skills con la instrucción de usar el grafo de código.
 
-**Qué está hecho.** El diseño de la medición: el
+**Qué está hecho del diseño.** El
 [pre-registro de la línea base A](../../docs/preregistration/kaggle-baseline-a.md), escrito y fijado antes de
-cualquier corrida con el modelo y antes de medir A (fijado: solo cambia por enmienda). Antes hubo controles
-locales sin modelo y sin parche, que el propio pre-registro describe y que no miden a Gemma. Los guiones que
-lo acompañan (partición de las tareas, análisis de réplicas, validez de tareas, ensayo de notebook,
-compuerta de parámetros) están en `main` y se probaron con datos sintéticos. La cuota semanal de GPU de la
-cuenta se leyó por API.
+cualquier corrida con el modelo (solo cambia por enmienda), y los guiones que lo acompañan (partición de las
+tareas, análisis de réplicas, validez de tareas, ensayo de notebook, compuerta de parámetros), que están en
+`main`. La validez de las tareas se midió con el verificador real en un notebook sin GPU; el análisis de
+réplicas del pre-registro no se ha aplicado a corridas reales.
 
-**Qué no está hecho.** No se sabe qué proporción de tareas resuelve el kit oficial, cuánto varía entre
-repeticiones, qué tareas son válidas ni si la cuenta puede usar el acelerador L4×4. Las reglas de B, C y D
-están en el [pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md); la prueba no
-ha empezado, porque falta la variación de A. Los resultados que ALL tiene hoy
-([H4, #58, H6 y H7](../../README.md#qué-presenta-este-experimento)) son de un solver acotado que no usa modelo
-de lenguaje: no permiten concluir nada sobre Gemma.
+**Qué no está hecho del diseño.** La línea base A tal como se pre-registró (réplicas completas sobre un
+repositorio reservado, leídas con la prueba pareada) no se corrió: la variación se midió contando tareas en
+tres pares de corridas, fuera de ese diseño. Las reglas de B, C y D están en el
+[pre-registro de la campaña](../../docs/preregistration/kaggle-campaign-abcd.md); la prueba no ha empezado.
+Los resultados que ALL tiene con el solver acotado
+([H4, #58, H6 y H7](../../README.md#qué-presenta-este-experimento)) no usan modelo de lenguaje: no permiten
+concluir nada sobre Gemma.
 
 **Términos que el [glosario](../../docs/entorno/glosario.md) no define.** No están en el glosario; se
 definen aquí, y se propone añadirlos.
@@ -167,7 +202,8 @@ Preguntas pendientes para los organizadores, sin respuesta hasta hoy:
 - ¿Cómo se asignan los tres premios del Paper Track?
 - ¿Se puede gastar cuota de L4×4 en experimentos que solo alimentan el artículo?
 
-No se consultaron las páginas vivas ni el foro. Mientras no haya respuesta, este repositorio publica solo
+Esta lista es del 2026-10-03, anterior a la lectura del foro del concurso, y no se ha revisado contra él.
+Mientras no haya respuesta, este repositorio publica solo
 agregados y hashes, y no contenido de tareas, y el artículo de #105 queda sin publicación externa hasta
 aclararlo.
 
@@ -241,7 +277,8 @@ mixto.
 - **Lo que hace este experimento.** No corrige nada de eso. Mide por su cuenta qué tareas públicas
   discriminan (fallan sin parche y pasan con el de referencia) y excluye las demás. Es un filtro más estrecho
   que las auditorías citadas: comprueba que la tarea discrimina, no que su enunciado esté libre de
-  filtraciones ni que sus pruebas sean fuertes. Hoy no se ha ejecutado.
+  filtraciones ni que sus pruebas sean fuertes. Se ejecutó sin modelo en el notebook de la competencia:
+  71 de 129 discriminan con el entorno tal como viene y 103 con tres paquetes de pruebas (sección 11).
 - **Ruido.** En SWE-bench Verified, con tres modelos y dos scaffolds, la estimación pass@1 de una corrida
   varía entre 2,2 y 6,0 puntos según la corrida elegida, con desviación superior a 1,5 puntos aun a
   temperatura 0 (Bjarnason et al., 2026). No son cifras de Gemma ni de 48 a 67 tareas. Por eso el
@@ -283,7 +320,8 @@ cuenta como no resuelta con el motivo `infra_repetida` (sección F.3).
 
 **En qué tareas.** Las 129 tareas públicas son de cuatro repositorios: fastapi 67, rich 48, requests 13,
 httpx 1 (página *Data*; `python -m scripts.kaggle_eda resumen`, sección 13). Solo sirve para medir una tarea
-que discrimina, y esa validez no está medida (sección 11). La prueba son las tareas válidas de un repositorio
+que discrimina; esa validez se midió después de fijar este diseño (71 de 129 con el entorno tal como viene,
+103 con tres paquetes de pruebas; sección 11). En el diseño, la prueba son las tareas válidas de un repositorio
 reservado y el entrenamiento son las de los demás (`leave_one_repo_out`). El repositorio preferido es fastapi
 y el segundo rich; lo decide la escalera de cómputo del pre-registro con la validez y la cuota medidas.
 
@@ -305,7 +343,7 @@ del arnés y el tope de la fórmula, no una regla del concurso.
 Un agente puede resolver muchas tareas públicas si el modelo las vio al entrenarse y aun así no mejorar frente
 al kit; una mejora frente al kit en un repositorio público no dice qué pasará en uno privado.
 
-### Diagrama D1. Qué ocurre con una tarea en el arnés (según HARNESS; no ejecutado con el modelo)
+### Diagrama D1. Qué ocurre con una tarea en el arnés (según HARNESS)
 
 ```mermaid
 flowchart TD
@@ -353,8 +391,8 @@ calcula tasas, tareas que cambian de resultado y pares de réplicas; sale con 0 
 incompleto, 2 si la entrada es inválida y 3 si falla el script. Un parche vacío, un tiempo o presupuesto
 agotado y un rechazo por exceder el contexto cuentan como `unresolved`. Un `infra_error` obliga a repetir la
 réplica entera. La validez de las tareas es otro flujo, descrito en
-[`docs/validez_tareas.md`](docs/validez_tareas.md); su guion existe pero nunca se ejecutó con el verificador
-real.
+[`docs/validez_tareas.md`](docs/validez_tareas.md); se ejecutó con el verificador real en un notebook sin GPU
+(sección 11). `convertir` y `analizar` no se han aplicado todavía a corridas reales.
 
 ---
 
@@ -397,7 +435,7 @@ reservado.
 
 ```mermaid
 flowchart LR
-    subgraph FL["Fuera de línea: lo que podría hacer quien participa; hoy no se ha ejecutado"]
+    subgraph FL["Fuera de línea: lo que podría hacer quien participa; hoy solo existe el primer paso"]
         E1["Corridas de A sobre las tareas de entrenamiento"]
         E2["Recibos de entrenamiento"]
         E3["Consolidación en SKILL.md: mecanismo sin definir"]
@@ -422,7 +460,9 @@ flowchart LR
 La máquina `PLAN → RETRIEVE → ACT → OBSERVE → CONSOLIDATE` del agente de biblioteca es una analogía de la fase
 fuera de línea y no se ejecuta en Kaggle. A la izquierda está lo que quien participa podría hacer antes de
 enviar: correr A sobre las tareas de entrenamiento, guardar recibos y episodios, y consolidarlos en una
-`SKILL.md`. Hoy no se ha hecho nada de esto con Gemma, y la consolidación no existe ni hay redactor de skills.
+`SKILL.md`. Al 2026-10-07 solo existe el primer paso, y fuera de este diseño: el kit se corrió sobre tareas
+públicas (sección 1), pero sus resultados no se guardaron como recibos de `kaggle_replicas.py`, la
+consolidación no existe, no hay redactor de skills y ningún envío lleva una skill derivada de esas corridas.
 Esa `SKILL.md` es la del envío y no es la *skill de memoria* del glosario: el esquema de memoria declara el
 tipo de nodo `Skill` y la relación `promoted_to_skill`, pero el protocolo los deja sin implementar. A la
 derecha está la evaluación de Kaggle: cada tarea parte de un espacio limpio y solo comparte con las demás los
@@ -694,16 +734,20 @@ nulo o en contra. No se busca una nota alta en la tabla.
 
 **Aporte esperado.** Consolidar skills desde episodios ya existe. Lo propio es la combinación: medir el ruido
 de A, un placebo de longitud comparable, partición por repositorio y reglas declaradas antes de ver datos.
-Es un diseño propuesto para aplicar en otro arnés ideas conocidas: no hay ninguna corrida que las replique, y
+Es un diseño propuesto para aplicar en otro arnés ideas conocidas: ninguna corrida lo ha ejecutado todavía
+(las de la sección 1 son exploratorias y no llevan skills), y
 no demostraría que un agente adquiera una habilidad nueva. La línea
 base es exploratoria y no confirmatoria. Preregistrar distingue la predicción del análisis posterior (Nosek
 et al., 2018); que no elimine por sí solo el sesgo es una opinión nuestra, no un resultado de esa obra.
 
 **Del concurso.** Qué se entrega en cada pista y cuándo (sección 2). En la pista de artículo, un texto de
 hasta 3 000 palabras antes del 2026-11-12 23:59 UTC, escrito desde los resultados; si no hay resultados con
-Gemma a tiempo, se presenta como diseño y resultado previo negativo, y el resumen lo dice (issue #105). En la
-pista de código, un envío de la condición A aceptado por Kaggle y anotado (issue #106, sin empezar); como se
-admite un envío al día, no sirve para comparar condiciones.
+Gemma a tiempo, se presenta como diseño y resultado previo negativo, y el resumen lo dice (issue #105). Al
+2026-10-07 hay resultados y el manuscrito se escribió sobre ellos
+([`docs/paper/manuscript_en.md`](../../docs/paper/manuscript_en.md)); no se ha enviado a la pista. En la
+pista de código, un envío de la condición A aceptado por Kaggle y anotado (issue #106): hecho el 2026-10-03,
+con nota 0,06 ([`submissions/registry.json`](submissions/registry.json)); como se admite un envío al día, no
+sirve para comparar condiciones.
 
 **De método.** Que el tablero sirva como punto de control del bucle, con indicadores de avance y de resultado
 que se puedan leer y usar para la decisión siguiente (sección 6). Hoy se leen los de la sección 6.1 y no se
@@ -711,7 +755,13 @@ integran con la memoria (issue #122).
 
 **Operativos.** La cadena de compuertas del pre-registro, con sus fechas límite (sección I.1).
 
-### Diagrama D3. La cadena de compuertas, con su estado de hoy
+> **Vigencia.** El diagrama D3, su tabla de fechas y los dos párrafos que los acompañan son del 2026-10-03 y
+> se conservan como registro del plan. La cadena no se siguió: el modelo se corrió y la validez se midió por
+> fuera de estas compuertas, y `python -m scripts.kaggle_prereg comprobar` sigue saliendo con 1. Qué hacer
+> con la línea base pre-registrada (reformularla como medición exploratoria o cerrarla como no ejecutada) es
+> una decisión pendiente del dueño en el issue #103.
+
+### Diagrama D3. La cadena de compuertas, con su estado del 2026-10-03
 
 ```mermaid
 flowchart LR
@@ -807,15 +857,19 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 |---|---|---|
 | Agregados de las 129 tareas públicas (repositorios, años, tamaños) | Medido | `python -m scripts.kaggle_eda resumen` (sección 13); pre-registro, sección «Datos» |
 | Partición `leave_one_repo_out` (por ejemplo, fastapi reservado: 67 de prueba, 62 de entrenamiento) | Calculada por un guion determinista; no es una medición del modelo | `python -m scripts.kaggle_split` (sección 13) |
-| Cuota semanal de GPU: 30,00 h, reinicio 2026-10-10 00:00 UTC | Leída por API el 2026-10-03 por otra sesión; no versionada; sin confirmar que la cuenta elija L4×4 | Comentario en #101 |
+| Cuota semanal de GPU: 30,00 h, reinicio 2026-10-10 00:00 UTC | Leída por API el 2026-10-03 por otra sesión; no versionada | Comentario en #101 |
 | Inscripción en las dos pistas | Confirmada por API | Comentario en #101 |
-| Tasa de A con el kit oficial | **Sin medir** | — |
-| Variación entre réplicas de A | **Sin medir** | — |
-| Validez de cada tarea (`discrimina` o no) | **Sin medir.** `scripts/kaggle_validez.py` nunca se ejecutó con el verificador real | [`docs/validez_tareas.md`](docs/validez_tareas.md) |
-| Ensayo de notebook: backend, carga del modelo, tokens por segundo, rechazos por contexto | **Sin medir.** El instrumento nunca se ejecutó en Kaggle | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
+| Validez de cada tarea (`discrimina` o no), en el sandbox del notebook y sin modelo | **Medida**: 71 de 129 con el entorno tal como viene (fastapi 29 de 67, rich 42 de 48, requests y httpx 0 de 14); 103 con tres paquetes de pruebas instalados. Un control por celda | Manuscrito § 4.1 y Tabla 1; [`calibracion/validez_notebook_2026-10-04.json`](calibracion/validez_notebook_2026-10-04.json) para los 71 |
+| Tasa del kit ajustado (sin adaptadores, razonamiento apagado, 4 minutos y 40 llamadas por tarea) en tareas públicas | **Medida, exploratoria**: 3 y 3 de 15, 4 y 4 de 16, 6 y 7 de 30, según el conjunto. No es la línea base pre-registrada | Manuscrito § 4.2, Tabla 2 |
+| Variación entre dos corridas iguales | **Medida en tres pares, contando tareas**: cambian de resultado 2, 2 y 1 tareas; el total cambia en 0, 0 y 1; la clase de fallo cambia en 13 de 30. Tres pares no fijan una diferencia mínima detectable | Manuscrito § 4.2 |
+| Variación entre réplicas de A con el análisis pre-registrado (McNemar, `kaggle_replicas.py`) | **Sin medir.** El diseño no se corrió | Manuscrito § 3, «Deviations» |
+| Nota en la tabla pública | **Medida**: 0,06 y 0,05 con el mismo archivo local. Un tercer envío, con la séptima condición, terminó en error y sin nota (leído el 2026-10-07 a las 15:55 UTC; causa no leída) | [`submissions/registry.json`](submissions/registry.json) para los dos primeros |
+| Efecto de siete condiciones | **Medido, una corrida por condición**: ninguna mejora establecida | Manuscrito § 4.3, Tabla 3 |
+| Dónde se pierde el agente en las tareas que no resuelve | **Medido en 69 sesiones; la resolubilidad es un juicio retrospectivo** | Manuscrito § 4.4, Tabla 4 |
+| Ensayo de notebook con `scripts/kaggle_ensayo.py`: backend, tokens por segundo, rechazos por contexto | **Sin medir con ese instrumento.** El modelo se corrió con notebooks propios que no están versionados | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
 | Entorno del sandbox: una variante local v2 (constructor `scripts/build_sandbox.py`, PR #120) con controles vacíos de dos tareas | Ensayo local, sin parche de referencia: no fija el entorno del experimento ni acredita la validez de ninguna tarea; su diagnóstico es una lectura estática del arnés, sin ejecutarlo | [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) |
 | Concurrencia de la puntuación real | **Sin medir** | — |
-| Acceso a L4×4 desde la cuenta | **Sin medir** | Comentario en #101 |
+| Acceso a L4×4 desde la cuenta | **Medido de hecho**: las corridas del manuscrito se hicieron en notebooks con cuatro GPU L4 | Manuscrito § 3, «Runs» |
 | Efecto de B, C o D | **Sin medir.** Las condiciones no existen | — |
 | Corridas con el arnés y sin modelo (tres tareas locales sin parche) | Hecho, pero el registro tiene conclusiones cuestionadas y no es una fuente de exclusiones | [`calibracion/fase2_sin_parche.json`](calibracion/fase2_sin_parche.json); pre-registro, A.4 |
 
@@ -868,7 +922,8 @@ entorno del experimento, que fija el ensayo de notebook.
 | [`docs/desviaciones_entorno_wheels.lock`](docs/desviaciones_entorno_wheels.lock) | Cuatro ruedas adicionales de PyPI con su SHA-256 y las ruedas de starlette apartadas del wheelhouse | Lista candidata de ese ensayo local |
 | `scripts/build_sandbox.py` | Reconstruye la imagen Docker del sandbox verificando hashes y tamaños; no decide qué ruedas instala el arnés | Instrumento de ensayo local; la imagen que produce no es por sí sola el entorno del experimento |
 | [`docs/analisis_replicas.md`](docs/analisis_replicas.md) | Ficha de `scripts/kaggle_replicas.py` | Vigente; describe el pre-registro |
-| [`docs/validez_tareas.md`](docs/validez_tareas.md) | Ficha de `scripts/kaggle_validez.py` | Vigente; nunca ejecutado con el verificador real |
+| [`docs/validez_tareas.md`](docs/validez_tareas.md) | Ficha de `scripts/kaggle_validez.py` | Vigente; ejecutado con el verificador real en un notebook sin GPU (agregado en `calibracion/validez_notebook_2026-10-04.json`) |
+| [`docs/paper/manuscript_en.md`](../../docs/paper/manuscript_en.md) | Manuscrito con lo medido, en conteos agregados; versión en castellano en `manuscript_es.md` | Vigente como fuente de las cifras de las secciones 1 y 11; exploratorio; sin enviar al Paper Track |
 | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) | Paso a paso del ensayo de notebook | Vigente; nunca ejecutado |
 | [`conditions/a_kit/README.md`](conditions/a_kit/README.md) | Cómo reconstruir el kit desde un manifiesto | Vigente |
 | [`conditions/a_linea_base/README.md`](conditions/a_linea_base/README.md) | Cómo armar el envío de la línea base | Vigente |
@@ -878,7 +933,7 @@ entorno del experimento, que fija el ensayo de notebook.
 | [`drafts/README.md`](drafts/README.md) | Catálogo de borradores | Vigente como catálogo; su nota de estado dice qué lo supera |
 | [`docs/preregistration/kaggle-campaign-abcd.md`](../../docs/preregistration/kaggle-campaign-abcd.md) | Pre-registro de la campaña A/B/C/D | Fijado en las reglas; los tres parámetros que salen de A siguen abiertos y la prueba no ha empezado |
 | [`drafts/preregistration_abcd.md`](drafts/preregistration_abcd.md) | Diseño A/B/C/D | Borrador, superado por el pre-registro de la campaña |
-| [`drafts/paper/manuscript_draft.md`](drafts/paper/manuscript_draft.md) | Manuscrito (en inglés) | Borrador, sin trabajo relacionado ni citas; lo reescribe #105 |
+| [`drafts/paper/manuscript_draft.md`](drafts/paper/manuscript_draft.md) | Manuscrito (en inglés) | Borrador, sin trabajo relacionado ni citas; superado por `docs/paper/manuscript_en.md` |
 | [`drafts/NOTES_DISYUNTOR_Y_PRESUPUESTO.md`](drafts/NOTES_DISYUNTOR_Y_PRESUPUESTO.md) | Apuntes | Borrador, superado en el presupuesto |
 | [`drafts/agent.yaml`](drafts/agent.yaml), [`drafts/skills/all_core/SKILL.md`](drafts/skills/all_core/SKILL.md) | Configuración y directivas exploratorias | Borradores; no son condición alguna |
 | [`drafts/architecture_explainer.html`](drafts/architecture_explainer.html) | Diagrama de intención | Borrador con aviso; partes superadas |
@@ -964,8 +1019,11 @@ Los dos primeros leen GitHub con `gh`. El último imprime los nodos, sus cuatro 
 conteos cambian con cada episodio y por eso no se fijan en este texto. Lo que no cambia: hay cuatro tipos de
 nodo y ninguno lleva campos del tablero.
 
-**Sin comando que funcione hoy.** No hay forma de reproducir una tasa de A, una variación entre réplicas ni
-una validez de tareas: no se han medido.
+**Lo que no se puede reproducir desde este repositorio.** Las tasas, la variación y la validez de la
+sección 1 se midieron en notebooks de Kaggle y sus datos por tarea no se versionan: el reglamento prohíbe
+redistribuir contenido de las tareas (sección 2.1). El repositorio publica los agregados (manuscrito y
+`calibracion/`), los guiones de validez y el lector de la tabla pública; con ellos y una cuenta inscrita se
+puede repetir la medición de validez, no reconstruir las corridas del agente.
 
 ---
 
