@@ -58,9 +58,11 @@ permiten que la memoria pierda, recibos inmutables de cada ejecución, una verif
 análisis escritos antes de ver los datos.
 
 **Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
-operadores ya escritos), resultados con agentes LLM, mediciones de tokens o de costo, ni la promoción de
-lecciones a skills, que el esquema declara y el [protocolo](specs/software_learning_protocol.md) deja como
-trabajo futuro.
+operadores ya escritos), resultados de memoria con agentes LLM, mediciones de tokens o de costo, ni la
+promoción de lecciones a skills, que el esquema declara y el [protocolo](specs/software_learning_protocol.md)
+deja como trabajo futuro. El repositorio sí tiene mediciones con un modelo de lenguaje, en un experimento
+aparte y sin memoria: el concurso Gemma 4 Developer Agent
+([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)).
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
 componente inspeccionado o el embedding del código) evita el señuelo. Es una prueba que podría distinguir al grafo
@@ -758,6 +760,46 @@ python -m experiments evaluate --evidence-dir evidence/runs --output results
 python -m scripts.verify_experiment1 --root .   # verificación independiente
 ```
 
+### 7.3 Experimento con Gemma 4 en Kaggle: exploratorio, y todavía sin memoria
+
+Es un experimento aparte de los dos anteriores. Usa un modelo de lenguaje (Gemma 4, con el arnés del concurso
+[Gemma 4 Developer Agent](experiments/gemma_developer_agent/README.md)) y **no pone a prueba la memoria
+asociativa**: hasta el 2026-10-07, las configuraciones medidas son el kit oficial con parámetros cambiados o
+con líneas añadidas a su instrucción, más un diseño público de dos etapas tomado de otro participante.
+Ninguna lleva una lección consolidada desde corridas propias. Lo medido responde a una pregunta previa:
+cuánto se puede creer una diferencia entre dos configuraciones.
+
+| Qué se midió (corte de datos: 2026-10-07 02:30 UTC) | Resultado |
+|---|---|
+| Tareas públicas que sirven para medir en el notebook de la competencia | 71 de 129 con el entorno tal como viene; 103 al instalar tres paquetes que solo usan las pruebas |
+| Variación entre dos corridas iguales (tres pares) | Cambian de resultado 1 o 2 tareas; el total cambia en 0 o 1; la clase de fallo cambia en 13 de 30 tareas |
+| Siete cambios de configuración, uno por corrida | Ninguna mejora establecida, lo que no es evidencia de que no haya efecto |
+| El más reciente: razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | 9 de 19 tareas frente a 6, 7 y 7 de la base; el umbral fijado antes de correr era 10: no decide |
+| Dónde se pierde el agente | De 12 tareas nunca resueltas que un revisor juzgó resolubles (juicio retrospectivo), en 10 no llega a una edición pertinente |
+| El mismo archivo enviado dos veces a la tabla pública | Notas 0,06 y 0,05 |
+
+Fuente de las cinco primeras filas: el manuscrito, [`docs/paper/manuscript_en.md`](docs/paper/manuscript_en.md)
+(§ 4.1 a § 4.4), que da solo conteos agregados porque el reglamento prohíbe redistribuir las tareas. La
+última: [`submissions/registry.json`](experiments/gemma_developer_agent/submissions/registry.json). El diseño
+pre-registrado (un repositorio reservado y una prueba pareada) no se corrió y el manuscrito lo declara: todo
+es exploratorio. Detalle y límites en el
+[documento de entrada del experimento](experiments/gemma_developer_agent/README.md#1-en-pocas-líneas).
+
+**Qué dice esto del principio de ALL.** Todavía nada, ni a favor ni en contra, por dos razones distintas.
+
+- **En el envío.** El concurso ejecuta cada tarea aislada y sin memoria; lo aprendido solo puede viajar como
+  un archivo fijo. Ese archivo no existe aún: los envíos no llevan ninguna skill. La comparación que lo
+  pondría a prueba (skills consolidadas frente al kit y frente a un texto de relleno del mismo largo) está
+  [pre-registrada](docs/preregistration/kaggle-campaign-abcd.md) y no ha empezado.
+- **En la operación.** El ciclo de mejora se llevó con una predicción escrita antes de cada corrida, pero en
+  una bitácora que estuvo fuera del control de versiones (el manuscrito lo declara, § 3). Los episodios de
+  [`learning/episodes/`](learning/episodes/) de ese periodo registran el envío, el manuscrito y dos arreglos
+  de herramientas, no las corridas. Por eso, hasta el 2026-10-07, tres consultas de operador a
+  `devlog recall` devolvían 1 de 5 lecciones que ese ciclo ya había pagado; el
+  [episodio 064](learning/episodes/064-issue-103-estado-medido-y-ciclo-kaggle.json) las registra, y con él
+  devuelven las 5 (una prueba que no es ciega: las lecciones se redactaron conociendo las consultas). El
+  bucle que este repositorio describe no fue el que condujo el experimento.
+
 ## 8. Aseguramiento de calidad
 
 ```mermaid
@@ -966,7 +1008,11 @@ léxicas y repetir la prueba con las mismas tareas con señuelo.
 
 Aparte de esa línea, el repositorio documenta un experimento con un modelo de lenguaje en el concurso Gemma 4
 Developer Agent de Kaggle: [`experiments/gemma_developer_agent/`](experiments/gemma_developer_agent/README.md).
-Está en fase de diseño y pre-registro: hoy no hay ninguna corrida con el modelo ni resultado alguno.
+Al 2026-10-07 tiene mediciones exploratorias y ninguna mejora establecida
+([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)). Lo que sigue en esa
+línea: repetir la configuración más reciente para saber si su aumento se sostiene y, después, la primera
+condición que lleve lecciones consolidadas en una skill, medida contra un texto de relleno del mismo largo.
+El concurso cierra el 2026-12-02 y su pista de artículo, el 2026-11-12.
 
 ```mermaid
 flowchart TB
@@ -1018,6 +1064,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   └── main.py                # CLI aal-benchmark
 ├── src/experiments/           # Experimento 1: solver acotado, harness de experimento, recibos, evaluación
 ├── experiments/software_project/  # Task Ledger: aplicación WSGI/SQLite sana (no es el registro de modelos)
+├── experiments/gemma_developer_agent/  # experimento con Gemma 4 en Kaggle (§ 7.3): pre-registro, agregados y registro de envíos
 ├── benchmark/
 │   ├── public/                # tareas y tests de aceptación visibles para el solver
 │   └── private/               # etiquetas causales, pares e inyecciones (solo el evaluador)
