@@ -26,37 +26,41 @@ y qué documento prevalece sobre cuál.
 
 ## 1. En pocas líneas
 
-**Estado al 2026-10-07 (corte de datos: 02:30 UTC).** El modelo ya se ejecutó: hay corridas propias en
-notebooks de Kaggle, tres envíos y un manuscrito con lo medido. **El diseño pre-registrado que describen las
-secciones 4 a 9 no se corrió**: el repositorio reservado se usó para desarrollo y la prueba pareada nunca se
-aplicó. Todo lo medido es exploratorio. Ninguna condición con skills (B, C o D) existe todavía, así que la
-pregunta de la campaña sigue sin respuesta.
+**Estado al 2026-10-07 (corte de datos: 02:30 UTC, salvo el estado del tercer envío, leído a las 15:15
+UTC).** El modelo ya se ejecutó: hay corridas propias en notebooks de Kaggle, tres envíos (dos en `submissions/registry.json`; el tercero,
+sin registrar todavía) y un manuscrito
+con lo medido. Una *corrida* es una ejecución completa de una configuración sobre una lista fija de tareas
+públicas; un *envío* es el archivo comprimido que se entrega al concurso para que lo puntúe. **El diseño
+pre-registrado de las secciones 4 a 9 no se corrió.** Preveía reservar las tareas de un repositorio para la
+prueba y comparar dos configuraciones tarea a tarea (la «prueba pareada»); el repositorio reservado se usó
+para desarrollo y la prueba nunca se aplicó. Todo lo medido es exploratorio. Las condiciones B, C y D
+(definidas más abajo) no existen todavía, así que la pregunta de la campaña sigue sin respuesta.
 
 Las cifras salen del manuscrito ([`docs/paper/manuscript_en.md`](../../docs/paper/manuscript_en.md)), que las
-da en conteos agregados; la tabla indica la sección. Una *corrida* es una pasada de una configuración sobre
-una lista fija de tareas públicas.
+da en conteos agregados; la tabla indica la sección. «El agente» es aquí el agente del envío.
 
 | Qué se midió | Resultado | Fuente |
 |---|---|---|
 | Tareas públicas que sirven para medir en el notebook de la competencia | 71 de 129 con el entorno tal como viene; 103 al instalar tres paquetes que solo usan las pruebas | Manuscrito § 4.1; los 71, también en [`calibracion/validez_notebook_2026-10-04.json`](calibracion/validez_notebook_2026-10-04.json) |
 | Variación entre dos corridas iguales (tres pares) | Cambian de resultado 1 o 2 tareas; el total de resueltas cambia en 0 o 1; la clase de fallo cambia en 13 de 30 tareas | Manuscrito § 4.2 |
-| El mismo archivo enviado dos veces | Notas 0,06 y 0,05 en la tabla pública | [`submissions/registry.json`](submissions/registry.json) |
-| Siete cambios de configuración, cada uno contra la base en las mismas tareas | Ninguna mejora establecida; ningún aumento observado se replicó. No es evidencia de que no haya efecto | Manuscrito § 4.3 |
-| Una línea más en la instrucción, para la herramienta de edición | Las llamadas sin el argumento obligatorio pasan de 107 de 134 y 49 de 75 a 0 de 26; se resuelven las mismas 7 de 30 tareas | Manuscrito § 4.3 |
-| Séptimo cambio: razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | 9 de 19 tareas, frente a 6, 7 y 7 de la base; el umbral fijado antes de correr era 10: no decide. 9 de sus 10 fallos agotan el tiempo | Manuscrito § 4.3 |
-| Dónde se pierde el agente | De 30 tareas, 23 no se resolvieron en ninguna de tres corridas. Un revisor juzgó 12 resolubles (juicio retrospectivo, con la solución a la vista); en 10 de esas 12 el agente no llega a una edición pertinente | Manuscrito § 4.4 |
-| Predicciones escritas antes de cada corrida | 40; de las 31 evaluadas, 20 se cumplieron y 11 se refutaron | Manuscrito § 4.3 |
+| El mismo zip local enviado dos veces | Puntuaciones 0,06 y 0,05 en la tabla pública (fracción de tareas resueltas). Kaggle guardó archivos de distinto tamaño y su identidad no se comprobó | [`submissions/registry.json`](submissions/registry.json) |
+| Siete condiciones, una corrida por condición, cada una contra la configuración de referencia (la «base»: el kit sin adaptadores, razonamiento apagado, 4 minutos y 40 llamadas por tarea) en las mismas tareas | Ninguna mejora establecida; ningún aumento observado se replicó. No es evidencia de que no haya efecto | Manuscrito § 4.3 |
+| Una línea más en la instrucción, para la herramienta de edición | Las llamadas sin el argumento obligatorio pasan de 107 de 134 y 49 de 75 a 0 de 26; se resuelven las mismas 7 de 30 tareas que en la segunda corrida de la base | Manuscrito § 4.3 |
+| Séptima condición (cambia tres ajustes a la vez): razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | 9 de 19 tareas (las 19 se eligieron a partir de los resultados de la base). Las tres corridas anteriores sobre esas mismas 19 (dos de la base y una con la línea de la herramienta de edición) resolvieron 6, 7 y 7. El umbral fijado antes de correr era 10: no se alcanzó, y no permite afirmar una mejora. 9 de sus 10 fallos agotan el tiempo | Manuscrito § 4.3 |
+| Dónde se pierde el agente | De 30 tareas, 23 no se resolvieron en ninguna de tres corridas. Un revisor juzgó 12 resolubles (juicio retrospectivo, con la solución a la vista); en 10 de esas 12 el agente no llega a una edición relevante para el defecto en al menos dos de tres corridas | Manuscrito § 4.4 |
+| Predicciones escritas antes de cada corrida | 40, anotadas en una bitácora que estuvo fuera del control de versiones; de las 31 evaluadas, 20 se cumplieron y 11 se refutaron | Manuscrito § 4.3 |
 
-**Lo que sigue sin medirse.** El efecto de unas skills (B, C y D). El efecto del razonamiento separado del
-tiempo y de las llamadas: el séptimo cambio movió las tres cosas a la vez y se corrió una sola vez. Si las
-tres tareas que ese cambio resolvió por primera vez se repiten en una segunda corrida. La nota del tercer
+**Lo que sigue sin medirse.** El efecto de las skills (C y D) frente al texto de relleno (B). El efecto del razonamiento separado del
+tiempo y de las llamadas: la séptima condición movió las tres cosas a la vez y se corrió una sola vez. Si las
+tres tareas que esa condición resolvió por primera vez se repiten en una segunda corrida. La nota del tercer
 envío, que lleva esa misma configuración: se envió el 2026-10-07 a las 00:26 UTC y a las 15:15 UTC seguía
 sin nota (lectura de la API de Kaggle; se anotará en el registro de envíos cuando la tenga). Y nada de esto
-dice qué pasará en el conjunto oculto: los organizadores declaran que lo depuraron aparte (manuscrito § 5).
+dice cómo le irá en las tareas ocultas con que el concurso puntúa el envío: los organizadores declaran que
+las seleccionaron y revisaron aparte (manuscrito § 5).
 
 **Cómo leer el resto del documento.** Las secciones 2 y 3 (reglas y estado del área) siguen vigentes. Las
 secciones 4 a 9 describen el diseño pre-registrado, que se conserva como referencia de lo que se quiso
-medir: sus compuertas y fechas no se cumplieron y el manuscrito declara esa desviación (§ 3, «Deviations»).
+medir: sus compuertas (los controles previos a cada paso) y sus fechas no se cumplieron y el manuscrito declara esa desviación (§ 3, «Deviations»).
 La sección 11 separa lo medido de lo que no.
 
 Google ofrece en Kaggle un concurso con dos pistas, una de código y una de artículo, para el modelo Gemma 4.
@@ -852,19 +856,19 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 |---|---|---|
 | Agregados de las 129 tareas públicas (repositorios, años, tamaños) | Medido | `python -m scripts.kaggle_eda resumen` (sección 13); pre-registro, sección «Datos» |
 | Partición `leave_one_repo_out` (por ejemplo, fastapi reservado: 67 de prueba, 62 de entrenamiento) | Calculada por un guion determinista; no es una medición del modelo | `python -m scripts.kaggle_split` (sección 13) |
-| Cuota semanal de GPU: 30,00 h, reinicio 2026-10-10 00:00 UTC | Leída por API el 2026-10-03 por otra sesión; no versionada; sin confirmar que la cuenta elija L4×4 | Comentario en #101 |
+| Cuota semanal de GPU: 30,00 h, reinicio 2026-10-10 00:00 UTC | Leída por API el 2026-10-03 por otra sesión; no versionada | Comentario en #101 |
 | Inscripción en las dos pistas | Confirmada por API | Comentario en #101 |
 | Validez de cada tarea (`discrimina` o no), en el sandbox del notebook y sin modelo | **Medida**: 71 de 129 con el entorno tal como viene (fastapi 29 de 67, rich 42 de 48, requests y httpx 0 de 14); 103 con tres paquetes de pruebas instalados. Un control por celda | Manuscrito § 4.1 y Tabla 1; [`calibracion/validez_notebook_2026-10-04.json`](calibracion/validez_notebook_2026-10-04.json) para los 71 |
 | Tasa del kit ajustado (sin adaptadores, razonamiento apagado, 4 minutos y 40 llamadas por tarea) en tareas públicas | **Medida, exploratoria**: 3 y 3 de 15, 4 y 4 de 16, 6 y 7 de 30, según el conjunto. No es la línea base pre-registrada | Manuscrito § 4.2, Tabla 2 |
 | Variación entre dos corridas iguales | **Medida en tres pares, contando tareas**: cambian de resultado 2, 2 y 1 tareas; el total cambia en 0, 0 y 1; la clase de fallo cambia en 13 de 30. Tres pares no fijan una diferencia mínima detectable | Manuscrito § 4.2 |
 | Variación entre réplicas de A con el análisis pre-registrado (McNemar, `kaggle_replicas.py`) | **Sin medir.** El diseño no se corrió | Manuscrito § 3, «Deviations» |
 | Nota en la tabla pública | **Medida**: 0,06 y 0,05 con el mismo archivo local. Un tercer envío, con otra configuración, sin nota al 2026-10-07 15:15 UTC | [`submissions/registry.json`](submissions/registry.json) para los dos primeros |
-| Efecto de siete cambios de configuración | **Medido, una corrida por cambio**: ninguna mejora establecida | Manuscrito § 4.3, Tabla 3 |
+| Efecto de siete condiciones | **Medido, una corrida por condición**: ninguna mejora establecida | Manuscrito § 4.3, Tabla 3 |
 | Dónde se pierde el agente en las tareas que no resuelve | **Medido en 69 sesiones; la resolubilidad es un juicio retrospectivo** | Manuscrito § 4.4, Tabla 4 |
 | Ensayo de notebook con `scripts/kaggle_ensayo.py`: backend, tokens por segundo, rechazos por contexto | **Sin medir con ese instrumento.** El modelo se corrió con notebooks propios que no están versionados | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
 | Entorno del sandbox: una variante local v2 (constructor `scripts/build_sandbox.py`, PR #120) con controles vacíos de dos tareas | Ensayo local, sin parche de referencia: no fija el entorno del experimento ni acredita la validez de ninguna tarea; su diagnóstico es una lectura estática del arnés, sin ejecutarlo | [`docs/propuesta_entorno_fastapi_v2.md`](docs/propuesta_entorno_fastapi_v2.md) |
 | Concurrencia de la puntuación real | **Sin medir** | — |
-| Acceso a L4×4 desde la cuenta | Las corridas del manuscrito se hicieron en notebooks con cuatro GPU L4 | Manuscrito § 3, «Runs» |
+| Acceso a L4×4 desde la cuenta | **Medido de hecho**: las corridas del manuscrito se hicieron en notebooks con cuatro GPU L4 | Manuscrito § 3, «Runs» |
 | Efecto de B, C o D | **Sin medir.** Las condiciones no existen | — |
 | Corridas con el arnés y sin modelo (tres tareas locales sin parche) | Hecho, pero el registro tiene conclusiones cuestionadas y no es una fuente de exclusiones | [`calibracion/fase2_sin_parche.json`](calibracion/fase2_sin_parche.json); pre-registro, A.4 |
 

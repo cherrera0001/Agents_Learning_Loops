@@ -22,11 +22,6 @@
   },
   "steps": [
     {
-      "action": "estimate_issue",
-      "success": false,
-      "error": "El tramo se empezó sin «Estimación v1» en un issue: la estimación de este episodio se escribió al implementar, y lo hizo la sesión del orquestador (Opus 5.5) en vez del modelo de la talla M, porque el contexto de 37 vueltas ya estaba cargado"
-    },
-    {
       "action": "run_experiment",
       "success": false,
       "error": "Notebook de Kaggle con GPU detenido al arrancar: buscaba las ruedas del arnés en una ruta fija de /kaggle/input, y Kaggle monta las entradas en dos disposiciones distintas según la sesión; una versión más se canceló con la misma ruta fija y la cola de GPU costó más de 8 horas"
@@ -64,12 +59,12 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "Concilio de seis roles en solo lectura sobre las mismas trazas (tiempo, QA de parches, arnés, tabla y foro, método, tablero): corrigió tres lecturas de la vuelta anterior y separó el desenlace (tiempo agotado) de la causa (el agente lee el archivo de la corrección y no lo edita: 8 de 10 no resueltas)"
+      "note": "Concilio de seis roles en solo lectura sobre las mismas trazas (tiempo, QA de parches, arnés, tabla y foro, método, tablero): corrigió tres lecturas y una propuesta de la vuelta anterior y separó el desenlace (tiempo agotado) de la causa (el agente lee el archivo de la corrección y no lo edita: 8 de 10 no resueltas)"
     },
     {
       "action": "update_docs",
       "success": false,
-      "error": "Durante tres días el README de la raíz y el del experimento dijeron que no había ninguna corrida con el modelo, con el manuscrito ya fusionado diciendo lo contrario; el ciclo se anotaba en una bitácora fuera del control de versiones y ninguna de sus corridas tenía episodio"
+      "error": "Entre la primera corrida con el modelo (2026-10-04) y el 2026-10-07 el README de la raíz y el del experimento siguieron diciendo que no había ninguna corrida, también después de fusionarse el manuscrito que decía lo contrario; el ciclo se anotaba en una bitácora fuera del control de versiones y ninguna de sus corridas medidas tenía episodio"
     },
     {
       "action": "update_docs",
@@ -82,19 +77,19 @@
       "error": "Antes de este episodio, tres consultas de las que haría un operador al empezar la vuelta siguiente devolvían 1 de 5 lecciones que el ciclo ya había pagado: solo la de fijar la imagen de Python"
     },
     {
-      "action": "rebuild_memory",
-      "success": true,
-      "note": "devlog rebuild con este episodio en una copia local, para comprobar que las lecciones del ciclo se consolidan"
-    },
-    {
       "action": "recall_memory",
       "success": true,
-      "note": "Con este episodio, las mismas tres consultas devuelven las 5 lecciones. La prueba no es ciega: las lecciones se redactaron conociendo las consultas, y la primera redacción de un paso las citaba literalmente y copaba dos de cada cinco resultados; se reescribió"
+      "note": "Tras devlog rebuild con este episodio en una copia local, las mismas tres consultas devuelven las 5 lecciones. La prueba no es ciega: las lecciones se redactaron conociendo las consultas, y la primera redacción de un paso las citaba literalmente y copaba dos de cada cinco resultados; se reescribió. Las tres consultas: «subir notebook a Kaggle con GPU», «el agente agota el tiempo con razonamiento encendido» y «editar archivo falla por parámetro»; las cinco lecciones buscadas: ruta fija de /kaggle/input, resubidas, imagen de Python, razonamiento con 4 minutos y la línea de edit_file"
     },
     {
       "action": "confirm_closure",
       "success": true,
       "note": "Hallazgos del tablero resueltos de paso: #146 y #148 estaban en Done sin talla ni verificación; criterio de cierre comprobado contra main, campos escritos y comentario de evidencia en cada issue"
+    },
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "El tramo no tuvo estimación propia antes de empezar: el issue #103 tiene la suya, de talla L, para la línea base completa; la de este episodio se escribió al implementar, y lo hizo la sesión del orquestador (Opus 5.5) en vez del modelo de la talla M, porque el contexto de 37 vueltas ya estaba cargado"
     },
     {
       "action": "submit_external",

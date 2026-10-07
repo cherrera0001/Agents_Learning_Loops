@@ -21,6 +21,8 @@ público común no hay diferencia según el criterio pre-registrado (#58)
 
 El propio repositorio registra su desarrollo con este mecanismo: cada issue se guarda como un episodio de
 aprendizaje y se consulta la memoria antes de iniciar el siguiente ([§ 11](#11-desarrollo-guiado-por-su-propia-memoria)).
+Hay una excepción documentada: el experimento de Kaggle no se condujo con este proceso
+([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)).
 
 > **Terminología.** «Agente», «skill» y «harness» tienen significados distintos según la capa (agente de
 > biblioteca, solver acotado, agente de entorno…). Todos los textos usan los nombres del
@@ -60,8 +62,8 @@ análisis escritos antes de ver los datos.
 **Qué no presenta.** Aprendizaje autónomo de ingeniería de software, una habilidad nueva (el solver reordena
 operadores ya escritos), resultados de memoria con agentes LLM, mediciones de tokens o de costo, ni la
 promoción de lecciones a skills, que el esquema declara y el [protocolo](specs/software_learning_protocol.md)
-deja como trabajo futuro. El repositorio sí tiene mediciones con un modelo de lenguaje, en un experimento
-aparte y sin memoria: el concurso Gemma 4 Developer Agent
+deja como trabajo futuro. El repositorio tiene mediciones con un modelo de lenguaje, exploratorias, en un
+experimento aparte y sin memoria (el concurso Gemma 4 Developer Agent); no establecen ninguna mejora
 ([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)).
 
 **Pregunta abierta.** Si una recuperación sembrada con señales no léxicas (la traza de la excepción, el
@@ -762,43 +764,50 @@ python -m scripts.verify_experiment1 --root .   # verificación independiente
 
 ### 7.3 Experimento con Gemma 4 en Kaggle: exploratorio, y todavía sin memoria
 
-Es un experimento aparte de los dos anteriores. Usa un modelo de lenguaje (Gemma 4, con el arnés del concurso
-[Gemma 4 Developer Agent](experiments/gemma_developer_agent/README.md)) y **no pone a prueba la memoria
-asociativa**: hasta el 2026-10-07, las configuraciones medidas son el kit oficial con parámetros cambiados o
-con líneas añadidas a su instrucción, más un diseño público de dos etapas tomado de otro participante.
-Ninguna lleva una lección consolidada desde corridas propias. Lo medido responde a una pregunta previa:
-cuánto se puede creer una diferencia entre dos configuraciones.
+Es un experimento aparte de los dos anteriores. Usa un modelo de lenguaje, Gemma 4, dentro del concurso
+[Gemma 4 Developer Agent](experiments/gemma_developer_agent/README.md) de Kaggle, y **no pone a prueba la
+memoria asociativa**. Hasta el 2026-10-07 se midieron siete condiciones distintas del agente de ejemplo que entrega el
+concurso (el «kit oficial»): parámetros distintos, líneas añadidas a su instrucción y un diseño público de
+dos etapas tomado de otro participante. Ninguno lleva una skill consolidada por la memoria; las líneas añadidas
+se escribieron a mano tras leer trazas. Todo es exploratorio:
+el diseño pre-registrado (reservar un repositorio para la prueba y comparar tarea a tarea) no se corrió, y el
+manuscrito lo declara. Una *corrida* es una ejecución de una configuración sobre una lista fija de tareas
+públicas; el *agente* de esta sección es el agente del envío, no el agente de biblioteca.
 
 | Qué se midió (corte de datos: 2026-10-07 02:30 UTC) | Resultado |
 |---|---|
 | Tareas públicas que sirven para medir en el notebook de la competencia | 71 de 129 con el entorno tal como viene; 103 al instalar tres paquetes que solo usan las pruebas |
 | Variación entre dos corridas iguales (tres pares) | Cambian de resultado 1 o 2 tareas; el total cambia en 0 o 1; la clase de fallo cambia en 13 de 30 tareas |
-| Siete cambios de configuración, uno por corrida | Ninguna mejora establecida, lo que no es evidencia de que no haya efecto |
-| El más reciente: razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | 9 de 19 tareas frente a 6, 7 y 7 de la base; el umbral fijado antes de correr era 10: no decide |
-| Dónde se pierde el agente | De 12 tareas nunca resueltas que un revisor juzgó resolubles (juicio retrospectivo), en 10 no llega a una edición pertinente |
-| El mismo archivo enviado dos veces a la tabla pública | Notas 0,06 y 0,05 |
+| Siete condiciones, una corrida por condición | Ninguna mejora establecida, lo que no es evidencia de que no haya efecto |
+| La séptima: razonamiento encendido, 60 llamadas y 4,5 minutos por tarea | Resolvió 9 de 19 tareas (las 19 se eligieron a partir de los resultados anteriores). Las tres corridas anteriores sobre esas mismas 19 (razonamiento apagado, 4 minutos y 40 llamadas; una de ellas con la línea añadida para la herramienta de edición) resolvieron 6, 7 y 7. El umbral fijado antes de correr era 10: no se alcanzó, y no permite afirmar una mejora |
+| Dónde se pierde el agente | De 12 tareas que ninguna de tres corridas resolvió y que un revisor juzgó resolubles (juicio posterior, con la solución a la vista), en 10 el agente no llega a una edición relevante para el defecto en al menos dos de tres corridas |
+| El mismo zip local enviado dos veces al concurso | Puntuaciones 0,06 y 0,05 en la tabla pública (fracción de tareas resueltas). Kaggle guardó archivos de distinto tamaño y su identidad no se comprobó |
 
 Fuente de las cinco primeras filas: el manuscrito, [`docs/paper/manuscript_en.md`](docs/paper/manuscript_en.md)
 (§ 4.1 a § 4.4), que da solo conteos agregados porque el reglamento prohíbe redistribuir las tareas. La
-última: [`submissions/registry.json`](experiments/gemma_developer_agent/submissions/registry.json). El diseño
-pre-registrado (un repositorio reservado y una prueba pareada) no se corrió y el manuscrito lo declara: todo
-es exploratorio. Detalle y límites en el
+última: [`submissions/registry.json`](experiments/gemma_developer_agent/submissions/registry.json). Detalle y
+límites en el
 [documento de entrada del experimento](experiments/gemma_developer_agent/README.md#1-en-pocas-líneas).
 
-**Qué dice esto del principio de ALL.** Todavía nada, ni a favor ni en contra, por dos razones distintas.
+**Qué dice esto del principio de ALL.** Sobre si la memoria ayuda, nada: no se probó. Sobre el proceso, algo
+en contra: el experimento no se condujo con el bucle de ALL.
 
-- **En el envío.** El concurso ejecuta cada tarea aislada y sin memoria; lo aprendido solo puede viajar como
-  un archivo fijo. Ese archivo no existe aún: los envíos no llevan ninguna skill. La comparación que lo
-  pondría a prueba (skills consolidadas frente al kit y frente a un texto de relleno del mismo largo) está
+- **En el envío.** El concurso ejecuta cada tarea aislada y sin memoria; lo aprendido solo puede entrar como
+  un archivo fijo dentro del envío (las *skills del envío*, archivos `SKILL.md`; no son las skills de memoria
+  que el esquema declara). Ese archivo no existe: los envíos no llevan ninguna. La comparación que lo
+  probaría (skills del envío hechas con lecciones consolidadas, frente al kit oficial y frente a un texto de
+  relleno, sin lecciones, del mismo largo) está
   [pre-registrada](docs/preregistration/kaggle-campaign-abcd.md) y no ha empezado.
-- **En la operación.** El ciclo de mejora se llevó con una predicción escrita antes de cada corrida, pero en
-  una bitácora que estuvo fuera del control de versiones (el manuscrito lo declara, § 3). Los episodios de
-  [`learning/episodes/`](learning/episodes/) de ese periodo registran el envío, el manuscrito y dos arreglos
-  de herramientas, no las corridas. Por eso, hasta el 2026-10-07, tres consultas de operador a
-  `devlog recall` devolvían 1 de 5 lecciones que ese ciclo ya había pagado; el
-  [episodio 064](learning/episodes/064-issue-103-estado-medido-y-ciclo-kaggle.json) las registra, y con él
-  devuelven las 5 (una prueba que no es ciega: las lecciones se redactaron conociendo las consultas). El
-  bucle que este repositorio describe no fue el que condujo el experimento.
+- **En la operación.** El experimento no se condujo con el bucle de ALL. Las predicciones anteriores a cada
+  corrida se anotaron en un registro propio de quien ejecutaba las corridas, que estuvo fuera del control de
+  versiones (manuscrito, § 3). Los episodios de [`learning/episodes/`](learning/episodes/) de ese periodo
+  registran el primer envío con sus ensayos de notebook, el manuscrito y trabajo de herramientas, no las
+  corridas medidas. El 2026-10-07, tres
+  consultas a `devlog recall` (la consulta de la memoria antes de empezar un issue) devolvían 1 de 5
+  lecciones que ese ciclo ya había producido. Tras registrar el
+  [episodio 064](learning/episodes/064-issue-103-estado-medido-y-ciclo-kaggle.json) devuelven las 5; esa
+  segunda cifra no prueba nada, porque las lecciones se escribieron conociendo las consultas (el episodio
+  cita las tres).
 
 ## 8. Aseguramiento de calidad
 
@@ -1009,9 +1018,10 @@ léxicas y repetir la prueba con las mismas tareas con señuelo.
 Aparte de esa línea, el repositorio documenta un experimento con un modelo de lenguaje en el concurso Gemma 4
 Developer Agent de Kaggle: [`experiments/gemma_developer_agent/`](experiments/gemma_developer_agent/README.md).
 Al 2026-10-07 tiene mediciones exploratorias y ninguna mejora establecida
-([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)). Lo que sigue en esa
-línea: repetir la configuración más reciente para saber si su aumento se sostiene y, después, la primera
-condición que lleve lecciones consolidadas en una skill, medida contra un texto de relleno del mismo largo.
+([§ 7.3](#73-experimento-con-gemma-4-en-kaggle-exploratorio-y-todavía-sin-memoria)). Lo previsto en esa
+línea, sin compromiso de fecha: repetir la configuración más reciente para saber si su diferencia (9 de 19
+frente a 6, 7 y 7 de las corridas anteriores, por debajo del umbral de 10) se repite y, después, probar la primera condición con
+lecciones consolidadas en una skill del envío, frente a un texto de relleno del mismo largo.
 El concurso cierra el 2026-12-02 y su pista de artículo, el 2026-11-12.
 
 ```mermaid
