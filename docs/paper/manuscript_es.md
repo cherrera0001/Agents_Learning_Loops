@@ -6,19 +6,19 @@ Cristóbal Herrera Jara
 
 ## Resumen
 
-Ajustamos la configuración de un agente de código con Gemma 4 para la competición Gemma 4 Developer Agent e informamos, en conteos agregados, lo que medimos para leer nuestras propias comparaciones. En seis cambios de configuración no establecimos ninguna mejora; el mayor aumento observado no se replicó, y eso no es evidencia de que no haya efecto. Primero, en el entorno del notebook de la competición, 71 de las 129 tareas públicas separan el parche de referencia de la ausencia de parche; al instalar tres paquetes que solo usan las pruebas son 103. Segundo, entre corridas idénticas cambiaron de resultado 1 a 2 tareas, mientras el total cambió en 0 a 1 dentro de cada par; un mismo archivo local enviado dos veces obtuvo 0,06 y 0,05 en la tabla pública, sin verificar que los dos archivos almacenados fueran idénticos. Tercero, la herramienta de edición se llamó sin un argumento obligatorio en 107 de 134 y 49 de 75 llamadas en dos corridas base, y en 0 de 26 en una corrida con una línea de instrucción añadida; las tareas resueltas fueron las mismas 7 de 30 que en la segunda corrida base. Cuarto, de 23 tareas nunca resueltas en tres corridas, una revisión retrospectiva juzgó resolubles 12 con el enunciado y el repositorio; 10 de ellas no llegaron a una edición pertinente en al menos dos de las tres corridas.
+Ajustamos la configuración de un agente de código con Gemma 4 para la competición Gemma 4 Developer Agent e informamos, en conteos agregados, lo que medimos para leer nuestras propias comparaciones. En seis cambios de configuración no establecimos ninguna mejora; el mayor aumento observado no se replicó, y eso no es evidencia de que no haya efecto. Primero, en el entorno del notebook de la competición, 71 de las 129 tareas públicas separan el parche de referencia de la ausencia de parche; al instalar tres paquetes que solo usan las pruebas son 103. Segundo, entre corridas idénticas cambiaron de resultado 1 a 2 tareas individuales, mientras el total cambió en 0 a 1 dentro de cada par; un mismo archivo local enviado dos veces obtuvo 0,06 y 0,05 en la tabla pública, sin verificar que los dos archivos almacenados fueran idénticos. Tercero, la herramienta de edición se llamó sin un argumento obligatorio en 107 de 134 y 49 de 75 llamadas en dos corridas base, y en 0 de 26 en una corrida con una línea de instrucción añadida; las tareas resueltas fueron las mismas 7 de 30 que en la segunda corrida base. Cuarto, de 23 tareas nunca resueltas en tres corridas, una revisión retrospectiva juzgó resolubles 12 con el enunciado y el repositorio; 10 de ellas no llegaron a una edición pertinente en al menos dos de las tres corridas.
 
 ## 1. Introducción
 
-Quien participa entrega una configuración para un modelo y un arnés fijos, y recibe la fracción de tareas ocultas cuyo parche pasa pruebas ocultas. El desarrollo se hace sobre 129 tareas públicas. Con unas decenas de tareas por corrida y un agente estocástico, un cambio de 1 o 2 tareas resueltas es a la vez el efecto que se busca y el que produce el azar.
+Quien participa en la competición entrega una configuración para un modelo y un arnés fijos, y recibe la fracción de tareas ocultas cuyo parche pasa pruebas ocultas. El desarrollo se hace sobre 129 tareas públicas. Con unas decenas de tareas por corrida y un agente estocástico, un cambio de 1 o 2 tareas resueltas es a la vez el efecto que se busca y el que produce el azar.
 
 Hacemos una sola pregunta:
 
-> En este entorno, ¿qué diferencia entre dos configuraciones de un agente se distingue de repetir la misma configuración?
+> En este contexto, ¿qué diferencia entre dos configuraciones de un agente puede distinguirse de repetir la misma configuración?
 
 La contribución es lo que medimos para leer nuestras propias comparaciones:
 
-1. Qué tareas públicas discriminan en el notebook, con la causa confirmada por intervención en 31 de las 58 que no (§ 4.1).
+1. Qué tareas públicas discriminan en el notebook, con la causa confirmada por intervención en 31 de las 58 que no discriminan (§ 4.1).
 2. La variación entre corridas de una configuración fija: resultados por tarea, totales y categorías de fallo (§ 4.2).
 3. Seis intervenciones con predicciones anotadas antes de cada corrida; en una, un mecanismo de fallo desapareció y las tareas resueltas no cambiaron (§ 4.3).
 4. Dónde se pierde el agente en las tareas nunca resueltas, con un juicio retrospectivo de cuántas eran resolubles (§ 4.4).
@@ -27,21 +27,21 @@ La evidencia viene de tres fuentes, separadas: controles sin el modelo (§ 4.1),
 
 ## 2. Trabajos relacionados
 
-SWE-bench plantea incidencias reales de GitHub cuya solución es un parche al código (Jimenez et al., 2024). Auditorías posteriores informan soluciones dadas en la incidencia o sus comentarios y pruebas débiles (Aleithan et al., 2024), y parches contados como correctos que fallan las pruebas de los desarrolladores (Wang et al., 2026). Zhu et al. (2025) informan que muchos benchmarks de agentes tienen problemas en el montaje de las tareas o en el diseño de la recompensa. Dos notebooks públicos auditaron antes estas tareas: Xodarev (2026) informa 119 de 129 sólidas con un evaluador reimplementado y entornos reconstruidos, y Gluzdov (2026), 114 tras reparar solo dependencias, con la puntuación oficial intacta. No los reprodujimos; los tres conteos difieren en entorno, criterio de control y evaluador.
+SWE-bench plantea incidencias reales de GitHub cuya solución es un parche al código (Jimenez et al., 2024). Auditorías posteriores informan de pruebas débiles y de soluciones dadas en la incidencia o en sus comentarios (Aleithan et al., 2024), y parches contados como correctos que no pasan las pruebas de los desarrolladores (Wang et al., 2026). Zhu et al. (2025) informan que muchos benchmarks de agentes tienen problemas en el montaje de las tareas o en el diseño de la recompensa. Dos notebooks públicos auditaron antes las tareas públicas de esta competición: Xodarev (2026) informa 119 de 129 sólidas con un evaluador reimplementado y entornos reconstruidos, y Gluzdov (2026), 114 tras reparar solo dependencias, con la lógica oficial de puntuación sin cambios. No los reprodujimos; los tres conteos difieren en entorno, criterio de control y evaluador.
 
-En SWE-bench Verified, la tasa de una sola corrida varió entre 2,2 y 6,0 puntos porcentuales según la corrida elegida, con tres modelos y dos andamiajes (Bjarnason et al., 2026). Miller (2024) da fórmulas para analizar y planificar una evaluación. En SWE-bench Verified, las mejoras pueden reflejar en parte memorización (Liang et al., 2026). Escribir las predicciones antes de los datos sigue el espíritu del prerregistro (Nosek et al., 2018).
+En SWE-bench Verified, la tasa de acierto de una sola corrida varió en 2,2 a 6,0 puntos porcentuales según la corrida elegida, con tres modelos y dos andamiajes (Bjarnason et al., 2026). Miller (2024) da fórmulas para analizar y planificar una evaluación. En SWE-bench Verified, las mejoras pueden reflejar en parte memorización (Liang et al., 2026). Escribir las predicciones antes de los datos sigue el espíritu del prerregistro (Nosek et al., 2018).
 
-Una intervención añade texto de instrucción. Gloaguen et al. (2026) hallaron que los archivos de contexto del repositorio no mejoraron en general el éxito, aunque los agentes siguieron sus instrucciones.
+Una intervención añade texto de instrucción. Gloaguen et al. (2026) hallaron que los archivos de contexto del repositorio no mejoraron en general el éxito en las tareas, aunque los agentes siguieron sus instrucciones.
 
-## 3. Entorno y método
+## 3. Contexto y método
 
 **Modelo y arnés.** La competición fija el modelo, `gemma-4-31b-it-qat-w4a16-ct`, y un arnés con herramientas para ejecutar comandos, leer, buscar y editar archivos, y entregar un parche. El conjunto oculto tiene unas 120 tareas de repositorios privados; las 129 públicas vienen de cuatro repositorios de código abierto.
 
-**Línea base.** El kit oficial sin adaptadores, 8 192 tokens de salida, razonamiento del modelo apagado y un presupuesto por tarea de 4 minutos, 40 llamadas a herramientas, 100 turnos y 60 segundos por comando. El muestreo usa temperatura 0,2 sin semilla.
+**Línea base.** El kit de inicio oficial sin adaptadores, 8192 tokens de salida, razonamiento del modelo apagado y un presupuesto por tarea de 4 minutos, 40 llamadas a herramientas, 100 turnos y 60 segundos por comando. El muestreo usa temperatura 0,2 sin semilla.
 
-**Corridas.** Una *corrida* es una pasada de una configuración sobre una lista fija de tareas, en un notebook con cuatro GPU L4. El conjunto de medición tiene 30 tareas: 15 de un repositorio (rich), usadas durante todo el desarrollo, y 15 de otro (fastapi). Las de fastapi fueron no vistas solo en la primera de las tres corridas de 30 tareas. Las sesiones anteriores usaron esas 15 tareas de rich, o un conjunto de 16 que las contiene. Las 30 discriminan (§ 4.1). Las trazas completas se guardaron desde la primera corrida de 30 tareas.
+**Corridas.** Una *corrida* es una pasada de una configuración sobre una lista fija de tareas, en un notebook de Kaggle con cuatro GPU L4. El conjunto de medición tiene 30 tareas: 15 de un repositorio (rich), usadas durante todo el desarrollo, y 15 de otro (fastapi). Las de fastapi solo eran inéditas en la primera de las tres corridas de 30 tareas. Las sesiones anteriores usaron esas 15 tareas de rich, o un conjunto de 16 que las contiene. Las 30 discriminan (§ 4.1). Las trazas completas se guardaron desde la primera corrida de 30 tareas.
 
-**Regla del ciclo.** Antes de cada corrida anotamos una predicción en conteos y el resultado que la refutaría. Cada cambio de § 4.3 altera una sola cosa. Como regla operativa, un cambio contaba como mejora solo con una ganancia neta de al menos tres tareas resueltas; sin prueba estadística ni análisis de potencia que la respalde.
+**Regla del ciclo.** Antes de cada corrida anotamos una predicción en conteos y el resultado que la refutaría. Cada cambio de § 4.3 altera una sola cosa. Como regla operativa, un cambio contaba como mejora solo con una ganancia neta de al menos tres tareas resueltas; esa regla no tiene detrás prueba estadística ni análisis de potencia.
 
 **Desviaciones, declaradas.** Prerregistramos otro diseño: reservar un repositorio y comparar corridas repetidas con la prueba de McNemar (Dietterich, 1998). Nunca lo ejecutamos: el repositorio reservado se usó para desarrollo y la variación se midió contando tareas. Todos los resultados son, por tanto, exploratorios. El registro de predicciones estuvo fuera del control de versiones en este periodo, y cinco entradas llevan horas estimadas.
 
@@ -53,7 +53,7 @@ Una tarea *discrimina* si sus pruebas fallan sin parche y pasan con el parche de
 
 **Tabla 1**
 
-*Tareas Públicas Que Discriminan, por Repositorio y Entorno*
+*Tareas públicas que discriminan, por repositorio y entorno*
 
 | Repositorio | Tareas | Tal como viene | Con tres paquetes de pruebas instalados |
 |---|---|---|---|
@@ -64,15 +64,15 @@ Una tarea *discrimina* si sus pruebas fallan sin parche y pasan con el parche de
 
 *Nota.* Cada celda cuenta tareas cuyas pruebas fallan sin parche y pasan con el parche de referencia. Una corrida de control por celda; sin modelo.
 
-Tal como viene, 58 tareas no discriminan: en 55 el parche de referencia no pasa y 3 pasan sin parche. En 34 de las 55 las pruebas no se ejecutaron porque faltaba un paquete que solo ellas usan. Con los paquetes instalados, 31 de esas 34 discriminan. Otra tarea de rich pasó a discriminar sin causa identificada, y no se perdió ninguna de las 71 originales. Siguen sin discriminar 26 tareas: 23 fallan con el parche de referencia, sin causa examinada, y 3 pasan sin parche.
+Tal como viene, 58 tareas no discriminan: en 55 el parche de referencia no pasa y 3 pasan sin parche. En 34 de las 55 las pruebas no se ejecutaron porque faltaba un paquete que solo ellas usan. Con los paquetes instalados, 31 de esas 34 discriminan. Otra tarea de rich pasó a discriminar sin causa identificada, y no se perdió ninguna de las 71 originales. Siguen sin discriminar 26 tareas: 23 fallan con el parche de referencia, causa no examinada, y 3 pasan sin parche.
 
-De las 58 tareas (45 % de 129) que no podían medir nada tal como viene el entorno, 31 (53 %) reflejan una carencia suya. No discriminar aquí no hace intrínsecamente inválida a una tarea.
+De las 58 tareas (45 % de 129) que no podían medir nada tal como viene el entorno, 31 (53 %) reflejan una carencia del entorno. No discriminar en este entorno no hace intrínsecamente inválida a una tarea.
 
 ### 4.2 Variación de una configuración sin cambios
 
 **Tabla 2**
 
-*Dos Corridas de la Misma Configuración Sobre las Mismas Tareas*
+*Dos corridas de la misma configuración sobre las mismas tareas*
 
 | Conjunto de tareas | Resueltas, corridas 1 y 2 | Cambio neto del total | Tareas que cambian de resultado | Tareas que cambian de categoría de fallo |
 |---|---|---|---|---|
@@ -90,24 +90,24 @@ En la tabla pública, el mismo archivo local enviado dos veces obtuvo 0,06 y 0,0
 
 **Tabla 3**
 
-*Cada Cambio Frente a la Línea Base en las Mismas Tareas*
+*Cada cambio frente a la línea base en las mismas tareas*
 
 | Cambio | Predicción anotada antes de la corrida | Resueltas: base, cambio | Veredicto sobre la predicción |
 |---|---|---|---|
-| Razonamiento encendido, límite de 4 minutos | Sin ganancia | 4 y 4, 3 de 16 | Se cumple, para ese presupuesto |
+| Razonamiento encendido, límite de 4 minutos | Sin ganancia | 4 y 4, 3 de 16 | Cumplida, para ese presupuesto |
 | 100 llamadas a herramientas en vez de 40 | Más tareas resueltas | 3 y 3, 2 de 15 | Refutada |
 | Diseño público de dos etapas (localizador de solo lectura y editor) | Más tareas resueltas | 3 y 3, 3 de 15 | Refutada |
-| 20 llamadas a herramientas | Al menos 2 resueltas | 2, 2 de 15 | Se cumple |
-| Regla escrita contra las llamadas repetidas | No adelanta la primera edición | 2, 4 de 15 | Se cumple; ganancia neta de dos, no replicada |
-| Regla de una línea para la herramienta de edición | Las sesiones atrapadas bajan a 1 o menos | 6 y 7, 7 de 30 | Se cumple en el mecanismo; mismas tareas resueltas |
+| 20 llamadas a herramientas | Al menos 2 resueltas | 2, 2 de 15 | Cumplida |
+| Regla escrita contra las llamadas repetidas | No adelanta la primera edición | 2, 4 de 15 | Cumplida; ganancia neta de dos, no replicada |
+| Regla de una línea para la herramienta de edición | Las sesiones atrapadas bajan a 1 o menos | 6 y 7, 7 de 30 | Cumplida en el mecanismo; mismas tareas resueltas |
 
 *Nota.* Una corrida por cambio. Los conteos base son de una o dos corridas, según se muestra. «Atrapada» significa tres o más llamadas de edición mal formadas seguidas.
 
 Ninguna fila de la Tabla 3 establece una mejora, lo que no es evidencia de que no haya efecto: el mayor aumento neto (de 2 a 4) fue una sola corrida sobre 15 tareas. Con razonamiento encendido y límite de 4 minutos, 11 de 13 sesiones no resueltas se quedaron sin tiempo; esa fila describe el razonamiento bajo ese presupuesto y no dice nada de uno mayor. Una séptima condición, con tres ajustes cambiados a la vez (razonamiento encendido, 60 llamadas, 4,5 minutos), no tiene resultado a la fecha de corte.
 
-La última fila es nuestra observación más sólida, porque separa un mecanismo de un resultado. El agente llamó a la herramienta de edición sin su argumento obligatorio en 107 de 134 llamadas en una corrida base y 49 de 75 en la otra, y repitió la misma llamada fallida: 3 de 30 sesiones quedaron atrapadas en cada corrida. Una llamada sintética cuyo argumento de texto se cierra con el delimitador equivocado reproduce los mismos argumentos mal formados en el intérprete público del servidor del modelo; la salida cruda del modelo no se guardó. En la única corrida con una línea de instrucción añadida el fallo no ocurrió (0 de 26 llamadas, 0 sesiones atrapadas). Las tareas resueltas fueron las mismas 7 que en la segunda corrida base, 6 de ellas resueltas también en la primera. Las tareas atrapadas en una corrida base no se resolvieron en la otra, aunque 2 de las 3 no quedaron atrapadas allí.
+La última fila es nuestra observación más sólida, porque separa un mecanismo de un resultado. El agente llamó a la herramienta de edición sin su argumento obligatorio en 107 de 134 llamadas en una corrida base y 49 de 75 en la otra, y repitió la misma llamada fallida: 3 de 30 sesiones quedaron atrapadas en cada corrida. Una llamada sintética cuyo argumento de texto se cierra con el delimitador equivocado reproduce los mismos argumentos mal formados en el analizador público del servidor del modelo; la salida cruda del modelo no se guardó. En la única corrida con una línea de instrucción añadida el fallo no ocurrió (0 de 26 llamadas, 0 sesiones atrapadas). Las tareas resueltas fueron las mismas 7 que en la segunda corrida base, 6 de ellas resueltas también en la primera. Las tareas atrapadas en una corrida base no se resolvieron en la otra, aunque 2 de las 3 no quedaron atrapadas allí.
 
-De las 40 predicciones anotadas, 30 se evaluaron: 19 se cumplieron y 11 se refutaron. Cuatro no se pudieron evaluar o nunca se corrieron, y seis están pendientes.
+De las 40 predicciones anotadas, 30 se evaluaron: 19 se cumplieron y 11 se refutaron. Cuatro no se pudieron evaluar o nunca se ejecutaron, y seis están pendientes.
 
 ### 4.4 Dónde se pierde el agente
 
@@ -117,7 +117,7 @@ Un revisor leyó el enunciado, el parche de referencia, las pruebas ocultas y el
 
 **Tabla 4**
 
-*Etapa Más Lejana Alcanzada en al Menos Dos de Tres Corridas*
+*Etapa más lejana alcanzada en al menos dos de tres corridas*
 
 | Etapa más lejana | 23 nunca resueltas | de ellas, 12 juzgadas resolubles | 7 resueltas |
 |---|---|---|---|
@@ -128,7 +128,7 @@ Un revisor leyó el enunciado, el parche de referencia, las pruebas ocultas y el
 
 *Nota.* Las columnas cuentan tareas, ubicadas en la etapa más alta alcanzada en dos o más de tres corridas.
 
-Diez de las 12 tareas juzgadas resolubles no llegaron a una edición pertinente en al menos dos de tres corridas (Tabla 4). De las 69 sesiones sobre tareas nunca resueltas, 25 nunca intentaron editar; en las 44 que sí, el primer intento llegó tras una mediana del 65 % del presupuesto de llamadas, frente al 26 % en las 20 sesiones resueltas. La mitad de sus llamadas (1 267 de 2 532) repitió una llamada idéntica anterior, y 36 de las 69 sesiones hicieron 40 llamadas o más, mientras 5 terminaron con el error de tiempo agotado del arnés (3 de ellas entre las 36). Otros dos defectos de herramienta gastan llamadas: la de lectura perdió su rango de líneas en 344 de 851 llamadas en las tres corridas, tanto en sesiones resueltas como fallidas, y la búsqueda por similitud no devolvió nada en las 221 llamadas.
+Diez de las 12 tareas juzgadas resolubles no llegaron a una edición pertinente en al menos dos de tres corridas (Tabla 4). De las 69 sesiones sobre tareas nunca resueltas, 25 nunca intentaron editar; en las 44 que sí, el primer intento llegó tras una mediana del 65 % del presupuesto de llamadas, frente al 26 % en las 20 sesiones resueltas. La mitad de sus llamadas (1267 de 2532) repitió una llamada idéntica anterior, y 36 de las 69 sesiones hicieron 40 llamadas o más, mientras 5 terminaron con el error de tiempo agotado del arnés (3 de ellas entre las 36). Otros dos defectos de herramienta gastan llamadas: la de lectura perdió su rango de líneas en 344 de 851 llamadas en las tres corridas, tanto en sesiones resueltas como fallidas, y la búsqueda por similitud no devolvió nada en las 221 llamadas.
 
 Cuando hay parche, rara vez está cerca: de las 41 de esas sesiones con parche, 16 contienen solo guiones de depuración, pruebas propias del agente o documentación, y en 23 de las otras 25 el agente no pasa ninguna de las pruebas objetivo. Ningún fallo de verificación se debió al entorno.
 
@@ -136,16 +136,16 @@ Cuando hay parche, rara vez está cerca: de las 41 de esas sesiones con parche, 
 
 - **Muestra pequeña.** Treinta tareas, dos repositorios, tres corridas; una corrida para la regla de la herramienta de edición.
 - **Exploratorio.** El diseño prerregistrado no se ejecutó, las tareas de desarrollo se reutilizaron y la regla operativa no tiene prueba ni análisis de potencia.
-- **Juicio.** La resolubilidad es una lectura retrospectiva. Los análisis de trazas, pruebas y resolubilidad los produjeron asistentes basados en modelos de lenguaje bajo la dirección del autor, sin réplica independiente.
+- **Juicio.** La resolubilidad es una sola lectura retrospectiva. Los análisis de trazas, pruebas y resolubilidad los produjeron asistentes basados en modelos de lenguaje bajo la dirección del autor, sin réplica independiente.
 - **Lo público no es lo oculto.** Los organizadores declaran que las tareas ocultas se curaron aparte; nada aquí predice la nota oculta.
 
 ## 6. Reproducibilidad y uso de datos
 
-Fecha de corte: 7 de octubre de 2026, 01:20 UTC. La configuración base tiene la huella `3b0e87556166` y la variante de la herramienta de edición `7e2082197834`: los primeros 12 dígitos hexadecimales del SHA-256 de las codificaciones base64 de los seis archivos de configuración, ordenadas como cadenas y concatenadas sin nombres ni separadores. Los guiones de validez y el lector de la tabla son públicos: https://github.com/cherrera0001/Agents_Learning_Loops. La competición prohíbe redistribuir el contenido de las tareas: no se publican resultados por tarea ni trazas.
+Fecha de corte: 7 de octubre de 2026, 01:20 UTC. La configuración base tiene la huella `3b0e87556166` y la variante de la herramienta de edición `7e2082197834`: los primeros 12 dígitos hexadecimales del SHA-256 de las codificaciones base64 de los seis archivos de configuración, ordenadas como cadenas y concatenadas sin nombres ni separadores. Los guiones de validez y el lector de la tabla pública son públicos: https://github.com/cherrera0001/Agents_Learning_Loops. La competición prohíbe redistribuir el contenido de las tareas: no se publican resultados por tarea ni trazas.
 
 ## 7. Conclusión
 
-Entre corridas idénticas cambiaron de resultado 1 o 2 tareas, el total cambió a lo más en uno dentro de un par y de 2 a 4 de 15 entre siete corridas base, y la categoría de fallo cambió en 13 de 30 tareas; no leímos diferencias de ese tamaño como efectos, y no afirmamos ningún umbral de detección. Cincuenta y ocho de 129 tareas públicas no podían medir nada en el entorno tal como viene. En seis cambios de configuración no establecimos ninguna mejora. En una corrida, un fallo de herramienta no ocurrió y las tareas resueltas fueron las mismas 7 que en la segunda corrida base. En 16 de las 23 tareas nunca resueltas, el agente no editó el archivo que había que cambiar en al menos dos de tres corridas.
+Entre corridas idénticas cambiaron de resultado 1 o 2 tareas, el total cambió como máximo en uno dentro de un par y de 2 a 4 de 15 entre siete corridas base, y la categoría de fallo cambió en 13 de 30 tareas; no leímos diferencias de ese tamaño como efectos, y no afirmamos ningún umbral de detección. Cincuenta y ocho de 129 tareas públicas no podían medir nada en el entorno tal como viene. En seis cambios de configuración no establecimos ninguna mejora. En una corrida, un fallo de herramienta no ocurrió y las tareas resueltas fueron las mismas 7 que en la segunda corrida base. En 16 de las 23 tareas nunca resueltas, el agente no editó el archivo que había que cambiar en al menos dos de tres corridas.
 
 ## Referencias
 
