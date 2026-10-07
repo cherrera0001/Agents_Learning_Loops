@@ -1,9 +1,3 @@
-# How Much Can a Difference Be Trusted? Task Validity and Run-to-Run Variation in an Exploratory Evaluation of a Gemma 4 Coding Agent
-
-**Subtitle:** Seven conditions, no established improvement, and one tool failure that disappeared without changing which tasks were resolved.
-
-Cristóbal Herrera Jara
-
 ## Abstract
 
 We tuned the configuration of a Gemma 4 coding agent for the Gemma 4 Developer Agent competition and report, in aggregate counts, what we measured to read our own comparisons. Across seven conditions we did not establish an improvement; no observed increase was replicated, and this is not evidence of no effect. In the competition notebook, 71 of the 129 public tasks separate the reference patch from no patch, and 103 after installing three test-only packages. Between identical runs, 1 to 2 individual tasks changed result while the total changed by 0 to 1 within each pair. The edit tool was called without a mandatory argument in 107 of 134 and 49 of 75 calls in two baseline runs and in 0 of 26 with one added instruction line, yet the resolved tasks were the same 7 of 30 as in the second baseline run. Of 23 tasks never resolved in three runs, a retrospective review judged 12 solvable from the issue text and the repository; 10 of those did not reach a relevant edit in at least two of three runs. With reasoning on and a larger budget, 9 of 19 tasks were resolved against 6, 7 and 7, below the 10 set in advance to keep the change.
