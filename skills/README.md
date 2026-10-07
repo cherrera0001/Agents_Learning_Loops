@@ -19,5 +19,9 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`investigador-papers`](investigador-papers/SKILL.md) | Antes de publicar un texto que cite una obra o nombre un mecanismo | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](revisor-redactor/SKILL.md) | Antes de publicar un texto público del proyecto | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](validador-estadistico/SKILL.md) | Antes de publicar un texto con cifras o verbos de resultado | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`auditor-datos`](auditor-datos/SKILL.md) | Antes del validador, cuando el experimento siguió corriendo después de escribirse el texto | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`revisor-figuras-tablas`](revisor-figuras-tablas/SKILL.md) | Antes de publicar un texto con figuras, tablas o diagramas | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_figures.py` |
+| [`revisar-manuscrito`](revisar-manuscrito/SKILL.md) | Para llevar un manuscrito con datos hasta una versión firmada | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
+| [`maquetar-apa`](maquetar-apa/SKILL.md) | Tras la firma, cuando el destino acepta o pide PDF | `scripts/paper_pdf.py` |
 
 Las tres últimas forman el staff de texto público. Ninguna es un nodo Skill de la memoria.

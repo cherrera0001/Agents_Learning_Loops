@@ -132,6 +132,25 @@ Skill: [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md). D
   estadística. Si un texto afirma una ventaja de la memoria asociativa sobre el historial textual, el veto
   es obligatorio: [H4](../results/h4-associative-vs-history.md) no la sostiene.
 
+### Auditor de datos
+
+Skill: [`auditor-datos`](../../skills/auditor-datos/SKILL.md). Definición ejecutable:
+[`.claude/agents/auditor-datos.md`](../../.claude/agents/auditor-datos.md).
+
+- Trabaja antes del validador. Hace el inventario de lo que el experimento midió y marca cada afirmación
+  del texto como vigente, desactualizada, contradicha o nunca ejecutada.
+- Exige el universo de cada conteo, separa controles sin modelo, corridas del modelo y juicios de un
+  revisor, y contrasta lo preregistrado con lo ejecutado.
+
+### Revisor de figuras y tablas
+
+Skill: [`revisor-figuras-tablas`](../../skills/revisor-figuras-tablas/SKILL.md). Definición ejecutable:
+[`.claude/agents/revisor-figuras-tablas.md`](../../.claude/agents/revisor-figuras-tablas.md).
+
+- Comprueba que cada figura, tabla y diagrama corresponde al texto, a su fuente y a lo que hoy se hace:
+  numeración, valores celda a celda, una medida por columna, denominadores, legibilidad.
+- Lista las figuras huérfanas, las que faltan y las afirmaciones desactualizadas del material visual.
+
 ## Cierre
 
 Decide el estado final de un issue después de su comprobación.

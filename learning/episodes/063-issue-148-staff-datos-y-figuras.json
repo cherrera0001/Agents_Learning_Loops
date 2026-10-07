@@ -1,0 +1,94 @@
+{
+  "seq": 63,
+  "id": "issue-148-staff-datos-y-figuras",
+  "goal": "Completar el staff de texto público con un auditor de datos y un revisor de figuras y tablas, y dar herramientas para que revisar y maquetar un manuscrito no dependa de rondas repetidas de agentes",
+  "ref": "#148",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-07",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "El issue y la estimación se escribieron después de implementar: el trabajo salió de una revisión del manuscrito pedida por el dueño, no de un issue"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Durante diez vueltas del experimento se anotaron datos nuevos en la bitácora y no en los documentos de entrada: el README del caso, el recorrido y la página visual seguían con cifras de dos días antes y el manuscrito decía que el modelo no se había ejecutado"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documentos de entrada puestos al día y regla nueva: cada dato vigente que cambia actualiza en el mismo paso la bitácora y los documentos que se leen primero"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Cinco revisores en paralelo sobre el manuscrito: tres vetos, un veto condicionado y un apto con cambios. Dos roles no existían en el staff: de qué medición sale cada dato, y figuras y tablas"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Manuscrito reescrito afirmando de más: «ningún cambio resuelve más» con una fila de la tabla que sube de 2 a 4, un umbral de tres tareas como conclusión con tres pares de corridas, y dos medidas de variación tratadas como una"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La firma del validador se pidió antes de terminar las correcciones de los otros roles: cada ronda dejó sin firma a la anterior, seis veces"
+    },
+    {
+      "action": "research_sources",
+      "success": false,
+      "error": "Citas en formato numérico y con una cifra tomada de un notebook que citaba a otro; tres obras tenían versión publicada y se citaban como preprint; una atribución ya no coincidía con el resumen de la versión vigente"
+    },
+    {
+      "action": "research_sources",
+      "success": true,
+      "note": "Cada referencia contrastada con su registro oficial (API de arXiv, Crossref), cada enlace pedido y cada atribución leída contra el resumen de la obra"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/paper_check.py: comprobaciones mecánicas sin red y registro oficial de cada referencia. scripts/paper_pdf.py: PDF en APA 7 con comparación del texto contra la fuente"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_paper_check.py: un caso por defecto mecánico; la prueba del PDF se omite donde no hay reportlab"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Skills auditor-datos, revisor-figuras-tablas, revisar-manuscrito y maquetar-apa; reglas nuevas en las tres existentes; índices y CONTRIBUTING al día"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "pytest, ruff y mypy en verde"
+    }
+  ],
+  "lessons": [
+    "Lo mecánico se comprueba con un guion antes de convocar a un revisor: extensión, citas sin entrada, tablas sin nota, cifras del resumen sin respaldo y registro de cada referencia",
+    "La firma del validador es lo último: se pide una vez, sobre la huella exacta, cuando los demás roles terminaron",
+    "No establecer una mejora no es establecer que no hay efecto; un título o un resumen no dice más que sus tablas",
+    "Tareas que cambian de resultado y cambio neto del total son dos medidas; un aumento neto de dos no equivale a dos discordancias",
+    "Una cifra ajena se cita abriendo su fuente, no otra que la cita; y si la obra tiene versión publicada, se cita esa",
+    "Cada dato vigente que cambia actualiza en el mismo paso los documentos que se leen primero, no solo la bitácora",
+    "Un manuscrito con datos necesita un rol que compruebe de qué medición sale cada cifra y si sigue vigente, antes de que alguien revise la redacción"
+  ]
+}
