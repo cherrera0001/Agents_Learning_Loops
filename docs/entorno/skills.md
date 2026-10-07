@@ -42,5 +42,9 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`investigador-papers`](../../skills/investigador-papers/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`auditor-datos`](../../skills/auditor-datos/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
+| [`revisor-figuras-tablas`](../../skills/revisor-figuras-tablas/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_figures.py` |
+| [`revisar-manuscrito`](../../skills/revisar-manuscrito/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
+| [`maquetar-apa`](../../skills/maquetar-apa/SKILL.md) | `scripts/paper_pdf.py` |
 
-Las tres últimas forman el staff de texto público. Ninguna es un nodo Skill de la memoria.
+De `investigador-papers` a `revisor-figuras-tablas` son los cinco roles del staff de texto público; `revisar-manuscrito` los orquesta y `maquetar-apa` produce el PDF. Ninguna es un nodo Skill de la memoria.

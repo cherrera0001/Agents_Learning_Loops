@@ -50,6 +50,35 @@ encabezado del README, un post o un artículo.
     hecho o que usa una palabra vetada. El redactor entrega el texto al validador; sin su firma no hay
     visto bueno.
 
+## Coherencia del resumen con el cuerpo
+
+Antes del visto bueno, el resumen se contrasta frase por frase con el cuerpo:
+
+- Cada cifra del resumen aparece en una tabla o en la prosa de resultados con el mismo valor y el mismo
+  denominador. Un fallo de herramienta se da como «107 de 134», no como «107».
+- El resumen no usa un cuantificador más fuerte que la tabla: si la tabla mide «en al menos dos de tres
+  corridas», el resumen no dice «nunca».
+- «No se estableció una mejora» y «no hay efecto» son afirmaciones distintas. Tampoco se escribe «mejora
+  reproducible» si las variantes no se replicaron.
+- Una comparación que no es una réplica controlada se presenta con su reserva en el propio resumen.
+- Un solo párrafo, dentro de la extensión que fije el destino.
+
+## Reglas añadidas el 2026-10-07
+
+- **El título, el resumen y la conclusión no dicen más que las tablas.** Se leen contra cada tabla antes
+  de dar el visto bueno.
+- **Tres fuentes de evidencia, nombradas.** Controles sin modelo, corridas del modelo y juicios de un
+  revisor no se resumen como «todo se midió con el modelo».
+- **Una configuración bajo un presupuesto mide esa configuración con ese presupuesto.** No se escribe que
+  «mide el tiempo en vez del razonamiento»; se escribe que no dice nada de un presupuesto mayor.
+- **Una frase general no contradice los controles.** «Tareas que no pueden pasar» es falso si alguna pasa
+  sin parche; lo exacto es «no discriminan bajo ese montaje».
+- **Las intervenciones se nombran por lo que cambian** (presupuesto, razonamiento, división del trabajo,
+  texto de instrucción), no todas como «instrucciones».
+- **Idioma.** El texto se escribe en el idioma de su destino. Si las reglas del destino no lo fijan, decide
+  el dueño; el revisor lo pregunta y no lo supone.
+- **Sin estado que envejece.** «En curso al momento de escribir» se reemplaza por una fecha de corte.
+
 ## Informe
 
 Veredicto (apto, apto con cambios o no publicar), las frases vetadas con su motivo y, si se pidió, el

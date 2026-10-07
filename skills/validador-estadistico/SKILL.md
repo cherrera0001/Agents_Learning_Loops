@@ -60,6 +60,25 @@ Antes de publicar cualquier texto con un número, una comparación o una palabra
 11. **Firma.** Un texto solo está firmado si el validador lo leyó entero en esa versión exacta y su
     respuesta cita el conteo de caracteres sin vetar nada.
 
+12. **Recuenta desde el crudo** cuando el crudo existe. Contrastar una cifra con la bitácora que la
+    escribió no la verifica: la bitácora puede arrastrar un error propio.
+13. **Dos medidas de variación no son una.** Las tareas que cambian de resultado entre dos corridas
+    iguales y el cambio neto del total son cifras distintas (4 y 4 resueltas pueden esconder 2 tareas
+    que cambiaron). Un aumento neto de dos no equivale a dos discordancias.
+14. **Dos o tres repeticiones no fijan un umbral.** Una regla del tipo «solo cuenta si supera N» es
+    operativa; como conclusión exige un test y un análisis de potencia, o lleva veto.
+15. **No establecer una mejora no es establecer que no hay efecto.** «Ningún cambio mejoró» lleva veto si
+    alguna fila de la tabla sube; lo defendible es «no se estableció una mejora reproducible».
+16. **Evaluada no es cerrada.** En un balance de predicciones, «con veredicto» cuenta solo cumplidas y
+    refutadas; las ilegibles, sin caso y no corridas van aparte.
+17. **Universo de cada conteo.** Si el mismo fenómeno aparece con 15 y con 16, el texto dice de qué
+    conjunto es cada uno.
+18. **Un porcentaje se ata a su base** en la misma frase: «32 de 58 (55 %)», no «la mayoría de los 58
+    (45 %)».
+19. **Una mediana dice sobre quiénes.** Si incluye sesiones que nunca hacen lo medido, se dice cuántas.
+20. **Firma con huella.** Además del conteo de caracteres, la firma cita el SHA-256 del archivo leído. Un
+    cambio posterior, aunque sea de una frase, deja el texto sin firma.
+
 ## Vetos obligatorios
 
 Son los cinco de `CONTRIBUTING.md`

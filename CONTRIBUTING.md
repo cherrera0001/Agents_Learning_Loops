@@ -162,8 +162,17 @@ skills.
 
 Roles: [`docs/entorno/agentes.md`](docs/entorno/agentes.md#staff-de-texto-público). Skills de entorno:
 [`investigador-papers`](skills/investigador-papers/SKILL.md),
-[`revisor-redactor`](skills/revisor-redactor/SKILL.md) y
-[`validador-estadistico`](skills/validador-estadistico/SKILL.md).
+[`revisor-redactor`](skills/revisor-redactor/SKILL.md),
+[`validador-estadistico`](skills/validador-estadistico/SKILL.md),
+[`auditor-datos`](skills/auditor-datos/SKILL.md) y
+[`revisor-figuras-tablas`](skills/revisor-figuras-tablas/SKILL.md).
+
+Orden de una revisión con datos: auditor de datos (de qué medición sale cada cifra y si sigue vigente),
+investigador de papers y revisor de figuras y tablas en paralelo, revisor redactor, y al final el
+validador estadístico, que firma la versión exacta citando su huella. Cualquier cambio posterior exige
+otra firma. La skill [`revisar-manuscrito`](skills/revisar-manuscrito/SKILL.md) fija ese orden y empieza por
+`python -m scripts.paper_check comprobar <manuscrito>`, que encuentra sin agentes lo mecánico (extensión,
+citas sin entrada, tablas sin nota, cifras del resumen sin respaldo).
 
 ## Comprobaciones (las mismas que CI)
 
