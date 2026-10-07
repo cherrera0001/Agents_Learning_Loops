@@ -177,3 +177,22 @@ def test_el_pdf_tiene_las_mismas_palabras_que_el_manuscrito(tmp_path: Path) -> N
     assert paper_pdf.main([str(fuente), str(tmp_path / "m.pdf")]) == 0
     assert (tmp_path / "m.pdf").stat().st_size > 1000
     assert paper_pdf.diferencias(fuente, tmp_path / "m.pdf") == {}
+
+
+def test_un_manuscrito_en_castellano_se_comprueba_y_se_maqueta_igual(tmp_path: Path) -> None:
+    castellano = (
+        BUENO.replace("**Subtitle:**", "**Subtítulo:**")
+        .replace("## Abstract", "## Resumen")
+        .replace("## References", "## Referencias")
+        .replace("**Table 1**", "**Tabla 1**")
+        .replace("*Note.*", "*Nota.*")
+        .replace("& Yang", "y Yang")
+    )
+    assert pc.comprobar(castellano, limite=3000)["hallazgos"] == []
+    pytest.importorskip("reportlab")
+    pytest.importorskip("pypdf")
+    from scripts import paper_pdf
+
+    fuente = tmp_path / "m.md"
+    fuente.write_text(castellano, encoding="utf-8")
+    assert paper_pdf.main([str(fuente), str(tmp_path / "m.pdf")]) == 0

@@ -50,6 +50,10 @@ else:  # sin Times New Roman instalada: las Times incorporadas de PDF (solo Lati
     F = {"n": "Times-Roman", "b": "Times-Bold", "i": "Times-Italic", "mono": "Courier"}
 
 DOBLE = 24
+RESUMEN = ("Abstract", "Resumen")
+REFERENCIAS = ("References", "Referencias")
+SUBTITULO = ("**Subtitle:**", "**Subtítulo:**")
+NOTA = ("*Note.*", "*Nota.*")
 base = ParagraphStyle("base", fontName=F["n"], fontSize=12, leading=DOBLE, alignment=TA_LEFT)
 ESTILOS = {
     "parrafo": ParagraphStyle("parrafo", parent=base, firstLineIndent=0.5 * inch),
@@ -138,14 +142,14 @@ def construir(origen, destino):
 
     titulo = next(b[1][2:] for b in bloques if b[0] == "linea" and b[1].startswith("# "))
     subtitulo = next(
-        b[1].split("**Subtitle:**", 1)[1].strip()
-        for b in bloques
-        if b[0] == "linea" and b[1].startswith("**Subtitle:**")
+        b[1].split(":**", 1)[1].strip() for b in bloques if b[0] == "linea" and b[1].startswith(SUBTITULO)
     )
-    k_abs = next(k for k, b in enumerate(bloques) if b == ("linea", "## Abstract"))
-    autor = next(
-        b[1] for b in bloques[:k_abs] if b[0] == "linea" and not b[1].startswith(("# ", "**Subtitle:**"))
+    k_abs = next(
+        k
+        for k, b in enumerate(bloques)
+        if b[0] == "linea" and b[1].strip() in tuple(f"## {r}" for r in RESUMEN)
     )
+    autor = next(b[1] for b in bloques[:k_abs] if b[0] == "linea" and not b[1].startswith(("# ", *SUBTITULO)))
 
     historia = [
         Spacer(1, 3 * DOBLE),
@@ -165,10 +169,10 @@ def construir(origen, destino):
         if linea.startswith("## "):
             nombre = linea[3:].strip()
             seccion = nombre
-            if nombre == "Abstract":
-                historia.append(Paragraph("Abstract", ESTILOS["h1"]))
-            elif nombre == "References":
-                historia += [PageBreak(), Paragraph("References", ESTILOS["h1"])]
+            if nombre in RESUMEN:
+                historia.append(Paragraph(nombre, ESTILOS["h1"]))
+            elif nombre in REFERENCIAS:
+                historia += [PageBreak(), Paragraph(nombre, ESTILOS["h1"])]
             else:
                 if primer_h1_del_cuerpo:
                     historia += [PageBreak(), Paragraph(en_linea(titulo), ESTILOS["titulo"])]
@@ -176,11 +180,11 @@ def construir(origen, destino):
                 historia.append(Paragraph(en_linea(nombre), ESTILOS["h1"]))
         elif linea.startswith("### "):
             historia.append(Paragraph(en_linea(linea[4:].strip()), ESTILOS["h2"]))
-        elif re.fullmatch(r"\*\*Table \d+\*\*", linea.strip()):
+        elif re.fullmatch(r"\*\*(Table|Tabla) \d+\*\*", linea.strip()):
             historia.append(Paragraph(en_linea(linea.strip()), ESTILOS["tabla_num"]))
-        elif re.fullmatch(r"\*[^*].*\*", linea.strip()) and not linea.strip().startswith("*Note."):
+        elif re.fullmatch(r"\*[^*].*\*", linea.strip()) and not linea.strip().startswith(NOTA):
             historia.append(Paragraph(linea.strip()[1:-1].replace("&", "&amp;"), ESTILOS["tabla_titulo"]))
-        elif linea.strip().startswith("*Note.*"):
+        elif linea.strip().startswith(NOTA):
             historia += [Paragraph(en_linea(linea.strip()), ESTILOS["nota"]), Spacer(1, 6)]
         elif linea.startswith("> "):
             historia.append(Paragraph(en_linea(linea[2:]), ESTILOS["cita"]))
@@ -188,9 +192,9 @@ def construir(origen, destino):
             historia.append(Paragraph(en_linea(linea), ESTILOS["lista"]))
         elif linea.startswith("- "):
             historia.append(Paragraph("•&nbsp;&nbsp;" + en_linea(linea[2:]), ESTILOS["lista"]))
-        elif seccion == "References":
+        elif seccion in REFERENCIAS:
             historia.append(Paragraph(en_linea(linea), ESTILOS["referencia"]))
-        elif seccion == "Abstract":
+        elif seccion in RESUMEN:
             historia.append(Paragraph(en_linea(linea), ESTILOS["sin_sangria"]))
         else:
             historia.append(Paragraph(en_linea(linea), ESTILOS["parrafo"]))
@@ -220,12 +224,14 @@ def diferencias(origen: Path, destino: Path) -> dict[str, int] | None:
         from pypdf import PdfReader
     except ImportError:
         return None
-    fuente = re.sub(r"[|*`#>]|---|\*\*Subtitle:\*\*", " ", Path(origen).read_text(encoding="utf-8"))
+    fuente = re.sub(
+        r"\*\*(Subtitle|Subtítulo):\*\*|[|*`#>]|---", " ", Path(origen).read_text(encoding="utf-8")
+    )
     pdf = " ".join((p.extract_text() or "") for p in PdfReader(str(destino)).pages)
     a, b = _fichas(fuente), _fichas(pdf)
     # Un URL largo se parte entre dos líneas: sus trozos no cuentan como palabras perdidas.
     urls = _fichas(" ".join(re.findall(r"https?://\S+", fuente)))
-    return {k: v - b[k] for k, v in a.items() if v > b[k] and k not in urls and k != "subtitle"}
+    return {k: v - b[k] for k, v in a.items() if v > b[k] and k not in urls}
 
 
 def main(argv: list[str] | None = None) -> int:
