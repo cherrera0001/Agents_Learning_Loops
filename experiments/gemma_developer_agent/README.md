@@ -26,9 +26,9 @@ y qué documento prevalece sobre cuál.
 
 ## 1. En pocas líneas
 
-**Estado al 2026-10-07 (corte de datos: 02:30 UTC, salvo el estado del tercer envío, leído a las 15:15
-UTC).** El modelo ya se ejecutó: hay corridas propias en notebooks de Kaggle, tres envíos (dos en `submissions/registry.json`; el tercero,
-sin registrar todavía) y un manuscrito
+**Estado al 2026-10-07 (corte de datos: 02:30 UTC, salvo el estado del tercer envío, leído a las 15:55
+UTC).** El modelo ya se ejecutó: hay corridas propias en notebooks de Kaggle, tres envíos (dos con nota, en `submissions/registry.json`; el tercero terminó en error y
+no está registrado todavía) y un manuscrito
 con lo medido. Una *corrida* es una ejecución completa de una configuración sobre una lista fija de tareas
 públicas; un *envío* es el archivo comprimido que se entrega al concurso para que lo puntúe. **El diseño
 pre-registrado de las secciones 4 a 9 no se corrió.** Preveía reservar las tareas de un repositorio para la
@@ -52,9 +52,10 @@ da en conteos agregados; la tabla indica la sección. «El agente» es aquí el 
 
 **Lo que sigue sin medirse.** El efecto de las skills (C y D) frente al texto de relleno (B). El efecto del razonamiento separado del
 tiempo y de las llamadas: la séptima condición movió las tres cosas a la vez y se corrió una sola vez. Si las
-tres tareas que esa condición resolvió por primera vez se repiten en una segunda corrida. La nota del tercer
-envío, que lleva esa misma configuración: se envió el 2026-10-07 a las 00:26 UTC y a las 15:15 UTC seguía
-sin nota (lectura de la API de Kaggle; se anotará en el registro de envíos cuando la tenga). Y nada de esto
+tres tareas que esa condición resolvió por primera vez se repiten en una segunda corrida. Cómo puntúa esa
+configuración en el concurso: el tercer envío la llevaba, se envió el 2026-10-07 a las 00:26 UTC y a las
+15:55 UTC figuraba con estado de error y sin nota (lectura de la API de Kaggle, que no da la causa; no está
+en el registro de envíos). Y nada de esto
 dice cómo le irá en las tareas ocultas con que el concurso puntúa el envío: los organizadores declaran que
 las seleccionaron y revisaron aparte (manuscrito § 5).
 
@@ -862,7 +863,7 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 | Tasa del kit ajustado (sin adaptadores, razonamiento apagado, 4 minutos y 40 llamadas por tarea) en tareas públicas | **Medida, exploratoria**: 3 y 3 de 15, 4 y 4 de 16, 6 y 7 de 30, según el conjunto. No es la línea base pre-registrada | Manuscrito § 4.2, Tabla 2 |
 | Variación entre dos corridas iguales | **Medida en tres pares, contando tareas**: cambian de resultado 2, 2 y 1 tareas; el total cambia en 0, 0 y 1; la clase de fallo cambia en 13 de 30. Tres pares no fijan una diferencia mínima detectable | Manuscrito § 4.2 |
 | Variación entre réplicas de A con el análisis pre-registrado (McNemar, `kaggle_replicas.py`) | **Sin medir.** El diseño no se corrió | Manuscrito § 3, «Deviations» |
-| Nota en la tabla pública | **Medida**: 0,06 y 0,05 con el mismo archivo local. Un tercer envío, con otra configuración, sin nota al 2026-10-07 15:15 UTC | [`submissions/registry.json`](submissions/registry.json) para los dos primeros |
+| Nota en la tabla pública | **Medida**: 0,06 y 0,05 con el mismo archivo local. Un tercer envío, con la séptima condición, terminó en error y sin nota (leído el 2026-10-07 a las 15:55 UTC; causa no leída) | [`submissions/registry.json`](submissions/registry.json) para los dos primeros |
 | Efecto de siete condiciones | **Medido, una corrida por condición**: ninguna mejora establecida | Manuscrito § 4.3, Tabla 3 |
 | Dónde se pierde el agente en las tareas que no resuelve | **Medido en 69 sesiones; la resolubilidad es un juicio retrospectivo** | Manuscrito § 4.4, Tabla 4 |
 | Ensayo de notebook con `scripts/kaggle_ensayo.py`: backend, tokens por segundo, rechazos por contexto | **Sin medir con ese instrumento.** El modelo se corrió con notebooks propios que no están versionados | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) |
