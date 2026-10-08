@@ -12,7 +12,8 @@ description: Comprobar que una corrida de un experimento con modelo dejó en dis
 ## Fuente
 
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), *Vuelta de un
-  experimento con modelo*: el criterio que esta skill proyecta, aprobado por el dueño el 2026-10-08.
+  experimento con modelo*, pasos 2 y 3 y el criterio aprobado por el dueño el 2026-10-08: lo que esta
+  skill proyecta.
 - [`skills/proteger-evidencia`](../proteger-evidencia/SKILL.md): quien comprueba lee los archivos de una
   corrida; no los modifica.
 - Episodio: `learning/episodes/065-issue-103-vuelta-39-concilio-y-registro.json`. Se dijo que cinco
@@ -35,8 +36,8 @@ description: Comprobar que una corrida de un experimento con modelo dejó en dis
 3. **Comprueba cada tarea contra el criterio de corrida válida** de `CONTRIBUTING.md`: traza, parche,
    salida de pruebas, motivo de fin aunque la tarea se resuelva, y la última petición en vuelo. Lista lo
    que falta por tarea. Una corrida que no cumple se usa como exploración, no como base de una decisión.
-4. **Lee dos veces el estado de lo remoto.** El estado de un envío o de una corrida remota puede cambiar.
-   Guarda cada lectura con su hora. Un error genérico de la plataforma se anota «sin lectura» y se vuelve
+4. **Lee al menos dos veces el estado de lo remoto**, con tiempo entre una lectura y otra, antes de
+   afirmarlo. Guarda cada lectura con su hora. Un error genérico de la plataforma se anota «sin lectura» y se vuelve
    a leer en el rescate siguiente; no cuenta como refutación de una predicción.
 5. **Un envío es una nota, no una corrida.** Solo se envía una condición que ya tiene una corrida válida.
 6. **Antes de decidir, aplica el criterio de decisión válida:** predicción previa con su umbral, el mismo

@@ -22,12 +22,12 @@
   },
   "steps": [
     {
-      "action": "read_docs",
+      "action": "research_sources",
       "success": false,
       "error": "git show origin/main:.claude/agents/<archivo> desde Git Bash: fatal: ambiguous argument 'origin\\main;.claude\\agents\\...'. El intérprete convirtió la ruta con dos puntos como si fuera una lista de rutas de Windows"
     },
     {
-      "action": "read_docs",
+      "action": "research_sources",
       "success": true,
       "note": "Leídas las definiciones, docs/entorno/agentes.md, la regla de admisión de skills y docs/estimation.md § 2.7 desde un árbol de trabajo creado sobre origin/main, sin git show"
     },
@@ -52,9 +52,19 @@
       "note": "Siete definiciones en .claude/agents/, sección «Staff de experimento» en agentes.md con su diagrama, sección «Vuelta de un experimento con modelo» en CONTRIBUTING.md con el criterio aprobado por el dueño, skills corrida-valida y concilio-de-experimento con esa sección como fuente, y filas en estimation.md § 2.7 y enrutamiento.md. Las ediciones a documentos existentes se hicieron con un guion de anclas guardado en un archivo, no con un heredoc"
     },
     {
-      "action": "review_docs",
+      "action": "review_code",
       "success": true,
-      "note": "Guion propio que resuelve cada enlace relativo y cada ancla de los 15 archivos nuevos o cambiados: 0 rotos"
+      "note": "Autorrevisión con un guion propio que resuelve cada enlace relativo y cada ancla de los archivos nuevos o cambiados: 0 rotos. No encontró ninguno de los defectos que halló después la revisión independiente"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La revisión independiente del PR pidió cambios con diez hallazgos: una definición sin «qué refutaría»; el conteo «seis definiciones que no construyen» sin corregir en enrutamiento.md y en el README; cinco reglas escritas en las skills que no estaban en CONTRIBUTING.md, contra la regla de admisión que el propio episodio citaba como lección; «solo lectura» dicho de roles que ejecutan en local o rescatan con una credencial; el parche de referencia abierto «como el evaluador» sin decir que no es benchmark/private/; y el umbral de 60 tareas presentado como derivado cuando solo lo está el de 6 pares"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Las reglas pasaron a la sección de CONTRIBUTING.md y las skills citan el paso que proyectan; conteos corregidos a quince; el verificador limpio declarado como única excepción que rescata; QA de trayectorias sin acceso a benchmark/private/; el 6 separado del 60, que queda como umbral aprobado sin derivación versionada"
     }
   ],
   "lessons": [
@@ -62,6 +72,8 @@
     "El recall va antes de la primera edición también cuando el orquestador implementa él mismo y cree tener el contexto: una lección que llega después solo sirve para comprobar",
     "Un rol que se ejerció bien con un encargo escrito a mano se convierte en definición versionada en la misma vuelta: lo que el encargo tuvo que repetir cada vez (solo lectura, bytes, qué refutaría la conclusión) es lo que la definición fija",
     "Una regla nueva para un experimento entra primero en CONTRIBUTING.md y después en una skill que la proyecta: la regla de admisión no deja que una skill cree la regla",
-    "Al sumar roles, di en cada definición con cuál se confunde y cuándo se usa cada uno: analista de datos frente a auditor de datos, staff de experimento frente a revisor de un PR"
+    "Al sumar roles, di en cada definición con cuál se confunde y cuándo se usa cada uno: analista de datos frente a auditor de datos, staff de experimento frente a revisor de un PR",
+    "Antes de abrir el PR de una skill nueva, recorre cada paso de la skill y marca la frase de su fuente que lo respalda: un paso sin frase es una regla nueva y va primero a la fuente",
+    "Al sumar definiciones o skills, busca con grep los conteos en palabras («seis», «tres últimas») además de los nombres: un conteo atrasado no cita ningún nombre nuevo"
   ]
 }

@@ -184,38 +184,63 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
 
 1. **Recall.** `python -m scripts.devlog recall "<pregunta de la vuelta>"` desde una rama al día con
    `origin/main`.
-2. **Rescate demostrado.** Se baja lo que dejó la corrida y se lista cada archivo con sus bytes, también
-   dentro de los archivos comprimidos. Un archivo exigido de 0 bytes es un faltante. El estado de un envío
-   o de una corrida remota se guarda con la hora de cada lectura; un error genérico de la plataforma se
-   anota «sin lectura» y se vuelve a leer.
-3. **Concilio.** Roles independientes, en paralelo y en solo lectura, sobre los mismos archivos. Cada uno
-   separa lo medido, lo inferido y lo no medido, y dice qué refutaría su conclusión. Los desacuerdos se
-   anotan con el dato que los cerraría. Cuando una corrida o un envío falla sin explicación, el forense
-   del arnés se convoca de inmediato. Skill:
-   [`concilio-de-experimento`](skills/concilio-de-experimento/SKILL.md).
-4. **Registro.** El parecer de cada rol, lo que cada uno retiró y los fallos del orquestador quedan en la
-   bitácora del experimento; la vuelta deja un episodio en `learning/episodes/` el mismo día.
-5. **Decisión.** El concilio va antes de preguntar. Subir, enviar o pagar lo decide el dueño, con la orden
+2. **Rescate demostrado.** El orquestador baja lo que dejó la corrida con el guion de rescate del
+   experimento y anota el código de salida, la hora UTC y la ruta. La prueba del rescate es una lista de
+   archivos con sus bytes y líneas, también de lo que hay dentro de los archivos comprimidos; no es un
+   relato. Un archivo exigido de 0 bytes es un faltante, aunque el guion haya salido con 0. Sin rescate
+   demostrado no hay concilio.
+3. **Estado de lo remoto.** El estado de un envío o de una corrida remota puede cambiar: se lee al menos
+   dos veces, separadas en el tiempo, antes de afirmarlo, y cada lectura se guarda con su hora. Un error
+   genérico de la plataforma se anota «sin lectura», se vuelve a leer en el rescate siguiente y no cuenta
+   como refutación de una predicción.
+4. **Concilio.** Roles independientes, en paralelo, sobre los mismos archivos. Ninguno modifica el
+   repositorio, la evidencia ni un sistema externo; lo que ejecutan lo ejecutan en local y escriben solo
+   en una carpeta ignorada por git.
+   - Van siempre el analista de datos, el forense del arnés y el auditor del método. Según la pregunta se
+     suman QA de trayectorias (si se propone cambiar la conducta del agente), el arquitecto de IA (si se
+     propone cambiar el modelo, el presupuesto o el cómputo, o adoptar un método ajeno) e inteligencia
+     pública (si el experimento se mide en un sistema externo).
+   - Cuando una corrida o un envío falla sin explicación, el forense del arnés se convoca de inmediato,
+     sin esperar a que alguien lo pida.
+   - El orquestador da a cada rol la pregunta, las rutas y las prohibiciones, no su conclusión: un rol al
+     que se le entrega la hipótesis la devuelve confirmada.
+   - Cada rol separa lo medido, lo inferido y lo no medido, dice qué refutaría su conclusión y termina con
+     la lista de eventos de fallo que no dejaron rastro en ningún archivo.
+   - El orquestador cruza los informes. Cuando llega un hecho nuevo, vuelve a preguntar a cada rol qué
+     afirmación suya se cae. Los desacuerdos se anotan con el dato que los cerraría; no se promedian.
+5. **Verificación limpia.** Si el relato de la vuelta ya cambió de conclusión, o si la decisión cuesta
+   dinero, cuota o un envío, un verificador que no hereda el relato vuelve a medir sus afirmaciones,
+   entregadas como frases sin cifras. Es la única excepción al paso 2: hace su propio rescate, con el
+   guion de solo descarga y la credencial del experimento, que nunca imprime. Si su recuento difiere del
+   relato, vale el suyo y se anota la diferencia.
+6. **Registro.** El orquestador copia en la bitácora del experimento el parecer de cada rol tal cual, lo
+   que cada uno retiró y sus propios fallos de la vuelta; los roles no escriben en ella. La vuelta deja un
+   episodio en `learning/episodes/` el mismo día.
+7. **Decisión.** El concilio va antes de preguntar. Subir, enviar o pagar lo decide el dueño, con la orden
    a la vista.
 
-Criterio, aprobado por el dueño el 2026-10-08. Skill: [`corrida-valida`](skills/corrida-valida/SKILL.md).
+Skills: [`concilio-de-experimento`](skills/concilio-de-experimento/SKILL.md) (pasos 1 y 4 a 7) y
+[`corrida-valida`](skills/corrida-valida/SKILL.md) (pasos 2 y 3 y el criterio que sigue).
+
+Criterio, aprobado por el dueño el 2026-10-08:
 
 - **Corrida válida.** Cuenta solo si cada tarea deja en disco, con bytes mayores que 0 y con huella:
   traza, parche, salida de pruebas y una fila con el motivo de fin aunque la tarea se resuelva, más la
   última petición en vuelo; y si quedan el notebook o el archivo de envío exacto, el log completo de la
   sesión y las predicciones fechadas antes de subir. Un envío a una tabla no es una corrida válida: es una
-  nota. Solo se envía una condición que ya tiene una corrida válida.
+  nota. Solo se envía una condición que ya tiene una corrida válida. Una corrida que no cumple se usa como
+  exploración, no como base de una decisión.
 - **Decisión válida.** Conservar o descartar una condición exige una predicción previa con su umbral, el
   mismo conjunto de tareas en los dos brazos, 60 tareas o más por brazo o 6 pares discordantes a favor,
   la prueba exacta de McNemar con p ≤ 0,05 y una repetición de la base en la misma semana. Con menos, el
   resultado se anota «exploratorio» y no cambia la configuración enviada.
 
-Los números del criterio (60 tareas, 6 pares discordantes) salen del caso que lo motivó: el suelo de la
-prueba exacta con α = 0,05 son 6 pares discordantes a favor
-([análisis de réplicas](experiments/gemma_developer_agent/docs/analisis_replicas.md#método-diferencia-mínima-significativa)),
-y con 19 tareas ninguna comparación de la vuelta 39 lo alcanzó
-(`learning/episodes/065-issue-103-vuelta-39-concilio-y-registro.json`). Un experimento con otro
-pre-registro fija los suyos antes de correr.
+De dónde salen los dos números. Los **6 pares discordantes** están derivados: es el suelo de la prueba
+exacta con α = 0,05
+([análisis de réplicas](experiments/gemma_developer_agent/docs/analisis_replicas.md#método-diferencia-mínima-significativa)).
+Las **60 tareas por brazo** no tienen derivación versionada: es el umbral que propuso el auditor del método
+en la vuelta 39 del experimento Kaggle y que el dueño aprobó con el resto del criterio. Un experimento con
+otro pre-registro fija los suyos antes de correr.
 
 ## Comprobaciones (las mismas que CI)
 

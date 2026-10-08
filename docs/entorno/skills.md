@@ -49,4 +49,4 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`revisar-manuscrito`](../../skills/revisar-manuscrito/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
 | [`maquetar-apa`](../../skills/maquetar-apa/SKILL.md) | `scripts/paper_pdf.py` |
 
-De `investigador-papers` a `revisor-figuras-tablas` son los cinco roles del staff de texto público; `revisar-manuscrito` los orquesta y `maquetar-apa` produce el PDF. Ninguna es un nodo Skill de la memoria.
+De `investigador-papers` a `revisor-figuras-tablas` son los cinco roles del staff de texto público; `revisar-manuscrito` los orquesta y `maquetar-apa` produce el PDF. `corrida-valida` y `concilio-de-experimento` son las del [staff de experimento](agentes.md#staff-de-experimento). Ninguna es un nodo Skill de la memoria.

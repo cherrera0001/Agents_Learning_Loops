@@ -26,4 +26,6 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`revisar-manuscrito`](revisar-manuscrito/SKILL.md) | Para llevar un manuscrito con datos hasta una versión firmada | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
 | [`maquetar-apa`](maquetar-apa/SKILL.md) | Tras la firma, cuando el destino acepta o pide PDF | `scripts/paper_pdf.py` |
 
-Las tres últimas forman el staff de texto público. Ninguna es un nodo Skill de la memoria.
+De `investigador-papers` a `maquetar-apa` son las skills del staff de texto público; `corrida-valida` y
+`concilio-de-experimento` son las del [staff de experimento](../docs/entorno/agentes.md#staff-de-experimento).
+Ninguna es un nodo Skill de la memoria.

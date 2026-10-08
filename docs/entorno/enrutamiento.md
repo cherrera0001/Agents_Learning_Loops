@@ -68,7 +68,7 @@ Por herramienta:
   de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
   `.claude/`.
 
-  Hay además seis definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
+  Hay además quince definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
   [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
   [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
   [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y
@@ -77,11 +77,13 @@ Por herramienta:
   alias, no con la definición cargada: prueban el procedimiento, no que la definición aplique su modelo.
   Eso queda pendiente de observar desde una sesión nueva, como se hizo con `implementador-haiku`.
 
-  Las otras tres son el [staff de texto público](agentes.md#staff-de-texto-público):
+  Cinco son el [staff de texto público](agentes.md#staff-de-texto-público):
   [`investigador-papers`](../../.claude/agents/investigador-papers.md),
-  [`revisor-redactor`](../../.claude/agents/revisor-redactor.md) y
-  [`validador-estadistico`](../../.claude/agents/validador-estadistico.md), las tres con alias `sonnet`,
-  también una elección sin medir (§ 2.7 de la misma política).
+  [`revisor-redactor`](../../.claude/agents/revisor-redactor.md),
+  [`validador-estadistico`](../../.claude/agents/validador-estadistico.md),
+  [`auditor-datos`](../../.claude/agents/auditor-datos.md) y
+  [`revisor-figuras-tablas`](../../.claude/agents/revisor-figuras-tablas.md), las cinco con alias
+  `sonnet`, también una elección sin medir (§ 2.7 de la misma política).
   Siete más son el [staff de experimento](agentes.md#staff-de-experimento):
   [`arquitecto-ia`](../../.claude/agents/arquitecto-ia.md),
   [`forense-arnes`](../../.claude/agents/forense-arnes.md),
@@ -90,8 +92,9 @@ Por herramienta:
   [`analista-datos`](../../.claude/agents/analista-datos.md),
   [`qa-trayectorias`](../../.claude/agents/qa-trayectorias.md) e
   [`inteligencia-publica`](../../.claude/agents/inteligencia-publica.md) con alias `sonnet`. También es
-  una elección sin medir (§ 2.7). Hasta el 2026-10-08 esos roles se ejercieron con un subagente genérico y
-  un encargo escrito a mano; ninguna de estas definiciones se ha observado cargada desde una sesión nueva.
+  una elección sin medir (§ 2.7). En la vuelta del 2026-10-08 esos roles se ejercieron con un subagente genérico
+  y un encargo escrito a mano (`learning/episodes/065-issue-103-vuelta-39-concilio-y-registro.json`);
+  ninguna de estas definiciones se ha observado cargada desde una sesión nueva.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 

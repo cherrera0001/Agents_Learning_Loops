@@ -155,9 +155,11 @@ Skill: [`revisor-figuras-tablas`](../../skills/revisor-figuras-tablas/SKILL.md).
 
 Siete roles trabajan cada **vuelta de un experimento con modelo**
 ([procedimiento](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo)). Son personal de entorno: no
-son el agente de biblioteca ni el solver acotado, y tampoco el agente que el experimento evalúa. Todos
-trabajan en solo lectura sobre los mismos archivos, escriben solo en una carpeta ignorada por git, dicen
-qué refutaría su conclusión y no suben, envían ni contratan nada. Los convoca el orquestador con la skill
+son el agente de biblioteca ni el solver acotado, y tampoco el agente que el experimento evalúa. Ninguno
+modifica el repositorio, la evidencia ni un sistema externo: leen los mismos archivos, ejecutan solo en
+local (un validador, un ensayo en Docker), escriben solo en una carpeta ignorada por git, dicen qué
+refutaría su conclusión y no suben, envían ni contratan nada. El rescate lo hace el orquestador antes
+del concilio; la única excepción es el verificador limpio, que hace el suyo. Los convoca el orquestador con la skill
 [`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md); el criterio que aplican está
 en [`corrida-valida`](../../skills/corrida-valida/SKILL.md).
 
@@ -174,7 +176,7 @@ flowchart LR
     A --> M
     P --> M
     M --> O{"Orquestador<br/>cruza y registra"}
-    O -->|el relato ya se corrigió| V["Verificador limpio<br/>vuelve a medir sin el relato"]
+    O -->|el relato ya se corrigió<br/>o la decisión cuesta| V["Verificador limpio<br/>rescata y vuelve a medir sin el relato"]
     V --> O
     O --> U["Dueño decide"]
 ```
@@ -219,8 +221,10 @@ Definición ejecutable: [`.claude/agents/qa-trayectorias.md`](../../.claude/agen
 
 - Lee las trayectorias y los parches del agente evaluado: en qué gastó el presupuesto, qué editó, qué vio
   en las pruebas y por qué un parche no pasa.
-- Lee como el [evaluador del experimento](#evaluador-del-experimento): puede abrir el parche de
-  referencia para clasificar, y nada de lo que vea ahí puede proponerse como entrada del agente evaluado.
+- Para clasificar puede abrir el parche de referencia que el banco de pruebas externo publica con sus
+  tareas, guardado en la carpeta de datos del experimento. Nada de lo que vea ahí puede proponerse como
+  entrada del agente evaluado. No lee `benchmark/private/`: eso sigue siendo solo del
+  [evaluador del experimento](#evaluador-del-experimento).
 
 ### Inteligencia pública
 
@@ -247,7 +251,8 @@ Definición ejecutable: [`.claude/agents/verificador-limpio.md`](../../.claude/a
 
 - Vuelve a medir las afirmaciones de una vuelta sin heredar el relato: las recibe como frases sin cifras,
   baja los archivos de nuevo y marca cada una como «se sostiene», «se cae» o «no medido».
-- Trabaja solo y por puertas: si el rescate no se demuestra, se detiene. Se usa cuando un informe ya
+- Trabaja solo y por puertas: hace su propio rescate y, si no lo demuestra o falta el log de la corrida
+  en cuestión, se detiene. Se usa cuando un informe ya
   cambió de conclusión, o antes de una decisión que cuesta dinero, cuota o un envío.
 
 ## Cierre
