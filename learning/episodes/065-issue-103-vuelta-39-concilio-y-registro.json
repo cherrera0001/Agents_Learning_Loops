@@ -1,0 +1,97 @@
+{
+  "seq": 65,
+  "id": "issue-103-vuelta-39-concilio-y-registro",
+  "goal": "Vuelta 39 del experimento Kaggle Gemma 4: leer el envío reenviado y la iteración 07, cuestionar un paper de autocorrección en inferencia contra el presupuesto del envío, pasar todo por un concilio de roles y decidir qué hacer en vez de probar otra condición",
+  "ref": "#103",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se fijó como «presupuesto del envío» el del zip sin razonamiento (4 min, 40 llamadas) mirando registry.json, sin leer la última vuelta de la bitácora: el último zip enviado era otro (4,5 min, 60 llamadas) que el registro no listaba"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Leída la bitácora y el eval_config.yaml dentro de los dos zips enviados, con su huella; la cuenta se rehízo contra los dos presupuestos y contra el plazo total de 12 h"
+    },
+    {
+      "action": "research_sources",
+      "success": true,
+      "note": "Paper abierto en arXiv (una sola versión) con su PDF; referencias abiertas una a una; OpenAlex y Crossref respondieron; Semantic Scholar dio 429 dos veces y quedó como no medido. El método (8 rollouts, 4 pasadas, 104 generaciones por tarea) no cabe en el envío, y sin voto su corrección sola da beneficio neto negativo en tres de sus cuatro modelos"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se afirmó que las iteraciones 03 a 07 traían «dos logs por tarea» mirando que los archivos existían dentro de los zips, no sus bytes: 155 de los 290 archivos .log pesan 0 bytes, entre ellos todos los logs por tarea. Tres roles repitieron la afirmación; el guion de uno mostraba los vacíos y no se informó"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se dio al dueño una estimación del costo de una GPU alquilada hecha de memoria y se repitió un precio mínimo que no tenía una URL abierta en la sesión; la factura dependía además de una velocidad que nadie midió"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Concilio de siete roles en solo lectura (datos, forense del arnés, QA de parches, inteligencia pública, costos, auditor del método y rol Zorzal; los dos últimos respondieron como uno), cada uno con lo que refutaría su conclusión. El forense y QA hallaron los logs vacíos; el rol de costos retiró la factura y dejó solo las tarifas con URL abierta; el auditor recalculó desde los crudos y corrigió tres cifras del rol de datos; QA mostró que en 13 de 14 parches que no pasan falla una prueba que el agente no ve; el forense halló que el motivo del corte se borra cuando la tarea se resuelve y que la petición en vuelo no se registra. Tras la nota nueva, cada rol dijo qué afirmación suya se caía; las seis respuestas votaron arreglar el registro antes de probar otra condición"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se afirmó «el zip con razonamiento dio error dos veces» con una sola lectura del estado de cada envío, y varios roles razonaron sobre ese error como hecho. 24 minutos después, un segundo rescate mostró que Kaggle había vuelto a puntuar el primero: completo, 5 tareas de 58"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Segundo rescate del día, que mostró el cambio de estado del envío; demostrado con una lista de bytes y líneas por log y de bytes por archivo dentro de cada zip, no con un relato. Salió con código 0 pese a los logs vacíos: ese código todavía no mira bytes"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Vuelta 39 en la bitácora del caso: predicciones P41 a P43 sostenidas, P38 «no decide», P39 sin poder leerse; pareceres de cada rol copiados tal cual; lo que cada uno retiró; plan del concilio en seis pasos; y el criterio de «corrida válida» y «decisión válida», que el dueño aprobó el 2026-10-08 (la aprobación es del criterio, no del plan)"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "El recall ejecutado al empezar la vuelta corrió en una rama de trabajo creada antes de que el episodio 064 se fusionara en main (el día anterior): devolvió 5 lecciones de operación y ninguna de las del ciclo de mejora, entre ellas «tiempo agotado es un desenlace, no una causa»"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Desde un árbol de trabajo creado sobre origin/main y tras devlog rebuild con este episodio en una copia local, la consulta sobre el estado de un envío devuelve la lección nueva"
+    },
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "La vuelta no tuvo estimación propia antes de empezar: arrancó como «rescatar la última conversación» y creció hasta un concilio de siete roles y dos rescates sin que se registrara talla ni modelo previsto. El bloque estimate de este episodio copia la «Estimación v1» del issue #103, que es de la línea base entera y no de esta vuelta"
+    }
+  ],
+  "lessons": [
+    "El estado de un envío a una competencia se afirma con dos lecturas separadas en el tiempo, y un error genérico de plataforma se anota «sin lectura» y se relee en cada rescate: Kaggle volvió a puntuar un envío de error a nota sin que nadie lo tocara",
+    "Antes de decir que una corrida dejó logs, cuenta los bytes de cada archivo dentro del zip, no su existencia: un log de 0 bytes es un faltante y el rescate debe salir con código de bajada parcial",
+    "Con 19 tareas y una pasada por condición no se conserva ni se descarta nada: el suelo es de 6 pares discordantes a favor; con menos, el resultado se anota «exploratorio» y no cambia lo enviado",
+    "Antes de fijar el presupuesto de un envío, lee la última vuelta de la bitácora y el eval_config.yaml dentro del zip que de verdad se envió: el registro versionado puede ir un envío atrás",
+    "Ejecuta devlog recall desde una rama al día con origin/main: un recall en una rama creada antes no devuelve las lecciones fusionadas después",
+    "Un precio entra a un informe solo con la URL abierta en la sesión, y una factura solo con la velocidad medida: una estimación de memoria se rotula como tal o no se da",
+    "Antes de proponer que un agente ejecute pruebas antes de entregar, comprueba con los parches ya guardados que las pruebas visibles fallan con el parche malo: si lo que falla es una prueba que solo ve el evaluador, la regla no tiene de dónde recuperar y puede romper un parche correcto",
+    "Cuando un informe ya se corrigió a sí mismo una vez, la verificación siguiente la hace un agente nuevo que recibe las afirmaciones como frases sin cifras y las vuelve a medir en archivos recién bajados",
+    "Ante un fallo sin explicar, convoca de inmediato a un rol forense que lea el código del arnés y reconstruya cada corte con su causa: un recuento de clases de fallo no es un diagnóstico",
+    "Un motivo de corte que se borra cuando la tarea se resuelve y una petición que solo se registra si termina bien dejan el corte sin causa en disco: el registro se arregla y se ensaya con cortes forzados antes de gastar otra corrida"
+  ]
+}
