@@ -82,6 +82,16 @@ Por herramienta:
   [`revisor-redactor`](../../.claude/agents/revisor-redactor.md) y
   [`validador-estadistico`](../../.claude/agents/validador-estadistico.md), las tres con alias `sonnet`,
   también una elección sin medir (§ 2.7 de la misma política).
+  Siete más son el [staff de experimento](agentes.md#staff-de-experimento):
+  [`arquitecto-ia`](../../.claude/agents/arquitecto-ia.md),
+  [`forense-arnes`](../../.claude/agents/forense-arnes.md),
+  [`auditor-metodo`](../../.claude/agents/auditor-metodo.md) y
+  [`verificador-limpio`](../../.claude/agents/verificador-limpio.md) con alias `opus`;
+  [`analista-datos`](../../.claude/agents/analista-datos.md),
+  [`qa-trayectorias`](../../.claude/agents/qa-trayectorias.md) e
+  [`inteligencia-publica`](../../.claude/agents/inteligencia-publica.md) con alias `sonnet`. También es
+  una elección sin medir (§ 2.7). Hasta el 2026-10-08 esos roles se ejercieron con un subagente genérico y
+  un encargo escrito a mano; ninguna de estas definiciones se ha observado cargada desde una sesión nueva.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 

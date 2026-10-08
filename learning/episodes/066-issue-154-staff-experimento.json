@@ -1,0 +1,67 @@
+{
+  "seq": 66,
+  "id": "issue-154-staff-experimento",
+  "goal": "Crear el staff de experimento: siete definiciones de agentes de entorno para cada vuelta de un experimento con modelo (arquitecto de IA, forense del arnés, analista de datos, QA de trayectorias, inteligencia pública, auditor del método y verificador limpio), el procedimiento y el criterio en CONTRIBUTING.md y dos skills que lo proyectan",
+  "ref": "#154",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-08",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 1,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "read_docs",
+      "success": false,
+      "error": "git show origin/main:.claude/agents/<archivo> desde Git Bash: fatal: ambiguous argument 'origin\\main;.claude\\agents\\...'. El intérprete convirtió la ruta con dos puntos como si fuera una lista de rutas de Windows"
+    },
+    {
+      "action": "read_docs",
+      "success": true,
+      "note": "Leídas las definiciones, docs/entorno/agentes.md, la regla de admisión de skills y docs/estimation.md § 2.7 desde un árbol de trabajo creado sobre origin/main, sin git show"
+    },
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Issue #154 con «Estimación v1» antes de crear la rama: M por el ancla #44 aunque la suma de factores da S; tarjeta con talla, puntos, incertidumbre, riesgo y modelo previsto"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "El recall se ejecutó después de escribir las siete definiciones y las dos skills, no antes: la lección que devolvió (buscar con grep todas las menciones de una lista de definiciones) llegó cuando los documentos ya estaban editados"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Aplicada la lección devuelta: grep de todas las menciones de las definiciones existentes; las listas están en CONTRIBUTING.md, docs/entorno/agentes.md, docs/entorno/skills.md, skills/README.md, docs/estimation.md y docs/entorno/enrutamiento.md, y las seis quedaron cubiertas. Issue parecido devuelto: #148"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Siete definiciones en .claude/agents/, sección «Staff de experimento» en agentes.md con su diagrama, sección «Vuelta de un experimento con modelo» en CONTRIBUTING.md con el criterio aprobado por el dueño, skills corrida-valida y concilio-de-experimento con esa sección como fuente, y filas en estimation.md § 2.7 y enrutamiento.md. Las ediciones a documentos existentes se hicieron con un guion de anclas guardado en un archivo, no con un heredoc"
+    },
+    {
+      "action": "review_docs",
+      "success": true,
+      "note": "Guion propio que resuelve cada enlace relativo y cada ancla de los 15 archivos nuevos o cambiados: 0 rotos"
+    }
+  ],
+  "lessons": [
+    "En Git Bash sobre Windows, git show <rama>:<ruta> puede fallar porque el intérprete convierte la ruta con dos puntos: lee desde un árbol de trabajo de esa rama o antepón MSYS_NO_PATHCONV=1",
+    "El recall va antes de la primera edición también cuando el orquestador implementa él mismo y cree tener el contexto: una lección que llega después solo sirve para comprobar",
+    "Un rol que se ejerció bien con un encargo escrito a mano se convierte en definición versionada en la misma vuelta: lo que el encargo tuvo que repetir cada vez (solo lectura, bytes, qué refutaría la conclusión) es lo que la definición fija",
+    "Una regla nueva para un experimento entra primero en CONTRIBUTING.md y después en una skill que la proyecta: la regla de admisión no deja que una skill cree la regla",
+    "Al sumar roles, di en cada definición con cuál se confunde y cuándo se usa cada uno: analista de datos frente a auditor de datos, staff de experimento frente a revisor de un PR"
+  ]
+}

@@ -39,6 +39,8 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`confirmar-cierre`](../../skills/confirmar-cierre/SKILL.md) | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md) | `learning/README.md` |
 | [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md) | `evidence/README.md`, *Leakage boundary* del protocolo |
+| [`corrida-valida`](../../skills/corrida-valida/SKILL.md) | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
+| [`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md) | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
 | [`investigador-papers`](../../skills/investigador-papers/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |

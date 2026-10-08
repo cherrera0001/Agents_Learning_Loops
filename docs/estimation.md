@@ -102,6 +102,13 @@ La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor
 | `investigador-papers` | Sonnet 5.5 | Abre identificadores y compara con el código; no se ha probado otro modelo |
 | `revisor-redactor` | Sonnet 5.5 | Reescribe con una lista de reglas escrita; no se ha probado otro modelo |
 | `validador-estadistico` | Sonnet 5.5 | Comprueba cada número contra su fuente; no se ha probado otro modelo |
+| `arquitecto-ia` | Opus 5.5 | Juzga si un diseño cabe en un presupuesto con supuestos abiertos; no se ha probado uno menor |
+| `forense-arnes` | Opus 5.5 | Lee código ajeno y arma un árbol de causas; no se ha probado uno menor |
+| `auditor-metodo` | Opus 5.5 | Recalcula y contradice a los demás roles, incluido el orquestador; no se ha probado uno menor |
+| `verificador-limpio` | Opus 5.5 | Trabaja solo y sin el relato; su recuento manda sobre el anterior; no se ha probado uno menor |
+| `analista-datos` | Sonnet 5.5 | Cuenta desde archivos crudos con guiones propios; el auditor del método recalcula lo que decide |
+| `qa-trayectorias` | Sonnet 5.5 | Clasifica trayectorias y parches con una lista escrita; no se ha probado otro modelo |
+| `inteligencia-publica` | Sonnet 5.5 | Lee y cita fuentes abiertas; no se ha probado otro modelo |
 
 Un revisor puede ser de un modelo menor que el autor de lo que revisa (caso: `revisor-docs` sobre el PR #92, escrito por el orquestador): por eso su informe no decide, lo decide el orquestador. Lo observado hasta el 2026-10-02 son cinco revisiones (PR #90, #91, #92, #93 y #95), las cinco con defectos reales no declarados por el autor; no bastan para decir si otro modelo habría hecho lo mismo.
 
