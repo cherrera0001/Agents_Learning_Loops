@@ -1,0 +1,87 @@
+{
+  "seq": 67,
+  "id": "issue-156-rescate-bytes",
+  "goal": "Hacer que el rescate de Kaggle abra los zips de salida que baja (solo infolist(), sin extraer) y trate un miembro exigido de 0 bytes (logs/, traces/, task_results.jsonl) o un zip ilegible como faltante, con código de salida 4, también con --sin-red",
+  "ref": "#156",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-08",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall ejecutado por el orquestador antes del encargo; lecciones aplicadas: contar los bytes de cada miembro del zip y no su existencia, escribir faltantes tras cada elemento, parchear con la herramienta de edición, una sesión por árbol de trabajo"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "revisar_zip() lee solo infolist(); se llama tras guardar cada .zip y también desde resumir(), que en --sin-red informa sin escribir faltantes.json y sin repetir lo que ya traía"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Un test con un nombre de miembro con barra invertida escrito dentro de un heredoc de Git Bash quedó como secuencia de escape inválida (SyntaxWarning y un nombre distinto del pretendido): el heredoc largo alteró el literal"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Cinco pruebas nuevas salieron con «zip ilegible» en vez de leer el zip sintético: el falso pedir() elige la respuesta por subcadena de la ruta y la clave existente http://x/s era prefijo de http://x/s.zip, así que devolvía el JSON de otra prueba en lugar del zip"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Archivo del zip renombrado a z.zip (sin clave prefijo) y el literal con barra invertida corregido con la herramienta de edición, como r\"...\""
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "39 pruebas del módulo en verde; con el módulo original restaurado (git stash push scripts/kaggle_rescate.py) fallan 8 de las nuevas, entre ellas la del log vacío con código 4; luego git stash pop"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "ruff check: cuatro E501 (líneas de más de 110 caracteres) en el docstring del módulo y en el de revisar_zip, que escribí sin contar el ancho"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Docstrings reajustados a 110 columnas; ruff check, ruff format --check y mypy limpios"
+    },
+    {
+      "action": "run_demo",
+      "success": false,
+      "error": "Lectura de la salida del guion redirigida a un archivo con la consola de Windows: la salida quedó en cp1252 y json.load en UTF-8 falló con UnicodeDecodeError en el byte 0xf1"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Con PYTHONIOENCODING=utf-8, el guion --sin-red sobre una carpeta ya bajada de cinco corridas con zips sale con 4 y lista 145 miembros exigidos vacíos (43, 43, 30, 19 y 10 por iteración), igual que la cifra del episodio 065"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "rescate_kaggle.md describe la revisión de miembros, el nuevo motivo del código 4 y que --sin-red no reescribe faltantes.json; entrada en CHANGELOG.md"
+    }
+  ],
+  "lessons": [
+    "Al armar una prueba con un falso que elige la respuesta por subcadena de la ruta, comprueba que ninguna clave nueva ni existente sea prefijo de otra: una clave corta como http://x/s captura http://x/s.zip",
+    "Un literal con barra invertida no se escribe en un heredoc de Git Bash: edítalo con la herramienta de edición y usa una cadena cruda",
+    "Un guion que cuenta lo que hay dentro de un zip lee solo infolist(): los nombres de los miembros son texto no confiable y no se usan para construir rutas",
+    "Un modo sin red que repite una revisión no escribe dentro de la carpeta vieja: informa en el resumen y en el código de salida, y no duplica lo que su faltantes.json ya traía",
+    "Al leer la salida de un guion redirigida a un archivo en Windows, fija PYTHONIOENCODING=utf-8 antes de decodificarla"
+  ]
+}

@@ -377,3 +377,154 @@ def test_una_respuesta_ilegible_a_media_bajada_queda_en_faltantes_y_sale_con_4(
     assert [f["notebook"] for f in resumen["descarga_incompleta"]] == ["roto"]
     assert "ilegible" in resumen["descarga_incompleta"][0]["causa"]
     assert [n["notebook"] for n in resumen["notebooks"]] == ["mi-notebook"]
+
+
+# ---------------------------------------------------------------------------
+# Revisión de los miembros de los zips de salida (datos sintéticos)
+# ---------------------------------------------------------------------------
+
+
+def _zip(miembros: dict[str, bytes]) -> bytes:
+    paquete = io.BytesIO()
+    with zipfile.ZipFile(paquete, "w") as z:
+        for nombre, datos in miembros.items():
+            z.writestr(nombre, datos)
+    return paquete.getvalue()
+
+
+def _bajar_con_zip(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, contenido: bytes, nombres: tuple[str, ...] = ("z.zip",)
+) -> Path:
+    respuestas = _respuestas(_tabla(FILAS))
+    archivos = [{"fileName": n, "url": f"http://x/{n}"} for n in nombres]
+    respuestas["kernels/output"] = json.dumps({"log": "[]", "files": archivos}).encode()
+    for n in nombres:
+        respuestas[f"http://x/{n}"] = contenido
+    monkeypatch.setattr(kr, "pedir", lambda ruta, token: next(v for k, v in respuestas.items() if k in ruta))
+    monkeypatch.setenv("KAGGLE_API_TOKEN", "secreto")
+    return tmp_path / "rescate"
+
+
+def test_un_log_exigido_de_0_bytes_es_un_faltante_y_sale_con_4(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    contenido = _zip({"logs/a.log": b"", "traces/a.json": b"{}", "task_results.jsonl": b"{}\n"})
+    destino = _bajar_con_zip(tmp_path, monkeypatch, contenido)
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == [
+        {
+            "notebook": "mi-notebook",
+            "archivo": "salida__z.zip",
+            "miembro": "logs/a.log",
+            "causa": "miembro exigido de 0 bytes",
+        }
+    ]
+    escrito = json.loads(next(destino.rglob("faltantes.json")).read_text(encoding="utf-8"))
+    assert escrito == resumen["descarga_incompleta"]
+    assert resumen["notebooks"][0]["revision_de_zips"]["miembros_revisados"] == 3
+    assert resumen["notebooks"][0]["revision_de_zips"]["miembros_de_0_bytes"] == 1
+
+
+def test_el_mismo_zip_con_bytes_sale_con_0_y_faltantes_vacio(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    contenido = _zip({"logs/a.log": b"linea\n", "traces/a.json": b"{}", "task_results.jsonl": b"{}\n"})
+    destino = _bajar_con_zip(tmp_path, monkeypatch, contenido)
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_OK
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == []
+    assert next(destino.rglob("faltantes.json")).read_text(encoding="utf-8") == "[]"
+    assert resumen["notebooks"][0]["revision_de_zips"]["exigidos_de_0_bytes"] == 0
+
+
+def test_task_results_vacio_en_una_subcarpeta_es_un_faltante(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _bajar_con_zip(tmp_path, monkeypatch, _zip({"corrida/task_results.jsonl": b""}))
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    assert (
+        json.loads(capsys.readouterr().out)["descarga_incompleta"][0]["miembro"]
+        == "corrida/task_results.jsonl"
+    )
+
+
+def test_un_zip_corrupto_es_un_faltante_y_la_bajada_sigue(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _bajar_con_zip(tmp_path, monkeypatch, b"esto no es un zip", ("a.zip", "b.json"))
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == [
+        {"notebook": "mi-notebook", "archivo": "salida__a.zip", "miembro": "", "causa": "zip ilegible"}
+    ]
+    assert resumen["notebooks"][0]["archivos_de_salida"] == ["a.zip", "b.json"]
+    assert resumen["notebooks"][0]["revision_de_zips"]["zips_ilegibles"] == 1
+
+
+def test_patches_y_test_outputs_vacios_se_cuentan_y_no_son_faltantes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    contenido = _zip(
+        {"logs/a.log": b"x", "patches/a.diff": b"", "test_outputs/a.txt": b"", "patches/b.diff": b""}
+    )
+    destino = _bajar_con_zip(tmp_path, monkeypatch, contenido)
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_OK
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == []
+    revision = resumen["notebooks"][0]["revision_de_zips"]
+    assert revision["patches_de_0_bytes"] == 2 and revision["test_outputs_de_0_bytes"] == 1
+    assert revision["miembros_de_0_bytes"] == 3 and revision["exigidos_de_0_bytes"] == 0
+
+
+def test_un_miembro_de_nombre_peligroso_no_escribe_nada_fuera(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    contenido = _zip({"../../escapa/logs/x.log": b"", "/abs/logs/y.log": b"", r"..\z\logs\w.log": b""})
+    destino = _bajar_con_zip(tmp_path, monkeypatch, contenido)
+    antes = set(tmp_path.parent.rglob("*")) - set(tmp_path.rglob("*"))
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert len(resumen["descarga_incompleta"]) == 3
+    assert not (tmp_path / "escapa").exists() and not (tmp_path.parent / "escapa").exists()
+    assert not any("escapa" in str(p) for p in tmp_path.rglob("*"))
+    assert set(tmp_path.parent.rglob("*")) - set(tmp_path.rglob("*")) == antes
+    carpeta = next(destino.glob("*")) / "notebooks" / "mi-notebook"
+    assert sorted(p.name for p in carpeta.iterdir()) == sorted(
+        [
+            "estado.json",
+            "metadatos.json",
+            "notebook.ipynb",
+            "log.txt",
+            "log_crudo.json",
+            "salida__z.zip",
+            "salidas.json",
+        ]
+    )
+
+
+def test_sin_red_repite_la_revision_sin_reescribir_faltantes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    contenido = _zip({"logs/a.log": b"", "patches/a.diff": b""})
+    destino = _bajar_con_zip(tmp_path, monkeypatch, contenido)
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    bajada = json.loads(capsys.readouterr().out)
+    carpeta = Path(bajada["directorio"])
+    # Una carpeta vieja: su faltantes.json no sabía de los miembros vacíos.
+    (carpeta / "faltantes.json").write_text("[]", encoding="utf-8")
+    assert kr.main(["--destino", str(carpeta), "--sin-red"]) == kr.EXIT_PARCIAL
+    resumen = json.loads(capsys.readouterr().out)
+    assert resumen["descarga_incompleta"] == bajada["descarga_incompleta"]
+    assert resumen["notebooks"][0]["revision_de_zips"] == bajada["notebooks"][0]["revision_de_zips"]
+    assert (carpeta / "faltantes.json").read_text(encoding="utf-8") == "[]"
+
+
+def test_sin_red_no_repite_lo_que_faltantes_ya_trae(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _bajar_con_zip(tmp_path, monkeypatch, _zip({"logs/a.log": b""}))
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    carpeta = Path(json.loads(capsys.readouterr().out)["directorio"])
+    assert kr.main(["--destino", str(carpeta), "--sin-red"]) == kr.EXIT_PARCIAL
+    assert len(json.loads(capsys.readouterr().out)["descarga_incompleta"]) == 1
