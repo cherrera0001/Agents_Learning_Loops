@@ -507,13 +507,17 @@ de talla S: no calibran nada ni permiten concluir algo sobre Gemma.
 (`learning/dev_memory.json`, derivado de los episodios y no versionado: se genera en local con
 `python -m scripts.devlog rebuild`) tiene cuatro tipos de nodo (Concept, Outcome, Goal y Action). Desde la
 primera entrega de [#122](https://github.com/cherrera0001/Agents_Learning_Loops/issues/122), cada nodo `Goal`
-lleva en su metadata la estimación y el resultado que el episodio copia del tablero (talla, puntos,
-incertidumbre, riesgo, modelo previsto y usado, si escaló, PR), y `python -m scripts.devlog recall` los
-muestra para los issues parecidos; con una instantánea del tablero añade estado y verificación. Lo que
-sigue faltando: no hay nodos ni aristas propios del tablero, esos datos no influyen en qué se recupera ni en
-la decisión siguiente, y `recall` no lee el tablero en vivo. El tablero se consulta, pero todavía no decide:
-no cumple aún como punto de control de la memoria asociativa. Los conteos del grafo cambian con cada
-episodio, por eso no se fijan aquí: se obtienen con el comando de la sección 13.
+lleva en su metadata los bloques `estimate` y `outcome` declarados en el episodio; no se leen directamente
+de la tarjeta al reconstruir el grafo. `python -m scripts.devlog recall` identifica su procedencia como
+episodio, sin afirmar que `outcome` sea siempre autoinformado: `outcome.model_source` puede ser
+`self-reported` o `transcript`. Con `--snapshot`, añade el estado y la verificación leídos de la tarjeta y
+compara los valores declarados en el episodio con los campos de la tarjeta que estén presentes; si difieren,
+informa la discrepancia sin reemplazar una fuente por la otra. Sin snapshot, no atribuye estado ni
+verificación al tablero. Lo que sigue faltando: no hay nodos ni aristas propios del tablero; los datos de la
+tarjeta no cambian qué episodios se recuperan ni su orden, no alimentan la decisión siguiente, y `recall` no
+lee el tablero en vivo. El tablero se consulta, pero todavía no decide: no cumple aún como punto de control
+de la memoria asociativa. Los conteos del grafo cambian con cada episodio, por eso no se fijan aquí: se
+obtienen con el comando de la sección 13.
 
 **Los tramos de un issue grande no quedan registrados como datos.** El issue #103 es una sola tarjeta de talla
 L. Bajo ella se fusionaron seis PR con `Refs #103`: #113, #116, #117, #118, #119 y #120. Solo el tramo de #120
@@ -593,8 +597,8 @@ flowchart TD
         BP["devlog board y pilot: lectura de auditoría"]
         TJ --> BP
     end
-    ME["Memoria asociativa de ALL: episodios y recall"]
-    TJ -.->|"FALTA: el tablero no es nodo ni entra en recall"| ME
+    EP["Episodio: estimate/outcome en metadata del nodo Goal"] --> ME["Memoria asociativa de ALL: episodios y recall"]
+    TJ -->|"--snapshot: añade status/verificación y compara; no lectura en vivo"| ME
     subgraph TT["Tablero 2: tareas de entrenamiento. PROPUESTA"]
         TA["Tareas públicas de entrenamiento"]
         RT["Recibos de entrenamiento"]
@@ -611,11 +615,14 @@ flowchart TD
     RR --> RP
 ```
 
-El diagrama tiene dos tableros. El de los issues del proyecto (Project #5) existe: se lee con `devlog board` y
-`devlog pilot`, y no alimenta la memoria. El de las tareas de entrenamiento del concurso es una propuesta
-(sección 6.3): hoy los recibos de `kaggle_replicas.py` existen como instrumento, pero ningún tablero los
-recibe. Todo lo discontinuo falta o es propuesta. Solo los recibos de entrenamiento irían al tablero 2; los de
-prueba se leen y no vuelven. Dentro de la ejecución aislada no se escribe en ningún tablero.
+El diagrama tiene dos tableros. El de los issues del proyecto (Project #5) existe: `devlog board` y
+`devlog pilot` lo leen; además, los episodios copian `estimate` y `outcome` a la metadata de Goal y `recall`
+los muestra. Con `--snapshot`, `recall` añade estado/verificación y contrasta los valores disponibles de la
+tarjeta. Aún no hay nodo o aristas propios del tablero, lectura en vivo ni efecto de esos campos sobre qué
+episodios se recuperan o el orden de selección. El de las tareas de entrenamiento del concurso es una
+propuesta (sección 6.3): hoy los recibos de `kaggle_replicas.py` existen como instrumento, pero ningún
+tablero los recibe. Todo lo discontinuo falta o es propuesta. Solo los recibos de entrenamiento irían al
+tablero 2; los de prueba se leen y no vuelven. Dentro de la ejecución aislada no se escribe en ningún tablero.
 
 ---
 
@@ -749,9 +756,10 @@ pista de código, un envío de la condición A aceptado por Kaggle y anotado (is
 con nota 0,06 ([`submissions/registry.json`](submissions/registry.json)); como se admite un envío al día, no
 sirve para comparar condiciones.
 
-**De método.** Que el tablero sirva como punto de control del bucle, con indicadores de avance y de resultado
-que se puedan leer y usar para la decisión siguiente (sección 6). Hoy se leen los de la sección 6.1 y no se
-integran con la memoria (issue #122).
+**De método.** Que el tablero sirva como punto de control del bucle, con indicadores de avance y resultado
+que cambien qué episodios se recuperan o alimenten la decisión siguiente (sección 6). Hoy `recall` muestra
+los bloques del episodio y, con snapshot, compara campos de la tarjeta; esos campos no cambian la activación
+ni el orden de recuperación y el tablero no se lee en vivo (issue #122).
 
 **Operativos.** La cadena de compuertas del pre-registro, con sus fechas límite (sección I.1).
 
@@ -837,7 +845,9 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 - Afirmar algo sobre el aprendizaje de un agente. Se prueba si unos documentos estáticos ayudan.
 - El manuscrito del Paper Track (issue #105) y las figuras que salgan de resultados (issue #109).
 - Modificar el pre-registro de la línea base, que solo cambia por enmienda.
-- Integrar el tablero en la memoria asociativa: es trabajo posterior, issue #122.
+- Completar el uso del tablero como punto de control de la memoria asociativa (issue #122): los bloques del
+  episodio ya se muestran y contrastan con snapshot; falta que datos del tablero influyan en la recuperación
+  o la decisión siguiente y leerlos en vivo.
 
 ---
 
@@ -849,7 +859,7 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 |---|---|---|
 | Resultados del solver acotado sin modelo de lenguaje (H4, #58, H6, H7) | Medidos; no permiten concluir nada sobre Gemma | [`README.md` de la raíz](../../README.md#qué-presenta-este-experimento) y `docs/results/` |
 | Indicadores del tablero, `devlog pilot --since 100`: población 3 (#102, #111, #114); estimación completa 3 de 3; *Done* verificado 3 de 3; escalamientos 0 de 3; pasos fallidos autoinformados 11 de 34 | Medidos; tres issues de talla S | `python -m scripts.devlog pilot --since 100` (sección 13) |
-| El tablero como parte de la memoria asociativa | **No existe** (issue #122) | Sección 6.2 |
+| Estimación y resultado del episodio en metadata de Goal y `recall`; snapshot con estado/verificación y contraste de campos | Implementado parcialmente; los campos del tablero no cambian la activación ni el orden de recuperación y no se leen en vivo (#122) | Sección 6.2 |
 
 **Del experimento Kaggle.**
 
@@ -1017,7 +1027,7 @@ print(len(d['nodes']),c.Counter(n['type'] for n in d['nodes']),len(d['edges']))"
 
 Los dos primeros leen GitHub con `gh`. El último imprime los nodos, sus cuatro tipos y las aristas; los
 conteos cambian con cada episodio y por eso no se fijan en este texto. Lo que no cambia: hay cuatro tipos de
-nodo y ninguno lleva campos del tablero.
+nodo y todavía no existe un tipo de nodo propio del tablero.
 
 **Lo que no se puede reproducir desde este repositorio.** Las tasas, la variación y la validez de la
 sección 1 se midieron en notebooks de Kaggle y sus datos por tarea no se versionan: el reglamento prohíbe

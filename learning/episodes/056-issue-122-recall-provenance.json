@@ -1,0 +1,110 @@
+{
+  "seq": 56,
+  "id": "issue-122-entrega-1-correcciones-recall",
+  "goal": "Corregir procedencia y discrepancias de recall --snapshot, el límite negativo de --issues y la descripción documental de la primera entrega de #122",
+  "ref": "#122",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-03",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Gemini 3.8 Flash High (AGY)",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Codex implementador-opus (modelo runtime exacto no expuesto)",
+    "model_source": "self-reported",
+    "escalated": true,
+    "estimate_revisions": 0,
+    "prs": 2
+  },
+  "steps": [
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Tramo M, 3 puntos, A2/I2/R2/V2, previsto AGY/Gemini 3.8 Flash High; se conserva la estimación L de 5 puntos del issue #122 completo"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Se ejecutó recall de #122 antes de editar, según el encargo del tramo"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "AGY no alcanzó a editar: su CLI arrancó npx chrome-devtools-mcp sin autorización y se detuvo el proceso; no se atribuyó trabajo de código a AGY"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "El implementador-opus hizo la primera corrección de recall, discrepancias de snapshot y límite --issues negativo en un worktree aislado; el modelo runtime exacto no estuvo expuesto"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La primera salida atribuyó todo outcome a autoinforme aunque algunos episodios declaran model_source=transcript"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "La revisión independiente detectó la atribución de procedencia incorrecta"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La salida ahora dice que los valores están declarados en el episodio y no leídos de la tarjeta; un test cubre model_source=transcript"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El diagrama D6 dejó la arista --snapshot discontinua aunque la leyenda reserva ese trazo para capacidades pendientes o propuestas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "README y D6 distinguen metadata del episodio, campos de tarjeta añadidos/comparados por la instantánea y capacidades aún pendientes; la arista implementada es sólida"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Las pruebas nuevas no cubrían diferencias en incertidumbre, modelo usado ni la rama escalated=True; las mutaciones de esos campos sobrevivían"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "La revisión independiente con mutaciones detectó los huecos en las pruebas de discrepancias"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Se añadieron discrepancias para incertidumbre, modelo usado y escalamiento positivo, más un control que omite avisos cuando episodio y tarjeta coinciden"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "El revisor repitió cinco mutaciones (incertidumbre, modelo usado, escalated=True, PR e inversión de condición de discrepancia); todas fueron detectadas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El revisor de documentación aprobó la procedencia y el diagrama D6 corregido"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "31 pruebas focales; suite completa 1981 passed, 7 skipped, 98.72% cobertura; ruff check/format, mypy, export_schema --check y git diff --check pasaron"
+    },
+    {
+      "action": "rebuild_memory",
+      "success": true,
+      "note": "Se reconstruyó localmente la memoria desde episodios; dev_memory.json es derivado y no se incluirá en el PR"
+    }
+  ],
+  "lessons": [
+    "Registra por separado el modelo previsto, el tipo de implementador asignado y el modelo runtime realmente expuesto; no conviertas un nombre de rol en un modelo medido.",
+    "Una comparación de campos requiere pruebas con valores diferentes en cada campo y una prueba de igualdad que confirme que no se informa una discrepancia inexistente.",
+    "Actualiza los diagramas junto con el texto cuando una entrega convierte en existente una conexión que antes se marcaba como pendiente."
+  ]
+}
