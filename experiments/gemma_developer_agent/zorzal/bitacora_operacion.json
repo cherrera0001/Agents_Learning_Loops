@@ -1,0 +1,25 @@
+{
+  "descripcion": "Una fila por subida a Kaggle hecha desde una sesión de trabajo. Mide H-O. Solo se añaden filas.",
+  "punto_de_partida": {
+    "fecha": "2026-10-04",
+    "nota": "Antes de la regla. No entra en la ventana de H-O.",
+    "subidas": [
+      {"notebook": "prueba-a-ajustada", "subidas": 3, "resultados_utiles": 1, "fallos_visibles_en_local": 1, "detalle": "una versión se detuvo por una ruta fija; otra se canceló por la misma causa"},
+      {"notebook": "iteracion-01", "subidas": 4, "resultados_utiles": 0, "fallos_visibles_en_local": 0, "detalle": "resubida tres veces para cambiar el plan o añadir medidas; sin resultado al cierre del día"},
+      {"notebook": "validez-causa-cpu", "subidas": 1, "resultados_utiles": 1, "fallos_visibles_en_local": 0, "detalle": "subida sin ensayo local ni aprobación; el dato que buscaba estaba en disco"}
+    ]
+  },
+  "subidas": [
+    {
+      "fecha": "2026-10-05T02:21:00Z",
+      "notebook": "iteracion-02",
+      "sesion": "revisión",
+      "aprobada_por_el_dueno": true,
+      "ensayo_local_previo": true,
+      "resultado_util": false,
+      "fallo_visible_en_local": false,
+      "estado": "en cola; resultado_util se actualiza cuando termine",
+      "detalle": "una sola subida; tope 20, enviada y regla escrita sobre 15 tareas"
+    }
+  ]
+}
