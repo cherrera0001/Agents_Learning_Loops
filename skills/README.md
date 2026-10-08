@@ -16,6 +16,8 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`registrar-episodio`](registrar-episodio/SKILL.md) | Al cerrar un issue, antes del PR | `learning/README.md` |
 | [`confirmar-cierre`](confirmar-cierre/SKILL.md) | Tras el merge verificado y antes de mover a *Done* | `CONTRIBUTING.md`, `docs/entorno/harness.md` |
 | [`proteger-evidencia`](proteger-evidencia/SKILL.md) | Al tocar evidencia, benchmark o el solver acotado | `evidence/README.md`, *Leakage boundary* |
+| [`corrida-valida`](corrida-valida/SKILL.md) | Al bajar lo que dejó una corrida de un experimento con modelo, y antes de conservar o descartar una condición | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
+| [`concilio-de-experimento`](concilio-de-experimento/SKILL.md) | En cada vuelta de un experimento con modelo, antes de proponer un cambio | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
 | [`investigador-papers`](investigador-papers/SKILL.md) | Antes de publicar un texto que cite una obra o nombre un mecanismo | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](revisor-redactor/SKILL.md) | Antes de publicar un texto público del proyecto | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](validador-estadistico/SKILL.md) | Antes de publicar un texto con cifras o verbos de resultado | `CONTRIBUTING.md` (*Revisión de un texto público*) |
@@ -24,4 +26,6 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`revisar-manuscrito`](revisar-manuscrito/SKILL.md) | Para llevar un manuscrito con datos hasta una versión firmada | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
 | [`maquetar-apa`](maquetar-apa/SKILL.md) | Tras la firma, cuando el destino acepta o pide PDF | `scripts/paper_pdf.py` |
 
-Las tres últimas forman el staff de texto público. Ninguna es un nodo Skill de la memoria.
+De `investigador-papers` a `maquetar-apa` son las skills del staff de texto público; `corrida-valida` y
+`concilio-de-experimento` son las del [staff de experimento](../docs/entorno/agentes.md#staff-de-experimento).
+Ninguna es un nodo Skill de la memoria.

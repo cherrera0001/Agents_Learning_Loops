@@ -90,9 +90,9 @@ Los issues S con I = 1, R = 1 y criterios de aceptación claros empiezan con Hai
 
 Estado al 2026-10-02: **una entrega (#85), escalada a Sonnet 5.5.** El código de Haiku 4.5 era correcto en lo probado y pasó los tests y el CI; lo que falló fue la revisión independiente: cuatro tests existentes modificados contra el issue sin declararlo, seis de los dieciocho defectos que el revisor inyectó pasaban los tests, y el PR no llevaba `Closes`. Parte del hueco de cobertura venía de un encargo cuyo detalle no estaba en el issue (omisión del orquestador). **Queda por definir** qué cuenta aquí como «verificación fallida» cuando los tests pasan y la revisión no: el PR #91 (Sonnet 5.5) también recibió «cambios requeridos» y no se escaló. Hasta definirlo, una entrega no confirma ni refuta la hipótesis ni puede detener el brazo. Detalle: [lectura final](piloto-estimacion.md#lectura-final-8-de-8).
 
-### 2.7 Subagentes que no construyen: revisores, gestor y staff de texto público (elección sin medir)
+### 2.7 Subagentes que no construyen: revisores, gestor, staff de texto público y staff de experimento (elección sin medir)
 
-La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4), y las tres del staff de texto público (`investigador-papers`, `revisor-redactor` y `validador-estadistico`), no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
+La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4), y las tres del staff de texto público (`investigador-papers`, `revisor-redactor` y `validador-estadistico`), y las siete del staff de experimento (`arquitecto-ia`, `forense-arnes`, `analista-datos`, `qa-trayectorias`, `inteligencia-publica`, `auditor-metodo` y `verificador-limpio`), no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
 
 | Definición | Modelo | Motivo de la elección |
 |---|---|---|
@@ -102,6 +102,13 @@ La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor
 | `investigador-papers` | Sonnet 5.5 | Abre identificadores y compara con el código; no se ha probado otro modelo |
 | `revisor-redactor` | Sonnet 5.5 | Reescribe con una lista de reglas escrita; no se ha probado otro modelo |
 | `validador-estadistico` | Sonnet 5.5 | Comprueba cada número contra su fuente; no se ha probado otro modelo |
+| `arquitecto-ia` | Opus 5.5 | Juzga si un diseño cabe en un presupuesto con supuestos abiertos; no se ha probado uno menor |
+| `forense-arnes` | Opus 5.5 | Lee código ajeno y arma un árbol de causas; no se ha probado uno menor |
+| `auditor-metodo` | Opus 5.5 | Recalcula y contradice a los demás roles, incluido el orquestador; no se ha probado uno menor |
+| `verificador-limpio` | Opus 5.5 | Trabaja solo y sin el relato; su recuento manda sobre el anterior; no se ha probado uno menor |
+| `analista-datos` | Sonnet 5.5 | Cuenta desde archivos crudos con guiones propios; el auditor del método recalcula lo que decide |
+| `qa-trayectorias` | Sonnet 5.5 | Clasifica trayectorias y parches con una lista escrita; no se ha probado otro modelo |
+| `inteligencia-publica` | Sonnet 5.5 | Lee y cita fuentes abiertas; no se ha probado otro modelo |
 
 Un revisor puede ser de un modelo menor que el autor de lo que revisa (caso: `revisor-docs` sobre el PR #92, escrito por el orquestador): por eso su informe no decide, lo decide el orquestador. Lo observado hasta el 2026-10-02 son cinco revisiones (PR #90, #91, #92, #93 y #95), las cinco con defectos reales no declarados por el autor; no bastan para decir si otro modelo habría hecho lo mismo.
 
