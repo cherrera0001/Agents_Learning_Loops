@@ -469,3 +469,36 @@ Cada uno lo confirma o lo desmiente el ensayo. Ninguno es un hecho.
   donde se escribió el guion (Windows) se omiten.
 - El programa de compilación lo ejecutó el revisor con el arnés real sobre el kit local y compila; en el
   notebook no se ha ejecutado.
+
+## Cambio del 2026-10-04: el servidor arranca con la orden del arnés y el ensayo corre con la A de la Enmienda 2
+
+Lo que sigue corrige lo que este documento dice más arriba sobre el arranque del servidor y sobre el envío.
+
+**La orden del servidor es la del arnés.** Hasta esta fecha el guion armaba una orden propia a partir de la
+lista de HARNESS § 3.1: sin `--dtype`, con 0,80 de memoria de GPU y con 8 adaptadores de rango 128 reservados.
+Con esa orden el servidor terminó antes de quedar listo en las dos corridas con L4×4 (a los 474 s y a los
+753 s). Ahora `comando_servidor` arma las mismas opciones que `VllmServer.build_cmd` de `adk-submission`
+0.2.12 con la configuración del notebook oficial:
+
+| Opción | Antes | Ahora |
+|---|---|---|
+| `--dtype` | no se pasaba | `bfloat16` |
+| `--gpu-memory-utilization` | `0.80` | `0.9` |
+| `--reasoning-config` | no se pasaba | las marcas de razonamiento de Gemma 4 |
+| `--no-scheduler-reserve-full-isl` | no se pasaba | se pasa |
+| `--default-chat-template-kwargs` | `{"enable_thinking": true}` | no se pasa |
+| LoRA | `--max-loras 8 --max-lora-rank 128` siempre que hubiera adaptadores | tantos adaptadores como trae el envío y el rango que declaran |
+
+La única opción propia que queda es `--served-model-name`, que las sondas usan para nombrar al modelo.
+`tests/test_kaggle_ensayo.py::test_la_orden_del_servidor_es_la_del_arnes` compara las dos órdenes cuando el
+arnés está instalado; en CI, sin el arnés, se omite. Comprobado el 2026-10-04 con el arnés instalado, sin
+adaptadores y con adaptadores de rango 4, 16 y 64: ninguna diferencia. El cambio altera el hash del guion de
+arranque (`guion_servidor_sha256`).
+
+**No está comprobado que con esta orden el modelo cargue**: eso exige una sesión con GPU.
+
+**El envío del ensayo es la A de la Enmienda 2.** El pre-registro dice que el ensayo corre con la A redefinida.
+Su manifiesto está en
+[`preregistro/condicion_a_manifiesto.json`](../preregistro/condicion_a_manifiesto.json): seis archivos, sin
+adaptadores, con el resumen del zip enviado. Se pasa con `--manifiesto`, y con `--envio` el directorio que
+contiene esos seis archivos. La sonda `envio` da `coincide: true` con ese par.

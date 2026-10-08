@@ -1,0 +1,45 @@
+{
+  "competition_id": 149921,
+  "competition_slug": "gemma-4-developer-agent",
+  "kit_name": "condicion_a_enmienda_2",
+  "description": "Archivos de la condición A tal como la fija la Enmienda 2 del pre-registro de la línea base: el kit oficial sin adaptadores, con max_output_tokens 8192, include_thoughts false y el presupuesto de 4 minutos, 40 llamadas, 100 turnos y 60 s por comando. Es el contenido del zip enviado (envío 56808559). Solo rutas, tamaños y resúmenes; los archivos no se versionan.",
+  "zip_sha256": "d8a3e1d3558f03b72b3f86037ff53b462a8f66566e1bb7907240bcb0ce4d7182",
+  "files": [
+    {
+      "path": "agent.yaml",
+      "size": 419,
+      "sha256": "de80dff58c1ab3e758a814b915c21113a16ddf632ac4d5fee238b8d6a1b6b5a8",
+      "igual_al_kit": false
+    },
+    {
+      "path": "configs/sampling.yaml",
+      "size": 120,
+      "sha256": "d8f997427aef2bf2b83f7d1caad743b1177e614b090c6984d286186e167be787",
+      "igual_al_kit": false
+    },
+    {
+      "path": "eval_config.yaml",
+      "size": 94,
+      "sha256": "b64095299dd6de17621c83171e117b93a02e270e3e725d69c8ebdb1bfd987369",
+      "igual_al_kit": false
+    },
+    {
+      "path": "prompts/analyzer.md",
+      "size": 527,
+      "sha256": "c762b062032cc8463015e589ad8b4f0e17296062e1b0ff1e78712eef9f5e2d43",
+      "igual_al_kit": true
+    },
+    {
+      "path": "prompts/system.md",
+      "size": 3888,
+      "sha256": "f1cbf7943ee9687382321b1dfd9cd88581d608c1c8b8e6ea61a763bd1a3234af",
+      "igual_al_kit": true
+    },
+    {
+      "path": "sub_agents/code_analyzer.yaml",
+      "size": 342,
+      "sha256": "73ff867103879db19d42ab2fd24673090793290e33170b06d2e377f3ae89b6d3",
+      "igual_al_kit": false
+    }
+  ]
+}
