@@ -22,19 +22,14 @@
   },
   "steps": [
     {
-      "action": "research_sources",
+      "action": "gh_project_update",
       "success": false,
-      "error": "gh issue view 160 --comments devolvió solo el comentario con la semilla, sin el cuerpo del issue; y en PowerShell la consulta de GraphQL perdió sus comillas dobles: Argument 'id' on Field 'node' has an invalid value. Expected type 'ID!'"
-    },
-    {
-      "action": "research_sources",
-      "success": true,
-      "note": "Cuerpo del issue con gh api repos/<dueño>/<repo>/issues/160 --jq .body; consultas de GraphQL desde Git Bash con comillas simples. Leídos el notebook de la 07 celda a celda, el concilio 40, el guion del rescate de la rama de #156 y el código del arnés copiado de la imagen del ensayo"
+      "error": "La consulta de GraphQL para comprobar que el item era la tarjeta del #160, lanzada desde PowerShell, perdió sus comillas dobles: Argument 'id' on Field 'node' has an invalid value. Expected type 'ID!'. Antes, gh issue view 160 --comments había devuelto solo el comentario con la semilla, sin el cuerpo del issue"
     },
     {
       "action": "gh_project_update",
       "success": true,
-      "note": "Comprobado que el item es la tarjeta del #160 antes de pasarla de Todo a In Progress"
+      "note": "Consulta repetida desde Git Bash con comillas simples: el item es la tarjeta del #160; pasó de Todo a In Progress. El cuerpo del issue se leyó con gh api repos/<dueño>/<repo>/issues/160 --jq .body"
     },
     {
       "action": "recall_memory",
@@ -42,9 +37,9 @@
       "note": "Recall antes de leer el código. Lección aplicada: un ensayo local solo valida lo que ejecuta igual que el sistema real. Issues parecidos: las vueltas 39 y 40 de #103"
     },
     {
-      "action": "write_code",
+      "action": "review_code",
       "success": true,
-      "note": "scripts/kaggle_registro_enganches.py (la celda de enganches, importable para probarla) y scripts/kaggle_registro.py (sortear y diagnosticar). El sorteo dio 71 tareas válidas y la lista de 60"
+      "note": "Leídos el notebook de la 07 celda a celda, el concilio 40, el guion del rescate de #156 y el código del arnés copiado de la imagen del ensayo: el arnés destruye el sandbox dentro de run_agent_sandbox, así que el diff al cierre no puede tomarse envolviendo _run_agent_sandbox"
     },
     {
       "action": "add_dependency",
@@ -67,58 +62,77 @@
       "note": "Corregido con la herramienta de edición: doble declarado para la celda 5, vaciado de la salida antes de salir. El notebook corrió entero bajo ZMQInteractiveShell en un proceso distinto del ensayo"
     },
     {
-      "action": "run_experiment",
+      "action": "run_tests",
       "success": false,
-      "error": "Escenario del tope de llamadas: el modelo falso nunca cedía el turno y el arnés no cortó a las 40 llamadas, la tarea llegó a 100 peticiones; y con cualquier corte la fila de la tarea decía «resuelta» sin error, porque el arnés descarta el motivo cuando el parche pasa. El registro no decía qué tope cortó"
+      "error": "Ensayo del tope de llamadas: el modelo falso nunca cedía el turno y el arnés no cortó a las 40 llamadas, la tarea llegó a 100 peticiones; y con cualquier corte la fila de la tarea decía «resuelta» sin error, porque el arnés descarta el motivo cuando el parche pasa. El registro no decía qué tope cortó"
     },
     {
       "action": "edit_module",
       "success": true,
-      "note": "Añadido el enganche agente_fin (envoltorio de Evaluator._run_agent_sandbox), que conserva el motivo de fin del agente, y el modelo falso cede el turno tras pasar el tope. Los cinco escenarios de corte dicen qué cortó"
-    },
-    {
-      "action": "run_experiment",
-      "success": true,
-      "note": "Medido el parche de rich en sus dos formas: la línea global del issue devuelve los logs pero multiplica por 96 el texto de la celda de tareas; se adoptó force_jupyter=False solo en la consola del log por tarea. El control sin parche deja 6 de 6 logs en 0 bytes"
+      "note": "Añadido el enganche agente_fin (envoltorio de Evaluator._run_agent_sandbox), que conserva el motivo de fin del agente, y el modelo falso cede el turno tras pasar el tope. Los cinco escenarios de corte dicen qué cortó. Medido el parche de rich en sus dos formas: se adoptó force_jupyter=False solo en la consola del log por tarea"
     },
     {
       "action": "write_tests",
       "success": false,
-      "error": "El test del sorteo llevaba valores esperados escritos a ojo, sin calcular: AssertionError en los cinco primeros elementos; y otro test contaba 6 eventos donde había 7"
+      "error": "El test del sorteo llevaba valores esperados escritos a ojo, sin calcular: AssertionError en los cinco primeros elementos; otro test contaba 6 eventos donde había 7. Y ningún test pasaba dos peticiones por el envoltorio ni dos tareas por el diagnóstico: la revisión independiente inyectó 56 defectos y sobrevivieron 13"
     },
     {
-      "action": "write_tests",
-      "success": true,
-      "note": "Valores del sorteo calculados aparte, sin pasar por el guion. 40 tests: cancelación con asyncio.timeout, inicio en disco antes de llamar al modelo, registro que no puede escribir, diff antes de destruir el sandbox, sesión muerta sin fin"
-    },
-    {
-      "action": "run_experiment",
+      "action": "run_tests",
       "success": false,
-      "error": "Primera batería completa: las dos corridas sin enganches salieron «NO PASA» porque la validación del ensayo exigía logs con contenido en un notebook que, sin registro, no lleva el parche de rich; y la medición de tiempo cayó en parte bajo la carga de otros agentes, como avisó el orquestador"
-    },
-    {
-      "action": "run_experiment",
-      "success": true,
-      "note": "Corregida la validación (sin enganches es otro control: logs de 0 bytes) y repetida la batería entera con una sola versión del ensayo: 14 corridas, las 14 pasan; la medición de tiempo al final, sola y alternada, con la carga anotada. Rescate: 0 con el parche, 4 sin él"
+      "error": "Primera batería completa del ensayo: las dos corridas sin enganches salieron «NO PASA» porque la validación del ensayo exigía logs con contenido en un notebook que, sin registro, no lleva el parche de rich; y la medición de tiempo cayó en parte bajo la carga de otros agentes, como avisó el orquestador"
     },
     {
       "action": "run_tests",
       "success": true,
-      "note": "ruff check y format, mypy, export_schema --check y pytest --cov (2381 pasan, 9 omitidos, cobertura 98,72 %)"
+      "note": "Corregida la validación (sin enganches es otro control: logs de 0 bytes) y repetida la batería entera con una sola versión del ensayo, la medición de tiempo al final, sola y alternada, con la carga anotada. Rescate: 0 con el parche, 4 sin él"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Defectos que encontró la revisión independiente del PR #161 en scripts/kaggle_registro.py: diagnosticar respondía «completa» y salía con 0 con los enganches en FALLO, 0 peticiones y 7 errores del registro; daba como petición en vuelo un error transitorio ya recuperado; indexaba diffs y fines por nombre de tarea, de modo que una tarea repetida se pisaba; y un acta corrupta o una validez sin instance_id terminaban en traza con el código 1, el de «difiere». En el notebook, un enganche en FALLO no detenía nada: los logs volvían a 0 bytes y se descubría al final"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El documento y el PR daban 2381 pruebas, medidas antes del rebase sobre main (el revisor midió 2409); «96 veces» valía solo para el texto de la celda y no decía que el total crece 1,27 veces; y faltaban límites: la cobertura del CI no mide los dos guiones, el fsync corre dentro del tope de la tarea, el ensayo no ejercita ninguna de las 34 tareas nuevas. El episodio usaba research_sources y run_experiment, que no están en el vocabulario"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisión independiente (revisor de código y analista de datos) sobre 1c0b7dc: aprobado con observaciones, cifras reproducidas, y la lista de defectos de los dos pasos anteriores y del paso de pruebas"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "diagnosticar lee registro_instalado, los errores del cierre y las guardias, agrupa por corrida de tarea, separa petición en vuelo (inicio sin fin) de petición cortada, y sale con 3, 4 o 5 según el caso; entrada ilegible sale con 2. Orden comprobar: rescate y diagnóstico juntos. Guardias exigir_enganches y comprobar_primera_tarea en el notebook, declaradas en armar.py"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "64 pruebas. Inyectados uno a uno 29 defectos (los 13 que sobrevivían y 16 sobre el código nuevo): las pruebas detectan los 29. Los valores del sorteo se calcularon aparte, sin el guion"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Batería del ensayo repetida entera con el notebook rearmado: 16 corridas, las 16 pasan, incluidas las dos guardias con sabotaje a propósito; diagnosticar da 5 en la sesión muerta desde fuera, donde el rescate da 0. ruff, mypy, export_schema --check y pytest --cov: 2433 pasan, 9 omitidos, cobertura 98,72 %"
     },
     {
       "action": "update_docs",
       "success": true,
-      "note": "experiments/gemma_developer_agent/docs/ensayo_nucleo_jupyter.md con lo medido, lo inferido y lo no medido; fila en el índice del experimento y entrada en CHANGELOG.md"
+      "note": "Documento del ensayo reescrito con las cifras de la batería final, las dos cifras del parche de rich, el procedimiento tras una corrida real, la medición del analista sobre sesiones resueltas y cortadas, y los límites que pidió la revisión"
     }
   ],
   "lessons": [
     "Antes de fiarse de la clase «resuelta» de una tarea del arnés de Kaggle, mirar el motivo de fin del agente: el arnés descarta el error del tope cuando el parche pasa las pruebas",
     "Para registrar una llamada asíncrona que puede cancelarse, envolver la llamada y capturar BaseException: las retrollamadas de litellm de éxito y de fallo no se disparan ante una cancelación",
-    "Antes de adoptar un parche global de una biblioteca en un notebook, medir qué más cambia: rich.console._is_jupyter devuelve los logs por tarea y además multiplica el texto que el notebook manda a su salida",
+    "Un lector de registros debe comprobar primero que el registro registró (enganches instalados, sin errores propios, alguna petición respondida) antes de decir que la sesión está completa: un archivo que existe no es un registro sano",
+    "Un enganche que se instala sobre código ajeno necesita dos guardias: una que detenga si no se instaló y otra que mire, tras la primera unidad de trabajo, que dejó lo que debía; «instalado» no prueba que surta efecto",
+    "Probar cada función que recorre una colección con al menos dos elementos distintos: con uno solo, «el primero», «el último» y «todos» son indistinguibles y los defectos de índice sobreviven",
+    "Antes de adoptar un parche global de una biblioteca en un notebook, medir qué más cambia, y dar la razón sobre el total y no solo sobre la parte que crece",
+    "Volver a medir las cifras de las comprobaciones después de un rebase: la cuenta de pruebas escrita antes ya no es la de la rama",
     "En un ensayo con escenarios de control, escribir la expectativa de cada control antes de lanzar la batería: una validación que exige lo contrario obliga a repetirla entera",
     "No escribir valores esperados de un test a ojo: calcularlos aparte, sin el código bajo prueba, antes de escribir la aserción",
-    "Medir tiempos con la máquina compartida solo en corridas alternadas y con la carga anotada; lo que corre en paralelo con otras cargas no sirve para comparar",
+    "Medir tiempos con la máquina compartida solo en corridas alternadas y con la carga anotada",
     "Para corregir un archivo con cadenas que llevan secuencias de escape, usar la herramienta de edición y no un heredoc dentro de la orden"
   ]
 }
