@@ -322,24 +322,23 @@ no es una marca independiente.
 
 | # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
 |---|---|---|---|---|
-| 13 | 0,15 | 0,00 | Ocurrió | Primer informe de `revisor-codigo` sobre el PR #170: «cambios requeridos». La regla eximía un issue que sí tuvo trabajo |
-| 14 | 0,30 | 1,00 | Ocurrió | Tres informes de `revisor-codigo` antes de fusionar: el primero y el segundo pidieron cambios; el tercero, sobre `8b1d1e8`, «aprobado con observaciones no bloqueantes». PR #170 fusionado, `mergedAt` 2026-10-09T15:08:18Z |
-| 15 | 0,35 | 0,5 | Ocurrió | El primer informe mostró un issue exento sin deberlo (uno cerrado como no planeado que tenía PR fusionados anteriores a su cierre); el segundo, que la regla se anulaba al fusionar su propio PR |
+| 13 | 0,15 | 0,00 | Ocurrió | Primer informe de `revisor-codigo` sobre el PR #170: «cambios requeridos». No consta en ninguna fuente publicada; lo afirma el orquestador |
+| 14 | 0,30 | 1,00 | Ocurrió | Tres informes de `revisor-codigo` antes de fusionar. El tercero («tercera lectura», «aprobado con observaciones no bloqueantes») consta en el comentario de cierre del issue #169; que hubo dos anteriores y que pidieron cambios no consta en ninguna fuente publicada: lo afirma el orquestador. PR #170 fusionado, `mergedAt` 2026-10-09T15:08:18Z |
+| 15 | 0,35 | 0,5 | Ocurrió | Según el orquestador, el primer informe mostró un issue exento sin deberlo (uno cerrado como no planeado que tenía PR fusionados anteriores a su cierre) y el segundo, que la regla se anulaba al fusionar su propio PR. El cuerpo del PR #170 y la bitácora recogen esos dos casos como hallazgos del implementador. No consta en ninguna fuente publicada qué informe mostró cada uno |
 | 16 | 0,85 | 0,86 | Ocurrió | `analista-datos`: las 12 comprobaciones de `f262573`, el primer commit con código del PR #170, en `success` |
 | 21 | 0,45 | 0,25 | Ocurrió | Primer informe de `revisor-codigo` sobre el PR #175, en `923fe33`: «cambios requeridos antes de fusionar» |
 | 22 | 0,55 | 0,80 | Ocurrió | Ese informe mostró diez kits que el compilador del organizador acepta y con los que la comprobación pasaba aunque la instrucción ordenaba una herramienta ausente |
 | 23 | 0,35 | 0,5 | No ocurrió | El primer ensayo local del kit K terminó con entrega: seis herramientas ofrecidas, cinco llamadas, ninguna de las retiradas (informe del implementador; el revisor no lo repitió) |
-| 24 | 0,10 | 0,5 | No ocurrió | `analista-datos`, comparando miembro a miembro los zips de A y de K: solo los tres cambios decididos |
+| 24 | 0,10 | 0,5 | No ocurrió | El cuerpo del PR #175 describe la diferencia entre A y K en conteos y no muestra nada fuera de los tres cambios decididos; el orquestador afirma que `analista-datos` lo comprobó miembro a miembro en los dos zips (su informe no está publicado) |
 
-Lectura, sin puntuación: de las ocho, seis ocurrieron. Las dos que el orquestador puso más bajas (13 y 14, con
-0,15 y 0,30) ocurrieron, y en las dos su probabilidad quedó más lejos del desenlace que alguna referencia: en
-la 14 la línea base contada (1,00) acertaba; en la 13 no (0,00). En el issue #173 las probabilidades se
-subieron tras ese fallo, y se dijo al escribirlas. Con catorce predicciones cerradas en cuatro issues no se
-calcula nada: el pre-registro pide cien en veinte.
+Lectura, sin puntuación: de las ocho, seis ocurrieron. De las cuatro que el orquestador puso por debajo de 0,40
+(13, 14, 23 y 24), ocurrieron la 13 y la 14. En la 13 la probabilidad (0,15) quedó más cerca del desenlace que
+la línea base (0,00); en la 14 quedó más lejos que la línea base (1,00). Con catorce predicciones cerradas en
+cuatro issues no se calcula nada: la convención del orquestador (apartado 8.4) pide cien en veinte.
 
-Lo que estas ocho enseñan del proceso, anotado como observación y no como resultado: en los dos PR la primera
-revisión pidió cambios y halló un caso de «da por bueno lo que no lo es», y en los dos el defecto estaba en la
-regla que juzga, no en el código que la rodea.
+En el PR #175 la primera revisión halló un caso de «da por bueno lo que no lo es» en la regla que juzga (el
+YAML leído con expresiones regulares). Para el PR #170 no consta qué halló el primer informe. Dos casos no
+permiten generalizar.
 
 Siguen abiertas, con plazo al 2026-10-23: las predicciones 7 a 12 (issue #164, PR #176) y 17 a 20 (issue
-#171, PR #174).
+#171, PR #174; sección 12, solo en la rama de ese PR).
