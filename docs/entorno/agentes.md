@@ -170,12 +170,13 @@ flowchart LR
     R --> Q["QA de trayectorias"]
     R --> A["Arquitecto de IA"]
     R --> P["Inteligencia pública"]
-    D --> M["Auditor del método<br/>recalcula y veta"]
-    F --> M
-    Q --> M
-    A --> M
-    P --> M
-    M --> O{"Orquestador<br/>cruza y registra"}
+    D --> X["Revisión cruzada<br/>cada rol lee a los demás sin firma,<br/>refuta, retira y ordena"]
+    F --> X
+    Q --> X
+    A --> X
+    P --> X
+    X --> M["Auditor del método<br/>recalcula y veta"]
+    M --> O{"Orquestador<br/>registra"}
     O -->|el relato ya se corrigió<br/>o la decisión cuesta| V["Verificador limpio<br/>rescata y vuelve a medir sin el relato"]
     V --> O
     O --> U["Dueño decide"]

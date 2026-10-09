@@ -371,30 +371,34 @@ permiten generalizar.
 Siguen abiertas, con plazo al 2026-10-23: las predicciones 7 a 12 (issue #164, PR #176) y 17 a 20 (issue
 #171, PR #174; sección 12, solo en la rama de ese PR).
 
-## 15. Desenlaces registrados el 2026-10-10 (issues #164 y #171)
+## 15. Desenlaces registrados en la vuelta 43, 2026-10-09 y 10 UTC (issues #164 y #171)
 
 Los marca el concilio de la vuelta 43 del caso Kaggle (auditor del método, con el recuento del analista de
 datos), no el orquestador solo. Sigue sin existir el rol que marca (issue #165). Los informes de
 `revisor-codigo` y de `analista-datos` sobre los PR #176 y #174 no están publicados: `gh pr view 176` devuelve
-cero comentarios y cero reseñas. Por eso seis de las diez no se pueden marcar.
+cero comentarios y cero reseñas. Criterio de esta sección, uno solo: una predicción sobre lo que dice un
+informe no se marca si ese informe no está publicado, aunque la bitácora del caso lo resuma. Por eso nueve
+de las diez quedan sin marcar. La sección 14 marcó con fuentes no publicadas y lo dijo en cada fila; aquí
+no se sigue ese camino. La sección 12, que la 14 daba «solo en la rama de ese PR», ya está en `main`.
 
 | # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
 |---|---|---|---|---|
-| 7 | 0,30 | 0,00 | Ocurrió | Primera revisión del PR #176: «cambios requeridos» y «no listo para lanzar». Consta solo en la bitácora del caso (cierre de las 17:10 UTC del 2026-10-09), sin enlace a un informe publicado |
+| 7 | 0,30 | 0,00 | Sin marcar | La bitácora del caso (cierre de las 17:10 UTC del 2026-10-09) dice que la primera revisión del PR #176 pidió cambios; el informe no está publicado |
 | 8 | 0,65 | 1,00 | Sin marcar | No consta cuántos informes hubo. El PR tiene dos commits de respuesta a revisión, lo que sugiere dos informes, no tres |
 | 9 | 0,30 | 0,75 | Sin marcar | Informes no publicados. El documento del ensayo declara no alcanzables desde el notebook los casos de salida 0 que cita |
 | 10 | 0,15 | 0,20 | Sin marcar | Informe del analista no publicado. Un recuento posterior (concilio 43) reproduce 145 filas, máximo 303,6 s, mediana 107 s y 250 filas con reloj; la diferencia con las «310 tareas» del coordinador sigue sin explicar |
-| 11 | 0,80 | 0,86 | No ocurrió | El primer commit con código del PR #176 no tuvo CI, y la primera CI con código falló una de doce comprobaciones. Recuento del analista en el concilio 43; el auditor no lo verificó |
+| 11 | 0,80 | 0,86 | Sin marcar | No evaluable como está escrita: el primer commit con código del PR #176 (`2e57468`) no tuvo ninguna ejecución de CI. La primera CI con código (`b319586`) terminó con una comprobación fallida y once en verde (recuento del analista en el concilio 43, comprobado por el revisor de documentos) |
 | 12 | 0,80 | 0,5 | Ocurrió | El documento del ensayo dice que el cuelgue solo se logró plantando el ciclo a mano; la carrera natural salió en la sonda, fuera del arnés |
 | 17 | 0,55 | 0,25 | Sin marcar | El veredicto del primer informe sobre el PR #174 no consta en ninguna fuente; la bitácora solo recoge el de la segunda revisión («aprobado con observaciones no bloqueantes») |
 | 18 | 0,60 | 1,00 | Sin marcar | Solo consta una segunda revisión |
-| 19 | 0,45 | 0,5 | No ocurrió | Leída como está escrita: las cifras que no se sostuvieron estaban en el registro de hallazgos, que no es la cuenta por llamada. Un recuento independiente del concilio 43 reproduce los totales de la cuenta (4 086 contadas, 4 444 en traza, 211 rechazadas). Salvedad: el informe del analista sobre el PR no está publicado; la prueba es de segunda mano |
+| 19 | 0,45 | 0,5 | Sin marcar | El informe del analista sobre el PR #174 no está publicado. Lo que sí consta: un recuento independiente del concilio 43 reproduce los totales de la cuenta por llamada (4 086 contadas, 4 444 en traza, 211 rechazadas), y el concilio leyó que las cifras que no se sostuvieron estaban en el registro de hallazgos, que no es la cuenta por llamada. Eso dice que las cifras se reproducen, no qué marcó el analista |
 | 20 | 0,40 | 0,80 | Sin marcar | Informes no publicados |
 
 Corrección: el cierre del 2026-10-09 en la bitácora del caso decía «17, 18 y 20 ocurrieron». Esa frase la
 escribió el orquestador sin fuente publicada; el auditor del método la señaló y las tres quedan sin marcar.
 
-Lectura, sin puntuación: de diez predicciones, cuatro se pudieron marcar (dos ocurrieron, dos no) y seis no,
-todas por la misma causa: el informe de revisión vive en la sesión del orquestador y no en el PR. Mientras los
-informes no se publiquen como comentario del PR, las predicciones sobre lo que dice un informe no se pueden
-cerrar. Plazo de las seis que siguen abiertas: 2026-10-23.
+Lectura, sin puntuación: de diez predicciones, una se pudo marcar (la 12, que depende de un documento
+versionado) y nueve no. Ocho, por la misma causa: el informe de revisión vive en la sesión del orquestador y
+no en el PR. La otra, la 11, porque el hecho que predecía no llegó a existir. Mientras los informes no se
+publiquen como comentario del PR, las predicciones sobre lo que dice un informe no se pueden cerrar; desde
+el PR #183 se publican. Plazo de las nueve que siguen abiertas: 2026-10-23.

@@ -42,9 +42,9 @@
       "note": "Antes de relanzar se miró qué había dejado cada uno en disco: uno tenía el informe completo y los otros dos sus guiones y datos intermedios. Se reanudaron con su contexto y cerraron en un cuarto de hora, sin repetir mediciones"
     },
     {
-      "action": "review_code",
+      "action": "update_docs",
       "success": false,
-      "error": "El expediente de la revisión cruzada se armó quitando solo el título de cada informe; cada informe citaba la carpeta de su rol y la sección «lo de mi oficio» lo delataba. El auditor lo señaló: no era anónimo"
+      "error": "El expediente de la revisión cruzada se armó quitando solo el título de cada informe; cada informe citaba la carpeta de su rol y la sección «lo de mi oficio» lo delataba: no era anónimo"
     },
     {
       "action": "analyze_results",
@@ -62,6 +62,11 @@
       "note": "El auditor entró después de la revisión cruzada y recontó desde los archivos crudos: fijó cuál de las cuatro definiciones vale para decidir, convirtió el peor caso del límite global en un rango, y corrigió a dos roles (un factor de cuota tomado como mínimo cuando es techo; un recuento de verificaciones cortadas)"
     },
     {
+      "action": "review_code",
+      "success": true,
+      "note": "La auditoría del procedimiento detectó que el expediente no era anónimo y que el orquestador arrastraba tres afirmaciones sin fuente; la revisión de documentos del PR detectó después que tres predicciones se habían marcado con un criterio distinto del que la misma sección aplicaba a otras seis"
+    },
+    {
       "action": "update_docs",
       "success": false,
       "error": "El guion con que el orquestador copió los pareceres a la bitácora llevaba una ruta de Windows en una cadena normal de Python y escribió un retorno de carro en medio de la ruta"
@@ -69,7 +74,17 @@
     {
       "action": "update_docs",
       "success": true,
-      "note": "Corregido el byte en la bitácora y, desde entonces, guiones en archivo con cadenas crudas. Registro de hallazgos puesto al día (cuatro decididos, dos descartados, uno abierto y cuatro nuevos), desenlaces de diez predicciones (cuatro marcadas y seis sin marcar porque los informes de revisión no están publicados) y la revisión cruzada escrita en CONTRIBUTING.md y en la skill del concilio"
+      "note": "Corregido el byte en la bitácora y, desde entonces, guiones en archivo con cadenas crudas. Registro de hallazgos puesto al día (cuatro decididos, dos descartados, uno abierto y cuatro nuevos), desenlaces de diez predicciones (cuatro marcadas y seis sin marcar porque los informes de revisión no están publicados) y la revisión cruzada escrita en CONTRIBUTING.md y en la skill del concilio. Quedó escrito en el procedimiento que al expediente se le quita también la ruta de la carpeta de cada rol"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La sección de desenlaces marcaba tres predicciones (dos con una fuente sin publicar y una sobre un hecho que no llegó a existir) mientras dejaba sin marcar otras seis por esa misma falta de fuente"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Un solo criterio: no se marca una predicción sobre un informe que no está publicado. Quedan una marcada y nueve sin marcar, y el informe del analista sobre este PR se publicó como comentario"
     },
     {
       "action": "gh_create_issues",
@@ -84,6 +99,7 @@
     "Una condición con una cifra que nadie puede derivar no es una condición: al heredarla de un cierre anterior, busca su cuenta o márcala «sin derivación»",
     "Si un informe de revisión no se publica como comentario del PR, las predicciones sobre lo que dice ese informe no se pueden cerrar: publica cada informe en su PR",
     "Una medición que llega de otra sesión entra al concilio como un informe más, sin firma y marcada «sin recontar»; vale cuando otro rol la reproduce",
-    "En un guion de Python, una ruta de Windows va en cadena cruda o con barras normales: «\r» dentro de una ruta escribe un retorno de carro sin avisar"
+    "En un guion de Python, una ruta de Windows va en cadena cruda o con barras normales: «\r» dentro de una ruta escribe un retorno de carro sin avisar",
+    "Al marcar desenlaces, escribe el criterio antes que las marcas y aplícalo a todas las filas: una fuente que no basta para una predicción no basta para la de al lado"
   ]
 }
