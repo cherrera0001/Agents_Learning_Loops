@@ -1,0 +1,81 @@
+{
+  "seq": 73,
+  "id": "issue-103-vueltas-41-42-concilio-sin-cruce",
+  "goal": "Vueltas 41 y 42 del experimento Kaggle Gemma 4: decidir en concilio qué hacer con un cuelgue del ensayo y qué enseña un escáner de vulnerabilidades con agentes al agente del desafío; y, tras la corrección del dueño, entender por qué un defecto medido cuatro veces no se había convertido en acción",
+  "ref": "#103",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "El orquestador abrió las dos vueltas sin dejar anotada la consulta de recall ni cuántas lecciones devolvió, y sin releer lo que la bitácora ya decía del gasto de llamadas. Empezó la sesión leyendo en la memoria que un envío estaba en error, comprobó GitHub y el disco, y no volvió a leer Kaggle: el envío había puntuado dos días antes"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Rescate por la API a media sesión, cuando el dueño pidió la tabla: el reenvío del zip con razonamiento figura completo con 8 tareas de 58; el mismo zip había dado 5. El equipo pasa de 4 a 8 tareas; 269 equipos de 2177 tienen más. La media de tareas sube con el número de envíos, de 4,2 con uno a 7 u 8 con diez o más"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Concilio 41 y ronda 1 del 42: el orquestador convocó a los roles en paralelo, cada uno con una parte distinta de la pregunta, y ninguno leyó a otro; solo el auditor veía todo al final. El paso de la skill que manda volver a preguntar a cada rol qué afirmación suya se cae no se hizo. La convocatoria llevó dos premisas falsas (que los repositorios que puntúan se conocen de antemano; que 4 minutos y 40 llamadas son una regla del concurso) y cifras de otro rol. El arquitecto propuso dos brazos que los datos del analista y de QA desmentían, y nadie lo supo hasta el final"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "La pregunta obvia quedó sin dueño: los informes midieron que 31 a 40 de cada 100 llamadas repiten una anterior, que una búsqueda devolvió vacío 300 de 300 veces y que un subagente gasta de 9 a 40 llamadas del tope compartido sin resolver nada, y ninguno propuso limitarlo. Lo preguntó el dueño. Además el dato llevaba cinco días en la bitácora: repeticiones el 5 y el 6 de octubre, lectura con argumento mal formado el 6, búsqueda vacía y subagente el 7; cada vez se anotó como contexto. El analista de datos, preguntado, respondió que en tres vueltas contestó preguntas de potencia y clasificó las llamadas por su nombre, nunca por lo que devolvieron"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Ronda 2, con el molde de karpathy/llm-council adaptado: los cuatro informes anonimizados en un expediente, cada rol reanudado con su contexto para decir qué refuta de los otros con su número, qué retira de lo suyo, y ordenar once acciones candidatas con formato fijo. El arquitecto retiró sus dos brazos; QA encontró que el arnés avisa «termina y entrega» en la llamada 30, lo que explica buena parte de la asociación entre ejecutar tras editar y resolver; se supo que el envío solo puede imponer la lista de herramientas y los totales, y que la instrucción propia ordena usar la búsqueda que no puede devolver nada"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Dictamen del auditor, recalculando desde los zips crudos: la búsqueda vacía no es un índice ausente sino una herramienta que busca por nombre exacto y a la que la instrucción manda texto libre; quitar el subagente y las herramientas de grafo libera 2,2 llamadas por sesión y es lo único imponible; «no repitas más de 2 veces» liberaría 7,9 pero solo se puede pedir; de 41 sesiones no resueltas con 39 o más llamadas, 28 no dejaron fuente en el parche y solo 5 tenían la referencia abierta y fuente editada. Los arreglos de interfaz se deciden por criterio mecánico, no por resolución. Corrigió cifras de tres roles y una hipótesis del orquestador (ninguna sesión vio un error de sintaxis como última salida)"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Tras el concilio 41 el orquestador devolvió al dueño tres preguntas que ya estaban delegadas o que podía resolver solo (una cifra fijada por el concilio, la cuota de GPU que se lee por la API, y una subida); y promedió los órdenes de los roles como si la media de cuatro lecturas del mismo modelo fuera una medición"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Pareceres de cada rol copiados tal cual a la bitácora del caso, con lo que cada uno retiró y los fallos del orquestador; regla de lanzamiento por pérdida máxima y no por probabilidad; decisiones delegadas aplicadas sin devolverlas; línea independiente abierta con dos roles que no heredan el relato (medir con el perfil ZorzALL; reconstruir quién controla y dónde se registra cada llamada)"
+    },
+    {
+      "action": "gh_create_issues",
+      "success": true,
+      "note": "Issue con estimación para lo que faltaba y que el dueño pidió: un vigía que lee los envíos de Kaggle al iniciar sesión y avisa de lo que cambió sin procesar, una cuenta por llamada automática tras cada rescate, y un registro de hallazgos medidos con su estado y la regla de que ninguno aparece en dos vueltas sin una decisión escrita"
+    }
+  ],
+  "lessons": [
+    "Un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita: al cerrar cada vuelta, cada cifra nueva pasa a decidido, a descartado con su motivo, o se dice por qué sigue abierta. Un dato anotado como contexto cuatro veces es un fallo del ciclo, no falta de datos",
+    "Al retomar un experimento que se mide en un sistema externo, vuelve a leer ese sistema antes de creer la memoria: un estado «en error» o «pendiente» guardado ayer puede haber cambiado, y verificar el repositorio y el disco no lo dice",
+    "Un concilio lleva tres etapas: informes independientes sobre la misma pregunta, revisión cruzada en la que cada rol lee los demás informes anonimizados y dice qué refuta con su número y qué retira de lo suyo, y solo entonces el auditor. Convocar roles en paralelo y resumir no es deliberar",
+    "Antes de agrupar las llamadas de un agente por herramienta, cuenta qué devolvió cada una (contenido, vacío, error, rechazada, truncada, repetida) y qué parte del presupuesto se fue en llamadas sin información nueva; un tope agotado se explica con la trayectoria, no con una etiqueta",
+    "Cuando se mide un gasto inútil, separa lo que el envío puede imponer de lo que solo puede pedir al modelo, y mide si liberar ese gasto cambia el resultado o solo el gasto antes de convertirlo en un brazo",
+    "Si varios roles son el mismo modelo leyendo los mismos datos, su acuerdo no es una medición y no se promedia: vale lo que uno recalculó desde los archivos crudos, y el resto se registra como opinión compartida",
+    "Una herramienta que nunca devuelve nada no se deja en la lista del agente ni se ordena en su instrucción: comprueba con las trazas que cada herramienta ofrecida ha devuelto algo alguna vez",
+    "Lo que el dueño delega en el concilio se aplica y se informa; antes de preguntarle algo, comprueba si ya lo delegó o si lo puedes leer tú",
+    "El encargo a un rol lleva la pregunta y las rutas, no premisas del orquestador: dos premisas falsas en la convocatoria (qué repositorios puntúan; qué topes son regla) dirigieron la primera ronda de un concilio"
+  ]
+}
