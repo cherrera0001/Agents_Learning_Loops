@@ -87,7 +87,8 @@ implementa y registra el episodio ([roles](docs/entorno/agentes.md)).
   `python -m scripts.devlog board --since <n>` ([reglas](learning/README.md#chequeo-del-tablero)).
 - **Un issue cerrado sin trabajo** (creado por error o repetido) se cierra como «no planeado» o
   «duplicado», con un comentario que dice a qué issue remite. El chequeo del tablero lo exime de las
-  reglas 2, 3 y 9 solo si ningún episodio lo cita con `#n` en su `ref`, y lo avisa por stderr.
+  reglas 2, 3 y 9 solo si ningún episodio lo cita con `#n` en su `ref` ni ningún PR fusionado lo
+  referencia, y lo avisa por stderr. Por eso un PR no debe citar un issue cerrado sin trabajo.
 
 ## Jerarquía: épica, issue, tareas
 

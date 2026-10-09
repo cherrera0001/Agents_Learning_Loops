@@ -37,9 +37,14 @@
       "error": "Sobre el repositorio real, el #104 (NOT_PLANNED, con PR 129 y 135 fusionados) salió exento: ningún episodio lo cita como #104 en su ref (los episodios de ese trabajo citan #100 y #103 y URLs de comentarios). El criterio «el #104 no aparece como exento» no se cumple con la regla tal como está escrita; no se amplió la regla"
     },
     {
+      "action": "edit_module",
+      "success": false,
+      "error": "La regla escrita por el concilio (sin episodio que cite #n) fallaba en su propio control: eximía al #104 porque los episodios de ese trabajo citaban #100 y #103, no #104. Se midió sobre el repositorio real qué fuente separa #104 de #159: closedByPullRequestsReferences devuelve vacío en los dos, la tarjeta del tablero no tiene campo de PR enlazados, la búsqueda de PR fusionados por texto da 5 y 0 pero exige casar texto, y la línea de tiempo del issue (cross-referenced con PR fusionado) da 6 PR fusionados para #104 y 0 para #159 con una sola llamada por issue. Se eligió la línea de tiempo; se lee solo para los candidatos a exención (2 llamadas) y una lectura fallida no exime"
+    },
+    {
       "action": "write_tests",
       "success": true,
-      "note": "Prueba propia de mutación con 22 defectos inyectados: la primera tanda dejó 4 supervivientes; dos eran mutantes mal construidos (uno no cambiaba nada, otro eximía las dos reglas a la vez) y dos eran huecos reales: la prueba de session_guard no tenía un issue sin tarjeta (la regla 9 no se ejercía) y ninguna prueba fijaba la frontera n >= since del aviso. Se añadieron esas dos pruebas; 22 de 22 detectados"
+      "note": "Enmienda del concilio con PR fusionado como segunda condición. Hipótesis sin medir tras el merge: un PR fusionado que solo mencione el issue le quita la exención (el PR de esta entrega citaba al duplicado en su cuerpo; se quitó la cita). Prueba propia de mutación con 22 defectos inyectados: la primera tanda dejó 4 supervivientes; dos eran mutantes mal construidos (uno no cambiaba nada, otro eximía las dos reglas a la vez) y dos eran huecos reales: la prueba de session_guard no tenía un issue sin tarjeta (la regla 9 no se ejercía) y ninguna prueba fijaba la frontera n >= since del aviso. Se añadieron esas dos pruebas; 22 de 22 detectados. Segunda tanda sobre la lógica de PR: 20 defectos, 18 detectados; los dos que sobreviven son equivalentes por construcción (exigir que la fuente sea un PR cuando ya se exige que esté fusionado, y devolver {} en vez de None sin prs.json). Una primera corrida dio «20 de 20» con una prueba rota por mi propio error: un resultado perfecto se comprueba contra la suite sin mutar"
     }
   ],
   "lessons": [

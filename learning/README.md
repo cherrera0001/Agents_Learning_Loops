@@ -188,13 +188,19 @@ casos se avisan por stderr. Una línea por hallazgo: `R<regla> #<issue>: <mensaj
 | 10 | Lectura truncada de subissues: épica con ≥ 50 subissues → código 2. Solo aplica a la lectura por `gh`, no a `--snapshot` | épicas |
 
 **Exención de las reglas 2, 3 y 9.** No se aplican a un issue con `state` = `CLOSED`, `stateReason` =
-`NOT_PLANNED` o `DUPLICATE` y que ningún episodio cita como `#n` en su `ref` (la cita es la de la regla 4:
-`PR #n` no cuenta): no tuvo trabajo que entregar ni verificar. Si un episodio lo cita, las tres reglas se
-aplican como a cualquier otro; un `stateReason` vacío, ausente, desconocido o en minúsculas no exime. Cada
-exento con número `>= --since` sale por stderr como
-`aviso: #n exento de las reglas 2, 3 y 9 (no planeado|duplicado, sin episodio)` y no cambia el código de
-salida. La regla 1 y las demás no cambian. Hueco conocido: trabajo real cerrado como «no planeado» sin
-episodio queda exento, el mismo que ya tiene la regla 4.
+`NOT_PLANNED` o `DUPLICATE`, que ningún episodio cita como `#n` en su `ref` (la cita es la de la regla 4:
+`PR #n` no cuenta) y que ningún PR fusionado de este repositorio referencia: no tuvo trabajo que
+entregar ni verificar. Si un episodio lo cita o un PR fusionado lo referencia, las reglas se aplican como
+a cualquier otro; un `stateReason` vacío, ausente, desconocido o en minúsculas no exime. Los PR salen de
+la línea de tiempo del issue (eventos `cross-referenced` cuya fuente es un PR fusionado), con una llamada
+a `gh api` por cada candidato con número `>= --since`; GitHub resuelve la mención, así que `#104` no
+casa con `#1040`. Si esa lectura falla (o con `--snapshot` no hay `prs.json`, un objeto
+`{"<issue>": [PR fusionados]}`), no se exime y sale `aviso: #n no exento: no se pudieron comprobar los
+PR fusionados que lo referencian`. Cada exento sale por stderr como
+`aviso: #n exento de las reglas 2, 3 y 9 (no planeado|duplicado, sin episodio ni PR fusionado)` y no
+cambia el código de salida; `scripts/session_guard.py` imprime el mismo aviso. La regla 1 y las demás no
+cambian. Hueco conocido: un PR fusionado que solo *menciona* el issue (por ejemplo, un PR de
+documentación posterior) también le quita la exención; el efecto es avisar de más, no callar.
 
 Códigos de salida: `0` sin hallazgos, `1` con hallazgos, `2` si no se pudo leer la fuente (`gh` ausente,
 cuenta que no ve el Project, lectura incompleta o instantánea incompleta, o subissues truncados en R10); un `2` nunca se informa como
