@@ -1,0 +1,56 @@
+{
+  "seq": 71,
+  "id": "issue-164-tope-por-tarea",
+  "goal": "Tope por tarea y vaciado del mapa de hilos del núcleo en el notebook de la iteración 08 del experimento Kaggle, con dos códigos nuevos en el diagnóstico y el ensayo local de las dos ramas del corte; sin subir nada",
+  "ref": "#164",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {"action": "recall_memory", "success": true, "note": "recall léxico con el título del issue: recuperó la lección «heredoc largo en Git Bash: unexpected EOF» y el #160 como issue parecido (13 de 35 pasos fallidos)"},
+    {"action": "review_code", "success": true, "note": "leídos el issue, el documento del ensayo, la celda 10 del notebook, iostream.py e ipkernel.py de ipykernel 6.29.5 y el material del forense; copia de ensayo_salida a ensayo_salida_160 antes de tocar nada"},
+    {"action": "run_experiment", "success": true, "note": "sonda fuera del arnés, 12 quemadores y 4 CPU: sin arreglo 11 y 25 de 1 500 fronteras con ciclo; vaciando el mapa 0; con un único grupo de hilos 0, pero un ciclo ya presente sigue ahí en 5 de 5"},
+    {"action": "edit_module", "success": false, "error": "heredoc largo en Git Bash para aplicar los cambios a kaggle_registro_enganches.py: unexpected EOF while looking for matching quote. La lección estaba en el recall y la instrucción del rol lo prohibía"},
+    {"action": "edit_module", "success": true, "note": "los cambios se aplicaron con guiones de sustitución escritos con la herramienta de escritura, que exigen que cada texto case una sola vez"},
+    {"action": "edit_module", "success": false, "error": "una condición nueva en la guardia tras la primera tarea (exigir que hubiera corrido bajo el tope) rompió 4 pruebas del #160, que no se pueden modificar"},
+    {"action": "edit_module", "success": true, "note": "la condición salió de la guardia: el tarea_fin lleva con_tope y diagnosticar da 4 si es falso; ninguna prueba del #160 cambió"},
+    {"action": "edit_module", "success": false, "error": "[IO.File]::ReadAllText con una ruta relativa desde PowerShell leyó scripts/kaggle_registro.py del checkout principal (el directorio de .NET no es el de PowerShell) y lo escribió sobre el del árbol de trabajo: se perdieron los cambios del diagnóstico. Lo delataron 20 pruebas nuevas en rojo"},
+    {"action": "edit_module", "success": true, "note": "git checkout del archivo y vuelta a aplicar el guion de sustitución; desde ahí, rutas absolutas"},
+    {"action": "write_tests", "success": false, "error": "dos pruebas nuevas tenían el fallo en la propia prueba: escribían el registro en subcarpetas que no existían, y una sustitución con sed no casó por la sangría"},
+    {"action": "write_tests", "success": true, "note": "55 pruebas nuevas en un archivo aparte, sin Docker ni núcleo: el núcleo es un doble con el mapa o sin él"},
+    {"action": "run_experiment", "success": false, "error": "el guion de defectos inyectados se lanzó sobre el árbol que los contenedores del ensayo montan, con la batería en marcha; al detenerlo dejó un defecto puesto en kaggle_registro_enganches.py (la deduplicación de flujos). Se vio porque una prueba quedó en rojo y se comprobó que el archivo volvía a ser, byte a byte, el de la celda 8 del notebook armado"},
+    {"action": "run_experiment", "success": true, "note": "defectos inyectados sobre una copia del árbol: primera pasada 72 de 76 detectados; reforzadas cuatro pruebas, segunda pasada 78 de 78"},
+    {"action": "run_experiment", "success": false, "error": "los escenarios que cuelgan una tarea usaban un tope de ensayo de 90 s; con la máquina cargada por procesos ajenos cortaron tres tareas que no estaban colgadas (una tardó 83 s solo en copiar las ruedas al sandbox) y dos escenarios no pasaron"},
+    {"action": "run_experiment", "success": false, "error": "repetido con 600 s, el ciclo plantado (un anillo entre seis identificadores de hilos muertos) dejó de existir a los 545 s y la pila ya no mostraba al hilo en parent_header: el escenario no pasó. La causa de que el anillo se rompa no está medida"},
+    {"action": "run_experiment", "success": true, "note": "el ciclo se planta de cada identificador consigo mismo, que dura mientras viva el hilo; las corridas fallidas se conservan con otro nombre y el documento las cuenta"},
+    {"action": "run_experiment", "success": false, "error": "detener la tarea en segundo plano de la batería no detuvo su sh: siguió lanzando contenedores de medición de tiempo en paralelo con la repetición, hasta que se encontró el proceso por su línea de órdenes"},
+    {"action": "review_code", "success": false, "error": "autorrevisión adversarial de diagnosticar: tres entradas salían con 0 sin merecerlo (registro cerrado con una tarea sin tarea_fin y sin corte; tarea que no corrió bajo el tope; evento tarea_colgada fuera de la corrida de su tarea) y dos daban un código equivocado (4 en vez de 3 con la primera tarea colgada sin peticiones; 7 tras decidir no seguir sin anotar el corte)"},
+    {"action": "edit_module", "success": true, "note": "nueve reglas en salud_del_registro, cada una con su prueba; la búsqueda por deformación de cinco registros reales ya solo encuentra con 0 los truncados que equivalen a una sesión más corta y completa"},
+    {"action": "update_docs", "success": true, "note": "sección del #164 en ensayo_nucleo_jupyter.md con lo medido, lo inferido y lo no medido; CHANGELOG"},
+    {"action": "run_tests", "success": true, "note": "ruff, formato, mypy y export_schema en verde; pytest --cov local: 2521 pasan y 9 se omiten, cobertura 98,72 %, en 22 min con el equipo cargado"},
+    {"action": "open_pr", "success": true, "note": "PR con Closes #164, sin merge"}
+  ],
+  "lessons": [
+    "Un guion que inyecta defectos en el código no se corre sobre el árbol que otro proceso está montando o importando: se corre sobre una copia, y antes de fiarse del árbol se comprueba su huella contra la que se sabe buena.",
+    "En PowerShell, los métodos de .NET resuelven una ruta relativa contra el directorio del proceso y no contra el de Set-Location: con [IO.File] se pasan rutas absolutas.",
+    "Un tope de ensayo cercano a lo que tarda una tarea legítima con la máquina cargada corta tareas que no están colgadas: el tope de un escenario se elige contra la duración medida ese día, no contra la de la víspera.",
+    "Un ciclo plantado a mano en el mapa de hilos de ipykernel con identificadores de hilos muertos puede deshacerse solo: para un escenario estable, cada identificador debe apuntar a sí mismo.",
+    "Si una condición nueva en un punto de control rompe pruebas que no se pueden tocar, se mueve el dato al registro y la comprobación al lector, en vez de cambiar las pruebas.",
+    "Detener una tarea en segundo plano no garantiza que su intérprete de órdenes muera: después de detenerla se listan los procesos y los contenedores que lanzó.",
+    "Antes de dar por cerrado un lector de registros se deforman registros reales de a un cambio y se cuenta cuántas variantes salen con 0: encontró lo que las pruebas escritas a mano no buscaban."
+  ]
+}
