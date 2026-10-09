@@ -249,13 +249,16 @@ def test_una_tarea_que_no_vuelve_se_deja_de_esperar_al_vencer_el_tope(tmp_path: 
 
     t0 = time.monotonic()
     with pytest.raises(ke.TareaColgada) as info:
-        registro.correr_con_tope(colgada, 0.3)
+        registro.correr_con_tope(colgada, 1.0)
     try:
-        assert 0.3 <= time.monotonic() - t0 < 5, "debe volver al vencer el tope, no cuando el hilo termine"
+        # `Thread.join` puede volver un tic antes de su tope (0,296 s con 0,3 en Windows): tolerancia abajo.
+        # La cota de arriba queda por debajo del doble del tope: esperar dos veces también es un defecto.
+        espera = time.monotonic() - t0
+        assert 0.95 <= espera < 1.8, f"debe volver al vencer el tope (1,0 s) y esperó {espera:.3f} s"
         colgada_exc = info.value
-        assert colgada_exc.tope_segundos == 0.3 and colgada_exc.segundos >= 0.3
+        assert colgada_exc.tope_segundos == 1.0 and 0.95 <= colgada_exc.segundos < 1.8
         assert colgada_exc.hilo.is_alive() and colgada_exc.hilo.daemon
-        assert "tope por tarea: 0.3 s" in str(colgada_exc)
+        assert "tope por tarea: 1.0 s" in str(colgada_exc)
         assert registro.hilo_de_tarea is colgada_exc.hilo and registro.con_tope is True
     finally:
         soltar.set()
@@ -294,7 +297,7 @@ def test_si_vaciar_el_mapa_suelta_al_hilo_la_tarea_se_cancela_y_el_notebook_sigu
     assert evento["tarea"] == "t_1" and evento["indice"] == 1
     assert evento["hilo_vivo"] is False and evento["sigue"] is True and evento["cancelacion"] == "pedida"
     assert evento["mapa_de_hilos"] == {"disponible": True, "entradas": 2, "ciclo": True, "vaciado": False}
-    assert evento["tope_s"] == 0.2 and evento["segundos"] >= 0.2 and evento["segundos_hasta_terminar"] < 10
+    assert evento["tope_s"] == 0.2 and evento["segundos"] >= 0.15 and evento["segundos_hasta_terminar"] < 10
     assert evento["colgadas_seguidas"] == 1 and evento["hilos_vivos"] >= 1 and "carga" in evento
     # La pila quedó en un archivo de la salida y nombra la función que giraba
     assert (
@@ -324,7 +327,7 @@ def test_si_el_hilo_sigue_vivo_el_notebook_no_puede_seguir(
     try:
         t0 = time.monotonic()
         assert registro.tarea_colgada(colgada, 0.3) is False
-        assert 0.3 <= time.monotonic() - t0 < 5, "espera el margen y no más"
+        assert 0.25 <= time.monotonic() - t0 < 5, "espera el margen y no más"
         (evento,) = _de_tipo(registro, "tarea_colgada")
         assert evento["hilo_vivo"] is True and evento["sigue"] is False
         assert evento["segundos_hasta_terminar"] is None and evento["margen_s"] == 0.3
@@ -412,8 +415,8 @@ def test_el_latido_dice_cuanto_lleva_la_tarea_sin_eventos_y_como_esta_la_maquina
     antes, en_tarea = _latidos(registro)
     assert antes["ultimo_evento"] is None and antes["segundos_sin_eventos"] is None
     assert antes["tarea_segundos"] is None and antes["hilo_de_tarea"] is None
-    assert en_tarea["ultimo_evento"] == "tarea_inicio" and 100 <= en_tarea["segundos_sin_eventos"] < 110
-    assert 120 <= en_tarea["tarea_segundos"] < 130
+    assert en_tarea["ultimo_evento"] == "tarea_inicio" and 99.9 <= en_tarea["segundos_sin_eventos"] < 110
+    assert 119.9 <= en_tarea["tarea_segundos"] < 130
     assert en_tarea["hilo_de_tarea"]["vivo"] is True and "cpu_s" in en_tarea["hilo_de_tarea"]
     assert en_tarea["cpus"] == os.cpu_count() and en_tarea["hilos_vivos"] >= 2
     assert isinstance(en_tarea["carga"], (list, dict))
@@ -865,3 +868,158 @@ def test_comprobar_hereda_los_codigos_nuevos(
         in json.loads(capsys.readouterr().out)["pasadas_esperadas"]["p-detenida"]["veredicto"]
     )
     assert kr.main([*orden, "--notebook", "p-bien"]) == kr.EXIT_OK
+
+
+# ---------------------------------------------------------------------------
+# Lo que encontró la revisión del PR #176
+# ---------------------------------------------------------------------------
+
+# Un registro del #164 en adelante declara el mapa de hilos entre sus enganches.
+INSTALADO_164 = _e(
+    "registro_instalado",
+    None,
+    T0,
+    enganches={**ENGANCHES, kr.ENGANCHE_DEL_MAPA: "se vacía antes de cada tarea"},
+)
+
+
+@pytest.mark.parametrize("roto", [None, "volcar_pila", "evento"])
+def test_si_el_corte_no_puede_dejar_su_rastro_no_se_sigue(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, roto: str | None
+) -> None:
+    """La rama de seguridad: si algo lanza dentro de `tarea_colgada`, la respuesta es «no seguir».
+
+    El hilo ya terminó, así que sin el fallo la respuesta sería «seguir» (el caso `None` lo fija).
+    """
+    registro = ke.Registro(tmp_path, "s")
+    registro.tarea("E1", "t_1", 1)
+    soltar = threading.Event()
+
+    async def espera() -> None:
+        soltar.wait()
+        await asyncio.sleep(0)
+
+    colgada = _colgar(registro, espera)
+    soltar.set()
+    colgada.hilo.join(5)
+    assert not colgada.hilo.is_alive()
+
+    def lanza(*args: Any, **kwargs: Any) -> Any:
+        raise OSError("disco lleno")
+
+    if roto is not None:
+        monkeypatch.setattr(registro, roto, lanza)
+    assert registro.tarea_colgada(colgada, 5) is (roto is None)
+    assert (registro.errores >= 1) is (roto is not None)
+
+
+def test_una_colgada_que_siguio_y_no_llego_al_cierre_no_sale_con_7() -> None:
+    """El 7 exige `cierre`: sin él la sesión murió o quedó detenida, aunque antes cortara y siguiera."""
+    eventos = [INSTALADO, *_tarea_colgada("t_1", T0), *_tarea_bien("t_2", T0 + 600, 1)]
+    codigo, sesion = _codigo(eventos)
+    assert codigo == kr.EXIT_MUERTA and sesion["tareas_colgadas"] == ["t_1"]
+    assert _codigo(eventos, [{"hora": T0 + 605 + 2000}])[0] == kr.EXIT_DETENIDA_VIVA
+    assert _codigo([*eventos, _cierre(T0 + 700)])[0] == kr.EXIT_CON_COLGADAS
+
+
+def test_la_guardia_cuenta_como_corte_para_una_tarea_sin_fin() -> None:
+    """Una guardia explica la tarea a medias: el problema que se anota es la guardia, no la tarea."""
+    base = [INSTALADO, *_tarea_bien("t_1", T0, 1), _e("tarea_inicio", "t_2", T0 + 20)]
+    guardia = _e("guardia", None, T0 + 25, cuando="tras la primera tarea", problemas=["x"])
+    codigo, sesion = _codigo([*base, guardia, _cierre(T0 + 30)])
+    assert codigo == kr.EXIT_REGISTRO and "la guardia detuvo el notebook" in sesion["veredicto"]
+    assert "no tiene «tarea_fin»" not in sesion["veredicto"]
+    assert len(sesion["problemas_del_registro"]) == 1
+    sin_guardia = _codigo([*base, _cierre(T0 + 30)])[1]
+    assert "no tiene «tarea_fin»" in sin_guardia["veredicto"]
+
+
+@pytest.mark.parametrize("campo", ["ausente", None, False, "true", 1])
+def test_un_registro_que_declara_el_tope_exige_con_tope_en_cada_tarea(campo: Any) -> None:
+    """Un notebook con el tope instalado no puede dar por buena una tarea que no dice que corrió bajo él."""
+    tarea = _tarea_bien("t_1", T0, 1)
+    if campo == "ausente":
+        del tarea[-1]["con_tope"]
+    else:
+        tarea[-1]["con_tope"] = campo
+    codigo, sesion = _codigo([INSTALADO_164, *tarea, _cierre(T0 + 30)])
+    assert codigo == kr.EXIT_REGISTRO and "no corrió bajo el tope por tarea" in sesion["veredicto"]
+    # Un registro anterior al tope no trae el campo y no se le exige; un `false` explícito sí cuenta
+    assert _codigo([INSTALADO, *tarea, _cierre(T0 + 30)])[0] == (kr.EXIT_REGISTRO if campo is False else 0)
+    assert _codigo([INSTALADO_164, *_tarea_bien("t_1", T0, 1), _cierre(T0 + 30)])[0] == kr.EXIT_OK
+
+
+def test_un_evento_despues_del_cierre_no_sale_con_0() -> None:
+    bien = _tarea_bien("t_1", T0, 1)
+    tardio = _e("agente_fin", None, T0 + 31, error=None)
+    codigo, sesion = _codigo([INSTALADO, *bien, _cierre(T0 + 30), tardio])
+    assert codigo == kr.EXIT_REGISTRO and "1 eventos después del «cierre»" in sesion["veredicto"]
+    # Un segundo `cierre` (el notebook del #160 cerraba dos veces) no es un evento posterior
+    assert _codigo([INSTALADO, *bien, _cierre(T0 + 30), _cierre(T0 + 31)])[0] == kr.EXIT_OK
+
+
+def test_la_segunda_colgada_seguida_con_el_notebook_siguiendo_no_sale_con_7() -> None:
+    seguidas = [
+        INSTALADO,
+        *_tarea_colgada("t_1", T0),
+        *_tarea_colgada("t_2", T0 + 600),
+        *_tarea_bien("t_3", T0 + 1200, 1),
+        _cierre(T0 + 1300),
+    ]
+    codigo, sesion = _codigo(seguidas)
+    assert codigo == kr.EXIT_REGISTRO and "es la segunda seguida y el notebook siguió" in sesion["veredicto"]
+    assert "t_2" in sesion["veredicto"] and sesion["tareas_colgadas"] == ["t_1", "t_2"]
+    # Alternas no rompen la regla (el notebook solo cuenta las seguidas): salen con 7
+    alternas = [
+        INSTALADO,
+        *_tarea_colgada("t_1", T0),
+        *_tarea_bien("t_2", T0 + 600, 1),
+        *_tarea_colgada("t_3", T0 + 700),
+        *_tarea_bien("t_4", T0 + 1300, 2),
+        _cierre(T0 + 1400),
+    ]
+    codigo, sesion = _codigo(alternas)
+    assert codigo == kr.EXIT_CON_COLGADAS and sesion["pares_faltantes"] == ["t_1", "t_3"]
+
+
+def test_una_tarea_marcada_par_faltante_sin_corte_aparece_en_la_lista_y_no_sale_con_0() -> None:
+    """La lista de pares faltantes sale también de la marca de la fila, no solo del evento del corte."""
+    tarea = _tarea_bien("t_1", T0, 1)
+    tarea[-1].update(par_faltante=True, resuelta=False, clase="parche_no_pasa")
+    codigo, sesion = _codigo([INSTALADO, *tarea, *_tarea_bien("t_2", T0 + 20, 2), _cierre(T0 + 60)])
+    assert sesion["pares_faltantes"] == ["t_1"] == sesion["tareas_colgadas"]
+    assert codigo == kr.EXIT_REGISTRO and "no trae su evento «tarea_colgada»" in sesion["veredicto"]
+
+
+@pytest.mark.parametrize("sigue", ["no", "false", "si", 0, 1, None])
+def test_un_sigue_que_no_es_booleano_no_se_interpreta(sigue: Any) -> None:
+    eventos = [
+        INSTALADO,
+        *_tarea_colgada("t_1", T0, sigue=sigue),
+        *_tarea_bien("t_2", T0 + 600, 1),
+        _cierre(T0 + 700),
+    ]
+    codigo, sesion = _codigo(eventos)
+    assert (
+        codigo == kr.EXIT_REGISTRO and "no dice con un booleano si el notebook siguió" in sesion["veredicto"]
+    )
+
+
+def test_el_analisis_de_replicas_no_cuenta_una_tarea_colgada_como_no_resuelta() -> None:
+    """`kaggle_replicas` es el único guion versionado con una prueba por pares, y no lee la marca.
+
+    Su lista de errores del arnés es cerrada: una fila con el texto del corte por tarea colgada no se
+    clasifica (ni «no resuelta» ni infraestructura) y el análisis sale con 2. No puede entrar como par
+    discordante sin que alguien lo decida.
+    """
+    from scripts import kaggle_replicas
+
+    fila = {
+        "resolved": False,
+        "error": str(ke.TareaColgada(900.0, 900.0)),
+        "test_exit_code": -1,
+        "agent_patch_size": 0,
+        "total_llm_calls": 0,
+    }
+    with pytest.raises(kaggle_replicas.ReplicasError, match="fuera de la lista cerrada"):
+        kaggle_replicas.classify_harness(fila, "task_results.jsonl:2")

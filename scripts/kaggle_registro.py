@@ -86,6 +86,9 @@ EXIT_MUERTA = 5
 EXIT_DETENIDA_VIVA = 6
 EXIT_CON_COLGADAS = 7
 
+# Enganche que solo declara un registro del #164 en adelante (el notebook con tope por tarea).
+ENGANCHE_DEL_MAPA = "mapa de hilos del núcleo"
+
 # Segundos de latido sin ningún evento a partir de los cuales una sesión sin cierre se llama «viva y
 # detenida» y no «muerta desde fuera»: el tope por tarea del notebook (900 s), su margen tras el corte (30 s)
 # y un latido (30 s). Con menos silencio, el notebook todavía no había tenido ocasión de cortar la tarea.
@@ -350,9 +353,15 @@ def ocurrencias_de_tarea(eventos: Iterable[dict[str, Any]]) -> list[dict[str, An
 
 
 def es_colgada(ocurrencia: dict[str, Any]) -> bool:
-    """La corrida de una tarea que el notebook cortó por su tope por tarea."""
+    """La corrida de una tarea que el notebook cortó por su tope por tarea.
+
+    Basta una de tres señales: el evento ``tarea_colgada``, la clase de la fila de fin o su marca
+    ``par_faltante``. Si no coinciden, ``salud_del_registro`` lo da por un registro no fiable.
+    """
     fin = ocurrencia["fin"]
-    return ocurrencia["colgada"] is not None or (fin is not None and fin.get("clase") == CLASE_TAREA_COLGADA)
+    return ocurrencia["colgada"] is not None or (
+        fin is not None and (fin.get("clase") == CLASE_TAREA_COLGADA or fin.get("par_faltante") is True)
+    )
 
 
 def silencio_antes_del_ultimo_latido(
@@ -403,9 +412,23 @@ def salud_del_registro(
     corte_por_colgada = any(
         e.get("evento") == "corte" and e.get("cortado_por") == CLASE_TAREA_COLGADA for e in eventos
     )
+    # Un registro del #164 en adelante declara el mapa de hilos entre sus enganches: ese notebook lleva el
+    # tope por tarea, así que cada tarea terminada debe decir «con_tope: true». Un registro anterior no trae
+    # el campo y no se le exige.
+    declara_el_tope = instalado is not None and ENGANCHE_DEL_MAPA in (instalado.get("enganches") or {})
+    # Tras el cierre no debe haber nada: un evento posterior es de algo que siguió corriendo.
+    if cierre is not None:
+        posteriores = [e for e in eventos[eventos.index(cierre) + 1 :] if e.get("evento") != "cierre"]
+        if posteriores:
+            problemas.append(
+                f"hay {len(posteriores)} eventos después del «cierre» (el primero, "
+                f"{str(posteriores[0].get('evento'))[:40]}): algo siguió corriendo con el registro cerrado"
+            )
+    anterior_colgada = False
     for orden, o in enumerate(ocurrencias, start=1):
         nombre_de_tarea = o["inicio"].get("tarea")
         colgada = o["colgada"]
+        era_seguida, anterior_colgada = anterior_colgada, o["fin"] is not None and es_colgada(o)
         if o["fin"] is None:
             # Con el registro cerrado y sin ningún corte, una tarea sin su fila de fin no tiene explicación.
             if cierre is not None and not hay_corte:
@@ -414,7 +437,8 @@ def salud_del_registro(
                     "se cerró sin anotar ningún corte"
                 )
             continue
-        if o["fin"].get("con_tope") is False:
+        con_tope = o["fin"].get("con_tope")
+        if con_tope is False or (declara_el_tope and con_tope is not True):
             problemas.append(f"la tarea {nombre_de_tarea} (corrida {orden}) no corrió bajo el tope por tarea")
         if es_colgada(o):
             if o["fin"].get("resuelta"):
@@ -428,17 +452,28 @@ def salud_del_registro(
                     f"la tarea {nombre_de_tarea} (corrida {orden}) figura como colgada y no trae su evento "
                     "«tarea_colgada» (pila, hilo y decisión de seguir)"
                 )
-            elif colgada.get("sigue") and colgada.get("hilo_vivo") is not False:
+            elif not isinstance(colgada.get("sigue"), bool):
+                # «sigue» decide si hubo dos tareas a la vez: un texto o un campo ausente no se interpreta.
+                problemas.append(
+                    f"el evento «tarea_colgada» de {nombre_de_tarea} (corrida {orden}) no dice con un "
+                    f"booleano si el notebook siguió: {str(colgada.get('sigue'))[:40]!r}"
+                )
+            elif colgada["sigue"] and colgada.get("hilo_vivo") is not False:
                 problemas.append(
                     f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook siguió sin "
                     "comprobar que su hilo había terminado: pudo haber dos tareas a la vez"
                 )
-            elif not colgada.get("sigue") and orden < len(ocurrencias):
+            elif colgada["sigue"] and era_seguida:
+                problemas.append(
+                    f"la tarea colgada {nombre_de_tarea} (corrida {orden}) es la segunda seguida y el "
+                    "notebook siguió: debía terminar la sesión"
+                )
+            elif not colgada["sigue"] and orden < len(ocurrencias):
                 problemas.append(
                     f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook no debía seguir "
                     "y empezó otra tarea"
                 )
-            elif not colgada.get("sigue") and cierre is not None and not corte_por_colgada:
+            elif not colgada["sigue"] and cierre is not None and not corte_por_colgada:
                 problemas.append(
                     f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook no podía seguir "
                     "y el registro se cerró sin anotar el corte de la sesión"
