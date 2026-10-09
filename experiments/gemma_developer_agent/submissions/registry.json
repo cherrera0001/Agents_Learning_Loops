@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-06",
+  "last_updated": "2026-10-09",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -42,6 +42,19 @@
       "public_score": 0.05,
       "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
       "notes": "Ref. Kaggle 56830336, enviado 2026-10-04 17:41 UTC. El mismo zip de sub-002, reenviado para medir el ruido de la tabla. Nota pública 0,05 (estado COMPLETE, sin error), leída por la API el 2026-10-06 19:10 UTC. Kaggle guarda 72 047 bytes para este envío y 86 883 para sub-002; la API no deja bajar el archivo guardado, así que su identidad con el zip local no está comprobada."
+    },
+    {
+      "submission_id": "sub-004",
+      "date": "2026-10-09",
+      "condition": "K",
+      "zip_filename": "submission_k_interfaz_limpia.zip",
+      "sha256": "3346af0e9a92fd42e9a93d30f9e0e7fab42279e47b9015853fe13439b3c2c8b1",
+      "size_bytes": 2545,
+      "is_exploratory": false,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: kit preparado y verificado con el compilador del organizador, sin subir nada a Kaggle. Condición K «interfaz limpia»: la A con tres cambios decididos en el concilio 42 por criterio mecánico. (1) La lista de herramientas pasa de 10 entradas a 6: se quitan get_code_neighbors, search_similar_code y get_code_subgraph. (2) Se quita el subagente code_analyzer_agent: la entrada agent_tool de agent.yaml (3 líneas), sub_agents/code_analyzer.yaml y prompts/analyzer.md. (3) Se quita 1 línea de prompts/system.md, la que ordena usar search_similar_code. El zip tiene 4 archivos en vez de 6; eval_config.yaml y configs/sampling.yaml son idénticos byte a byte a los de A (topes y muestreo). Si se envía, su nota no se podrá atribuir a uno de los tres cambios. Ensayo local con modelo falso (issue 173): el arnés ofrece 6 herramientas y ninguna de las retiradas."
     }
   ]
 }
