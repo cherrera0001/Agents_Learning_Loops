@@ -1,0 +1,124 @@
+{
+  "seq": 69,
+  "id": "issue-160-registro-notebook-08",
+  "goal": "Notebook de la iteración 08 del experimento Kaggle con registro (inicio y fin de cada petición, motivo de fin, latido, log del servidor, diff al cierre y logs por tarea) y ensayo local bajo un núcleo Jupyter real con cuatro cortes forzados, más el sorteo fechado de 60 tareas; sin subir nada",
+  "ref": "#160",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-08",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "research_sources",
+      "success": false,
+      "error": "gh issue view 160 --comments devolvió solo el comentario con la semilla, sin el cuerpo del issue; y en PowerShell la consulta de GraphQL perdió sus comillas dobles: Argument 'id' on Field 'node' has an invalid value. Expected type 'ID!'"
+    },
+    {
+      "action": "research_sources",
+      "success": true,
+      "note": "Cuerpo del issue con gh api repos/<dueño>/<repo>/issues/160 --jq .body; consultas de GraphQL desde Git Bash con comillas simples. Leídos el notebook de la 07 celda a celda, el concilio 40, el guion del rescate de la rama de #156 y el código del arnés copiado de la imagen del ensayo"
+    },
+    {
+      "action": "gh_project_update",
+      "success": true,
+      "note": "Comprobado que el item es la tarjeta del #160 antes de pasarla de Todo a In Progress"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código. Lección aplicada: un ensayo local solo valida lo que ejecuta igual que el sistema real. Issues parecidos: las vueltas 39 y 40 de #103"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/kaggle_registro_enganches.py (la celda de enganches, importable para probarla) y scripts/kaggle_registro.py (sortear y diagnosticar). El sorteo dio 71 tareas válidas y la lista de 60"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "Imagen aal-ensayo-nucleo:local derivada de aal-ensayo:local con ipykernel, nbclient y pytest; el diff de pip freeze muestra solo paquetes añadidos, ninguno cambiado"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Primer ensayo bajo el núcleo: la celda 5 del notebook (demostración del grafo) se dejó correr tal cual y lanzó KeyError porque la primera tarea de tasks.jsonl no tiene grafo en la máquina; además el ensayo terminaba con os._exit sin vaciar la salida y su veredicto no se imprimía"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "El guion de corrección se escribió con un heredoc dentro de la orden: la barra y la n de una cadena de Python llegaron como un salto de línea real y el ensayo quedó con SyntaxError: unterminated string literal"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corregido con la herramienta de edición: doble declarado para la celda 5, vaciado de la salida antes de salir. El notebook corrió entero bajo ZMQInteractiveShell en un proceso distinto del ensayo"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Escenario del tope de llamadas: el modelo falso nunca cedía el turno y el arnés no cortó a las 40 llamadas, la tarea llegó a 100 peticiones; y con cualquier corte la fila de la tarea decía «resuelta» sin error, porque el arnés descarta el motivo cuando el parche pasa. El registro no decía qué tope cortó"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Añadido el enganche agente_fin (envoltorio de Evaluator._run_agent_sandbox), que conserva el motivo de fin del agente, y el modelo falso cede el turno tras pasar el tope. Los cinco escenarios de corte dicen qué cortó"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Medido el parche de rich en sus dos formas: la línea global del issue devuelve los logs pero multiplica por 96 el texto de la celda de tareas; se adoptó force_jupyter=False solo en la consola del log por tarea. El control sin parche deja 6 de 6 logs en 0 bytes"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "El test del sorteo llevaba valores esperados escritos a ojo, sin calcular: AssertionError en los cinco primeros elementos; y otro test contaba 6 eventos donde había 7"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Valores del sorteo calculados aparte, sin pasar por el guion. 40 tests: cancelación con asyncio.timeout, inicio en disco antes de llamar al modelo, registro que no puede escribir, diff antes de destruir el sandbox, sesión muerta sin fin"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Primera batería completa: las dos corridas sin enganches salieron «NO PASA» porque la validación del ensayo exigía logs con contenido en un notebook que, sin registro, no lleva el parche de rich; y la medición de tiempo cayó en parte bajo la carga de otros agentes, como avisó el orquestador"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Corregida la validación (sin enganches es otro control: logs de 0 bytes) y repetida la batería entera con una sola versión del ensayo: 14 corridas, las 14 pasan; la medición de tiempo al final, sola y alternada, con la carga anotada. Rescate: 0 con el parche, 4 sin él"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check y format, mypy, export_schema --check y pytest --cov (2381 pasan, 9 omitidos, cobertura 98,72 %)"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "experiments/gemma_developer_agent/docs/ensayo_nucleo_jupyter.md con lo medido, lo inferido y lo no medido; fila en el índice del experimento y entrada en CHANGELOG.md"
+    }
+  ],
+  "lessons": [
+    "Antes de fiarse de la clase «resuelta» de una tarea del arnés de Kaggle, mirar el motivo de fin del agente: el arnés descarta el error del tope cuando el parche pasa las pruebas",
+    "Para registrar una llamada asíncrona que puede cancelarse, envolver la llamada y capturar BaseException: las retrollamadas de litellm de éxito y de fallo no se disparan ante una cancelación",
+    "Antes de adoptar un parche global de una biblioteca en un notebook, medir qué más cambia: rich.console._is_jupyter devuelve los logs por tarea y además multiplica el texto que el notebook manda a su salida",
+    "En un ensayo con escenarios de control, escribir la expectativa de cada control antes de lanzar la batería: una validación que exige lo contrario obliga a repetirla entera",
+    "No escribir valores esperados de un test a ojo: calcularlos aparte, sin el código bajo prueba, antes de escribir la aserción",
+    "Medir tiempos con la máquina compartida solo en corridas alternadas y con la carga anotada; lo que corre en paralelo con otras cargas no sirve para comparar",
+    "Para corregir un archivo con cadenas que llevan secuencias de escape, usar la herramienta de edición y no un heredoc dentro de la orden"
+  ]
+}
