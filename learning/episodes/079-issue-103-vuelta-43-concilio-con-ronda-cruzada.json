@@ -1,0 +1,89 @@
+{
+  "seq": 79,
+  "id": "issue-103-vuelta-43-concilio-con-ronda-cruzada",
+  "goal": "Vuelta 43 del experimento Kaggle: retomar con la documentación entera leída, convocar el concilio con la misma pregunta para todos, revisión cruzada sin firmas y auditor después, y aplicar lo decidido sin subir ni enviar nada",
+  "ref": "#103",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con la pregunta de la vuelta desde main al día: sin lecciones propias de la pregunta; devolvió como parecidos los issues del vigía, del tope por tarea y el episodio de las vueltas 41 y 42. Se anotó en la bitácora, que es lo que faltó en la vuelta 42"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Ronda 1 con cinco roles en solo lectura y un único encargo escrito en un archivo: la pregunta del dueño, siete dudas, rutas y prohibiciones, sin cifras ni conclusión del orquestador. Cada rol dio un primer paso distinto"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Tres de los cinco roles se cortaron a la vez por un fallo de conexión del equipo a mitad de la ronda 1; dos no habían escrito su informe"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Antes de relanzar se miró qué había dejado cada uno en disco: uno tenía el informe completo y los otros dos sus guiones y datos intermedios. Se reanudaron con su contexto y cerraron en un cuarto de hora, sin repetir mediciones"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "El expediente de la revisión cruzada se armó quitando solo el título de cada informe; cada informe citaba la carpeta de su rol y la sección «lo de mi oficio» lo delataba. El auditor lo señaló: no era anónimo"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "La revisión cruzada sí cambió el resultado: los cinco roles retiraron su primer paso o una cifra, cuatro cifras distintas del mismo hecho resultaron ser cuatro definiciones, y nadie defendió subir los minutos por tarea. Una medición llegada de otra sesión entró como un informe más, marcada «sin recontar», y dos roles la reprodujeron"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El orquestador arrastraba tres afirmaciones de cierres anteriores sin fuente: una condición de lanzamiento de 14,6 h de cuota sin derivación, tres predicciones dadas por ocurridas sin enlace, y «los que declaran más nota usan de 5 a 8 minutos». El auditor, al recontar, no pudo reproducir ninguna"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "El auditor entró después de la revisión cruzada y recontó desde los archivos crudos: fijó cuál de las cuatro definiciones vale para decidir, convirtió el peor caso del límite global en un rango, y corrigió a dos roles (un factor de cuota tomado como mínimo cuando es techo; un recuento de verificaciones cortadas)"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El guion con que el orquestador copió los pareceres a la bitácora llevaba una ruta de Windows en una cadena normal de Python y escribió un retorno de carro en medio de la ruta"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido el byte en la bitácora y, desde entonces, guiones en archivo con cadenas crudas. Registro de hallazgos puesto al día (cuatro decididos, dos descartados, uno abierto y cuatro nuevos), desenlaces de diez predicciones (cuatro marcadas y seis sin marcar porque los informes de revisión no están publicados) y la revisión cruzada escrita en CONTRIBUTING.md y en la skill del concilio"
+    },
+    {
+      "action": "gh_create_issues",
+      "success": true,
+      "note": "Un issue nuevo para el notebook del brazo que solo enciende el razonamiento y el issue de seguimiento ampliado con cinco puntos y estimación revisada; lo que es subir o enviar queda armado y a la espera de la orden del dueño"
+    }
+  ],
+  "lessons": [
+    "Para quitar la firma de un informe no basta con borrar el título: quita también la ruta de la carpeta del rol y pide en el encargo que el informe no nombre su oficio fuera de una sección que puedas separar",
+    "Cuando varios agentes se cortan a la vez, es el equipo y no su trabajo: mira qué dejó cada uno en disco y reanúdalos con su contexto en vez de relanzarlos",
+    "Cuatro cifras distintas del mismo hecho suelen ser cuatro definiciones: pide a la revisión cruzada que diga qué cuenta cada una antes de decidir cuál vale",
+    "Una condición con una cifra que nadie puede derivar no es una condición: al heredarla de un cierre anterior, busca su cuenta o márcala «sin derivación»",
+    "Si un informe de revisión no se publica como comentario del PR, las predicciones sobre lo que dice ese informe no se pueden cerrar: publica cada informe en su PR",
+    "Una medición que llega de otra sesión entra al concilio como un informe más, sin firma y marcada «sin recontar»; vale cuando otro rol la reproduce",
+    "En un guion de Python, una ruta de Windows va en cadena cruda o con barras normales: «\r» dentro de una ruta escribe un retorno de carro sin avisar"
+  ]
+}

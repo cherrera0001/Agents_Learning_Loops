@@ -210,8 +210,19 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
      que se le entrega la hipótesis la devuelve confirmada.
    - Cada rol separa lo medido, lo inferido y lo no medido, dice qué refutaría su conclusión y termina con
      la lista de eventos de fallo que no dejaron rastro en ningún archivo.
-   - El orquestador cruza los informes. Cuando llega un hecho nuevo, vuelve a preguntar a cada rol qué
-     afirmación suya se cae. Los desacuerdos se anotan con el dato que los cerraría; no se promedian.
+   - Todos los roles reciben la **misma pregunta**, la del dueño, además de la parte de su oficio; el encargo
+     no lleva cifras ni conclusiones del orquestador.
+   - **Revisión cruzada, siempre.** Con los informes en mano, el orquestador arma un expediente sin firmas
+     (sin la línea que nombra el rol ni la ruta de su carpeta) y lo devuelve a cada rol, que conserva su
+     contexto. Cada rol entrega, con formato fijo: qué mide bien cada otro informe, qué refuta con su número,
+     qué se le pasó, qué retira de lo suyo, qué candidatas veta y su orden de las acciones candidatas. Sin
+     esa entrega de cada rol, el orquestador no escribe decisiones.
+   - El auditor del método entra **después** de la revisión cruzada, con los informes y las respuestas a la
+     vista, y vuelve a contar desde los archivos crudos las cifras de las que dependa una decisión.
+   - Los órdenes de los roles no se promedian y los desacuerdos se anotan con el dato que los cerraría. Si
+     todos los roles son el mismo modelo, su acuerdo no es una medición, y la bitácora lo dice.
+   - Cuando llega un hecho nuevo, o una pregunta nueva del dueño, va a todos los roles en la ronda siguiente.
+   - Un rol escribe las predicciones fechadas antes de cualquier subida; no las escribe el orquestador.
 5. **Verificación limpia.** Si el relato de la vuelta ya cambió de conclusión, o si la decisión cuesta
    dinero, cuota o un envío, un verificador que no hereda el relato vuelve a medir sus afirmaciones,
    entregadas como frases sin cifras. Es la única excepción al paso 2: hace su propio rescate, con el
