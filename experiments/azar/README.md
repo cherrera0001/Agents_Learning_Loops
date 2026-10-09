@@ -3,8 +3,8 @@
 Documento de entrada del experimento. Está escrito para quien no conoce el proyecto.
 
 **Estado al 2026-10-09: no se ha medido nada.** Esta caja contiene la pregunta, las reglas con que se va a
-responder y el estado del arte verificado ([`docs/estado_del_arte.md`](docs/estado_del_arte.md)). No hay datos,
-ni pruebas estadísticas, ni modelos.
+responder y una primera pasada verificada del estado del arte
+([`docs/estado_del_arte.md`](docs/estado_del_arte.md)). No hay datos, ni pruebas estadísticas, ni modelos.
 
 ## 1. Qué se quiere saber
 
@@ -86,7 +86,7 @@ Cada fase es un issue propio, con su estimación y su pre-registro. Esta caja so
 
 | Fase | Qué hace | Estado |
 |---|---|---|
-| 1. Investigación documental | Estado del arte verificado y mapa de evidencia | En curso: [`docs/estado_del_arte.md`](docs/estado_del_arte.md) |
+| 1. Investigación documental | Estado del arte y mapa de evidencia; hay una primera pasada verificada | En curso: [`docs/estado_del_arte.md`](docs/estado_del_arte.md) |
 | 2. Datos históricos | Resultados públicos de sorteos con sus metadatos: máquina, juego de esferas, cambios de equipo | Sin empezar |
 | 3. Evaluación estadística | Uniformidad, independencia, autocorrelación, entropía, cambios de régimen | Sin empezar |
 | 4. Modelado | Azar, estadística clásica, Transformers y modelos híbridos, sobre el mismo tramo de prueba | Sin empezar |

@@ -1029,7 +1029,7 @@ Desde el 2026-10-09 hay una tercera línea, sin ninguna medición todavía:
 [`experiments/azar/`](experiments/azar/README.md) pregunta si en un sistema físico diseñado para dar
 resultados aleatorios (un sorteo con esferas) hay alguna estructura que permita predecir por encima del azar.
 Es un estudio de auditoría de aleatoriedad, no un sistema de apuestas; hoy contiene la pregunta, las reglas de
-evidencia y un estado del arte verificado.
+evidencia, una primera pasada verificada del estado del arte y un pre-registro.
 
 ```mermaid
 flowchart TB

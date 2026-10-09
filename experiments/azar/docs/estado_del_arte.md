@@ -1,7 +1,10 @@
 # Estado del arte verificado (fase 1, primera pasada)
 
 **Fecha de la verificación: 2026-10-09.** La hizo el rol `investigador-papers` sobre una lista que el
-orquestador escribió de memoria. Regla: una obra solo figura como verificada si se abrió su identificador.
+orquestador escribió de memoria. Su informe íntegro está en
+[`informe_investigador_2026-10-09.md`](informe_investigador_2026-10-09.md).
+
+Regla: una obra solo figura como verificada si se abrió su identificador.
 Presupuesto de la pasada: 60 búsquedas o aperturas; se agotó. Lo que no se buscó está al final y no es
 «ausencia comprobada».
 
@@ -26,8 +29,8 @@ esta pasada no buscó reproducciones independientes.
 | Kapitaniak, Strzałko, Grabski y Kapitaniak (2012), «The three-dimensional dynamics of the die throw», *Chaos* 22(4), 047504. [DOI 10.1063/1.4746038](https://doi.org/10.1063/1.4746038) | Metadatos | Lo que afirma no se leyó | Experimental preliminar |
 | Pinitsoontorn, Buathong y Srisodaphol (2014), «Is it possible to cheat the lottery draw by weighing?», *Asia-Pacific J. Sci. Technol.* 19(6):804–818. [Página de la revista](https://so01.tci-thaijo.org/index.php/APST/article/view/83061) | Artículo | Máquina modelo de aire, 1 000 sorteos, bolas de espuma del 0 al 9: una bola 1 % o 5 % más pesada no dio sesgo significativo; una más ligera sí, y salió más | Experimental preliminar: modelo a escala |
 
-La última fila es **el único trabajo revisado encontrado sobre una máquina de sorteo de esferas**. Es un modelo
-a escala con bolas de espuma.
+La última fila es **el único trabajo revisado encontrado sobre una máquina de sorteo de esferas**. Es un
+modelo a escala con bolas de espuma.
 
 ## 2. Loterías: auditorías, sesgo de los jugadores y fallos
 
@@ -50,10 +53,10 @@ La obra de Coronel-Brizio y otros es la más cercana a lo que la fase 3 necesita
 | Crespo, González-Villa, Gutiérrez y Valle (2024), «Assessing the quality of random number generators through neural networks». [ePrint 2024/578](https://eprint.iacr.org/2024/578) | Artículo | Redes para auditar generadores; resultados distintos según el tipo de generador | Experimental preliminar |
 | Lopez-Paz y Oquab, «Revisiting classifier two-sample tests». [arXiv 1610.06545](https://arxiv.org/abs/1610.06545) | Artículo (arXiv) | Si un clasificador no supera el azar en datos retenidos, hay evidencia de que las dos muestras vienen de la misma distribución. El congreso no se confirmó | Método |
 | Zeng, Chen, Zhang y Xu (2023), «Are Transformers effective for time series forecasting?», *AAAI* 37(9):11121–11128. [arXiv 2205.13504](https://arxiv.org/abs/2205.13504) | Artículo | Modelos lineales de una capa superan a los Transformers de series temporales en nueve conjuntos de datos | Experimental preliminar |
-| PatchTST: Nie, Nguyen, Sinthong y Kalagnanam. [arXiv 2211.14730](https://arxiv.org/abs/2211.14730) | Artículo (arXiv) | La obra existe; no se evaluó lo que afirma | — |
-| iTransformer: Liu y otros. [arXiv 2310.06625](https://arxiv.org/abs/2310.06625) | Artículo (arXiv) | La obra existe; el congreso no se confirmó | — |
-| Informer: Zhou y otros. [arXiv 2012.07436](https://arxiv.org/abs/2012.07436) | Artículo (arXiv) | La obra existe | — |
-| Temporal Fusion Transformer: Lim, Arik, Loeff y Pfister. [arXiv 1912.09363](https://arxiv.org/abs/1912.09363) | Artículo (arXiv) | La obra existe | — |
+| PatchTST: Nie, Nguyen, Sinthong y Kalagnanam. [arXiv 2211.14730](https://arxiv.org/abs/2211.14730) | Artículo (arXiv) | La obra existe; no se evaluó lo que afirma | Sin clasificar |
+| iTransformer: Liu y otros. [arXiv 2310.06625](https://arxiv.org/abs/2310.06625) | Artículo (arXiv) | La obra existe; el congreso no se confirmó | Sin clasificar |
+| Informer: Zhou y otros. [arXiv 2012.07436](https://arxiv.org/abs/2012.07436) | Artículo (arXiv) | La obra existe | Sin clasificar |
+| Temporal Fusion Transformer: Lim, Arik, Loeff y Pfister. [arXiv 1912.09363](https://arxiv.org/abs/1912.09363) | Artículo (arXiv) | La obra existe | Sin clasificar |
 
 **Predicción de lotería con redes: no se encontró ningún artículo revisado.** Ninguna búsqueda de esta pasada
 localizó un trabajo revisado que prediga sorteos con LSTM o Transformers, y por tanto tampoco uno que lo haga
@@ -61,9 +64,9 @@ fuera de muestra contra una línea base aleatoria. Es «no encontrado con este p
 
 ## 4. Pruebas de aleatoriedad y límites
 
-| Obra | Abierto | Qué respalda |
-|---|---|---|
-| Benjamini y Hochberg (1995), *JRSS B* 57(1):289–300. [DOI 10.1111/j.2517-6161.1995.tb02031.x](https://doi.org/10.1111/j.2517-6161.1995.tb02031.x) | Metadatos | Referencia para el control de comparaciones múltiples |
+| Obra | Abierto | Qué respalda | Clase |
+|---|---|---|---|
+| Benjamini y Hochberg (1995), *JRSS B* 57(1):289–300. [DOI 10.1111/j.2517-6161.1995.tb02031.x](https://doi.org/10.1111/j.2517-6161.1995.tb02031.x) | Metadatos | Referencia para el control de comparaciones múltiples | Resultado teórico |
 
 ## 5. No verificado
 
@@ -93,16 +96,22 @@ Nada de esta lista se puede citar todavía. Son obras o hechos que no se abriero
 
 ## 7. Qué tiene respaldo y qué no
 
-- **Con respaldo, con cautela:** un sistema mecánico «aleatorio» puede tener un sesgo físico medible. La
-  moneda (0,508 en un solo estudio grande) y la ruleta (retorno de al menos 18 % midiendo el sistema, con
-  muestra pequeña). En los dos casos la ventaja sale de medir el sistema, no de mirar resultados pasados.
-- **Brecha candidata:** para máquinas de sorteo de esferas solo se encontró un modelo a escala con bolas de
-  espuma. No se encontró ningún estudio que mida una máquina real con sensores.
-- **Sin respaldo encontrado:** que un modelo prediga un sorteo real por encima del azar.
+Las clases de esta sección son del orquestador.
+
+- **Con respaldo, con cautela (evidencia experimental preliminar):** un sistema mecánico «aleatorio» puede
+  tener un sesgo físico medible. La moneda (0,508 en un solo estudio grande) y la ruleta (retorno de al menos
+  18 % midiendo el sistema, con muestra pequeña). *Interpretación del orquestador, no del informe:* en la
+  ruleta la ventaja sale de medir el sistema antes del resultado, no de mirar resultados pasados; en la moneda
+  lo medido es un sesgo, no una ventaja.
+- **Brecha candidata (hipótesis):** para máquinas de sorteo de esferas solo se encontró un modelo a escala con
+  bolas de espuma. No se encontró ningún estudio que mida una máquina real con sensores.
+- **Sin respaldo encontrado (especulación mientras no haya fuente):** que un modelo prediga un sorteo real
+  por encima del azar.
 - **No son evidencia de predictibilidad física:** los fraudes por manipulación y las explotaciones de reglas.
 
 ## 8. Lo que esta pasada no buscó
 
 Revisiones sistemáticas de auditorías de lotería; reproducciones independientes de Small y Tse; estudios con
 medición física de máquinas de aire o de paletas; sorteos de países distintos del Reino Unido y Estados
-Unidos; literatura de mantenimiento predictivo; patentes y documentación de fabricantes.
+Unidos. Hasta aquí, la lista del investigador. El orquestador añade, porque el encargo no las pedía:
+literatura de mantenimiento predictivo, patentes y documentación de fabricantes.
