@@ -167,11 +167,14 @@ cambia; su nota era una explicación equivocada del orquestador.
 Sustituye, de la sección 4, los puntos «Lectura», «Tamaño mínimo» y «Qué la refuta», y su párrafo de
 potencia. Quedan como estaban «Medida», «Línea base» y «Lo que no se puede concluir».
 
-- **Regla para afirmar que predecir acierta mejor:** prueba t pareada de una cola al 5 % sobre las
-  diferencias de Brier por unidad efectiva, con su intervalo de confianza. Sin esa prueba, no se afirma.
-- **Regla para refutar:** con el tamaño de decisión alcanzado, que el intervalo de confianza al 95 % de la
-  diferencia de Brier (línea base menos predicción) no esté por encima de cero. Si además incluye una
-  mejora de 0,05, el resultado se informa como «no concluyente», no como refutación.
+- **Prueba:** t pareada de una cola al 5 % sobre las diferencias de Brier por unidad efectiva. Sin esa
+  prueba no se afirma ni se refuta nada.
+- **Las dos reglas usan el mismo intervalo:** el de confianza al 90 % de dos colas de la diferencia de Brier
+  (línea base menos predicción), que equivale a la prueba de una cola al 5 %. Con el tamaño de decisión
+  alcanzado hay tres resultados y solo tres. Si el intervalo entero está por encima de cero, **se afirma**
+  que predecir acierta mejor. Si el intervalo entero está por debajo de 0,05, **se refuta** una mejora de
+  ese tamaño. En cualquier otro caso el resultado es **no concluyente** y así se informa. Si el intervalo
+  está entre 0 y 0,05 sin tocar ninguno, se afirma una mejora y se dice que es menor de 0,05.
 - **Unidad efectiva:** las predicciones de un mismo issue están correlacionadas. Se agrupan por issue y la
   prueba se hace sobre la media por issue.
 - **Potencia, calculada por el analista de datos** (simulación con un predictor calibrado, que es el mejor
@@ -220,13 +223,16 @@ marca (issue #165), esta tabla no es una marca independiente, y se dice.
 | 1 | 0,45 | 0,67 | No ocurrió | `revisor-codigo`, sobre `90e6b31`: «VEREDICTO: apto con observaciones no bloqueantes». PR #161 fusionado, `mergedAt` 2026-10-09T05:27:08Z |
 | 2 | 0,35 | 1,00 | No ocurrió | El mismo informe: «CASO DE CÓDIGO 0 SIN MERECERLO, ALCANZABLE DESDE EL NOTEBOOK: no». Halló ocho entradas fabricadas a mano que salen con 0; ninguna la produce el notebook, y eso lo infirió leyendo las celdas, sin ejecutarlo |
 | 3 | 0,10 | 0,25 | No ocurrió | `analista-datos`, cuarto recuento: «PREDICCIÓN 3: no ocurrió» |
-| 4 | 0,65 | 0,5 | Ocurrió | `revisor-docs`, sobre `b98af92`: dos frases de `docs/estado_del_arte.md` que no estaban en el informe del investigador |
+| 4 | 0,65 | 0,5 | Ocurrió | `revisor-docs`, sobre `b98af92`: tres elementos de `docs/estado_del_arte.md` que no estaban en el informe del investigador (una interpretación sobre la moneda y la ruleta, y dos categorías de «no buscado») |
 | 5 | 0,80 | 0,86 | Ocurrió | 12 de 12 comprobaciones de `b98af92` en `success` |
 | 6 | 0,75 | 0,97 | Abierta | Falta fusionar el PR #163 |
 
-Las aclaraciones de 8.2 para las predicciones 1, 2 y 3 se subieron en el commit `f7af948` (05:15 UTC), antes
-de que se lanzaran la cuarta revisión y el cuarto recuento. Las de las predicciones 4 y 5 se escribieron
-después de conocer su desenlace.
+Las aclaraciones de 8.2 para las predicciones 1, 2 y 3 se subieron en el commit `f7af948` (05:15 UTC). Que la
+cuarta revisión y el cuarto recuento se lanzaron después de ese commit no consta en ningún registro: lo dice
+el orquestador. La aclaración de la predicción 1 se reescribió en `61cc485` (05:30 UTC), tres minutos después
+de fusionarse el PR #161, para nombrar el commit `90e6b31` y cerrar la lista de veredictos; su sentido no
+cambió («aprobado con observaciones» ya no contaba), pero esa redacción es posterior al desenlace. Las de las
+predicciones 4 y 5 se escribieron después de conocer el suyo.
 
 Son cinco predicciones cerradas en dos issues, escritas por quien hacía el trabajo. No se calcula ninguna
 puntuación con ellas.
