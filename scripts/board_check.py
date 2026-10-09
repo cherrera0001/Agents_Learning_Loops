@@ -30,6 +30,13 @@ Reglas (``--since`` limita las reglas 2 a 4 a los issues con número >= ``since`
    el comando sale con código 2 en vez de evaluar la regla 6. Solo aplica a la lectura
    por ``gh``; ``--snapshot`` no consulta subissues y no la evalúa.
 
+Exención de las reglas 2, 3 y 9 (:func:`exempt_without_work`): un issue con ``state ==
+"CLOSED"``, ``stateReason`` ``NOT_PLANNED`` o ``DUPLICATE`` y que ningún episodio cita como
+``#n`` en su ``ref`` no tuvo trabajo que entregar ni verificar. Si un episodio lo cita, las
+reglas se aplican como a cualquier otro. Un ``stateReason`` vacío, ausente o desconocido no
+exime. Cada exento (con número >= ``since``) se avisa por stderr, sin cambiar el código de salida.
+La regla 1 y las demás no cambian.
+
 Las reglas 1 a 8 y 10 salen de :func:`check_board`; la 9 es la función pura aparte
 :func:`check_missing_cards`, que :func:`run_board` suma a los hallazgos.
 
@@ -127,6 +134,32 @@ def _index_cards(cards: Sequence[Mapping[str, Any]], repo: str | None) -> dict[i
     return board
 
 
+EXEMPT_REASONS = {"NOT_PLANNED": "no planeado", "DUPLICATE": "duplicado"}
+
+
+def exempt_without_work(
+    issues: Sequence[Mapping[str, Any]], episodes: Sequence[Mapping[str, Any]]
+) -> dict[int, str]:
+    """Issues eximidos de las reglas 2, 3 y 9: ``{número: motivo}``.
+
+    Exento = ``state == "CLOSED"``, ``stateReason`` exactamente ``NOT_PLANNED`` o
+    ``DUPLICATE`` y ningún episodio cita ``#n`` en su ``ref`` (misma cita que la regla 4:
+    ``PR #n`` no cuenta). Un ``stateReason`` vacío, ausente, desconocido o en otra
+    capitalización no exime: callar por falta de dato es peor que avisar de más.
+    """
+    cited: set[int] = set()
+    for ep in episodes:
+        cited |= cited_issues(str(ep.get("ref", "")))
+    return {
+        int(i["number"]): EXEMPT_REASONS[reason]
+        for i in issues
+        if i.get("state") == "CLOSED"
+        and isinstance((reason := i.get("stateReason")), str)
+        and reason in EXEMPT_REASONS
+        and int(i["number"]) not in cited
+    }
+
+
 def check_board(
     issues: Sequence[Mapping[str, Any]],
     cards: Sequence[Mapping[str, Any]],
@@ -148,6 +181,7 @@ def check_board(
     def in_scope(n: int) -> bool:
         return since is not None and n >= since
 
+    exempt = exempt_without_work(issues, episodes)
     out: list[Finding] = []
     for n, card in board.items():
         status = card.get("status")
@@ -158,7 +192,7 @@ def check_board(
                 out.append(Finding(1, n, f"issue cerrado con la tarjeta en {status or 'sin estado'}"))
             elif state == "OPEN" and status == "Done":
                 out.append(Finding(1, n, "tarjeta en Done con el issue abierto"))
-        if not in_scope(n):
+        if not in_scope(n) or n in exempt:  # exento: las reglas 2 y 3 miden entrega que no hubo
             continue
         epic = n in epics
         if status in ("In Progress", "Done") and not epic:
@@ -261,14 +295,22 @@ def check_missing_cards(
     cards: Sequence[Mapping[str, Any]],
     since: int | None,
     repo: str | None = REPO,
+    episodes: Sequence[Mapping[str, Any]] | None = None,
 ) -> list[Finding]:
-    """Regla 9: issues con número >= ``since`` sin tarjeta (incluye épicas). ``since=None``: ninguno."""
+    """Regla 9: issues con número >= ``since`` sin tarjeta (incluye épicas). ``since=None``: ninguno.
+
+    Con ``episodes`` se eximen los issues cerrados sin trabajo (:func:`exempt_without_work`);
+    sin ellos (``None``) no se puede saber si hubo trabajo y no se exime ninguno.
+    """
     if since is None:
         return []
     board = _index_cards(cards, repo)
+    exempt = exempt_without_work(issues, episodes) if episodes is not None else {}
     numbers = sorted({int(i["number"]) for i in issues})
     return [
-        Finding(9, n, "issue sin tarjeta en el tablero") for n in numbers if n >= since and n not in board
+        Finding(9, n, "issue sin tarjeta en el tablero")
+        for n in numbers
+        if n >= since and n not in board and n not in exempt
     ]
 
 
@@ -423,12 +465,17 @@ def run_board(
         print(f"error: no se pudo leer la fuente: {exc}", file=err)
         return 2
     findings = sorted(
-        check_board(issues, items, episodes, subs, since) + check_missing_cards(issues, items, since)
+        check_board(issues, items, episodes, subs, since)
+        + check_missing_cards(issues, items, since, episodes=episodes)
     )
     for note in not_evaluated(since, subs):
         print(f"aviso: {note}", file=err)
     if since is None:
         print("aviso: regla 9 no evaluada: falta --since", file=err)
+    else:
+        for n, reason in sorted(exempt_without_work(issues, episodes).items()):
+            if n >= since:
+                print(f"aviso: #{n} exento de las reglas 2, 3 y 9 ({reason}, sin episodio)", file=err)
     for f in findings:
         print(f.line(), file=out)
     if not findings:

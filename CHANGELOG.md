@@ -6,6 +6,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 ## [Unreleased]
 
 ### Añadido
+- Guardián del tablero (#169): las reglas 2, 3 y 9 no se aplican a un issue cerrado como «no planeado» o «duplicado» que ningún episodio cita como `#n` en su `ref` (no tuvo trabajo); un `stateReason` vacío o desconocido no exime y cada exento se avisa por stderr sin cambiar el código de salida. Lo aplica también `scripts/session_guard.py`; `CONTRIBUTING.md`, `learning/README.md` y la docstring de `scripts/board_check.py` al día. Pruebas con conjunto fijo en `tests/integration/test_board_check_exempt.py`.
 - Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.
 - Documentación del modelo de construcción (qué modelo de Claude construye cada issue, cómo se aplica y con qué fuerza), sin cambio de comportamiento: README § 3.2 y `docs/entorno/enrutamiento.md`.
 - Documentación del caso real del sitio público `vinculaterritorio.cl`, sin cambio de comportamiento: `docs/entorno/caso-real-contacto-vt.md` al día (formulario, verificación post-despliegue, roles de la landing y qué está implementado, observado, inferido o hipotético), rol de cierre en `docs/entorno/agentes.md`, fila canónica en `docs/entorno/README.md` y enlace en README § 3.1. No es evidencia del Experimento 1.

@@ -187,6 +187,15 @@ casos se avisan por stderr. Una línea por hallazgo: `R<regla> #<issue>: <mensaj
 | 9 | Issue con número `>= --since` sin tarjeta en el tablero | `>= --since`; incluye épicas |
 | 10 | Lectura truncada de subissues: épica con ≥ 50 subissues → código 2. Solo aplica a la lectura por `gh`, no a `--snapshot` | épicas |
 
+**Exención de las reglas 2, 3 y 9.** No se aplican a un issue con `state` = `CLOSED`, `stateReason` =
+`NOT_PLANNED` o `DUPLICATE` y que ningún episodio cita como `#n` en su `ref` (la cita es la de la regla 4:
+`PR #n` no cuenta): no tuvo trabajo que entregar ni verificar. Si un episodio lo cita, las tres reglas se
+aplican como a cualquier otro; un `stateReason` vacío, ausente, desconocido o en minúsculas no exime. Cada
+exento con número `>= --since` sale por stderr como
+`aviso: #n exento de las reglas 2, 3 y 9 (no planeado|duplicado, sin episodio)` y no cambia el código de
+salida. La regla 1 y las demás no cambian. Hueco conocido: trabajo real cerrado como «no planeado» sin
+episodio queda exento, el mismo que ya tiene la regla 4.
+
 Códigos de salida: `0` sin hallazgos, `1` con hallazgos, `2` si no se pudo leer la fuente (`gh` ausente,
 cuenta que no ve el Project, lectura incompleta o instantánea incompleta, o subissues truncados en R10); un `2` nunca se informa como
 «sin hallazgos». No corre en CI: el token de CI no ve Projects de usuario.

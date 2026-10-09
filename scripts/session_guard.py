@@ -144,7 +144,8 @@ def informe(
         items, issues, subs = read_github(runner)
         prs = prs_abiertos(runner)
     hallazgos = sorted(
-        check_board(issues, items, episodes, subs, DESDE) + check_missing_cards(issues, items, DESDE)
+        check_board(issues, items, episodes, subs, DESDE)
+        + check_missing_cards(issues, items, DESDE, episodes=episodes)
     )
     lineas = [f"GUARDIÁN DEL TABLERO · Project #{PROJECT_NUMBER} de {REPO}"]
     lineas += _bloque(

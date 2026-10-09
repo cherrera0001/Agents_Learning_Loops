@@ -1,0 +1,50 @@
+{
+  "seq": 72,
+  "id": "issue-169-guardian-sin-trabajo",
+  "goal": "Eximir de las reglas 2, 3 y 9 del guardián del tablero a un issue cerrado como no planeado o duplicado que ningún episodio cita, avisando de cada exento por stderr",
+  "ref": "#169",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código; lección aplicada: la cita de un issue exige número exacto (PR #n y otro/repo#n no cuentan), por eso la exención reutiliza cited_issues de la regla 4"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "exempt_without_work en board_check.py; regla 9 con parámetro opcional episodes. session_guard.py llamaba a check_missing_cards sin episodios y habría seguido avisando del #159 al abrir sesión: se pasó también ahí, y una prueba lo cubre"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Sobre el repositorio real, el #104 (NOT_PLANNED, con PR 129 y 135 fusionados) salió exento: ningún episodio lo cita como #104 en su ref (los episodios de ese trabajo citan #100 y #103 y URLs de comentarios). El criterio «el #104 no aparece como exento» no se cumple con la regla tal como está escrita; no se amplió la regla"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Prueba propia de mutación con 22 defectos inyectados: la primera tanda dejó 4 supervivientes; dos eran mutantes mal construidos (uno no cambiaba nada, otro eximía las dos reglas a la vez) y dos eran huecos reales: la prueba de session_guard no tenía un issue sin tarjeta (la regla 9 no se ejercía) y ninguna prueba fijaba la frontera n >= since del aviso. Se añadieron esas dos pruebas; 22 de 22 detectados"
+    }
+  ],
+  "lessons": [
+    "Antes de dar por cumplido un criterio sobre datos reales («el #104 no aparece como exento»), mide la premisa en los archivos: aquí ningún episodio citaba #104 en su ref, y la regla escrita lo eximía",
+    "Al cambiar una regla del guardián, busca todos los llamadores de la función, no solo el comando de la regla: session_guard.py la usaba aparte y habría seguido avisando",
+    "Un mutante que no cambia el comportamiento sobrevive y no dice nada de las pruebas: comprueba que cada defecto inyectado falla al menos con una entrada antes de contarlo como superviviente"
+  ]
+}
