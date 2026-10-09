@@ -169,12 +169,14 @@ potencia. Quedan como estaban «Medida», «Línea base» y «Lo que no se puede
 
 - **Prueba:** t pareada de una cola al 5 % sobre las diferencias de Brier por unidad efectiva. Sin esa
   prueba no se afirma ni se refuta nada.
-- **Las dos reglas usan el mismo intervalo:** el de confianza al 90 % de dos colas de la diferencia de Brier
-  (línea base menos predicción), que equivale a la prueba de una cola al 5 %. Con el tamaño de decisión
-  alcanzado hay tres resultados y solo tres. Si el intervalo entero está por encima de cero, **se afirma**
-  que predecir acierta mejor. Si el intervalo entero está por debajo de 0,05, **se refuta** una mejora de
-  ese tamaño. En cualquier otro caso el resultado es **no concluyente** y así se informa. Si el intervalo
-  está entre 0 y 0,05 sin tocar ninguno, se afirma una mejora y se dice que es menor de 0,05.
+- **Una sola regla, con tres resultados que se excluyen.** Se calcula el intervalo de confianza al 90 % de dos
+  colas de la diferencia de Brier (línea base menos predicción; positivo es mejor), que equivale a la prueba
+  de una cola al 5 %. Con el tamaño de decisión alcanzado:
+  - si el extremo inferior del intervalo es mayor que cero, **se afirma** que predecir acierta mejor, y se
+    da el intervalo;
+  - si el extremo superior es menor o igual que cero, **se refuta**: predecir no acierta mejor que la
+    frecuencia histórica;
+  - si el intervalo contiene el cero, el resultado es **no concluyente** y así se informa.
 - **Unidad efectiva:** las predicciones de un mismo issue están correlacionadas. Se agrupan por issue y la
   prueba se hace sobre la media por issue.
 - **Potencia, calculada por el analista de datos** (simulación con un predictor calibrado, que es el mejor
