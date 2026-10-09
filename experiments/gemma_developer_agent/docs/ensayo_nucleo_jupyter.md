@@ -200,7 +200,8 @@ La corrida que se colgó en el #160 (983,7 s de latido sin eventos) sale ahora c
   de `false`), o siendo la segunda colgada seguida;
 - haber empezado otra tarea, o haber cerrado sin `corte`, después de decidir no seguir;
 - un evento `tarea_colgada` que no cae dentro de la corrida de ninguna tarea;
-- cualquier evento después del `cierre` (otro `cierre` no cuenta: el notebook del #160 cerraba dos veces).
+- cualquier evento después del `cierre`. Un segundo `cierre` no cuenta como evento posterior; esa tolerancia
+  es inocua y no responde a ningún caso visto: los 16 registros del #160 traen un solo `cierre`.
 
 Cinco de estas reglas (la exigencia de `con_tope`, `sigue` no booleano, la segunda seguida, la marca sin
 corte y los eventos tras el cierre) salieron de la revisión del PR #176. Se corrigieron las cinco en vez de
@@ -1104,10 +1105,18 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
   ([arriba](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle)).
 - **`comprobar` puede dar 4 en vez de 7** cuando la tarea cortada dejó su log por tarea en 0 bytes
   ([arriba](#resultado-de-la-batería-del-164)).
+- **Un evento escrito después del `cierre` da 4, y puede tapar un 3.** Es alcanzable de dos maneras: un hilo
+  suelto que se destraba después de «corta y termina» y escribe un evento con el registro ya cerrado, o una
+  retrollamada tardía de litellm que llega tras el cierre de una corrida buena. El 4 gana al 3, así que el
+  código dejaría de decir «cortada por el notebook»; el veredicto sí lo sigue diciendo, detrás del
+  problema. En los 42 registros del ensayo no ocurrió: en los 39 que tienen `cierre`, entre el último evento
+  y el `cierre` pasan de 0,014 a 0,418 s y después no hay nada. Con el modelo real no está medido.
+- **Un registro con `registro_instalado` y `cierre`, sin ninguna tarea, sale con 0.** Es el caso extremo de
+  no saber cuántas tareas se esperaban.
 
 ### Pruebas versionadas del #164
 
-`tests/test_kaggle_tope_por_tarea.py`, 75 pruebas, sin Docker, sin el arnés y sin un núcleo: el núcleo es un
+`tests/test_kaggle_tope_por_tarea.py`, 81 pruebas, sin Docker, sin el arnés y sin un núcleo: el núcleo es un
 doble con el mapa o sin él. No se modificó ninguna prueba del #160. Como en el #160, la cobertura que exige
 el CI no mide `scripts/`. Las comparaciones con el reloj llevan tolerancia: la primera versión exigía que
 la espera de un tope de 0,3 s durara 0,3 s o más, y en Windows `Thread.join` volvió a los 0,296 s, con la

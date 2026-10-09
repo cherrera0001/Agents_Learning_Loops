@@ -326,11 +326,13 @@ def test_si_el_hilo_sigue_vivo_el_notebook_no_puede_seguir(
     colgada = _colgar(registro, bucle_sincrono)
     try:
         t0 = time.monotonic()
-        assert registro.tarea_colgada(colgada, 0.3) is False
-        assert 0.25 <= time.monotonic() - t0 < 5, "espera el margen y no más"
+        assert registro.tarea_colgada(colgada, 1.0) is False
+        # Tolerancia abajo (Thread.join puede volver un tic antes) y cota por debajo del doble del margen
+        espera = time.monotonic() - t0
+        assert 0.95 <= espera < 1.9, f"espera el margen (1,0 s) y no más: {espera:.3f} s"
         (evento,) = _de_tipo(registro, "tarea_colgada")
         assert evento["hilo_vivo"] is True and evento["sigue"] is False
-        assert evento["segundos_hasta_terminar"] is None and evento["margen_s"] == 0.3
+        assert evento["segundos_hasta_terminar"] is None and evento["margen_s"] == 1.0
         assert "bucle_sincrono" in registro.ruta_pila.read_text(encoding="utf-8")
     finally:
         soltar.set()
@@ -954,7 +956,7 @@ def test_un_evento_despues_del_cierre_no_sale_con_0() -> None:
     tardio = _e("agente_fin", None, T0 + 31, error=None)
     codigo, sesion = _codigo([INSTALADO, *bien, _cierre(T0 + 30), tardio])
     assert codigo == kr.EXIT_REGISTRO and "1 eventos después del «cierre»" in sesion["veredicto"]
-    # Un segundo `cierre` (el notebook del #160 cerraba dos veces) no es un evento posterior
+    # Un segundo `cierre` no es un evento posterior (tolerancia inocua: ningún registro real trae dos)
     assert _codigo([INSTALADO, *bien, _cierre(T0 + 30), _cierre(T0 + 31)])[0] == kr.EXIT_OK
 
 
@@ -1023,3 +1025,78 @@ def test_el_analisis_de_replicas_no_cuenta_una_tarea_colgada_como_no_resuelta() 
     }
     with pytest.raises(kaggle_replicas.ReplicasError, match="fuera de la lista cerrada"):
         kaggle_replicas.classify_harness(fila, "task_results.jsonl:2")
+
+
+# ---------------------------------------------------------------------------
+# Lo que encontró la segunda revisión del PR #176
+# ---------------------------------------------------------------------------
+
+
+def test_la_segunda_colgada_seguida_que_termina_la_sesion_sale_con_3() -> None:
+    """Dos seguidas y el notebook termina, como manda la regla: es un corte, no un registro no fiable."""
+    eventos = [
+        INSTALADO,
+        *_tarea_colgada("t_1", T0),
+        *_tarea_colgada("t_2", T0 + 600, sigue=False),
+        _e("corte", None, T0 + 1142, cortado_por="tarea_colgada", tarea_cortada="t_2"),
+        _e("corte", None, T0 + 1143, cortado_por="fallo TareaColgada"),
+        _cierre(T0 + 1144),
+    ]
+    codigo, sesion = _codigo(eventos)
+    assert codigo == kr.EXIT_CORTADA and sesion["registro_fiable"] is True
+    assert sesion["cortado_por"] == "tarea_colgada" and sesion["pares_faltantes"] == ["t_1", "t_2"]
+
+
+@pytest.mark.parametrize(
+    "estado_del_enganche",
+    [
+        "se vacía antes de cada tarea",
+        "no se vacía (desactivado)",
+        "no disponible: este ipykernel (7.1.0) no tiene el mapa _thread_to_parent",
+        "no disponible: sin núcleo de Jupyter",
+    ],
+)
+def test_el_tope_se_exige_diga_lo_que_diga_el_enganche_del_mapa(estado_del_enganche: str) -> None:
+    """El tope no depende del mapa: basta que el registro declare el enganche, con cualquier valor."""
+    instalado = _e(
+        "registro_instalado", None, T0, enganches={**ENGANCHES, kr.ENGANCHE_DEL_MAPA: estado_del_enganche}
+    )
+    sin_campo = _tarea_bien("t_1", T0, 1)
+    del sin_campo[-1]["con_tope"]
+    codigo, sesion = _codigo([instalado, *sin_campo, _cierre(T0 + 30)])
+    assert codigo == kr.EXIT_REGISTRO and "no corrió bajo el tope por tarea" in sesion["veredicto"]
+    assert _codigo([instalado, *_tarea_bien("t_1", T0, 1), _cierre(T0 + 30)])[0] == kr.EXIT_OK
+
+
+def test_el_analisis_de_replicas_rechaza_la_fila_que_escribe_el_notebook(tmp_path: Path) -> None:
+    """La fila real del notebook (`task_id`, `status`, `error_message`) no tiene la forma del arnés."""
+    from scripts import kaggle_replicas
+
+    fila = {
+        "task_id": "t_2",
+        "resolved": False,
+        "status": "tarea_colgada",
+        "par_faltante": True,
+        "duration_seconds": 900.0,
+        "error_message": str(ke.TareaColgada(900.0, 900.0)),
+    }
+    with pytest.raises(kaggle_replicas.ReplicasError, match="agent_patch_size"):
+        kaggle_replicas.classify_harness(fila, "task_results.jsonl:2")
+    # Y el conversor entero tampoco la acepta: le faltan las claves del arnés
+    ruta = tmp_path / "task_results.jsonl"
+    ruta.write_text(json.dumps(fila) + "\n", encoding="utf-8")
+    with pytest.raises(kaggle_replicas.ReplicasError, match="falta la clave"):
+        kaggle_replicas.convert_harness_results(
+            ruta,
+            patches_dir=None,
+            subset_ids=["t_2"],
+            replica=1,
+            condition="A",
+            submission_sha256="0" * 64,
+            tasks_sha256="0" * 64,
+            subset_sha256="0" * 64,
+            harness_version="x",
+            sandbox_image="x",
+            converted_utc="2026-10-09T00:00:00Z",
+            run_utc="2026-10-09T00:00:00Z",
+        )
