@@ -431,100 +431,144 @@ def _comprobar(destino: Path, capsys: pytest.CaptureFixture[str], *extra: str) -
     return codigo, json.loads(capsys.readouterr().out)
 
 
-def test_comprobar_corre_el_rescate_y_el_diagnostico_y_ve_la_sesion_muerta(
+P1, P2 = "iteracion-08-p1", "iteracion-08-p2"
+DOS = ("--notebook", P1, "--notebook", P2)
+
+
+def test_comprobar_con_las_dos_pasadas_y_su_registro_sale_con_0(
     tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
 ) -> None:
-    destino = _rescate(tmp_path, {"completa": _con_registro(SANA), "muerta": _con_registro(SANA[:-1])})
-    # El rescate da 0 sobre una sesión muerta desde fuera: el diagnóstico es el que la ve.
-    codigo, resumen = _comprobar(destino, capsys)
-    assert codigo == kr.EXIT_MUERTA
-    assert rescate_falso["llamadas"] == [["--destino", str(destino), "--sin-red"]]
-    assert resumen["rescate"] == {"codigo": 0, "faltantes": 0} and resumen["omitidos"] == {}
-    assert {k: v["codigo"] for k, v in resumen["sesiones"].items()} == {
-        "completa": 0,
-        "muerta": kr.EXIT_MUERTA,
-    }
-    assert _comprobar(destino, capsys, "--notebook", "completa")[0] == kr.EXIT_OK
-
-
-def test_comprobar_no_salta_en_silencio_una_pasada_que_no_trae_su_registro(
-    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
-) -> None:
-    """El caso de la segunda revisión: una copia de la pasada sin su registro, con zip, latido y log."""
-    sin_registro = {
-        "salida__crudo_iteracion_08_p2_A8P2.zip": "zip",
-        "salida__latido_iteracion_08_p2.jsonl": "{}\n",
-        "salida__servidor_log_iteracion_08_p2.txt": "INFO\n",
-    }
-    destino = _rescate(tmp_path, {"completa": _con_registro(SANA), "pasada-sin-registro": sin_registro})
-    codigo, resumen = _comprobar(destino, capsys)
-    assert codigo == kr.EXIT_REGISTRO
-    omitido = resumen["omitidos"]["pasada-sin-registro"]
-    assert omitido["codigo"] == kr.EXIT_REGISTRO and "señales" in omitido["motivo"]
-    assert omitido["senales"] == sorted(sin_registro)
-    assert list(resumen["sesiones"]) == ["completa"]
-    # Cada señal basta por sí sola.
-    for nombre in sin_registro:
-        otro = _rescate(tmp_path / nombre, {"completa": _con_registro(SANA), "p": {nombre: "x"}})
-        assert _comprobar(otro, capsys)[0] == kr.EXIT_REGISTRO, nombre
-
-
-def test_comprobar_lista_un_notebook_viejo_sin_registro_y_no_lo_cuenta_como_hallazgo(
-    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
-) -> None:
-    destino = _rescate(tmp_path, {"iteracion-07": NOTEBOOK_VIEJO, "pasada-buena": _con_registro(SANA)})
-    codigo, resumen = _comprobar(destino, capsys)
+    destino = _rescate(
+        tmp_path, {P1: _con_registro(SANA), P2: _con_registro(SANA), "iteracion-07": NOTEBOOK_VIEJO}
+    )
+    codigo, resumen = _comprobar(destino, capsys, *DOS)
     assert codigo == kr.EXIT_OK
-    assert resumen["omitidos"] == {
-        "iteracion-07": {"codigo": 0, "motivo": "no trae salida__registro_*.jsonl", "senales": []}
-    }
-    assert resumen["sesiones"]["pasada-buena"]["codigo"] == 0
-
-
-def test_comprobar_imprime_siempre_el_rescate_y_no_pierde_su_codigo(
-    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
-) -> None:
-    solo_viejo = _rescate(tmp_path, {"iteracion-07": NOTEBOOK_VIEJO})
-    rescate_falso["codigo"] = 4
-    codigo, resumen = _comprobar(solo_viejo, capsys)
-    assert codigo == 4 and resumen["rescate"] == {"codigo": 4, "faltantes": 2} and resumen["sesiones"] == {}
-    # Sin ningún registro que diagnosticar y sin hallazgos: entrada inválida, pero con el rescate impreso.
-    rescate_falso["codigo"] = 0
-    codigo = kr.main(["comprobar", "--rescate", str(solo_viejo)])
-    salida = capsys.readouterr()
-    assert codigo == kr.EXIT_ENTRADA and "ningún notebook" in salida.err
-    assert json.loads(salida.out)["rescate"] == {"codigo": 0, "faltantes": 0}
-    assert kr.main(["comprobar", "--rescate", str(solo_viejo), "--notebook", "no-existe"]) == kr.EXIT_ENTRADA
+    assert rescate_falso["llamadas"] == [["--destino", str(destino), "--sin-red"]]
+    assert resumen["rescate"] == {"codigo": 0, "faltantes": 0}
+    assert {k: v["codigo"] for k, v in resumen["pasadas_esperadas"].items()} == {P1: 0, P2: 0}
+    # Un notebook viejo sin registro, que nadie nombró, solo se lista.
+    assert resumen["notebooks_no_nombrados"] == {"iteracion-07": {"con_registro": False}}
 
 
 @pytest.mark.parametrize(
-    ("notebooks", "codigo_del_rescate", "esperado"),
+    ("segunda", "frase"),
+    [
+        # Los cuatro casos de la tercera revisión: una pasada muerta antes de instalar el registro.
+        ({"estado.json": "{}", "metadatos.json": "{}", "log.txt": "x"}, "no trae salida__registro_"),
+        ({"salida__servidor_error_salida.txt": "CUDA out of memory"}, "no trae salida__registro_"),
+        ({}, "no trae salida__registro_"),
+        (None, "no existe la carpeta"),
+    ],
+)
+def test_comprobar_no_sale_con_0_si_una_pasada_esperada_no_trae_su_registro(
+    tmp_path: Path,
+    rescate_falso: dict[str, Any],
+    capsys: pytest.CaptureFixture[str],
+    segunda: dict[str, str] | None,
+    frase: str,
+) -> None:
+    notebooks = {P1: _con_registro(SANA)} if segunda is None else {P1: _con_registro(SANA), P2: segunda}
+    destino = _rescate(tmp_path, notebooks)
+    codigo, resumen = _comprobar(destino, capsys, *DOS)
+    assert codigo == kr.EXIT_REGISTRO
+    assert resumen["pasadas_esperadas"][P1]["codigo"] == 0
+    falta = resumen["pasadas_esperadas"][P2]
+    assert falta["codigo"] == kr.EXIT_REGISTRO and frase in falta["motivo"]
+    if segunda:
+        assert falta["salidas"] == sorted(n for n in segunda if n.startswith("salida__"))
+    # Nombrando solo la pasada buena no hay hallazgo: la orden juzga lo que se le dice que espere.
+    assert _comprobar(destino, capsys, "--notebook", P1)[0] == kr.EXIT_OK
+
+
+def test_comprobar_sin_pasadas_nombradas_nunca_sale_con_0(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _rescate(tmp_path, {P1: _con_registro(SANA), P2: _con_registro(SANA)})
+    codigo = kr.main(["comprobar", "--rescate", str(destino)])
+    salida = capsys.readouterr()
+    assert codigo == kr.EXIT_ENTRADA and "no se nombró ninguna pasada" in salida.err
+    resumen = json.loads(salida.out)
+    assert resumen["pasadas_esperadas"] == {} and resumen["rescate"] == {"codigo": 0, "faltantes": 0}
+    assert resumen["notebooks_no_nombrados"] == {P1: {"con_registro": True}, P2: {"con_registro": True}}
+    # Y si el rescate falla, su código no se pierde tampoco aquí.
+    rescate_falso["codigo"] = 4
+    assert _comprobar(destino, capsys)[0] == 4
+
+
+def test_comprobar_ve_la_sesion_muerta_que_el_rescate_no_ve(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _rescate(tmp_path, {P1: _con_registro(SANA), P2: _con_registro(SANA[:-1])})
+    codigo, resumen = _comprobar(destino, capsys, *DOS)
+    assert codigo == kr.EXIT_MUERTA and resumen["rescate"]["codigo"] == 0
+    assert resumen["pasadas_esperadas"][P2]["veredicto"].startswith("muerta desde fuera")
+    # Nombrar dos veces la misma pasada no la cuenta dos veces.
+    _, repetida = _comprobar(destino, capsys, "--notebook", P1, "--notebook", P1)
+    assert list(repetida["pasadas_esperadas"]) == [P1]
+
+
+@pytest.mark.parametrize(
+    ("primera", "segunda", "codigo_del_rescate", "esperado"),
     [
         # Fallan el rescate y un diagnóstico: gana el rescate.
-        ({"a": SANA[:-1]}, 4, 4),
-        # Fallan dos diagnósticos: gana el primero por nombre, no el último ni el mayor.
-        ({"a-cortada": CORTADA, "b-muerta": SANA[:-1]}, 0, 3),
-        ({"a-muerta": SANA[:-1], "b-cortada": CORTADA}, 0, 5),
-        # Un registro ilegible en un notebook no impide diagnosticar los demás.
-        ({"a-buena": SANA, "b-rota": ['{"evento": "tarea_inicio", "tarea": ["t_1"]}']}, 0, 2),
+        (SANA[:-1], SANA, 4, 4),
+        # Fallan dos pasadas: gana la primera nombrada, no la última ni la de código mayor.
+        (CORTADA, SANA[:-1], 0, 3),
+        (SANA[:-1], CORTADA, 0, 5),
+        # Un registro ilegible en una pasada no impide diagnosticar la otra.
+        (SANA, ['{"evento": "tarea_inicio", "tarea": ["t_1"]}'], 0, 2),
     ],
 )
 def test_comprobar_precedencia_de_codigos(
     tmp_path: Path,
     rescate_falso: dict[str, Any],
     capsys: pytest.CaptureFixture[str],
-    notebooks: dict[str, list[str]],
+    primera: list[str],
+    segunda: list[str],
     codigo_del_rescate: int,
     esperado: int,
 ) -> None:
     rescate_falso["codigo"] = codigo_del_rescate
-    destino = _rescate(tmp_path, {k: _con_registro(v) for k, v in notebooks.items()})
-    codigo, resumen = _comprobar(destino, capsys)
-    assert codigo == esperado and set(resumen["sesiones"]) == set(notebooks)
-    if "b-rota" in notebooks:
-        assert resumen["sesiones"]["b-rota"]["codigo"] == kr.EXIT_ENTRADA
-        assert "ilegible" in resumen["sesiones"]["b-rota"]["veredicto"]
-        assert resumen["sesiones"]["a-buena"]["codigo"] == 0
+    # Los nombres van al revés que el orden alfabético: manda el orden en que se nombran las pasadas.
+    destino = _rescate(tmp_path, {"z-primera": _con_registro(primera), "a-segunda": _con_registro(segunda)})
+    codigo, resumen = _comprobar(destino, capsys, "--notebook", "z-primera", "--notebook", "a-segunda")
+    assert codigo == esperado and list(resumen["pasadas_esperadas"]) == ["z-primera", "a-segunda"]
+    if esperado == kr.EXIT_ENTRADA:
+        assert "ilegible" in resumen["pasadas_esperadas"]["a-segunda"]["motivo"]
+        assert resumen["pasadas_esperadas"]["z-primera"]["codigo"] == 0
+
+
+@pytest.mark.parametrize(
+    "senal",
+    [
+        "salida__latido_x.jsonl",
+        "salida__servidor_log_x.txt",
+        "salida__diff_en_curso_x.diff",
+        "salida__crudo_iteracion_08_x.zip",
+    ],
+)
+def test_un_notebook_no_nombrado_sin_registro_y_con_una_senal_lleva_un_aviso(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str], senal: str
+) -> None:
+    """Cada nombre casa con un solo patrón de `SENALES_DE_PASADA`: quitar ese patrón hace fallar su caso."""
+    assert sum(Path(senal).match(patron) for patron in kr.SENALES_DE_PASADA) == 1
+    otro = {senal: "x", "salida__iteracion_07.json": "{}"}
+    destino = _rescate(tmp_path, {P1: _con_registro(SANA), "otro": otro, "viejo": NOTEBOOK_VIEJO})
+    codigo, resumen = _comprobar(destino, capsys, "--notebook", P1)
+    assert codigo == kr.EXIT_OK  # es un aviso: el código lo deciden las pasadas nombradas
+    assert resumen["notebooks_no_nombrados"]["otro"] == {
+        "con_registro": False,
+        "aviso": "sin registro y con archivos que solo deja un notebook con registro",
+        "senales": [senal],
+    }
+    assert resumen["notebooks_no_nombrados"]["viejo"] == {"con_registro": False}
+
+
+def test_un_registro_con_solo_peticiones_canceladas_no_es_fiable() -> None:
+    cancelada = _tarea("t_1", _peticion(1, "cancelada", error="CancelledError"), 10)
+    d = kr.diagnosticar([INSTALADO, *cancelada, CIERRE], [])
+    assert kr.codigo_de(d) == kr.EXIT_REGISTRO
+    assert "(1 iniciadas, 1 con error o canceladas)" in d["sesion"]["problemas_del_registro"][0]
 
 
 def test_precedencia_de_diagnosticar_no_fiable_sobre_cortada_y_cortada_sobre_muerta() -> None:
@@ -551,6 +595,10 @@ def test_precedencia_de_diagnosticar_no_fiable_sobre_cortada_y_cortada_sobre_mue
         ({"evento": "peticion_inicio", "tarea": "t_1", "peticion": "1"}, "peticion"),
         ({"evento": ["cierre"], "tarea": None}, "evento"),
         ({"evento": "cierre", "tarea": None, "errores_del_registro": "7"}, "errores_del_registro"),
+        (
+            {"evento": "cb_antes", "tarea": "t_1", "llamada": "x", "peticion_en_curso": [1]},
+            "peticion_en_curso",
+        ),
     ],
 )
 def test_un_evento_con_un_campo_de_otro_tipo_es_una_entrada_ilegible_y_no_una_traza(
