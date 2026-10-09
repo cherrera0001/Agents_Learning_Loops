@@ -50,7 +50,7 @@ Salen de lo que los episodios ya registran. Una predicción nombra una de estas 
   unidades.
 - **Tamaño mínimo:** no se lee con menos de 30 predicciones cerradas. Con menos, solo se informa el conteo de
   aciertos y fallos, sin conclusión.
-- **Qué la refuta:** con 30 o más, una puntuación de Brier igual o peor que la de la línea base.
+- **Qué la refuta:** con 30 o más, una puntuación de Brier igual o peor que la de la línea base. (Sustituido por 8.4.)
 - **Lo que no se puede concluir:** que predecir sirva para evitar el fallo. Una predicción escrita puede
   cambiar el desenlace (quien predice un defecto lo busca). Ese efecto se anota, no se separa aquí.
 
@@ -228,7 +228,7 @@ marca (issue #165), esta tabla no es una marca independiente, y se dice.
 | 3 | 0,10 | 0,25 | No ocurrió | `analista-datos`, cuarto recuento: «PREDICCIÓN 3: no ocurrió» |
 | 4 | 0,65 | 0,5 | Ocurrió | `revisor-docs`, sobre `b98af92`: tres elementos de `docs/estado_del_arte.md` que no estaban en el informe del investigador (una interpretación sobre la moneda y la ruleta, y dos categorías de «no buscado») |
 | 5 | 0,80 | 0,86 | Ocurrió | 12 de 12 comprobaciones de `b98af92` en `success` |
-| 6 | 0,75 | 0,97 | Abierta | Falta fusionar el PR #163 |
+| 6 | 0,75 | 0,97 | Ocurrió | PR #163 fusionado (`mergedAt` 2026-10-09T05:48:58Z, commit `3a55b08`); sus 12 comprobaciones en `main` terminaron en `success` sin otro commit |
 
 Las aclaraciones de 8.2 para las predicciones 1, 2 y 3 se subieron en el commit `f7af948` (05:15 UTC). Que la
 cuarta revisión y el cuarto recuento se lanzaron después de ese commit no consta en ningún registro: lo dice
@@ -237,5 +237,31 @@ de fusionarse el PR #161, para nombrar el commit `90e6b31` y cerrar la lista de 
 cambió («aprobado con observaciones» ya no contaba), pero esa redacción es posterior al desenlace. Las de las
 predicciones 4 y 5 se escribieron después de conocer el suyo.
 
-Son cinco predicciones cerradas en dos issues, escritas por quien hacía el trabajo. No se calcula ninguna
+Son seis predicciones cerradas en dos issues, escritas por quien hacía el trabajo. No se calcula ninguna
 puntuación con ellas.
+
+## 10. Predicciones del issue #164
+
+Escritas por el orquestador antes de que el implementador empiece. La fecha que vale es la del commit que
+añade esta sección, que es el primero de la rama `issue-164-tope-por-tarea`. El implementador las ve: no son
+selladas (apartado 8.6).
+
+El issue #164 añade al notebook de la iteración 08 un tope por tarea y el vaciado del mapa de hilos del
+núcleo, y enseña a `diagnosticar` a distinguir una sesión viva y detenida de una muerta desde fuera.
+
+| # | Hecho | Probabilidad | Línea base y de dónde sale |
+|---|---|---|---|
+| 7 | El primer informe de `revisor-codigo` sobre el PR del #164 tiene el veredicto «cambios requeridos antes de fusionar» o «cambios requeridos» | 0,30 | 0,00: en los PR #158, #161 y #163 el primer veredicto fue «aprobado con observaciones» las tres veces (0 de 3; Wilson 0,00 a 0,56) |
+| 8 | El PR del #164 pasa por tres o más informes de `revisor-codigo` antes de fusionarse | 0,65 | 1,00: PR #158, tres; PR #161, cuatro (2 de 2; Wilson 0,34 a 1,00). El #163 no cuenta: sus revisiones fueron de documentos |
+| 9 | Algún informe de `revisor-codigo` sobre ese PR muestra una entrada con la que `diagnosticar` o `comprobar` salen con código 0 sobre una corrida que el informe califica de incompleta o no fiable, alcanzable desde el notebook | 0,30 | 0,75: ocurrió en tres de las cuatro revisiones del PR #161 (Wilson 0,30 a 0,95) |
+| 10 | Algún recuento de `analista-datos` sobre ese PR marca «no se reproduce» en al menos una cifra del informe del implementador (una cifra que solo cambia con otra definición, declarada, no cuenta) | 0,15 | 0,20: uno de cinco recuentos sobre los PR #158 y #161 (Wilson 0,04 a 0,62) |
+| 11 | Todas las comprobaciones del primer commit del PR del #164 que traiga código terminan en `success` (una `cancelled` cuenta como no verde) | 0,80 | 0,86: 44 de 51 primeros commits (apartado 8.1) |
+| 12 | El implementador entrega sin haber logrado que el cuelgue ocurra en el ensayo por la carrera natural de hilos, y el criterio «sin el arreglo la tarea se cuelga» lo cumple solo forzando el ciclo a mano | 0,80 | 0,5: sin historia contada. El forense no lo reprodujo en 9 corridas |
+
+Plazo: las seis vencen el 2026-10-23. Si el PR no existe o no se ha fusionado para entonces, la 8 se anula y
+las demás se marcan con lo ocurrido hasta esa fecha.
+
+Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (9), «cifra que no se reproduce» (10),
+«ensayo que no se parece al sistema real» (12), «entorno» y «prueba frágil» (11, en parte). Quedan fuera
+«cambio sin revisar» y «texto que dice más que la fuente», porque dependen de lo que haga el orquestador y no
+el implementador, y «defecto de lógica propio», que la 7 y la 8 recogen de forma indirecta.
