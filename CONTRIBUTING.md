@@ -229,7 +229,13 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    **Un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita.** Al cerrar la vuelta, el
    orquestador pasa cada hallazgo a `decidido` o `descartado`, o escribe en `por_que_sigue_abierto` por qué
    sigue abierto. El vigía de inicio de sesión (`scripts/kaggle_vigia.py`) imprime los que llevan más de una
-   vuelta en `medido`; una prueba valida el formato del registro.
+   vuelta en `medido`; una prueba valida el formato del registro. El validador rechaza, con un patrón, el
+   texto que parece un identificador de tarea, un enlace o una ruta. **Es una heurística, no una garantía
+   de que el registro no lleve datos de la competencia:** rechaza texto legítimo (`http_500`, `tope_100`,
+   `sha_256`) y deja pasar otras formas (un identificador con un solo guion, uno con mayúscula inicial, un
+   `models.py` suelto, una ruta con barras de Windows). Quien escribe un hallazgo lo relee; que el validador
+   calle no lo exime. Además comprueba que la lista `estados` del archivo sea la de los estados válidos y
+   que la fecha de una decisión no sea anterior a la `primera_fecha` del hallazgo.
 
 Tras cada rescate, `python -m scripts.kaggle_rescate_y_cuenta --destino <directorio ignorado>` hace el rescate
 y la cuenta por llamada (`scripts/kaggle_cuenta_llamadas.py`): qué devolvió cada llamada, cuáles se repiten
@@ -252,6 +258,11 @@ Criterio, aprobado por el dueño el 2026-10-08:
   mismo conjunto de tareas en los dos brazos, 60 tareas o más por brazo o 6 pares discordantes a favor,
   la prueba exacta de McNemar con p ≤ 0,05 y una repetición de la base en la misma semana. Con menos, el
   resultado se anota «exploratorio» y no cambia la configuración enviada.
+- **Los dos envíos finales** (concilio de la vuelta 43, 2026-10-10). Se eligen por la **media de varias
+  lecturas del mismo zip**, no por la nota pública máxima. La tabla pública guarda solo el máximo de cada
+  equipo, y el mismo zip ya dio 0,08 y 0,13 (`sub-005` y `sub-006` de
+  [`registry.json`](experiments/gemma_developer_agent/submissions/registry.json)) y 0,06 y 0,05 (`sub-002` y
+  `sub-003`): un máximo mide el azar de la evaluación tanto como el zip.
 
 De dónde salen los dos números. Los **6 pares discordantes** están derivados: es el suelo de la prueba
 exacta con α = 0,05

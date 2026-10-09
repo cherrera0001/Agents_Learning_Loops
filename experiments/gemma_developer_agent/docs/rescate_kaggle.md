@@ -138,6 +138,32 @@ tabla tiene 58.
 
 **Sin medir.** Sesiones activas y cuota de GPU: exigen la sesión web del dueño.
 
+## Los envíos con razonamiento, 2026-10-07 al 2026-10-09, y una corrección (#179)
+
+Dos envíos del mismo zip (`65a02160…`, 3 494 bytes; SHA-256 y tamaño recalculados el 2026-10-09 sobre
+`submission_i_razona.zip`), registrados como `sub-005` y `sub-006` en `registry.json`. Todo lo que sigue sale
+de los `envios.json` guardados de cada rescate, que son las únicas lecturas con hora; entre dos lecturas no
+se sabe cuándo cambió un estado.
+
+| Ref. Kaggle | Enviado (UTC) | Lecturas guardadas (UTC) | Nota |
+|---|---|---|---|
+| 56895202 | 2026-10-07 00:26 | `pending` 2026-10-07 02:13; `error` 2026-10-08 21:13; `complete` 2026-10-08 21:37 y en las siguientes | 0,08 |
+| 56916129 | 2026-10-07 16:25 | `error` («A system error. Please try resubmitting to resolve the error») 2026-10-08 21:13, 21:37, 21:41, 22:17 y 22:31; `complete` 2026-10-09 13:42 | 0,13 |
+
+- **Los dos pasaron por estado de error antes de puntuar.** El primero se leyó en error a las 21:13 y puntuado
+  a las 21:37 del 2026-10-08: en 24 minutos, pero no sabemos cuánto estuvo en error antes de las 21:13, ni
+  cuánto tardó su evaluación (de `pending` a las 02:13 del 07 a `error` a las 21:13 del 08 no hay lecturas).
+  El segundo se leyó en error hasta las 22:31 del 08 y puntuado a las 13:42 del 09: cambió en algún momento
+  de esas 15 horas y 11 minutos.
+- **Corrección.** El episodio 073 y el cuerpo del #171 dicen que un envío llevaba dos días puntuado sin
+  leerse («el envío ya había puntuado hacia el 2026-10-07»). **No es lo que muestran las lecturas.** A las
+  22:31 UTC del 2026-10-08 el envío 56916129 seguía en error; el último en error leído es de esa hora, y la
+  primera lectura con nota, de las 13:42 del día siguiente. Lo que sí es cierto: el 56895202 se leyó puntuado
+  el 2026-10-08 a las 21:37, y entre el rescate del 2026-10-07 02:13 y el del 2026-10-08 21:13 no hay
+  ninguna lectura guardada. Los
+  episodios no se reescriben ([`proteger-evidencia`](../../../skills/proteger-evidencia/SKILL.md)): la
+  corrección vive aquí y se cita desde el episodio 078.
+
 ## Lo que había en los logs y no se había usado
 
 De las corridas del 2026-10-03 y 04 (los de la GPU están en `data/ensayo_kaggle/`, bajados antes de
