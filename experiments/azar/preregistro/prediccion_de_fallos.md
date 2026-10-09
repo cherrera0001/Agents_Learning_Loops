@@ -378,7 +378,8 @@ datos), no el orquestador solo. Sigue sin existir el rol que marca (issue #165).
 `revisor-codigo` y de `analista-datos` sobre los PR #176 y #174 no están publicados: `gh pr view 176` devuelve
 cero comentarios y cero reseñas. Criterio de esta sección, uno solo: una predicción sobre lo que dice un
 informe no se marca si ese informe no está publicado, aunque la bitácora del caso lo resuma. Por eso ocho
-de las diez quedan sin marcar; una novena, la 11, por otra razón que su fila dice. La sección 14 marcó con fuentes no publicadas y lo dijo en cada fila; aquí
+de las diez quedan sin marcar; una novena, la 11, por otra razón que su fila dice. La sección 14 marcó con
+fuentes no publicadas y lo dijo en cada fila; aquí
 no se sigue ese camino. La sección 12, que la 14 daba «solo en la rama de ese PR», ya está en `main`.
 
 | # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
