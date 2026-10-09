@@ -1,4 +1,4 @@
-# Estado del arte verificado (fase 1, primera pasada)
+# Estado del arte: primera pasada verificada (fase 1)
 
 **Fecha de la verificación: 2026-10-09.** La hizo el rol `investigador-papers` sobre una lista que el
 orquestador escribió de memoria. Su informe íntegro está en
@@ -112,6 +112,6 @@ Las clases de esta sección son del orquestador.
 ## 8. Lo que esta pasada no buscó
 
 Revisiones sistemáticas de auditorías de lotería; reproducciones independientes de Small y Tse; estudios con
-medición física de máquinas de aire o de paletas; sorteos de países distintos del Reino Unido y Estados
-Unidos. Hasta aquí, la lista del investigador. El orquestador añade, porque el encargo no las pedía:
+medición física de máquinas de aire o de paletas; ruleta electrónica; sorteos de países distintos del Reino
+Unido y Estados Unidos. Hasta aquí, la lista del investigador. El orquestador añade, porque el encargo no las pedía:
 literatura de mantenimiento predictivo, patentes y documentación de fabricantes.

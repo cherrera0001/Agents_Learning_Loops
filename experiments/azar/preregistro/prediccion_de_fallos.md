@@ -76,7 +76,8 @@ línea base acierta.
 
 Sobre la predicción 6: al preparar este PR, un episodio nuevo hizo fallar una prueba de la bitácora que en
 `main` pasaba con un margen de 0,01. Se arregló en este mismo PR. Queda anotado porque es el tipo de fallo que
-este experimento quiere ver venir: estaba en `main` antes de que nadie lo tocara.
+este experimento quiere ver venir: estaba en `main` antes de que nadie lo tocara. (Esta nota tiene un error;
+ver 8.3 bis.)
 
 ## 6. Qué se registra de cada predicción
 
@@ -119,9 +120,10 @@ Tres de las seis líneas base estaban mal o sin contar. Una línea base la cuent
 
 Aclaraciones escritas antes de conocer el desenlace de las predicciones 1, 2, 3 y 6.
 
-- **Predicción 1.** «La cuarta revisión» es la primera revisión de `revisor-codigo` sobre el commit que
-  responde a la tercera. Ocurre el hecho si su veredicto escrito es «cambios requeridos antes de fusionar» o
-  equivalente. «Aprobado con observaciones» no cuenta, aunque después se corrija algo.
+- **Predicción 1.** «La cuarta revisión» es la primera revisión de `revisor-codigo` sobre la cabeza del
+  PR #161 posterior al tercer dictamen, que es el commit `90e6b31`. Ocurre el hecho si su veredicto escrito
+  es «cambios requeridos antes de fusionar» o «cambios requeridos». No cuentan «apto para fusionar»,
+  «apto con observaciones no bloqueantes» ni «aprobado con observaciones», aunque después se corrija algo.
 - **Predicción 2.** Ocurre si esa revisión muestra una entrada con la que `diagnosticar` o `comprobar` salen
   con código 0 sobre una corrida que el propio informe califica de incompleta o no fiable, y esa entrada es
   alcanzable desde el notebook. Los casos que el informe marque como no alcanzables no cuentan.
@@ -132,8 +134,13 @@ Aclaraciones escritas antes de conocer el desenlace de las predicciones 1, 2, 3 
   fusiona antes del 2026-10-16, la predicción se anula.
 - **Predicciones 1 y 2** hablan del mismo evento y no son independientes: cuentan como una sola unidad
   efectiva (apartado 8.4).
-- **Fuente de la predicción 4:** el informe del investigador está en
-  [`../docs/informe_investigador_2026-10-09.md`](../docs/informe_investigador_2026-10-09.md).
+- **Predicción 4.** Ocurre si el informe de `revisor-docs` sobre el commit `b98af92` señala al menos una
+  frase de `docs/estado_del_arte.md` que no está en el informe del investigador, guardado en
+  [`../docs/informe_investigador_2026-10-09.md`](../docs/informe_investigador_2026-10-09.md). Esta
+  definición se escribió con el desenlace ya conocido.
+- **Predicción 5.** Se mide sobre las comprobaciones del commit `b98af92`. Ocurre si todas terminan en
+  `success`. Una comprobación `cancelled` cuenta como no verde; por eso su línea base es 0,86 y no 0,98.
+  Esta definición se escribió con el desenlace ya conocido.
 
 ### 8.3 Desenlaces ya a la vista al escribir esta versión
 
@@ -141,24 +148,30 @@ Aclaraciones escritas antes de conocer el desenlace de las predicciones 1, 2, 3 
   `docs/estado_del_arte.md` que no estaban en el informe del investigador (una interpretación sobre la moneda
   y la ruleta, y dos categorías de «no buscado»). La marcó el propio revisor en su informe. Falta que un rol
   distinto del orquestador la registre con su enlace.
-- **Predicción 5: sin cerrar.** La CI del commit `b98af92` tenía comprobaciones en curso al escribir esto.
+- **Predicción 5: ocurrió.** Las 12 comprobaciones del commit `b98af92` terminaron en `success`
+  (`gh api repos/cherrera0001/Agents_Learning_Loops/commits/b98af92/check-runs`). La primera redacción de
+  esta versión decía «sin cerrar»: el orquestador había leído la CI unos minutos antes y no la volvió a
+  leer al escribir. Lo corrigió la segunda revisión de documentos.
 
 ### 8.3 bis Una afirmación de la sección 5 que resultó falsa
 
 La nota sobre la predicción 6 dice que un episodio nuevo «hizo fallar una prueba» y da a entender que `main`
 habría fallado al fusionar los dos PR. La revisión de código del PR #163 lo midió: `main` con los episodios
-de los dos PR pasaba. La prueba es frágil por otra causa (la relevancia baja con cada episodio nuevo porque
-las aristas viejas decaen) y el arreglo de este PR le da margen para unos 15 episodios, no la cura. La
-predicción 6 no cambia; su nota era una explicación equivocada del orquestador.
+de los dos PR pasaba. La prueba es frágil por otra causa (un episodio nuevo puede bajar la relevancia, porque
+las aristas viejas decaen con el reloj; otro episodio puede subirla si su texto se parece a la consulta) y el
+arreglo de este PR le da margen para unos 15 episodios sobre otro tema, no la cura. La predicción 6 no
+cambia; su nota era una explicación equivocada del orquestador.
 
 ### 8.4 Medida y tamaño, corregidos
 
-Sustituye a los dos últimos puntos de la lista de la sección 4 y a su párrafo de potencia.
+Sustituye, de la sección 4, los puntos «Lectura», «Tamaño mínimo» y «Qué la refuta», y su párrafo de
+potencia. Quedan como estaban «Medida», «Línea base» y «Lo que no se puede concluir».
 
 - **Regla para afirmar que predecir acierta mejor:** prueba t pareada de una cola al 5 % sobre las
   diferencias de Brier por unidad efectiva, con su intervalo de confianza. Sin esa prueba, no se afirma.
-- **Regla para refutar:** con el tamaño de decisión alcanzado, una puntuación de Brier igual o peor que la de
-  la línea base.
+- **Regla para refutar:** con el tamaño de decisión alcanzado, que el intervalo de confianza al 95 % de la
+  diferencia de Brier (línea base menos predicción) no esté por encima de cero. Si además incluye una
+  mejora de 0,05, el resultado se informa como «no concluyente», no como refutación.
 - **Unidad efectiva:** las predicciones de un mismo issue están correlacionadas. Se agrupan por issue y la
   prueba se hace sobre la media por issue.
 - **Potencia, calculada por el analista de datos** (simulación con un predictor calibrado, que es el mejor
@@ -167,7 +180,11 @@ Sustituye a los dos últimos puntos de la lista de la sección 4 y a su párrafo
   mejora es de 0,05, y más de 400 si es de 0,02.
 - **Tamaños:** con menos de 30 predicciones cerradas solo se informa el conteo. Entre 30 y 100, la puntuación
   de Brier se informa como descripción, sin conclusión. La lectura de decisión no se hace con menos de 100
-  predicciones cerradas en al menos 20 issues.
+  predicciones cerradas en al menos 20 issues. **Ese umbral es una convención del orquestador y no sale
+  de la tabla de potencia:** la prueba se hace sobre la media por issue, así que 20 issues son unas 20
+  unidades, y con 20 unidades la potencia queda por debajo de la que el analista calculó para 100
+  predicciones independientes. La potencia del diseño agrupado está sin calcular; hay que calcularla
+  antes de la lectura de decisión y subir el umbral si no alcanza.
 - **Predicción sin desenlace:** si el hecho no llega a poder comprobarse en el plazo que la predicción fija,
   se anula y cuenta como anulada. Una predicción sin plazo vence a los 30 días.
 - **Quién elige qué se predice:** quien predice elige los hechos, pero debe cubrir cada clase de la sección 3
@@ -191,3 +208,25 @@ falta unas 62 predicciones por rama, y unas 135 contando la agrupación por issu
 
 Las seis predicciones de la sección 5 las escribió quien hace el trabajo y las vio todo el mundo. Sirven para
 ensayar el protocolo, no para esa comparación.
+
+## 9. Desenlaces registrados
+
+Los registra el orquestador a partir de lo que cada rol escribió en su informe. Los informes de los revisores
+y del analista no están en GitHub: quedan resumidos en la bitácora del caso. Mientras no exista el rol que
+marca (issue #165), esta tabla no es una marca independiente, y se dice.
+
+| # | Probabilidad | Línea base recontada | Desenlace | Quién lo escribió y qué lo prueba |
+|---|---|---|---|---|
+| 1 | 0,45 | 0,67 | No ocurrió | `revisor-codigo`, sobre `90e6b31`: «VEREDICTO: apto con observaciones no bloqueantes». PR #161 fusionado, `mergedAt` 2026-10-09T05:27:08Z |
+| 2 | 0,35 | 1,00 | No ocurrió | El mismo informe: «CASO DE CÓDIGO 0 SIN MERECERLO, ALCANZABLE DESDE EL NOTEBOOK: no». Halló ocho entradas fabricadas a mano que salen con 0; ninguna la produce el notebook, y eso lo infirió leyendo las celdas, sin ejecutarlo |
+| 3 | 0,10 | 0,25 | No ocurrió | `analista-datos`, cuarto recuento: «PREDICCIÓN 3: no ocurrió» |
+| 4 | 0,65 | 0,5 | Ocurrió | `revisor-docs`, sobre `b98af92`: dos frases de `docs/estado_del_arte.md` que no estaban en el informe del investigador |
+| 5 | 0,80 | 0,86 | Ocurrió | 12 de 12 comprobaciones de `b98af92` en `success` |
+| 6 | 0,75 | 0,97 | Abierta | Falta fusionar el PR #163 |
+
+Las aclaraciones de 8.2 para las predicciones 1, 2 y 3 se subieron en el commit `f7af948` (05:15 UTC), antes
+de que se lanzaran la cuarta revisión y el cuarto recuento. Las de las predicciones 4 y 5 se escribieron
+después de conocer su desenlace.
+
+Son cinco predicciones cerradas en dos issues, escritas por quien hacía el trabajo. No se calcula ninguna
+puntuación con ellas.

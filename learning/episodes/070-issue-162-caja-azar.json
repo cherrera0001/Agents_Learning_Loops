@@ -44,7 +44,7 @@
     {
       "action": "run_tests",
       "success": false,
-      "error": "Con una primera versión de este episodio falló test_recall_works_without_the_file: su consulta solo activaba una acción con relevancia 0,0106, sobre un umbral de 0,01. El orquestador lo atribuyó a que el episodio usaba update_docs y escribió que fusionar este PR y el #161 habría roto main. La revisión de código midió que las dos cosas eran falsas: cualquier episodio nuevo baja esa relevancia, porque cada episodio avanza el reloj y las aristas viejas decaen (graph.py:138), y main con los dos episodios pasaba"
+      "error": "Con una primera versión de este episodio falló test_recall_works_without_the_file: su consulta solo activaba una acción con relevancia 0,0106, sobre un umbral de 0,01. El orquestador lo atribuyó a que el episodio usaba update_docs y escribió que fusionar este PR y el #161 habría roto main. La revisión de código midió que las dos cosas eran falsas: un episodio nuevo puede bajar esa relevancia, porque cada episodio avanza el reloj y las aristas viejas decaen (graph.py:138), y otro puede subirla, y main con los dos episodios pasaba"
     },
     {
       "action": "write_tests",
@@ -59,7 +59,7 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "Tres revisiones independientes antes de fusionar: documentos (hora del pre-registro equivocada, predicciones no comprobables por un tercero, «verificado» de más), datos (tres de seis líneas base mal o sin contar, potencia insuficiente con 30 predicciones, una clase de fallo que faltaba) y código (la causa del fallo de la prueba era otra). Todo corregido en el mismo PR y vuelto a revisar"
+      "note": "Tres revisiones independientes antes de fusionar: documentos (hora del pre-registro equivocada, predicciones no comprobables por un tercero, «verificado» de más), datos (tres de seis líneas base mal o sin contar, potencia insuficiente con 30 predicciones, una clase de fallo que faltaba) y código (la causa del fallo de la prueba era otra). Corregido en el mismo PR. La segunda revisión de documentos halló que una de las correcciones afirmaba algo ya falso (una CI «en curso» que había terminado) y que el umbral de lectura no salía de la tabla de potencia; corregido también"
     }
   ],
   "lessons": [
