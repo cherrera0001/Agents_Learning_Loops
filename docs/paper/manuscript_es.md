@@ -86,6 +86,8 @@ La Tabla 2 contiene dos medidas. Por tarea, 1 o 2 cambiaron de resultado entre c
 
 En la tabla pública, el mismo archivo local enviado dos veces obtuvo 0,06 y 0,05. No pudimos verificar que los archivos almacenados fueran idénticos: no es una réplica controlada. Como fracciones truncadas de una tabla de 58 tareas, el menor tamaño compatible con las notas publicadas, son 4 y 3 tareas; esa lectura es nuestra.
 
+Después de la fecha de corte se repitió la situación con otro archivo, el de la configuración con razonamiento encendido: enviado dos veces el 7 de octubre de 2026, obtuvo 0,08 y 0,13. El segundo envío seguía marcado con un error del sistema más de un día después y recibió su nota más tarde; la tabla guarda tamaños distintos para los dos (79 355 y 72 108 bytes). Tampoco es una réplica controlada. Con la misma lectura de 58 tareas son 5 y 8 tareas. Notas leídas el 9 de octubre de 2026, 17:41 UTC.
+
 ### 4.3 Seis intervenciones, ninguna mejora establecida
 
 **Tabla 3**

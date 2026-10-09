@@ -6,6 +6,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 ## [Unreleased]
 
 ### Añadido
+- Manuscrito (castellano e inglés): segundo par de envíos del mismo archivo a la tabla pública, 0,08 y 0,13, como nota posterior a la fecha de corte. Los PDF no se regeneraron.
 - Experimento «azar»: desenlaces de las predicciones 13 a 16 (issue #169) y 21 a 24 (issue #173) en `experiments/azar/preregistro/prediccion_de_fallos.md`, sección 14. Seis de ocho ocurrieron; sin puntuación.
 - Guardián del tablero (#169): las reglas 2, 3 y 9 no se aplican a un issue cerrado como «no planeado» o «duplicado» que ningún episodio cita como `#n` en su `ref` y que ningún PR fusionado referenciaba antes de su cierre (línea de tiempo del issue, una llamada paginada por candidato; una mención posterior al cierre no cuenta). Un `stateReason` vacío o desconocido, o una lectura de PR que falla, sale vacía o es ilegible, no exime. Cada issue cerrado sin trabajo aparente se avisa por stderr (exento, o no exento y por qué: episodio, PR o lectura fallida) sin cambiar el código de salida. Lo aplica también `scripts/session_guard.py`, que imprime los avisos; `CONTRIBUTING.md`, `learning/README.md` y la docstring de `scripts/board_check.py` al día. Pruebas con conjunto fijo en `tests/integration/test_board_check_exempt.py`.
 - Documentación: contrato de entorno (agentes, skills, harness) sin cambio de comportamiento: `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/entorno.mdc`, `docs/entorno/` (glosario, agentes, harness, skills) y `skills/` con tres skills de entorno.

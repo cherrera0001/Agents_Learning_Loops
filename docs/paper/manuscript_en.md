@@ -86,6 +86,8 @@ Table 2 holds two measures. Task-level, 1 or 2 tasks changed result between iden
 
 On the public leaderboard, the same local archive submitted twice scored 0.06 and 0.05. We could not verify that the two stored files are identical, so this is not a controlled replicate. Read as truncated fractions of a 58-task table, the smallest size consistent with published scores, they are 4 and 3 tasks; that reading is ours.
 
+After the data cut-off the situation repeated with a different archive, the configuration with reasoning on: submitted twice on October 7, 2026, it scored 0.08 and 0.13. The second submission was still marked with a system error more than a day later and received its score afterwards; the leaderboard stores different sizes for the two (79,355 and 72,108 bytes). This is not a controlled replicate either. Under the same 58-task reading they are 5 and 8 tasks. Scores read on October 9, 2026, 17:41 UTC.
+
 ### 4.3 Seven conditions, no established improvement
 
 **Table 3**
