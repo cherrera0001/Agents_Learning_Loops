@@ -598,7 +598,7 @@ Lo que sigue no se parece a Kaggle o no se midió.
   patrón de `SENALES_DE_PASADA`). Las pruebas detectan 59 (`defectos_inyectados.json`). El que sobrevive es
   equivalente: «una pasada nombrada dos veces se cuenta dos veces» no cambia nada, porque las pasadas se
   guardan en un diccionario por nombre y el duplicado se pierde igual. Los commits posteriores solo cambian
-  este documento y el episodio. Es una lista elegida a mano, no una búsqueda exhaustiva.
+  este documento, el episodio y el registro de cambios. Es una lista elegida a mano, no una búsqueda exhaustiva.
 
 **De la corrida real.**
 
