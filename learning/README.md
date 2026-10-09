@@ -189,18 +189,33 @@ casos se avisan por stderr. Una línea por hallazgo: `R<regla> #<issue>: <mensaj
 
 **Exención de las reglas 2, 3 y 9.** No se aplican a un issue con `state` = `CLOSED`, `stateReason` =
 `NOT_PLANNED` o `DUPLICATE`, que ningún episodio cita como `#n` en su `ref` (la cita es la de la regla 4:
-`PR #n` no cuenta) y que ningún PR fusionado de este repositorio referencia: no tuvo trabajo que
-entregar ni verificar. Si un episodio lo cita o un PR fusionado lo referencia, las reglas se aplican como
-a cualquier otro; un `stateReason` vacío, ausente, desconocido o en minúsculas no exime. Los PR salen de
-la línea de tiempo del issue (eventos `cross-referenced` cuya fuente es un PR fusionado), con una llamada
-a `gh api` por cada candidato con número `>= --since`; GitHub resuelve la mención, así que `#104` no
-casa con `#1040`. Si esa lectura falla (o con `--snapshot` no hay `prs.json`, un objeto
-`{"<issue>": [PR fusionados]}`), no se exime y sale `aviso: #n no exento: no se pudieron comprobar los
-PR fusionados que lo referencian`. Cada exento sale por stderr como
-`aviso: #n exento de las reglas 2, 3 y 9 (no planeado|duplicado, sin episodio ni PR fusionado)` y no
-cambia el código de salida; `scripts/session_guard.py` imprime el mismo aviso. La regla 1 y las demás no
-cambian. Hueco conocido: un PR fusionado que solo *menciona* el issue (por ejemplo, un PR de
-documentación posterior) también le quita la exención; el efecto es avisar de más, no callar.
+`PR #n` no cuenta) y que ningún PR fusionado referenciaba antes de su cierre: no tuvo trabajo que
+entregar ni verificar. Si un episodio lo cita o un PR fusionado lo referenciaba antes del cierre, las
+reglas se aplican como a cualquier otro; un `stateReason` vacío, ausente, desconocido o en minúsculas no
+exime.
+
+*De dónde salen los PR.* De la línea de tiempo del issue (`gh api .../timeline --paginate`), con una
+llamada por cada candidato con número `>= --since`; GitHub resuelve la mención, así que `#104` no casa con
+`#1040`. Cuenta un PR solo si **hoy está fusionado** y la fecha de su evento `cross-referenced` es
+**anterior o igual al último cierre** del issue (un empate se trata como trabajo; con varios cierres vale
+el último). Una referencia anterior al cierre de un PR que nunca se fusionó no cuenta, ni la de un PR
+fusionado hecha después del cierre. Se compara el instante en UTC, no el texto ni la fecha de fusión.
+Si la lectura falla, sale vacía, no trae el evento `closed` (un issue cerrado siempre lo tiene), trae una
+línea de forma inesperada o una fecha ausente o ilegible, no se exime. Con `--snapshot` los PR salen de un
+`prs.json` opcional, un objeto `{"<issue>": [PR fusionados]}`; sin él no se exime a nadie.
+
+*Avisos* (stderr; no cambian el código de salida; `scripts/session_guard.py` imprime los mismos). Por cada
+issue cerrado como no planeado o duplicado con número `>= --since`:
+`aviso: #n exento de las reglas 2, 3 y 9 (no planeado|duplicado, sin episodio ni PR fusionado)`, o
+`aviso: #n no exento: lo cita el episodio <id>`, o
+`aviso: #n no exento: PR fusionado #m que lo referencia antes del cierre`, o
+`aviso: #n no exento: no se pudieron comprobar los PR fusionados que lo referencian`.
+
+*Costo aceptado.* El trabajo hecho solo después de cerrar un issue como «no planeado» queda exento
+(sin episodio ni PR referido antes del cierre); se acepta porque el aviso de cada exento sigue siendo
+visible. Sin la condición de fecha, cualquier PR posterior que mencione el issue (65 de los 85 PR
+fusionados del repositorio nombran algún issue que no cierran) le quitaría la exención. La regla 1 y
+las demás no cambian.
 
 Códigos de salida: `0` sin hallazgos, `1` con hallazgos, `2` si no se pudo leer la fuente (`gh` ausente,
 cuenta que no ve el Project, lectura incompleta o instantánea incompleta, o subissues truncados en R10); un `2` nunca se informa como

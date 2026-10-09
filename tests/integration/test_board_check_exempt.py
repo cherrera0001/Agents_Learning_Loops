@@ -16,6 +16,7 @@ from scripts.board_check import (
     check_board,
     check_missing_cards,
     exempt_without_work,
+    parse_timeline,
     read_pr_refs,
     read_snapshot_pr_refs,
     run_board,
@@ -179,7 +180,7 @@ def test_no_warning_when_cited_open_below_since_or_since_missing(tmp_path, capsy
     assert "exento" in run(capsys, d)[2]  # control: el 159 sí avisa
     assert "#10 " not in run(capsys, d)[2]
     assert "#170" not in run(capsys, d)[2]
-    assert "exento" not in run(capsys, d, episodes=[episode("#159")])[2]
+    assert "exento de" not in run(capsys, d, episodes=[episode("#159")])[2]
     assert "exento" not in run(capsys, d, since=None)[2]
 
 
@@ -194,7 +195,32 @@ def test_warning_boundary_is_inclusive_of_since(tmp_path, capsys):
     assert f"aviso: #{SINCE} exento" in err and f"#{SINCE - 1} " not in err
 
 
-# --- PR fusionados que referencian el issue (enmienda del concilio) ---------------------------
+# --- PR fusionados que referencian el issue antes de su cierre (enmienda del concilio) --------
+
+MINE = f"https://api.github.com/repos/{REPO}"
+CLOSED_AT = "2026-10-08T23:48:06Z"
+
+
+def row(
+    event: str, created: Any, number: Any = None, url: Any = None, is_pr: Any = False, merged: Any = False
+):
+    return [event, created, number, url, is_pr, merged]
+
+
+def closed(at: Any = CLOSED_AT):
+    return row("closed", at)
+
+
+def ref(number: int, at: Any, merged: Any = True, url: str = MINE, is_pr: Any = True):
+    return row("cross-referenced", at, number, url, is_pr, merged)
+
+
+BEFORE = "2026-10-03T22:49:48Z"
+AFTER = "2026-10-09T12:55:46Z"
+
+
+def lines(rows: list[Any]) -> str:
+    return "\n".join(json.dumps(r) for r in rows) + "\n"
 
 
 def test_not_planned_referenced_by_a_merged_pr_keeps_rules_2_3_and_9():
@@ -211,7 +237,68 @@ def test_read_without_data_does_not_exempt():
         assert exempt_without_work([issue(159)], [], refs) == {}
 
 
+def test_parse_timeline_reference_before_closing_of_a_merged_pr_counts():
+    assert parse_timeline(lines([closed(), ref(129, BEFORE)])) == [129]
+
+
+def test_parse_timeline_reference_after_closing_of_a_merged_pr_does_not_count():
+    """El PR que entrega esta regla menciona al duplicado después de cerrado: no puede anularla."""
+    assert parse_timeline(lines([closed(), ref(170, AFTER)])) == []
+
+
+def test_parse_timeline_reference_before_closing_of_an_unmerged_pr_does_not_count():
+    assert parse_timeline(lines([closed(), ref(129, BEFORE, merged=False)])) == []
+
+
+def test_parse_timeline_ties_count_as_work_and_the_last_closing_is_used():
+    assert parse_timeline(lines([closed(), ref(129, CLOSED_AT)])) == [129]
+    twice = [closed("2026-10-01T00:00:00Z"), ref(7, "2026-10-02T00:00:00Z"), closed("2026-10-03T00:00:00Z")]
+    assert parse_timeline(lines(twice)) == [7]  # con el primer cierre no contaría
+
+
+def test_parse_timeline_compares_instants_not_text_nor_merge_date():
+    # 00:00+02:00 del día 9 son las 22:00Z del día 8: anterior al cierre aunque el texto sea mayor
+    assert parse_timeline(lines([closed(), ref(5, "2026-10-09T00:00:00+02:00")])) == [5]
+    assert parse_timeline(lines([closed(), ref(5, "2026-10-08T23:49:00Z")])) == []  # un minuto después
+
+
+def test_parse_timeline_reads_every_line_and_filters_by_event_kind():
+    rows = [
+        closed(),
+        ref(7, BEFORE, url="https://api.github.com/repos/otro/repo"),
+        row("labeled", BEFORE, 8, MINE, True, True),  # no es una referencia cruzada
+        ref(9, BEFORE, merged=False),
+        ref(10, BEFORE, is_pr=False),  # un issue, no un PR
+        ref(129, BEFORE),
+        ref(129, BEFORE),
+    ]
+    assert parse_timeline(lines(rows)) == [129]
+
+
+@pytest.mark.parametrize(
+    "stdout",
+    [
+        "",  # salida vacía con código 0: no se distingue de «sin referencias»
+        lines([ref(129, BEFORE)]),  # sin evento de cierre
+        lines([closed(), {"a": 1, "b": 2, "c": 3, "d": 4}]),  # objeto de cuatro claves
+        lines([closed(), "abcd"]),  # cadena de cuatro caracteres
+        lines([closed(), ["x"] * 5]),  # lista de forma inesperada
+        lines([closed(None), ref(129, BEFORE)]),  # cierre sin fecha
+        lines([closed("ayer"), ref(129, BEFORE)]),  # cierre con fecha ilegible
+        lines([closed(), closed(None), ref(129, BEFORE)]),  # un segundo cierre sin fecha
+        lines([closed(), ref(129, None)]),  # referencia sin fecha
+        lines([closed(), ref(129, "no es una fecha")]),  # referencia con fecha ilegible
+        lines([closed(), ref(129, "2026-10-03T22:49:48")]),  # fecha sin zona horaria
+        "esto no es JSON\n",
+    ],
+)
+def test_parse_timeline_unreliable_reads_are_none(stdout):
+    assert parse_timeline(stdout) is None
+
+
 def fake_timeline(responses: dict[int, Any], calls: list[list[str]] | None = None):
+    """Un ``gh api .../timeline`` de mentira: lista de filas, texto crudo, código de error o excepción."""
+
     def runner(args):
         if calls is not None:
             calls.append(list(args))
@@ -221,37 +308,38 @@ def fake_timeline(responses: dict[int, Any], calls: list[list[str]] | None = Non
             raise r
         if isinstance(r, int):
             return subprocess.CompletedProcess(args, r, "", "boom")
-        return subprocess.CompletedProcess(args, 0, "\n".join(json.dumps(x) for x in r) + "\n", "")
+        text = r if isinstance(r, str) else lines(r)
+        return subprocess.CompletedProcess(args, 0, text, "")
 
     return runner
 
 
-def test_read_pr_refs_counts_only_merged_prs_of_this_repo():
-    other = "https://api.github.com/repos/otro/repo"
-    mine = f"https://api.github.com/repos/{REPO}"
-    lines = [
-        [129, mine, True, True],  # PR fusionado: cuenta
-        [170, mine, True, False],  # PR abierto o cerrado sin fusionar: no
-        [105, mine, False, False],  # issue, no PR: no
-        [7, other, True, True],  # PR fusionado de otro repositorio: no
-        [129, mine, True, True],  # repetido: una vez
-    ]
-    assert read_pr_refs([104], fake_timeline({104: lines})) == {104: [129]}
-    assert read_pr_refs([159], fake_timeline({159: []})) == {159: []}
+def test_read_pr_refs_reads_every_line_not_only_the_first():
+    rows = [
+        closed(),
+        ref(7, AFTER),
+        ref(8, BEFORE, merged=False),
+        ref(129, BEFORE),
+    ]  # el que cuenta es el último
+    assert read_pr_refs([104], fake_timeline({104: rows})) == {104: [129]}
+    assert read_pr_refs([159], fake_timeline({159: [closed()]})) == {159: []}
 
 
 def test_read_pr_refs_failure_is_none_not_empty():
-    runner = fake_timeline({1: 1, 2: BoardReadError("sin respuesta"), 3: [["x"]], 4: []})
-    assert read_pr_refs([1, 2, 3, 4], runner) == {1: None, 2: None, 3: None, 4: []}
+    runner = fake_timeline(
+        {1: 1, 2: BoardReadError("sin respuesta"), 3: "", 4: [ref(1, BEFORE)], 5: ["x"], 6: [closed()]}
+    )
+    assert read_pr_refs([1, 2, 3, 4, 5, 6], runner) == {1: None, 2: None, 3: None, 4: None, 5: None, 6: []}
 
 
-def test_read_pr_refs_reads_only_the_numbers_it_is_given():
+def test_read_pr_refs_paginates_and_reads_only_the_numbers_it_is_given():
     calls: list[list[str]] = []
-    read_pr_refs([104, 159], fake_timeline({104: [], 159: []}, calls))
+    read_pr_refs([104, 159], fake_timeline({104: [closed()], 159: [closed()]}, calls))
     assert [c[1] for c in calls] == [
         f"repos/{REPO}/issues/104/timeline",
         f"repos/{REPO}/issues/159/timeline",
     ]
+    assert all(c[0] == "api" and "--paginate" in c for c in calls)  # sin él, más de 30 eventos se pierden
     read_pr_refs([], fake_timeline({}, calls))
     assert len(calls) == 2
 
@@ -275,9 +363,24 @@ def test_snapshot_without_prs_json_exempts_nobody(tmp_path, capsys):
     assert rc == 1 and "R9 #159" in out and "no exento" in err and "exento de" not in err
 
 
-def test_merged_pr_reference_means_no_exempt_warning(tmp_path, capsys):
+def test_notice_says_which_merged_pr_gives_the_work(tmp_path, capsys):
     rc, out, err = run(capsys, snapshot(tmp_path, [issue(159)], [], prs={"159": [129]}))
-    assert rc == 1 and "R9 #159" in out and "exento" not in err
+    assert rc == 1 and "R9 #159" in out and "exento de" not in err
+    assert "aviso: #159 no exento: PR fusionado #129 que lo referencia antes del cierre\n" in err
+    (tmp_path / "dos").mkdir()
+    err = run(capsys, snapshot(tmp_path / "dos", [issue(159)], [], prs={"159": [129, 135]}))[2]
+    assert "aviso: #159 no exento: PR fusionados #129, #135 que lo referencian antes del cierre\n" in err
+
+
+def test_notice_says_which_episode_cites_the_issue(tmp_path, capsys):
+    ep = {"seq": 3, "id": "issue-9-x", "ref": "#9, #159"}
+    err = run(capsys, snapshot(tmp_path, [issue(159)], [card(159, "Done")]), episodes=[ep])[2]
+    assert "aviso: #159 no exento: lo cita el episodio issue-9-x\n" in err
+
+
+def test_no_notice_for_issues_that_are_not_closed_without_work(tmp_path, capsys):
+    d = snapshot(tmp_path, [issue(160, reason="COMPLETED"), issue(161, "OPEN", reason="")], [])
+    assert "no exento" not in run(capsys, d)[2]
 
 
 def test_snapshot_prs_json_malformed_is_a_read_error(tmp_path):
@@ -291,7 +394,7 @@ def test_snapshot_prs_json_malformed_is_a_read_error(tmp_path):
     assert read_snapshot_pr_refs(tmp_path) == {159: None, 104: [1]}
 
 
-def test_session_guard_prints_the_exemption_notice(tmp_path):
+def test_session_guard_prints_the_notices(tmp_path):
     d = snapshot(tmp_path, [issue(159)], [card(159, "Done")])
     aviso = "aviso: #159 exento de las reglas 2, 3 y 9 (no planeado, sin episodio ni PR fusionado)"
     assert any(aviso in x for x in sg.informe(snapshot=d, episodes=[])[0])
@@ -299,12 +402,11 @@ def test_session_guard_prints_the_exemption_notice(tmp_path):
     otro.mkdir()
     d2 = snapshot(otro, [issue(159)], [card(159, "Done")], prs={"159": [129]})
     lineas, hallazgos = sg.informe(snapshot=d2, episodes=[])
-    assert hallazgos == 2 and not any("exento" in x for x in lineas)
+    assert hallazgos == 2 and not any("exento de" in x for x in lineas)
+    assert any("no exento: PR fusionado #129 que lo referencia antes del cierre" in x for x in lineas)
 
 
-def github_runner(
-    issues: list[dict[str, Any]], cards: list[dict[str, Any]], timelines: dict[int, Any], calls
-):
+def github_runner(issues, cards, timelines, calls):
     def runner(args):
         if args[:2] == ["api", "user"]:
             return subprocess.CompletedProcess(args, 0, "cherrera0001\n", "")
@@ -323,30 +425,53 @@ def github_runner(
     return runner
 
 
+def run_via(capsys, runner, episodes=(), since=SINCE - 100):
+    rc = run_board(since=since, snapshot=None, episodes=list(episodes), runner=runner)
+    cap = capsys.readouterr()
+    return rc, cap.out, cap.err
+
+
 def test_github_mode_reads_prs_only_for_candidates_in_scope(capsys):
-    mine = f"https://api.github.com/repos/{REPO}"
     issues = [
         issue(10),  # candidato bajo --since: no se lee
-        issue(104),  # candidato con PR fusionado
-        issue(159),  # candidato sin PR
+        issue(50),  # candidato justo en --since: se lee
+        issue(104),  # candidato con PR fusionado anterior al cierre
+        issue(159),  # candidato cuya única referencia es posterior al cierre
         issue(160, reason="COMPLETED"),  # no es candidato
         issue(161, "OPEN", reason=""),  # no es candidato
-        issue(162),  # candidato pero lo cita un episodio: no se lee
+        issue(162),  # lo cita un episodio: no se lee
     ]
-    cards = [card(104, "Done"), card(160, "Done"), card(161, "Todo"), card(162, "Done")]
-    timelines = {104: [[129, mine, True, True]], 159: []}
+    cards = [card(104, "Done"), card(160, "Done"), card(161, "Todo"), card(162, "Done"), card(50, "Done")]
+    timelines = {
+        50: [closed()],
+        104: [closed(), ref(129, BEFORE)],
+        159: [closed(), ref(170, AFTER)],
+    }
     calls: list[str] = []
     runner = github_runner(issues, cards, timelines, calls)
     _rc, out, err = run_via(capsys, runner, episodes=[episode("#162, #160")])
-    assert calls == [f"repos/{REPO}/issues/104/timeline", f"repos/{REPO}/issues/159/timeline"]
-    assert "R2 #104" in out and "R3 #104" in out and "R2 #159" not in out
-    assert "aviso: #159 exento" in err and "#104 exento" not in err
+    assert calls == [f"repos/{REPO}/issues/{n}/timeline" for n in (50, 104, 159)]
+    assert "R2 #104" in out and "R3 #104" in out and "R2 #159" not in out and "R9 #159" not in out
+    assert "aviso: #159 exento" in err and "aviso: #50 exento" in err and "#104 exento" not in err
+    assert "aviso: #104 no exento: PR fusionado #129 que lo referencia antes del cierre" in err
 
 
-def run_via(capsys, runner, episodes=()):
-    rc = run_board(since=SINCE - 100, snapshot=None, episodes=list(episodes), runner=runner)
-    cap = capsys.readouterr()
-    return rc, cap.out, cap.err
+def test_the_day_after_the_merge_the_exemption_stays(capsys):
+    """Simulación del día después: la fuente del PR de este cambio, fusionada y posterior al cierre."""
+    issues = [issue(159)]
+    timelines = {159: [closed(), ref(170, AFTER, merged=True)]}
+    _rc, out, err = run_via(capsys, github_runner(issues, [card(159, "Done")], timelines, []), since=150)
+    assert out == "sin hallazgos\n"
+    assert "aviso: #159 exento de las reglas 2, 3 y 9" in err
+
+
+def test_session_guard_reads_with_its_own_since(capsys):
+    issues = [issue(sg.DESDE - 1), issue(sg.DESDE)]
+    cards = [card(sg.DESDE, "Done"), card(sg.DESDE - 1, "Done")]
+    calls: list[str] = []
+    runner = github_runner(issues, cards, {sg.DESDE: [closed()]}, calls)
+    sg.informe(snapshot=None, episodes=[], runner=runner)
+    assert calls == [f"repos/{REPO}/issues/{sg.DESDE}/timeline"]
 
 
 def test_unreadable_prs_leave_no_finding_and_exit_zero_with_a_complete_card(tmp_path, capsys):
@@ -356,13 +481,14 @@ def test_unreadable_prs_leave_no_finding_and_exit_zero_with_a_complete_card(tmp_
     assert rc == 0 and out == "sin hallazgos\n" and "aviso: #159 no exento" in err
 
 
-def test_session_guard_in_github_mode_reads_prs_and_prints_the_notice(capsys):
-    mine = f"https://api.github.com/repos/{REPO}"
+def test_session_guard_in_github_mode_reads_prs_and_prints_the_notice():
     issues = [issue(104), issue(159)]
     cards = [card(104, "Done"), card(159, "Done")]
     calls: list[str] = []
-    runner = github_runner(issues, cards, {104: [[129, mine, True, True]], 159: []}, calls)
-    lineas, hallazgos = sg.informe(snapshot=None, episodes=[], runner=runner)
+    timelines = {104: [closed(), ref(129, BEFORE)], 159: [closed(), ref(170, AFTER)]}
+    lineas, hallazgos = sg.informe(
+        snapshot=None, episodes=[], runner=github_runner(issues, cards, timelines, calls)
+    )
     assert len(calls) == 2
-    assert hallazgos == 2  # R2 y R3 del 104; el 159 exento
+    assert hallazgos == 2  # R2 y R3 del 104; el otro, exento
     assert any("aviso: #159 exento" in x for x in lineas) and not any("#104 exento" in x for x in lineas)

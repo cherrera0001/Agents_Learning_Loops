@@ -31,15 +31,17 @@ Reglas (``--since`` limita las reglas 2 a 4 a los issues con número >= ``since`
    por ``gh``; ``--snapshot`` no consulta subissues y no la evalúa.
 
 Exención de las reglas 2, 3 y 9 (:func:`exempt_without_work`): un issue con ``state ==
-"CLOSED"``, ``stateReason`` ``NOT_PLANNED`` o ``DUPLICATE``, que ningún episodio cita como
-``#n`` en su ``ref`` y que ningún PR fusionado referencia no tuvo trabajo que entregar ni
-verificar. Si un episodio lo cita o un PR fusionado lo referencia, las reglas se aplican como a
-cualquier otro. Un ``stateReason`` vacío, ausente o desconocido no exime, ni una lectura de PR
-que falla o no existe (se avisa «no exento»). Los PR salen de la línea de tiempo del issue
-(eventos ``cross-referenced`` de PR fusionados de este repositorio; :func:`read_pr_refs`), solo
-para los candidatos con número >= ``since``. Cada exento se avisa por stderr, sin cambiar el
-código de salida. La regla 1 y las demás no cambian. Con ``--snapshot`` los PR salen de un
-``prs.json`` opcional ``{"<issue>": [PR]}``; sin él no se exime a nadie.
+"CLOSED"``, ``stateReason`` ``NOT_PLANNED`` o ``DUPLICATE``, que ningún episodio cita como ``#n`` en su
+``ref`` y que ningún PR fusionado referenciaba **antes de su cierre** no tuvo trabajo que entregar ni
+verificar. Si un episodio lo cita o un PR fusionado lo referenciaba antes del cierre, las reglas se
+aplican como a cualquier otro. Un ``stateReason`` vacío, ausente o desconocido no exime, ni una lectura
+de PR que falla, vacía o ilegible (se avisa «no exento»). Los PR salen de la línea de tiempo del issue
+(eventos ``cross-referenced`` de PR hoy fusionados de este repositorio, cuyo evento es anterior o
+simultáneo al último cierre; :func:`parse_timeline`), con una llamada paginada por candidato con número
+>= ``since``. Una mención posterior al cierre no es trabajo. Cada issue cerrado sin trabajo aparente se
+avisa por stderr (exento, o no exento y por qué), sin cambiar el código de salida. La regla 1 y las
+demás no cambian. Con ``--snapshot`` los PR salen de un ``prs.json`` opcional ``{"<issue>": [PR]}``; sin
+él no se exime a nadie.
 
 Las reglas 1 a 8 y 10 salen de :func:`check_board`; la 9 es la función pura aparte
 :func:`check_missing_cards`, que :func:`run_board` suma a los hallazgos.
@@ -61,6 +63,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -145,26 +148,38 @@ PrRefs = Mapping[int, Sequence[int] | None]
 """``{issue: PR fusionados que lo referencian}``; ``None`` = la lectura falló y no se sabe."""
 
 
-def exemption_candidates(
-    issues: Sequence[Mapping[str, Any]], episodes: Sequence[Mapping[str, Any]]
-) -> dict[int, str]:
-    """Issues que serían eximidos si ningún PR fusionado los referencia: ``{número: motivo}``.
+def _closed_without_work(issues: Sequence[Mapping[str, Any]]) -> dict[int, str]:
+    """Issues ``CLOSED`` con ``stateReason`` exacto ``NOT_PLANNED`` o ``DUPLICATE``: ``{número: motivo}``.
 
-    ``state == "CLOSED"``, ``stateReason`` exactamente ``NOT_PLANNED`` o ``DUPLICATE`` y ningún
-    episodio cita ``#n`` en su ``ref`` (misma cita que la regla 4: ``PR #n`` no cuenta). Un
-    ``stateReason`` vacío, ausente, desconocido o en otra capitalización no es candidato.
+    Un ``stateReason`` vacío, ausente, desconocido o en otra capitalización no entra.
     """
-    cited: set[int] = set()
-    for ep in episodes:
-        cited |= cited_issues(str(ep.get("ref", "")))
     return {
         int(i["number"]): EXEMPT_REASONS[reason]
         for i in issues
         if i.get("state") == "CLOSED"
         and isinstance((reason := i.get("stateReason")), str)
         and reason in EXEMPT_REASONS
-        and int(i["number"]) not in cited
     }
+
+
+def _episode_citations(episodes: Sequence[Mapping[str, Any]]) -> dict[int, str]:
+    """``{issue: id del primer episodio que lo cita}`` (misma cita que la regla 4: ``PR #n`` no cuenta)."""
+    cited: dict[int, str] = {}
+    for ep in episodes:
+        for n in sorted(cited_issues(str(ep.get("ref", "")))):
+            cited.setdefault(n, str(ep.get("id", ep.get("seq"))))
+    return cited
+
+
+def exemption_candidates(
+    issues: Sequence[Mapping[str, Any]], episodes: Sequence[Mapping[str, Any]]
+) -> dict[int, str]:
+    """Issues que serían eximidos si ningún PR fusionado los referencia: ``{número: motivo}``.
+
+    Cerrado como no planeado o duplicado (:func:`_closed_without_work`) y ningún episodio cita ``#n``.
+    """
+    cited = _episode_citations(episodes)
+    return {n: why for n, why in _closed_without_work(issues).items() if n not in cited}
 
 
 def exempt_without_work(
@@ -174,8 +189,8 @@ def exempt_without_work(
 ) -> dict[int, str]:
     """Issues eximidos de las reglas 2, 3 y 9: ``{número: motivo}``.
 
-    Candidato (:func:`exemption_candidates`) cuya lista de PR fusionados que lo referencian
-    está leída y vacía. Sin dato (``pr_refs`` ausente, issue ausente o lectura fallida) no se
+    Candidato (:func:`exemption_candidates`) cuya lista de PR fusionados con referencia anterior al
+    cierre está leída y vacía. Sin dato (``pr_refs`` ausente, issue ausente o lectura fallida) no se
     exime: callar por falta de dato es peor que avisar de más.
     """
     if pr_refs is None:
@@ -189,15 +204,31 @@ def exemption_notes(
     pr_refs: PrRefs | None,
     since: int,
 ) -> list[str]:
-    """Avisos (``aviso: ...``) de cada candidato con número >= ``since``: exento o no comprobable."""
+    """Avisos (``aviso: ...``) de cada issue cerrado sin trabajo aparente con número >= ``since``.
+
+    Dice si queda exento y, si no, por qué: lo cita un episodio, lo referencia un PR fusionado antes
+    del cierre o no se pudieron leer los PR.
+    """
     exempt = exempt_without_work(issues, episodes, pr_refs)
+    cited = _episode_citations(episodes)
     notes = []
-    for n, why in sorted(exemption_candidates(issues, episodes).items()):
+    for n, why in sorted(_closed_without_work(issues).items()):
         if n < since:
             continue
+        refs = None if pr_refs is None else pr_refs.get(n)
         if n in exempt:
             notes.append(f"aviso: #{n} exento de las reglas 2, 3 y 9 ({why}, sin episodio ni PR fusionado)")
-        elif pr_refs is None or pr_refs.get(n) is None:
+        elif n in cited:
+            notes.append(f"aviso: #{n} no exento: lo cita el episodio {cited[n]}")
+        elif refs:
+            prs = ", ".join(f"#{m}" for m in refs)
+            who = (
+                f"PR fusionado {prs} que lo referencia"
+                if len(refs) == 1
+                else f"PR fusionados {prs} que lo referencian"
+            )
+            notes.append(f"aviso: #{n} no exento: {who} antes del cierre")
+        else:
             notes.append(
                 f"aviso: #{n} no exento: no se pudieron comprobar los PR fusionados que lo referencian"
             )
@@ -499,42 +530,83 @@ def read_github(runner: Runner = _run_gh) -> tuple[Any, Any, dict[int, list[dict
     return items, issues, subs
 
 
-# Eventos «cross-referenced» de la línea de tiempo del issue cuya fuente es un PR fusionado. GitHub
-# resuelve la mención: ``#104`` no casa con ``#1040`` y ``otro/repo#104`` apunta al otro repositorio
-# (aun así se filtra el repositorio de la fuente, que puede ser otro que mencione este issue).
+# Proyección de TODOS los eventos de la línea de tiempo del issue a filas de seis campos; el filtro
+# por tipo de evento, por PR fusionado, por repositorio y por fecha se hace en Python
+# (:func:`parse_timeline`), donde lo prueban las pruebas (en esta máquina no hay ``jq``). Los ``?``
+# evitan que un evento sin ``source`` rompa la proyección.
 _TIMELINE_JQ = (
-    '.[] | select(.event == "cross-referenced") | .source.issue'
-    " | [.number, .repository_url, .pull_request != null, .pull_request.merged_at != null] | @json"
+    ".[] | [.event, .created_at, .source?.issue?.number, .source?.issue?.repository_url,"
+    " (.source?.issue?.pull_request? != null), (.source?.issue?.pull_request?.merged_at? != null)] | @json"
 )
 
 
-def read_pr_refs(numbers: Iterable[int], runner: Runner = _run_gh) -> dict[int, list[int] | None]:
-    """PR fusionados de ``REPO`` que referencian cada issue de ``numbers`` (solo esos: una llamada cada uno).
+def _utc(value: Any) -> datetime:
+    """Instante UTC de un ``created_at`` ISO 8601 de GitHub (``...Z``); otra cosa es ``ValueError``."""
+    if not isinstance(value, str):
+        raise ValueError("fecha ausente")
+    moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if moment.tzinfo is None:
+        raise ValueError("fecha sin zona horaria")
+    return moment.astimezone(UTC)
 
-    Una lectura que falla (``gh`` con error, tiempo agotado, salida ilegible) deja ``None`` para ese
-    issue: no se sabe, y quien consulta no debe eximirlo.
+
+def parse_timeline(stdout: str) -> list[int] | None:
+    """Ver :func:`_parse_timeline`; cualquier fecha o línea ilegible da ``None``, nunca una excepción."""
+    try:
+        return _parse_timeline(stdout)
+    except (ValueError, TypeError):
+        return None
+
+
+def _parse_timeline(stdout: str) -> list[int] | None:
+    """PR fusionados de ``REPO`` con referencia cruzada anterior al último cierre del issue.
+
+    ``None`` si la lectura no es fiable: ninguna fila, una fila de forma inesperada, un cierre o una
+    referencia de PR fusionado sin fecha legible, o ninguna fila ``closed`` (un issue cerrado siempre
+    tiene su evento de cierre). Cuenta el PR solo si hoy está fusionado **y** su referencia es
+    anterior al cierre o simultánea a él (un empate se trata como trabajo); con varios cierres vale
+    el último. Una referencia posterior al cierre no cuenta: es una mención, no el trabajo.
+    """
+    closed: list[datetime] = []
+    references: list[tuple[int, datetime]] = []
+    rows = 0
+    for line in stdout.splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if not (isinstance(row, list) and len(row) == 6):
+            return None
+        event, created, number, url, is_pr, merged = row
+        rows += 1
+        if event == "closed":
+            closed.append(_utc(created))
+        elif (
+            event == "cross-referenced"
+            and is_pr is True
+            and merged is True
+            and isinstance(url, str)
+            and url.endswith(f"/repos/{REPO}")
+            and isinstance(number, int)
+        ):
+            references.append((number, _utc(created)))
+    if rows == 0 or not closed:
+        return None
+    cutoff = max(closed)
+    return sorted({number for number, when in references if when <= cutoff})
+
+
+def read_pr_refs(numbers: Iterable[int], runner: Runner = _run_gh) -> dict[int, list[int] | None]:
+    """PR fusionados de ``REPO`` con referencia anterior al cierre, para cada issue de ``numbers``.
+
+    Una llamada paginada a la línea de tiempo por issue, solo de los de ``numbers``. Una lectura que
+    falla (``gh`` con error, tiempo agotado, salida vacía o ilegible, sin evento de cierre) deja
+    ``None`` para ese issue: no se sabe, y quien consulta no debe eximirlo.
     """
     out: dict[int, list[int] | None] = {}
     for n in numbers:
         try:
             proc = runner(["api", f"repos/{REPO}/issues/{n}/timeline", "--paginate", "--jq", _TIMELINE_JQ])
-            if proc.returncode != 0:
-                out[n] = None
-                continue
-            prs: set[int] = set()
-            for line in proc.stdout.splitlines():
-                if not line.strip():
-                    continue
-                number, url, is_pr, merged = json.loads(line)
-                if (
-                    is_pr is True
-                    and merged is True  # abierto o cerrado sin fusionar no cuenta
-                    and isinstance(url, str)
-                    and url.endswith(f"/repos/{REPO}")
-                    and isinstance(number, int)
-                ):
-                    prs.add(number)
-            out[n] = sorted(prs)
+            out[n] = parse_timeline(proc.stdout) if proc.returncode == 0 else None
         except (BoardReadError, ValueError, TypeError):
             out[n] = None
     return out
