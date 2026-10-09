@@ -51,7 +51,10 @@ envío falla sin explicación.
    propio rescate; si su recuento difiere del relato, vale el suyo y se anota la diferencia.
 8. **Después: decide con el dueño y deja el episodio.** El concilio va antes de preguntar; la decisión de
    subir, enviar o pagar es del dueño. La vuelta deja un episodio en `learning/episodes/` el mismo día
-   (skill [`registrar-episodio`](../registrar-episodio/SKILL.md)).
+   (skill [`registrar-episodio`](../registrar-episodio/SKILL.md)). Antes de cerrar, pasa por el registro de
+   hallazgos (`experiments/gemma_developer_agent/hallazgos.json`): un hallazgo medido no puede aparecer en
+   dos vueltas sin una decisión escrita; cada uno pasa a `decidido` o `descartado`, o el registro dice por
+   qué sigue abierto ([regla](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 8).
 
 ## Qué no hace
 

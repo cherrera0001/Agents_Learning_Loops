@@ -222,6 +222,20 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    episodio en `learning/episodes/` el mismo día.
 7. **Decisión.** El concilio va antes de preguntar. Subir, enviar o pagar lo decide el dueño, con la orden
    a la vista.
+8. **Hallazgos.** Cada hallazgo medido vive en
+   [`experiments/gemma_developer_agent/hallazgos.json`](experiments/gemma_developer_agent/hallazgos.json)
+   (solo conteos, sin datos de la competencia) con su primera vuelta, las vueltas en que se midió y su estado:
+   `medido`, `decidido` (con la decisión y quién la tomó), `aplicado` o `descartado` (con el motivo).
+   **Un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita.** Al cerrar la vuelta, el
+   orquestador pasa cada hallazgo a `decidido` o `descartado`, o escribe en `por_que_sigue_abierto` por qué
+   sigue abierto. El vigía de inicio de sesión (`scripts/kaggle_vigia.py`) imprime los que llevan más de una
+   vuelta en `medido`; una prueba valida el formato del registro.
+
+Tras cada rescate, `python -m scripts.kaggle_rescate_y_cuenta --destino <directorio ignorado>` hace el rescate
+y la cuenta por llamada (`scripts/kaggle_cuenta_llamadas.py`): qué devolvió cada llamada, cuáles se repiten
+y cuántas contaron contra el tope, por sesión (en la carpeta ignorada) y en agregado sin identificadores.
+Los códigos del rescate son 0, 2, 3 y 4 (`scripts/kaggle_rescate.py`); la orden unida los devuelve tal cual y
+añade 6 cuando el rescate salió 0 o 4 pero la cuenta no pudo contar.
 
 Skills: [`concilio-de-experimento`](skills/concilio-de-experimento/SKILL.md) (pasos 1 y 4 a 7) y
 [`corrida-valida`](skills/corrida-valida/SKILL.md) (pasos 2 y 3 y el criterio que sigue).

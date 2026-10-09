@@ -1,0 +1,121 @@
+{
+  "seq": 74,
+  "id": "issue-171-vigia-cuenta-por-llamada-hallazgos",
+  "goal": "Construir el vigía de Kaggle al iniciar la sesión, la cuenta por llamada tras cada rescate y el registro de hallazgos medidos, para que un envío que puntúa o un problema medido varias veces no queden sin leer ni sin decidir",
+  "ref": "#171",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del issue antes de leer el código; devolvió el episodio del guardián de sesión (el chequeo que solo corría cuando alguien se acordaba)"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se buscó el rescate de hoy en la ruta que decía el encargo (carpeta fechada con notebooks/ dentro) y no existía: el rescate había anidado su carpeta fechada dentro de otra con el mismo nombre, y el de la víspera no. La regla de «el rescate más reciente» tuvo que admitir las dos profundidades"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Cuenta por llamada con las definiciones del auditor; sobre el rescate de hoy reproduce 145 sesiones, 4 246 y 198 llamadas, 300 búsquedas vacías, 507 lecturas mal formadas, 211 ediciones rechazadas, 1 689 / 1 347 / 1 178 repetidas, 54 sesiones sin edición de fuente y 21 cortes con marca"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "La primera regla de emparejamiento asignaba la observación de un paso a su primera llamada. En 5 pasos con la entrega al subagente y una búsqueda del subagente, la observación era de la búsqueda: salían 171 búsquedas vacías del subagente en vez de 176 y 7 llamadas sin observación. Se corrigió emparejando por el nombre de herramienta que trae la propia observación"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Se escribió en el docstring una explicación de por qué otro rol contó 193 llamadas del subagente y no 198 antes de medirla (decía que dependía de la observación asignada). La medición posterior mostró otra causa: 193 llamadas tienen el mismo autor que su paso y 5 no; 198 es por autor de la llamada. Se reescribió con el dato"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "El vigía envolvía sys.stdout.buffer en un TextIOWrapper; al recolectarse cerraba la salida estándar y 43 pruebas posteriores fallaban con «I/O operation on closed file». Se cambió por sys.stdout.reconfigure"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Vigía contra Kaggle en lectura, con el rescate del 2026-10-08 como lectura guardada: imprime que el envío 56916129 pasó de error a complete con nota 0,13, sin procesar, en 1,3 s, sin imprimir el token"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Al inyectar defectos, el que quita la guarda de carpeta versionable de la cuenta dejó docs/cuenta_de_prueba_detalle.json en el árbol y los mutantes siguientes fallaron por ese archivo, no por su defecto. Se borró el archivo y la prueba lo elimina en un finally. Además, de 40 defectos inyectados 2 sobrevivían: uno era un hueco real (la prueba de «sin avance» usaba un subagente cuyas llamadas ya eran búsquedas vacías, y se doble-contaban) y otro era equivalente (quitar una de dos capas que tapan el token)"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "95 pruebas nuevas con trazas sintéticas definidas en la prueba; 40 defectos propios inyectados, 40 detectados una vez añadida la llamada del subagente con contenido y un defecto que quita las dos capas del token a la vez (es lo que se creyó entonces: el revisor inyectó 38 defectos distintos y 13 sobrevivían)"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "ruff check halló 9 líneas de más de 110 caracteres y una condición Yoda en los archivos nuevos; el formato no parte las cadenas largas"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Mismo comando tras acortar las líneas a mano y reescribir la comparación: ruff check, ruff format --check, mypy y export_schema en verde"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Regla en CONTRIBUTING.md (paso 8 de «Vuelta de un experimento con modelo»), cita en el paso de cierre de la skill concilio-de-experimento sin reescribir el resto, sección «Vigía de Kaggle» en docs/entorno/harness.md y gancho declarado en .claude/settings.json"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La primera revisión de código pidió cambios. Halló: (1) el vigía imprimía el token con un salto de línea interior, porque la biblioteca de red cita el valor de la cabecera y el vigía imprimía el texto de cualquier excepción; (2) un rescate fallido que solo había escrito envios.json daba «sin cambios» y apagaba el aviso; (3) 13 de los 38 defectos que el revisor inyectó en los contadores y el vigía sobrevivían a mis pruebas (resueltas que pasaron el límite sobre todas, lecturas por sesión, estado en «sin avance», emparejamiento con dos llamadas del mismo nombre, tope de tamaño del zip, umbral de 24 h, la rama «la cuenta sale 2»); (4) más una marca de fecha futura que ganaba para siempre, notebooks no comparados sin decirlo y un validador de hallazgos que dejaba pasar fechas, campos y rutas de código. Mi propia pasada de defectos solo había inyectado los que yo había imaginado"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corregido en la misma rama: toda excepción ajena imprime solo su tipo y un token con caracteres de control no se usa; un rescate sin tabla ni lista de notebooks no vale como lectura y se avisa; marcas futuras descartadas; el vigía dice qué no pudo comparar; la orden unida distingue «no pude contar» (6) de «nada que contar» (5); tope del guion a 15 s con una sola llamada a git"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Una prueba por cada defecto que sobrevivía y por cada corrección; 30 defectos reinyectados (los 13 que sobrevivían y 17 de las correcciones), 30 detectados con las dos pruebas del archivo; 149 pruebas en total entre los dos archivos"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El analista de datos reprodujo las 25 cifras de la cuenta, pero halló que el registro de hallazgos que yo había sembrado desde la bitácora afirmaba de más: el subagente «en 145 sesiones» (son 7; 145 es el universo), la búsqueda vacía fechada en la vuelta 38 cuando la primera es la 19, cifras de dos universos mezcladas en una fila de repeticiones, una cifra de un rol («6 de 69») sin recalcular, y varios hallazgos con vueltas que faltaban o con «sin decisión» cuando tenían una parcial. El rótulo `resueltas: 39` junto a `tareas: 43` se leía como 39 de 43 tareas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cada corrección se contrastó con la bitácora antes de escribirla (la vuelta 30 no consta para las repeticiones y no se añadió); nueve filas nuevas de hallazgos medidos en dos vueltas o más; el agregado dice `sesiones_resueltas` (39) y `tareas_con_alguna_sesion_resuelta` (11 de 43); el validador mira también la descripción y los estados, exige fecha ISO estricta y deja que un descartado lleve su decisión"
+    }
+  ],
+  "lessons": [
+    "Un contador que asocia la salida de un paso a su primera llamada pierde las salidas de los pasos con varias llamadas: empareja por el nombre de herramienta que trae la propia salida y escribe la regla donde se prueba",
+    "Cuando dos cifras de dos fuentes difieren por unas pocas unidades, mide de dónde sale la diferencia antes de escribir la explicación: la primera que se escribió de memoria (observación asignada) era falsa y la real era el autor por paso frente al autor por llamada",
+    "Un vigía que se engancha al arranque debe tener tope de tiempo en un hilo aparte (el tiempo de espera del socket no cubre la resolución de nombres), salir con 0 ante cualquier error y tapar el token en cada mensaje; una prueba de cada cosa",
+    "«Todo procesado» solo es verdad respecto de la lectura guardada: dilo en el aviso, porque que la bitácora y la memoria estén al día es otro hecho que el vigía no ve",
+    "Al inyectar defectos, un defecto que deja archivos en el árbol contamina los siguientes: limpia en un finally y revisa git status entre mutantes; y quitar una de dos capas redundantes no se detecta por diseño, así que se inyecta quitando las dos",
+    "Taparle el token a un mensaje de error no basta si el token puede cambiar de forma al citarse (un salto de línea escapado): imprime de una excepción ajena solo su tipo, y rechaza un token con caracteres de control antes de usarlo",
+    "Un registro sembrado desde un relato hay que contrastarlo con la fuente de cada vuelta antes de entregarlo: una cifra copiada («en 145 sesiones», «primera aparición en la 38») conserva el universo y la fecha del texto que la resumió, no los de la medición",
+    "Mis defectos inyectados salen de lo que ya imaginé; un revisor que inyecta los suyos halló 13 huecos de 38: antes de entregar, inyecta también un defecto por cada contador del agregado y por cada rama de una regla de emparejamiento",
+    "Una prueba de unión sin doble conteo necesita una llamada que entre solo por una de las clases; si cada llamada de prueba cae en dos clases, quitar una clase no cambia el total y el defecto sobrevive"
+  ]
+}
