@@ -1,9 +1,10 @@
 """Sorteo de tareas y lectura del registro de una sesión del notebook de Kaggle (#160).
 
-Dos órdenes, las dos locales y sin red:
+Tres órdenes, locales y sin red:
 
     python -m scripts.kaggle_registro sortear --validez <validez_ensayo.json> [--salida <lista.json>]
     python -m scripts.kaggle_registro diagnosticar --salida <carpeta o zip de salida de una sesión>
+    python -m scripts.kaggle_registro comprobar --rescate <carpeta de un rescate> [--notebook <slug>]
 
 ``sortear`` reproduce la lista de tareas de la iteración 08: universo = las tareas de clase ``discrimina``
 del archivo de validez estricto, ordenadas por ``instance_id``; generador
@@ -12,17 +13,32 @@ tiene el tamaño esperado se detiene: no se ajusta la semilla ni el tamaño. Si 
 otra lista, no la pisa.
 
 ``diagnosticar`` lee lo que dejaron los enganches de ``scripts/kaggle_registro_enganches.py`` y dice, sin la
-consola: si la sesión se cerró o murió desde fuera, qué tope cortó, cuál era la petición en vuelo (su hora
-y el tamaño de su entrada) y qué diff dejó cada tarea al cierre. No abre ningún archivo fuera de los del
-registro y no extrae nada de un zip.
+consola: si el registro es de fiar, si la sesión se cerró o murió desde fuera, qué tope cortó cada tarea,
+cuál era la petición en vuelo o cortada (su hora y el tamaño de su entrada) y qué diff dejó cada tarea al
+cierre. No abre ningún archivo fuera de los del registro y no extrae nada de un zip.
 
-Salida: 0 si todo se pudo leer; 1 si la lista sorteada difiere de la guardada; 2 si la entrada es inválida.
+``comprobar`` corre ``scripts.kaggle_rescate --sin-red`` sobre la carpeta de un rescate y después
+``diagnosticar`` sobre los archivos ``salida__registro_*`` de cada notebook. Hace falta porque el rescate
+solo mira bytes: una sesión muerta desde fuera deja un zip sano, empaquetado antes de morir.
+
+Salida:
+    0  sin hallazgos: lista reproducida, o registro fiable y sesión completa
+    1  la lista sorteada difiere de la guardada
+    2  entrada inválida o ilegible (archivo ausente, JSON roto, acta o validez sin sus campos)
+    3  sesión cortada por el notebook; la causa está en el registro
+    4  registro no fiable: un enganche no se instaló, hubo errores propios, hay tareas sin ninguna
+       petición respondida, falta ``registro_instalado`` o una guardia detuvo el notebook
+    5  sesión muerta desde fuera: el registro no termina en ``cierre``
+``comprobar`` sale con el código del rescate si no es 0 y, si lo es, con el del primer diagnóstico que no
+lo sea.
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
+import io
 import json
 import random
 import sys
@@ -32,6 +48,8 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
 
+from scripts.kaggle_registro_enganches import ENGANCHE_NO_EXIGIDO
+
 SEMILLA_ITERACION_08 = "ALL-kaggle-iteracion-08-2026-10-08"
 UNIVERSO_ESPERADO = 71
 TAREAS_SORTEADAS = 60
@@ -40,6 +58,9 @@ CLASE_VALIDA = "discrimina"
 EXIT_OK = 0
 EXIT_DIFIERE = 1
 EXIT_ENTRADA = 2
+EXIT_CORTADA = 3
+EXIT_REGISTRO = 4
+EXIT_MUERTA = 5
 
 # Texto que el arnés pone en el error de una sesión del agente, y el tope que significa.
 TOPES_DE_TAREA = (
@@ -70,7 +91,10 @@ def universo_valido(validez: dict[str, Any]) -> list[str]:
     tareas = validez.get("tareas")
     if not isinstance(tareas, list):
         raise RegistroError("El archivo de validez no trae la lista «tareas».")
-    return sorted(str(t["instance_id"]) for t in tareas if t.get("clase") == CLASE_VALIDA)
+    try:
+        return sorted(str(t["instance_id"]) for t in tareas if t.get("clase") == CLASE_VALIDA)
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise RegistroError("El archivo de validez trae una tarea sin «instance_id» o mal formada.") from exc
 
 
 def sortear(
@@ -146,8 +170,9 @@ def cargar_salida(ruta: Path) -> dict[str, Any]:
     """Lee el registro de una carpeta de salida o de un zip ``crudo_*.zip`` (miembros ``registro/``)."""
     textos: dict[str, str] = {}
     if ruta.is_dir():
+        # En la carpeta de un rescate los archivos de salida llevan el prefijo «salida__».
         for patron, clave in (("registro_*.jsonl", "eventos"), ("latido_*.jsonl", "latidos")):
-            halladas = sorted(ruta.glob(patron))
+            halladas = sorted(ruta.glob(patron)) or sorted(ruta.glob("salida__" + patron))
             if halladas:
                 textos[clave] = halladas[0].read_text(encoding="utf-8", errors="replace")
     elif ruta.is_file():
@@ -222,33 +247,89 @@ def _ficha(par: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# Una petición «en vuelo» es la que no terminó con una respuesta del modelo.
+# «No respondida»: no terminó con una respuesta del modelo. «En vuelo» es solo la que no tiene fin.
 NO_RESPONDIDAS = frozenset({"sin fin", "cancelada", "error"})
+
+
+def ocurrencias_de_tarea(eventos: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Una entrada por cada ``tarea_inicio``, con lo que el registro anotó hasta su ``tarea_fin``.
+
+    Se agrupa por posición y no por nombre: si una tarea se corre dos veces, cada corrida conserva sus
+    peticiones, su motivo de fin, su diff y su fila.
+    """
+    ocurrencias: list[dict[str, Any]] = []
+    actual: dict[str, Any] | None = None
+    for e in eventos:
+        tipo = e.get("evento")
+        if tipo == "tarea_inicio":
+            actual = {"inicio": e, "peticiones": [], "agente": None, "diff": None, "fin": None}
+            ocurrencias.append(actual)
+        elif actual is None or e.get("tarea") != actual["inicio"].get("tarea"):
+            continue
+        elif tipo == "peticion_inicio" and isinstance(e.get("peticion"), int):
+            actual["peticiones"].append(e["peticion"])
+        elif tipo == "agente_fin":
+            actual["agente"] = e
+        elif tipo == "diff_cierre":
+            actual["diff"] = e
+        elif tipo == "tarea_fin":
+            actual["fin"] = e
+            actual = None
+    return ocurrencias
+
+
+def salud_del_registro(
+    eventos: Sequence[dict[str, Any]], fichas: Sequence[dict[str, Any]], ocurrencias: Sequence[dict[str, Any]]
+) -> list[str]:
+    """Por qué no hay que fiarse de este registro. Lista vacía si no hay motivo.
+
+    Un registro puede existir y no registrar: enganches que no se instalaron, errores propios al escribir,
+    o tareas corridas sin una sola petición respondida.
+    """
+    problemas: list[str] = []
+    instalado = next((e for e in eventos if e.get("evento") == "registro_instalado"), None)
+    if instalado is None:
+        problemas.append("el registro no trae el evento «registro_instalado»")
+    else:
+        for nombre, estado in (instalado.get("enganches") or {}).items():
+            if str(estado).startswith("FALLO") and nombre != ENGANCHE_NO_EXIGIDO:
+                problemas.append(f"enganche sin instalar: {nombre}")
+    cierre = next((e for e in eventos if e.get("evento") == "cierre"), None)
+    if cierre is not None and cierre.get("errores_del_registro"):
+        problemas.append(
+            f"el registro tuvo {cierre['errores_del_registro']} errores propios: {cierre.get('ultimo_error')}"
+        )
+    respondidas = sum(f["como_termino"] not in NO_RESPONDIDAS for f in fichas)
+    if any(o["fin"] is not None for o in ocurrencias) and respondidas == 0:
+        problemas.append("hay tareas corridas y ninguna petición con respuesta en el registro")
+    for guardia in (e for e in eventos if e.get("evento") == "guardia"):
+        problemas.append(f"la guardia detuvo el notebook {guardia.get('cuando')}: {guardia.get('problemas')}")
+    return problemas
 
 
 def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """Qué pasó en la sesión, solo con lo que quedó en el registro."""
     pares = emparejar(eventos)
     fichas = [_ficha(pares[n]) for n in sorted(pares)]
+    por_numero = {f["peticion"]: f for f in fichas}
     cierre = next((e for e in eventos if e.get("evento") == "cierre"), None)
     cortes = [e for e in eventos if e.get("evento") == "corte"]
-    diffs = {e.get("tarea"): e for e in eventos if e.get("evento") == "diff_cierre"}
-    fines = {e.get("tarea"): e for e in eventos if e.get("evento") == "tarea_fin"}
-    agentes = {e.get("tarea"): e for e in eventos if e.get("evento") == "agente_fin"}
+    ocurrencias = ocurrencias_de_tarea(eventos)
+    veces = Counter(o["inicio"].get("tarea") for o in ocurrencias)
     tareas = []
-    for inicio in (e for e in eventos if e.get("evento") == "tarea_inicio"):
-        nombre = inicio.get("tarea")
-        fin = fines.get(nombre)
-        propias = [f for f in fichas if f["tarea"] == nombre]
-        en_vuelo = [f for f in propias if f["como_termino"] in NO_RESPONDIDAS]
-        diff = diffs.get(nombre)
-        agente = agentes.get(nombre)
+    for orden, o in enumerate(ocurrencias, start=1):
+        nombre, fin, agente, diff = o["inicio"].get("tarea"), o["fin"], o["agente"], o["diff"]
+        propias = [por_numero[n] for n in o["peticiones"] if n in por_numero]
+        sin_fin = [f for f in propias if f["como_termino"] == "sin fin"]
+        ultima = propias[-1] if propias else None
         # El motivo de fin del agente manda: el arnés lo descarta de la fila cuando el parche pasa.
         error_del_agente = None if agente is None else agente.get("error")
         error_de_la_fila = None if fin is None else fin.get("error")
         tareas.append(
             {
+                "orden": orden,
                 "tarea": nombre,
+                "veces_en_la_sesion": veces[nombre],
                 "terminada": fin is not None,
                 "clase": None if fin is None else fin.get("clase"),
                 "error": error_de_la_fila,
@@ -260,8 +341,12 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
                 },
                 "tope_que_corto": tope_de_tarea(error_del_agente) or tope_de_tarea(error_de_la_fila),
                 "peticiones": len(propias),
-                "peticion_en_vuelo": en_vuelo[-1] if en_vuelo else None,
-                "ultima_peticion": propias[-1] if propias else None,
+                "no_respondidas": sum(f["como_termino"] in NO_RESPONDIDAS for f in propias),
+                # En vuelo: un inicio sin fin de ningún tipo. Solo puede quedar si la sesión murió.
+                "peticion_en_vuelo": sin_fin[-1] if sin_fin else None,
+                # Cortada: la última petición de la tarea, si no llegó a responderse.
+                "peticion_cortada": ultima if ultima and ultima["como_termino"] in NO_RESPONDIDAS else None,
+                "ultima_peticion": ultima,
                 "diff_al_cierre": None
                 if diff is None
                 else {k: diff.get(k) for k in ("bytes", "sha256", "archivos", "error") if k in diff},
@@ -270,16 +355,22 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
     ultimo_latido = latidos[-1] if latidos else None
     if cortes:
         por = str(cortes[-1].get("cortado_por"))
-        veredicto = "cortada por el notebook: " + CORTES_DE_SESION.get(por, por)
+        estado, veredicto = "cortada", "cortada por el notebook: " + CORTES_DE_SESION.get(por, por)
     elif cierre is not None:
-        veredicto = "completa: el registro termina en «cierre» y no hay ningún corte"
+        estado, veredicto = "completa", "completa: el registro termina en «cierre» y no hay ningún corte"
     else:
-        veredicto = "muerta desde fuera: el registro no termina en «cierre»"
+        estado, veredicto = "muerta", "muerta desde fuera: el registro no termina en «cierre»"
+    problemas = salud_del_registro(eventos, fichas, ocurrencias)
+    if problemas:
+        veredicto = "registro no fiable (" + "; ".join(problemas) + "); sesión " + veredicto
     canales = Counter(e.get("evento") for e in eventos if str(e.get("evento", "")).startswith("cb_"))
     no_respondidas = [f for f in fichas if f["como_termino"] in NO_RESPONDIDAS]
     return {
         "sesion": {
             "veredicto": veredicto,
+            "estado": estado,
+            "registro_fiable": not problemas,
+            "problemas_del_registro": problemas,
             "cerrada": cierre is not None,
             "cortado_por": cortes[-1].get("cortado_por") if cortes else None,
             "ultimo_evento": eventos[-1].get("evento") if eventos else None,
@@ -311,6 +402,14 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
     }
 
 
+def codigo_de(informe: dict[str, Any]) -> int:
+    """Código de salida de un diagnóstico: 0 solo si el registro es fiable y la sesión quedó completa."""
+    sesion = informe["sesion"]
+    if not sesion["registro_fiable"]:
+        return EXIT_REGISTRO
+    return {"completa": EXIT_OK, "cortada": EXIT_CORTADA, "muerta": EXIT_MUERTA}[sesion["estado"]]
+
+
 # ---------------------------------------------------------------------------
 # Órdenes
 # ---------------------------------------------------------------------------
@@ -320,7 +419,10 @@ def _orden_sortear(args: argparse.Namespace) -> int:
     acta = acta_del_sorteo(args.validez, args.semilla)
     if args.salida is not None:
         if args.salida.exists():
-            guardada = json.loads(args.salida.read_text(encoding="utf-8")).get("lista")
+            try:
+                guardada = json.loads(args.salida.read_text(encoding="utf-8"))["lista"]
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                raise RegistroError(f"El acta guardada no se puede leer: {type(exc).__name__}") from exc
             if guardada != acta["lista"]:
                 print("LA LISTA GUARDADA DIFIERE DE LA SORTEADA: no se pisa.", file=sys.stderr)
                 return EXIT_DIFIERE
@@ -330,13 +432,46 @@ def _orden_sortear(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _orden_diagnosticar(args: argparse.Namespace) -> int:
-    datos = cargar_salida(args.salida)
+def _diagnostico_de(ruta: Path) -> dict[str, Any]:
+    datos = cargar_salida(ruta)
     informe = diagnosticar(datos["eventos"], datos["latidos"])
     informe["lineas_ilegibles"] = datos["lineas_ilegibles"]
     informe["hay_latido"] = datos["hay_latido"]
+    return informe
+
+
+def _orden_diagnosticar(args: argparse.Namespace) -> int:
+    informe = _diagnostico_de(args.salida)
     print(json.dumps(informe, ensure_ascii=False, indent=1))
-    return EXIT_OK
+    return codigo_de(informe)
+
+
+def _orden_comprobar(args: argparse.Namespace) -> int:
+    """El rescate que mira bytes y el diagnóstico del registro, en una sola orden."""
+    from scripts import kaggle_rescate
+
+    captura = io.StringIO()
+    with contextlib.redirect_stdout(captura):
+        codigo_rescate = kaggle_rescate.main(["--destino", str(args.rescate), "--sin-red"])
+    try:
+        faltantes = len(json.loads(captura.getvalue())["descarga_incompleta"])
+    except (ValueError, KeyError, TypeError):
+        faltantes = None
+    carpetas = sorted(p for p in (args.rescate / "notebooks").glob("*") if p.is_dir())
+    if args.notebook:
+        carpetas = [p for p in carpetas if p.name == args.notebook]
+    sesiones: dict[str, Any] = {}
+    for carpeta in carpetas:
+        if not list(carpeta.glob("salida__registro_*.jsonl")):
+            continue
+        informe = _diagnostico_de(carpeta)
+        sesiones[carpeta.name] = {"codigo": codigo_de(informe), "veredicto": informe["sesion"]["veredicto"]}
+    if not sesiones:
+        raise RegistroError("Ningún notebook del rescate trae un salida__registro_*.jsonl.")
+    codigos = [codigo_rescate, *(s["codigo"] for s in sesiones.values())]
+    resumen = {"rescate": {"codigo": codigo_rescate, "faltantes": faltantes}, "sesiones": sesiones}
+    print(json.dumps(resumen, ensure_ascii=False, indent=1))
+    return next((c for c in codigos if c != EXIT_OK), EXIT_OK)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -350,6 +485,12 @@ def main(argv: list[str] | None = None) -> int:
     d = sub.add_parser("diagnosticar", help="Dice qué cortó una sesión, solo con su registro")
     d.add_argument("--salida", type=Path, required=True, help="Carpeta de salida o zip crudo_*.zip")
     d.set_defaults(funcion=_orden_diagnosticar)
+    c = sub.add_parser("comprobar", help="Rescate que mira bytes y diagnóstico del registro, juntos")
+    c.add_argument("--rescate", type=Path, required=True, help="Carpeta de un rescate ya bajado")
+    c.add_argument(
+        "--notebook", default=None, help="Slug de un notebook; por defecto, todos los que traen registro"
+    )
+    c.set_defaults(funcion=_orden_comprobar)
     args = p.parse_args(argv)
     try:
         return int(args.funcion(args))

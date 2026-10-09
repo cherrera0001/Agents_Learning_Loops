@@ -411,3 +411,228 @@ def test_instalar_inactivo_no_toca_nada_y_un_modo_de_rich_desconocido_se_rechaza
     assert registro.enganches == {} and registro._hilo is None and list(tmp_path.iterdir()) == []
     with pytest.raises(ValueError, match="parche_rich"):
         ke.instalar_registro(tmp_path, "s", None, parche_rich="todo")
+
+
+# ---------------------------------------------------------------------------
+# Pruebas añadidas tras la revisión independiente del PR #161
+# ---------------------------------------------------------------------------
+
+
+def test_dos_peticiones_llevan_numeros_distintos_y_cada_fin_el_de_su_inicio(tmp_path: Path) -> None:
+    registro = ke.Registro(tmp_path, "s")
+    motivos = iter(["tool_calls", "stop"])
+
+    async def responder(model: Any, messages: Any, tools: Any, **kwargs: Any) -> Any:
+        return _Respuesta(next(motivos))
+
+    clase = _cliente(responder)
+    registro.envolver_cliente(clase)
+
+    async def dos() -> None:
+        await clase().acompletion(model="m", messages=MENSAJES, tools=None)
+        await clase().acompletion(
+            model="m", messages=[*MENSAJES, {"role": "user", "content": "x"}], tools=None
+        )
+
+    asyncio.run(dos())
+    eventos = [e for e in _eventos(registro) if e["evento"].startswith("peticion_")]
+    assert [(e["evento"], e["peticion"]) for e in eventos] == [
+        ("peticion_inicio", 1),
+        ("peticion_fin", 1),
+        ("peticion_inicio", 2),
+        ("peticion_fin", 2),
+    ]
+    assert [e["motivo"] for e in eventos if e["evento"] == "peticion_fin"] == ["tool_calls", "stop"]
+    assert eventos[2]["caracteres_entrada"] == eventos[0]["caracteres_entrada"] + 5
+    assert registro.peticiones == 2 and registro.motivos == {"tool_calls": 1, "stop": 1}
+
+
+def test_el_inicio_de_cada_peticion_se_sincroniza_a_disco_y_el_fin_no(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sincronizaciones: list[int] = []
+    real = ke.os.fsync
+    monkeypatch.setattr(ke.os, "fsync", lambda fd: (sincronizaciones.append(fd), real(fd))[1])
+    registro = ke.Registro(tmp_path, "s")
+    numero = registro.inicio_peticion("m", MENSAJES, None, {})
+    assert len(sincronizaciones) == 1
+    registro.fin_peticion(numero, respuesta=_Respuesta("stop"))
+    registro.evento("cb_antes", llamada="x")
+    assert len(sincronizaciones) == 1
+    registro.tarea("E1", "t_1", 1)
+    assert len(sincronizaciones) == 2
+
+
+def test_la_retrollamada_anota_la_peticion_mas_reciente_de_las_que_estan_en_vuelo(tmp_path: Path) -> None:
+    registro = ke.Registro(tmp_path, "s")
+    litellm = types.SimpleNamespace(callbacks=None)
+    registro.enganchar_retrollamadas(litellm, object)
+    registro.en_vuelo.update({4: {"hora": 0.0}, 9: {"hora": 0.0}})
+    litellm.callbacks[0].log_pre_api_call("m", [], {"litellm_call_id": "abc"})
+    assert _eventos(registro)[-1]["peticion_en_curso"] == 9
+
+
+def test_el_corte_anota_lo_que_estaba_en_vuelo(tmp_path: Path) -> None:
+    registro = ke.Registro(tmp_path, "s")
+    registro.en_vuelo.update({3: {"hora": 0.0}, 5: {"hora": 0.0}})
+    registro.corte("sesion", indice=2)
+    corte = _eventos(registro)[-1]
+    assert (corte["evento"], corte["cortado_por"], corte["en_vuelo"], corte["indice"]) == (
+        "corte",
+        "sesion",
+        [3, 5],
+        2,
+    )
+
+
+def test_los_archivos_del_registro_incluyen_la_copia_del_log_del_servidor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(ke.Registro, "_gpu", lambda self: [])
+    log = tmp_path / "vllm.log"
+    log.write_text("INFO\n", encoding="utf-8")
+    registro = ke.Registro(tmp_path / "w", "s", types.SimpleNamespace(log_path=str(log)))
+    registro.carpeta.mkdir()
+    registro.evento("tarea_inicio")
+    registro.latir()
+    assert registro.archivos() == [registro.ruta_eventos, registro.ruta_latido, registro.ruta_servidor]
+    assert all(p.stat().st_size > 0 for p in registro.archivos())
+
+
+def _arnes_falso(monkeypatch: pytest.MonkeyPatch, *, sin_consola: bool = False) -> dict[str, Any]:
+    """Módulos falsos con la forma de lo que `instalar_registro` importa del arnés, de litellm y de rich."""
+    consolas: list[dict[str, Any]] = []
+
+    def consola_original(*args: Any, **kwargs: Any) -> str:
+        consolas.append(kwargs)
+        return "consola"
+
+    async def nada(*args: Any, **kwargs: Any) -> None:
+        return None
+
+    class Evaluator:
+        async def _run_agent_sandbox(self, *args: Any, **kwargs: Any) -> Any:
+            return ("", None, None)
+
+    class LiteLLMClient:
+        async def acompletion(self, *args: Any, **kwargs: Any) -> Any:
+            return _Respuesta("stop")
+
+    agent_runner = types.ModuleType("swegemma.harness.agent_runner")
+    agent_runner.sandbox_start = agent_runner.sandbox_stop = agent_runner.sandbox_exec = nada  # type: ignore[attr-defined]
+    if not sin_consola:
+        agent_runner.Console = consola_original  # type: ignore[attr-defined]
+    consola_de_rich = types.ModuleType("rich.console")
+    consola_de_rich._is_jupyter = lambda: True  # type: ignore[attr-defined]
+    modulos: dict[str, Any] = {
+        "swegemma": types.ModuleType("swegemma"),
+        "swegemma.harness": types.ModuleType("swegemma.harness"),
+        "swegemma.harness.agent_runner": agent_runner,
+        "swegemma.evaluate": types.ModuleType("swegemma.evaluate"),
+        "google": types.ModuleType("google"),
+        "google.adk": types.ModuleType("google.adk"),
+        "google.adk.models": types.ModuleType("google.adk.models"),
+        "google.adk.models.lite_llm": types.ModuleType("google.adk.models.lite_llm"),
+        "litellm": types.ModuleType("litellm"),
+        "litellm.integrations": types.ModuleType("litellm.integrations"),
+        "litellm.integrations.custom_logger": types.ModuleType("litellm.integrations.custom_logger"),
+        "rich": types.ModuleType("rich"),
+        "rich.console": consola_de_rich,
+    }
+    modulos["swegemma.harness"].agent_runner = agent_runner
+    modulos["swegemma.evaluate"].Evaluator = Evaluator
+    modulos["google.adk.models.lite_llm"].LiteLLMClient = LiteLLMClient
+    modulos["litellm"].callbacks = []
+    modulos["litellm.integrations.custom_logger"].CustomLogger = object
+    modulos["rich"].console = consola_de_rich
+    for nombre, modulo in modulos.items():
+        monkeypatch.setitem(sys.modules, nombre, modulo)
+    monkeypatch.setattr(ke.Registro, "_gpu", lambda self: [])
+    return {
+        "agent_runner": agent_runner,
+        "consolas": consolas,
+        "original": consola_original,
+        "rich": consola_de_rich,
+    }
+
+
+def test_el_parche_de_archivo_reemplaza_la_consola_del_arnes_y_fuerza_que_no_sea_jupyter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    arnes = _arnes_falso(monkeypatch)
+    registro = ke.instalar_registro(tmp_path, "s", None, parche_rich="archivo", latido_segundos=60)
+    registro.cerrar()
+    assert registro.enganches_que_faltan() == [] and registro.parche_rich == "archivo"
+    assert all(not v.startswith("FALLO") for v in registro.enganches.values()), registro.enganches
+    registro.exigir_enganches()
+
+    consola = arnes["agent_runner"].Console
+    assert consola is not arnes["original"]
+    assert consola(file="log", force_terminal=True, width=120) == "consola"
+    assert arnes["consolas"] == [
+        {"file": "log", "force_terminal": True, "width": 120, "force_jupyter": False}
+    ]
+    # La consola con que el arnés pinta en el notebook no se toca.
+    assert arnes["rich"]._is_jupyter() is True
+
+
+@pytest.mark.parametrize(("modo", "detecta_jupyter"), [("global", False), ("ninguno", True)])
+def test_los_otros_modos_de_rich_no_reemplazan_la_consola_del_arnes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, modo: str, detecta_jupyter: bool
+) -> None:
+    arnes = _arnes_falso(monkeypatch)
+    registro = ke.instalar_registro(tmp_path, "s", None, parche_rich=modo, latido_segundos=60)
+    registro.cerrar()
+    assert arnes["agent_runner"].Console is arnes["original"]
+    assert arnes["rich"]._is_jupyter() is detecta_jupyter and registro.parche_rich == modo
+
+
+def test_la_guardia_detiene_el_notebook_si_un_enganche_exigido_no_quedo_instalado(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _arnes_falso(monkeypatch, sin_consola=True)
+    registro = ke.instalar_registro(tmp_path, "s", None, parche_rich="archivo", latido_segundos=60)
+    registro.cerrar()
+    assert registro.enganches_que_faltan() == ["logs por tarea (rich)"]
+    with pytest.raises(RuntimeError, match=r"GUARDIA registro: no quedó instalado logs por tarea \(rich\)"):
+        registro.exigir_enganches()
+    guardia = next(e for e in _eventos(registro) if e["evento"] == "guardia")
+    assert guardia["cuando"] == "antes de la primera tarea" and guardia["problemas"] == [
+        "logs por tarea (rich)"
+    ]
+
+
+def test_la_guardia_no_exige_las_retrollamadas_ni_actua_con_el_registro_inactivo(tmp_path: Path) -> None:
+    registro = ke.Registro(tmp_path, "s")
+    registro.enganches = {ke.ENGANCHE_NO_EXIGIDO: "FALLO ImportError: x", "latido": "cada 30 s"}
+    registro.exigir_enganches()
+    inactivo = ke.Registro(tmp_path / "otro", "s", activo=False)
+    inactivo.enganches = {"logs por tarea (rich)": "FALLO x"}
+    inactivo.exigir_enganches()
+    inactivo.comprobar_primera_tarea(tmp_path / "no_existe.log")
+
+
+def test_la_guardia_tras_la_primera_tarea_mira_el_log_y_las_peticiones(tmp_path: Path) -> None:
+    log = tmp_path / "t_1.log"
+    registro = ke.Registro(tmp_path, "s")
+    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+
+    with pytest.raises(RuntimeError, match=r"no existe el log por tarea t_1.log"):
+        registro.comprobar_primera_tarea(log)
+    log.write_bytes(b"")
+    with pytest.raises(RuntimeError, match=r"el log por tarea t_1.log pesa 0 bytes"):
+        registro.comprobar_primera_tarea(log)
+    log.write_bytes(b"x")
+    registro.comprobar_primera_tarea(log)
+
+    # El control sin parche no exige el log, pero sí las peticiones.
+    sin_parche = ke.Registro(tmp_path / "c", "s")
+    sin_parche.carpeta.mkdir()
+    sin_parche.parche_rich = "ninguno"
+    sin_parche.fin_peticion(sin_parche.inicio_peticion("m", MENSAJES, None, {}), error=ConnectionError("x"))
+    with pytest.raises(RuntimeError, match=r"ninguna petición con inicio y fin \(1 iniciadas\)"):
+        sin_parche.comprobar_primera_tarea(tmp_path / "no_existe.log")
+    sin_parche.fin_peticion(sin_parche.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+    sin_parche.comprobar_primera_tarea(tmp_path / "no_existe.log")
+    guardias = [e for e in _eventos(registro) if e["evento"] == "guardia"]
+    assert [g["cuando"] for g in guardias] == ["tras la primera tarea"] * 2

@@ -27,6 +27,11 @@ Parche de rich, modo `archivo`: fuerza `force_jupyter=False` solo en la consola 
 `global` (`rich.console._is_jupyter = lambda: False`) también devuelve los logs, pero cambia la consola que
 pinta en el notebook y multiplica por más de cien el texto que la celda de tareas manda a la salida.
 
+Dos guardias, para no descubrir al final de la sesión que el registro no registró: `exigir_enganches`
+detiene el notebook antes de la primera tarea si un enganche exigido no quedó instalado, y
+`comprobar_primera_tarea` lo detiene tras la primera si su log por tarea pesa 0 bytes o no hay ninguna
+petición con inicio y fin. Un enganche puede decir «instalado» y no surtir efecto: por eso la segunda.
+
 Límite conocido: el texto parcial de una petición cortada no se guarda (el arnés no usa streaming).
 """
 
@@ -53,6 +58,7 @@ DIFF_AL_CIERRE = (
     "(git diff --binary _swegemma_baseline 2>/dev/null || git diff --binary HEAD)"
 )
 MODOS_RICH = ("archivo", "global", "ninguno")
+ENGANCHE_NO_EXIGIDO = "retrollamadas de litellm"
 
 
 def caracteres_de(x: Any) -> int:
@@ -128,6 +134,7 @@ class Registro:
         self.costo_segundos = 0.0
         self.costos: dict[str, list[float]] = {}
         self.latidos = 0
+        self.parche_rich = "archivo"
         self._lock = threading.RLock()
         self._parar = threading.Event()
         self._hilo: threading.Thread | None = None
@@ -519,6 +526,50 @@ class Registro:
             pendientes = sorted(self.en_vuelo)
         self.evento("corte", cortado_por=por, peticiones=self.peticiones, en_vuelo=pendientes, **campos)
 
+    def enganches_que_faltan(self) -> list[str]:
+        """Enganches exigidos que no quedaron instalados (las retrollamadas solo sirven para comparar)."""
+        if not self.activo:
+            return []
+        return [
+            nombre
+            for nombre, estado in self.enganches.items()
+            if estado.startswith("FALLO") and nombre != ENGANCHE_NO_EXIGIDO
+        ]
+
+    def exigir_enganches(self) -> None:
+        """Guardia previa a la primera tarea: sin registro completo no se gasta cuota."""
+        faltan = self.enganches_que_faltan()
+        if faltan:
+            self.evento("guardia", cuando="antes de la primera tarea", problemas=faltan)
+            raise RuntimeError(
+                "GUARDIA registro: no quedó instalado "
+                + "; ".join(f"{n} ({self.enganches[n]})" for n in faltan)
+            )
+
+    def comprobar_primera_tarea(self, ruta_log: Path) -> None:
+        """Guardia tras la primera tarea: su log por tarea pesa más de 0 bytes y hay una petición con fin.
+
+        Un enganche puede decir «instalado» y no surtir efecto (el arnés crea la consola por otra ruta, o
+        llama al modelo por otra): solo se ve mirando lo que la primera tarea dejó.
+        """
+        if not self.activo:
+            return
+        problemas = []
+        if self.parche_rich != "ninguno":
+            ruta = Path(ruta_log)
+            if not ruta.exists():
+                problemas.append(f"no existe el log por tarea {ruta.name}")
+            elif ruta.stat().st_size == 0:
+                problemas.append(f"el log por tarea {ruta.name} pesa 0 bytes")
+        respondidas = sum(v for k, v in self.motivos.items() if k not in ("cancelada", "error"))
+        if respondidas == 0:
+            problemas.append(
+                f"el registro no tiene ninguna petición con inicio y fin ({self.peticiones} iniciadas)"
+            )
+        if problemas:
+            self.evento("guardia", cuando="tras la primera tarea", problemas=problemas)
+            raise RuntimeError("GUARDIA registro: " + "; ".join(problemas))
+
     def archivos(self) -> list[Path]:
         """Archivos del registro que el notebook copia al zip de salida."""
         if not self.activo:
@@ -569,6 +620,7 @@ def instalar_registro(
     if parche_rich not in MODOS_RICH:
         raise ValueError(f"parche_rich debe ser uno de {MODOS_RICH}")
     registro = Registro(carpeta, nombre, servidor, activo=activo, latido_segundos=latido_segundos)
+    registro.parche_rich = parche_rich
     if not activo:
         print("REGISTRO", nombre, "inactivo: no se instala ningún enganche", flush=True)
         return registro
@@ -631,7 +683,7 @@ def instalar_registro(
         )
 
     instalar("peticiones (envoltorio de LiteLLMClient.acompletion)", cliente)
-    instalar("retrollamadas de litellm", retrollamadas)
+    instalar(ENGANCHE_NO_EXIGIDO, retrollamadas)
     instalar("motivo de fin del agente (Evaluator._run_agent_sandbox)", evaluador)
     instalar("diff al cierre (sandbox de agent_runner)", sandbox)
     instalar("logs por tarea (rich)", rich)
