@@ -30,6 +30,19 @@ Reglas (``--since`` limita las reglas 2 a 4 a los issues con número >= ``since`
    el comando sale con código 2 en vez de evaluar la regla 6. Solo aplica a la lectura
    por ``gh``; ``--snapshot`` no consulta subissues y no la evalúa.
 
+Exención de las reglas 2, 3 y 9 (:func:`exempt_without_work`): un issue con ``state ==
+"CLOSED"``, ``stateReason`` ``NOT_PLANNED`` o ``DUPLICATE``, que ningún episodio cita como ``#n`` en su
+``ref`` y que ningún PR fusionado referenciaba **antes de su cierre** no tuvo trabajo que entregar ni
+verificar. Si un episodio lo cita o un PR fusionado lo referenciaba antes del cierre, las reglas se
+aplican como a cualquier otro. Un ``stateReason`` vacío, ausente o desconocido no exime, ni una lectura
+de PR que falla, vacía o ilegible (se avisa «no exento»). Los PR salen de la línea de tiempo del issue
+(eventos ``cross-referenced`` de PR hoy fusionados de este repositorio, cuyo evento es anterior o
+simultáneo al último cierre; :func:`parse_timeline`), con una llamada paginada por candidato con número
+>= ``since``. Una mención posterior al cierre no es trabajo. Cada issue cerrado sin trabajo aparente se
+avisa por stderr (exento, o no exento y por qué), sin cambiar el código de salida. La regla 1 y las
+demás no cambian. Con ``--snapshot`` los PR salen de un ``prs.json`` opcional ``{"<issue>": [PR]}``; sin
+él no se exime a nadie.
+
 Las reglas 1 a 8 y 10 salen de :func:`check_board`; la 9 es la función pura aparte
 :func:`check_missing_cards`, que :func:`run_board` suma a los hallazgos.
 
@@ -50,6 +63,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TextIO
 
@@ -127,6 +141,109 @@ def _index_cards(cards: Sequence[Mapping[str, Any]], repo: str | None) -> dict[i
     return board
 
 
+EXEMPT_REASONS = {"NOT_PLANNED": "no planeado", "DUPLICATE": "duplicado"}
+
+
+PrRefs = Mapping[int, Sequence[int] | None]
+"""``{issue: PR fusionados que lo referencian}``; ``None`` = la lectura falló y no se sabe."""
+
+
+def _closed_without_work(issues: Sequence[Mapping[str, Any]]) -> dict[int, str]:
+    """Issues ``CLOSED`` con ``stateReason`` exacto ``NOT_PLANNED`` o ``DUPLICATE``: ``{número: motivo}``.
+
+    Un ``stateReason`` vacío, ausente, desconocido o en otra capitalización no entra.
+    """
+    return {
+        int(i["number"]): EXEMPT_REASONS[reason]
+        for i in issues
+        if i.get("state") == "CLOSED"
+        and isinstance((reason := i.get("stateReason")), str)
+        and reason in EXEMPT_REASONS
+    }
+
+
+def _episode_citations(episodes: Sequence[Mapping[str, Any]]) -> dict[int, str]:
+    """``{issue: id del primer episodio que lo cita}`` (misma cita que la regla 4: ``PR #n`` no cuenta)."""
+    cited: dict[int, str] = {}
+    for ep in episodes:
+        for n in sorted(cited_issues(str(ep.get("ref", "")))):
+            cited.setdefault(n, str(ep.get("id", ep.get("seq"))))
+    return cited
+
+
+def exemption_candidates(
+    issues: Sequence[Mapping[str, Any]], episodes: Sequence[Mapping[str, Any]]
+) -> dict[int, str]:
+    """Issues que serían eximidos si ningún PR fusionado los referencia: ``{número: motivo}``.
+
+    Cerrado como no planeado o duplicado (:func:`_closed_without_work`) y ningún episodio cita ``#n``.
+    """
+    cited = _episode_citations(episodes)
+    return {n: why for n, why in _closed_without_work(issues).items() if n not in cited}
+
+
+def exempt_without_work(
+    issues: Sequence[Mapping[str, Any]],
+    episodes: Sequence[Mapping[str, Any]],
+    pr_refs: PrRefs | None,
+) -> dict[int, str]:
+    """Issues eximidos de las reglas 2, 3 y 9: ``{número: motivo}``.
+
+    Candidato (:func:`exemption_candidates`) cuya lista de PR fusionados con referencia anterior al
+    cierre está leída y vacía. Sin dato (``pr_refs`` ausente, issue ausente o lectura fallida) no se
+    exime: callar por falta de dato es peor que avisar de más.
+    """
+    if pr_refs is None:
+        return {}
+    return {n: why for n, why in exemption_candidates(issues, episodes).items() if pr_refs.get(n) == []}
+
+
+def exemption_notes(
+    issues: Sequence[Mapping[str, Any]],
+    episodes: Sequence[Mapping[str, Any]],
+    pr_refs: PrRefs | None,
+    since: int,
+) -> list[str]:
+    """Avisos (``aviso: ...``) de cada issue cerrado sin trabajo aparente con número >= ``since``.
+
+    Dice si queda exento y, si no, por qué: lo cita un episodio, lo referencia un PR fusionado antes
+    del cierre o no se pudieron leer los PR.
+    """
+    exempt = exempt_without_work(issues, episodes, pr_refs)
+    cited = _episode_citations(episodes)
+    notes = []
+    for n, why in sorted(_closed_without_work(issues).items()):
+        if n < since:
+            continue
+        refs = None if pr_refs is None else pr_refs.get(n)
+        if n in exempt:
+            notes.append(f"aviso: #{n} exento de las reglas 2, 3 y 9 ({why}, sin episodio ni PR fusionado)")
+        elif n in cited:
+            notes.append(f"aviso: #{n} no exento: lo cita el episodio {cited[n]}")
+        elif refs:
+            prs = ", ".join(f"#{m}" for m in refs)
+            who = (
+                f"PR fusionado {prs} que lo referencia"
+                if len(refs) == 1
+                else f"PR fusionados {prs} que lo referencian"
+            )
+            notes.append(f"aviso: #{n} no exento: {who} antes del cierre")
+        else:
+            notes.append(
+                f"aviso: #{n} no exento: no se pudieron comprobar los PR fusionados que lo referencian"
+            )
+    return notes
+
+
+def candidates_in_scope(
+    issues: Sequence[Mapping[str, Any]], episodes: Sequence[Mapping[str, Any]], since: int | None
+) -> list[int]:
+    """Candidatos a exención con número >= ``since``: los únicos para los que se leen PR (cuota)."""
+    if since is None:
+        return []
+    return sorted(n for n in exemption_candidates(issues, episodes) if n >= since)
+
+
 def check_board(
     issues: Sequence[Mapping[str, Any]],
     cards: Sequence[Mapping[str, Any]],
@@ -134,11 +251,13 @@ def check_board(
     subissues: Mapping[int, Sequence[Mapping[str, Any]]] | None = None,
     since: int | None = None,
     repo: str | None = REPO,
+    pr_refs: PrRefs | None = None,
 ) -> list[Finding]:
     """Aplica las reglas 1 a 8; devuelve los hallazgos ordenados por (regla, issue, mensaje).
 
     ``since=None`` desactiva las reglas 2 a 4. ``subissues=None`` desactiva la regla 6.
-    La regla 9 vive en :func:`check_missing_cards`.
+    La regla 9 vive en :func:`check_missing_cards`. Sin ``pr_refs`` (PR fusionados que
+    referencian cada candidato) no se exime a nadie de las reglas 2 y 3.
     """
     by_number = {int(i["number"]): i for i in issues}
     epics = {n for n, i in by_number.items() if EPIC_LABEL in _label_names(i.get("labels"))}
@@ -148,6 +267,7 @@ def check_board(
     def in_scope(n: int) -> bool:
         return since is not None and n >= since
 
+    exempt = exempt_without_work(issues, episodes, pr_refs)
     out: list[Finding] = []
     for n, card in board.items():
         status = card.get("status")
@@ -158,7 +278,7 @@ def check_board(
                 out.append(Finding(1, n, f"issue cerrado con la tarjeta en {status or 'sin estado'}"))
             elif state == "OPEN" and status == "Done":
                 out.append(Finding(1, n, "tarjeta en Done con el issue abierto"))
-        if not in_scope(n):
+        if not in_scope(n) or n in exempt:  # exento: las reglas 2 y 3 miden entrega que no hubo
             continue
         epic = n in epics
         if status in ("In Progress", "Done") and not epic:
@@ -261,14 +381,24 @@ def check_missing_cards(
     cards: Sequence[Mapping[str, Any]],
     since: int | None,
     repo: str | None = REPO,
+    episodes: Sequence[Mapping[str, Any]] | None = None,
+    pr_refs: PrRefs | None = None,
 ) -> list[Finding]:
-    """Regla 9: issues con número >= ``since`` sin tarjeta (incluye épicas). ``since=None``: ninguno."""
+    """Regla 9: issues con número >= ``since`` sin tarjeta (incluye épicas). ``since=None``: ninguno.
+
+    Con ``episodes`` y ``pr_refs`` se eximen los issues cerrados sin trabajo
+    (:func:`exempt_without_work`); si falta alguno de los dos no se sabe si hubo trabajo y no se
+    exime ninguno.
+    """
     if since is None:
         return []
     board = _index_cards(cards, repo)
+    exempt = exempt_without_work(issues, episodes, pr_refs) if episodes is not None else {}
     numbers = sorted({int(i["number"]) for i in issues})
     return [
-        Finding(9, n, "issue sin tarjeta en el tablero") for n in numbers if n >= since and n not in board
+        Finding(9, n, "issue sin tarjeta en el tablero")
+        for n in numbers
+        if n >= since and n not in board and n not in exempt
     ]
 
 
@@ -400,6 +530,102 @@ def read_github(runner: Runner = _run_gh) -> tuple[Any, Any, dict[int, list[dict
     return items, issues, subs
 
 
+# Proyección de TODOS los eventos de la línea de tiempo del issue a filas de seis campos; el filtro
+# por tipo de evento, por PR fusionado, por repositorio y por fecha se hace en Python
+# (:func:`parse_timeline`), donde lo prueban las pruebas (en esta máquina no hay ``jq``). Los ``?``
+# evitan que un evento sin ``source`` rompa la proyección.
+_TIMELINE_JQ = (
+    ".[] | [.event, .created_at, .source?.issue?.number, .source?.issue?.repository_url,"
+    " (.source?.issue?.pull_request? != null), (.source?.issue?.pull_request?.merged_at? != null)] | @json"
+)
+
+
+def _utc(value: Any) -> datetime:
+    """Instante UTC de un ``created_at`` ISO 8601 de GitHub (``...Z``); otra cosa es ``ValueError``."""
+    if not isinstance(value, str):
+        raise ValueError("fecha ausente")
+    moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if moment.tzinfo is None:
+        raise ValueError("fecha sin zona horaria")
+    return moment.astimezone(UTC)
+
+
+def parse_timeline(stdout: str) -> list[int] | None:
+    """Ver :func:`_parse_timeline`; cualquier fecha o línea ilegible da ``None``, nunca una excepción."""
+    try:
+        return _parse_timeline(stdout)
+    except (ValueError, TypeError):
+        return None
+
+
+def _parse_timeline(stdout: str) -> list[int] | None:
+    """PR fusionados de ``REPO`` con referencia cruzada anterior al último cierre del issue.
+
+    ``None`` si la lectura no es fiable: ninguna fila, una fila de forma inesperada, un cierre o una
+    referencia de PR fusionado sin fecha legible, o ninguna fila ``closed`` (un issue cerrado siempre
+    tiene su evento de cierre). Cuenta el PR solo si hoy está fusionado **y** su referencia es
+    anterior al cierre o simultánea a él (un empate se trata como trabajo); con varios cierres vale
+    el último. Una referencia posterior al cierre no cuenta: es una mención, no el trabajo.
+    """
+    closed: list[datetime] = []
+    references: list[tuple[int, datetime]] = []
+    rows = 0
+    for line in stdout.splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if not (isinstance(row, list) and len(row) == 6):
+            return None
+        event, created, number, url, is_pr, merged = row
+        rows += 1
+        if event == "closed":
+            closed.append(_utc(created))
+        elif (
+            event == "cross-referenced"
+            and is_pr is True
+            and merged is True
+            and isinstance(url, str)
+            and url.endswith(f"/repos/{REPO}")
+            and isinstance(number, int)
+        ):
+            references.append((number, _utc(created)))
+    if rows == 0 or not closed:
+        return None
+    cutoff = max(closed)
+    return sorted({number for number, when in references if when <= cutoff})
+
+
+def read_pr_refs(numbers: Iterable[int], runner: Runner = _run_gh) -> dict[int, list[int] | None]:
+    """PR fusionados de ``REPO`` con referencia anterior al cierre, para cada issue de ``numbers``.
+
+    Una llamada paginada a la línea de tiempo por issue, solo de los de ``numbers``. Una lectura que
+    falla (``gh`` con error, tiempo agotado, salida vacía o ilegible, sin evento de cierre) deja
+    ``None`` para ese issue: no se sabe, y quien consulta no debe eximirlo.
+    """
+    out: dict[int, list[int] | None] = {}
+    for n in numbers:
+        try:
+            proc = runner(["api", f"repos/{REPO}/issues/{n}/timeline", "--paginate", "--jq", _TIMELINE_JQ])
+            out[n] = parse_timeline(proc.stdout) if proc.returncode == 0 else None
+        except (BoardReadError, ValueError, TypeError):
+            out[n] = None
+    return out
+
+
+def read_snapshot_pr_refs(directory: Path) -> dict[int, list[int] | None] | None:
+    """``prs.json`` de la instantánea: ``{"<issue>": [PR fusionados]}``; ``None`` si no existe."""
+    path = directory / "prs.json"
+    if not path.is_file():
+        return None
+    data = _json(path.read_text("utf-8-sig"), str(path))
+    if not isinstance(data, dict):
+        raise BoardReadError(f"{path}: se esperaba un objeto {{issue: [PR]}}")
+    try:
+        return {int(k): (None if v is None else [int(x) for x in v]) for k, v in data.items()}
+    except (TypeError, ValueError) as exc:
+        raise BoardReadError(f"{path}: formato inválido ({exc})") from exc
+
+
 def run_board(
     *,
     since: int | None,
@@ -412,23 +638,30 @@ def run_board(
     """Lee, comprueba e imprime. Devuelve el código de salida (0, 1 o 2)."""
     out = out or sys.stdout
     err = err or sys.stderr
+    pr_refs: dict[int, list[int] | None] | None
     try:
         if snapshot is not None:
             items, issues, subs = read_snapshot(snapshot)
+            pr_refs = read_snapshot_pr_refs(snapshot)
         else:
             if since is None:
                 raise BoardReadError("--since es obligatorio al leer de GitHub")
             items, issues, subs = read_github(runner)
+            pr_refs = read_pr_refs(candidates_in_scope(issues, episodes, since), runner)
     except BoardReadError as exc:
         print(f"error: no se pudo leer la fuente: {exc}", file=err)
         return 2
     findings = sorted(
-        check_board(issues, items, episodes, subs, since) + check_missing_cards(issues, items, since)
+        check_board(issues, items, episodes, subs, since, pr_refs=pr_refs)
+        + check_missing_cards(issues, items, since, episodes=episodes, pr_refs=pr_refs)
     )
     for note in not_evaluated(since, subs):
         print(f"aviso: {note}", file=err)
     if since is None:
         print("aviso: regla 9 no evaluada: falta --since", file=err)
+    else:
+        for note in exemption_notes(issues, episodes, pr_refs, since):
+            print(note, file=err)
     for f in findings:
         print(f.line(), file=out)
     if not findings:

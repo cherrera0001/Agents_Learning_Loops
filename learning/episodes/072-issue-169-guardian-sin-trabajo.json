@@ -1,0 +1,67 @@
+{
+  "seq": 72,
+  "id": "issue-169-guardian-sin-trabajo",
+  "goal": "Eximir de las reglas 2, 3 y 9 del guardián del tablero a un issue cerrado como no planeado o duplicado que ningún episodio cita y que ningún PR fusionado referenciaba antes de su cierre, avisando de cada issue cerrado sin trabajo aparente (exento o no, y por qué) por stderr",
+  "ref": "#169",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código; lección aplicada: la cita de un issue exige número exacto (PR #n y otro/repo#n no cuentan), por eso la exención reutiliza cited_issues de la regla 4"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "exempt_without_work en board_check.py; regla 9 con parámetro opcional episodes. session_guard.py llamaba a check_missing_cards sin episodios y habría seguido avisando del #159 al abrir sesión: se pasó también ahí, y una prueba lo cubre"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Sobre el repositorio real, el #104 (NOT_PLANNED, con PR 129 y 135 fusionados) salió exento: ningún episodio lo cita como #104 en su ref (los episodios de ese trabajo citan #100 y #103 y URLs de comentarios). El criterio «el #104 no aparece como exento» no se cumple con la regla tal como está escrita; no se amplió la regla"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La regla escrita por el concilio (sin episodio que cite #n) fallaba en su propio control: eximía al #104 porque los episodios de ese trabajo citaban #100 y #103, no #104. Se midió sobre el repositorio real qué fuente separa #104 de #159: closedByPullRequestsReferences devuelve vacío en los dos, la tarjeta del tablero no tiene campo de PR enlazados, la búsqueda de PR fusionados por texto da 5 y 0 pero exige casar texto, y la línea de tiempo del issue (cross-referenced con PR fusionado) da 6 PR fusionados para #104 y 0 para #159 con una sola llamada por issue. Se eligió la línea de tiempo; se lee solo para los candidatos a exención (2 llamadas) y una lectura fallida no exime"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Enmienda del concilio con PR fusionado como segunda condición. Prueba propia de mutación con 22 defectos inyectados: la primera tanda dejó 4 supervivientes; dos eran mutantes mal construidos (uno no cambiaba nada, otro eximía las dos reglas a la vez) y dos eran huecos reales: la prueba de session_guard no tenía un issue sin tarjeta (la regla 9 no se ejercía) y ninguna prueba fijaba la frontera n >= since del aviso. Se añadieron esas dos pruebas; 22 de 22 detectados. Segunda tanda sobre la lógica de PR: 20 defectos, 18 detectados; los dos que sobreviven son equivalentes por construcción (exigir que la fuente sea un PR cuando ya se exige que esté fusionado, y devolver {} en vez de None sin prs.json). Una primera corrida dio «20 de 20» con una prueba rota por mi propio error: un resultado perfecto se comprueba contra la suite sin mutar"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente encontró que la regla se anulaba al fusionar su propio PR: GitHub conserva la referencia cruzada del PR en la línea de tiempo del duplicado aunque se edite el cuerpo (el revisor la vio 19 minutos después de editarlo), y simulando ese PR como fusionado volvían R2 y R3 con stderr vacío. Además 65 de los 85 PR fusionados nombran algún issue que no cierran. Se midió con la línea de tiempo real: las referencias del #104 anteriores a su cierre son los PR 108, 117, 123 y 129 (135 y 138 son posteriores) y la del duplicado es posterior a su cierre. Se cambió la regla: cuenta solo la referencia de un PR hoy fusionado cuyo evento es anterior o igual al último cierre. También se corrigió que una salida vacía o una línea inesperada eximieran, y el aviso dice ahora por qué no se exime (episodio, PR o lectura fallida)"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas de la fecha (anterior, posterior, empate, varios cierres, zona horaria, fecha ausente o ilegible), de --paginate, de leer todas las líneas y de que session_guard use su propio since. Inyección de defectos sobre el código final: 42 defectos, 40 detectados; los dos supervivientes son equivalentes (comparar las fechas como texto ISO ya normalizado a UTC, y devolver {} en vez de None sin prs.json). Una primera corrida de la tanda anterior dejó sin cubrir un segundo cierre sin fecha: se añadió esa prueba"
+    }
+  ],
+  "lessons": [
+    "Antes de dar por cumplido un criterio sobre datos reales («el #104 no aparece como exento»), mide la premisa en los archivos: aquí ningún episodio citaba #104 en su ref, y la regla escrita lo eximía",
+    "Al cambiar una regla del guardián, busca todos los llamadores de la función, no solo el comando de la regla: session_guard.py la usaba aparte y habría seguido avisando",
+    "Un mutante que no cambia el comportamiento sobrevive y no dice nada de las pruebas: comprueba que cada defecto inyectado falla al menos con una entrada antes de contarlo como superviviente",
+    "Una exención basada en «nadie lo referencia» se anula con la primera mención posterior y GitHub no borra la referencia cruzada al editar el texto: ata la condición a un instante (antes del cierre) y mide con la línea de tiempo real antes de dar la regla por buena",
+    "Una lectura que puede salir vacía sin error (salida vacía con código 0, línea de forma inesperada) debe tratarse como lectura fallida si el valor vacío exime: pide un dato que siempre existe (el evento de cierre) para distinguir «sin referencias» de «no se leyó»"
+  ]
+}
