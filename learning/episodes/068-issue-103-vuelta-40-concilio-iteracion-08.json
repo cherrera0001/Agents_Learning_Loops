@@ -1,0 +1,85 @@
+{
+  "seq": 68,
+  "id": "issue-103-vuelta-40-concilio-iteracion-08",
+  "goal": "Vuelta 40 del experimento Kaggle Gemma 4: decidir con el staff de experimento qué corrida debe ser la iteración 08 para que sea la primera corrida válida y qué puede decidir con una semana de cuota, y auditar una propuesta externa traída por el dueño",
+  "ref": "#103",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con la pregunta de la vuelta desde main al día, ya con el episodio 065: 5 lecciones, tres aplicables (una subida por resultado; no mover topes sin mirar los parches cortados; leer el zip que de verdad se envió)"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Tercera lectura del estado de los envíos con un rescate nuevo, igual a las dos anteriores: tres envíos con nota y un reenvío en error genérico, anotado «sin lectura»"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "La convocatoria del concilio dio a los roles una cifra equivocada («10 a 24 mil tokens de entrada por turno»; medido: 8,7 a 17,7 mil), llamó «razonamiento visible» a un cambio que enciende o apaga el razonamiento, dio por vigente un criterio que aún no estaba en main y puso a diseñar la iteración sobre un plan cuyos pasos de registro y ensayo no estaban hechos"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Concilio de cinco roles con definición escrita (arquitecto de IA, forense, analista de datos, QA de trayectorias y auditor del método), que auditaron también una propuesta externa. El forense halló y reprodujo la causa de los logs por tarea vacíos (el arnés no escribe bajo un núcleo Jupyter) y que el ensayo local no podía verla porque no corre como notebook; el arquitecto midió que el cambio enciende o apaga el razonamiento, no que lo muestra; el auditor señaló que el criterio no estaba en main y entregó la derivación del tamaño mínimo"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se informó al dueño el costo de la corrida propuesta como 3,9 horas sin decir que eran horas de reloj: la cuota de GPU se descuenta cerca del doble, así que son entre 6,9 y 9,0 horas de cuota y dos sesiones"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Verificador limpio con rescate propio y 16 afirmaciones entregadas como frases sin cifras (la bitácora publica 14 en su tabla): confirmó el factor de cuota con las lecturas del registro (2,00 y 1,73 a 1,79), rehízo la cuenta de la corrida, reprodujo por segunda vez la causa de los logs vacíos, encontró dos archivos de validez con tamaños distintos (103 y 71 tareas) y cerró a medias el desacuerdo sobre el registro: el aviso previo a la llamada sí se dispara y los de éxito y de fallo no; que una cancelación quede registrada lo decide el ensayo local"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "La medición local de QA (parches contra las pruebas visibles, en Docker) tardó casi una hora y el orquestador la dejó bloquear la entrega de la decisión, repitiendo al dueño «todavía no llega». El dueño la detuvo: quedó en la tarea 19 de 29 de su segunda pasada, con 35 de 69 parches que no pasan sin medir y sin la pasada del parche de referencia"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Con lo que quedó en disco, QA retiró su afirmación de la vuelta anterior: las pruebas visibles sí delatan parches malos (5 de 14 en las tareas elegidas, 11 de 34 en lo medido), con 3 de 38 falsas alarmas; pero la señal sale casi solo de la suite completa comparada con la base, que la instrucción del envío prohíbe, y la suite ya viene roja en la base en 33 de 33 tareas. La decisión se entregó sin esperar el resto"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Vuelta 40 en la bitácora del caso: pareceres de los cinco roles copiados tal cual, tabla del verificador, desacuerdos cerrados y abiertos, fallos del orquestador y la decisión que el dueño aprobó: la iteración 08 es la base y su repetición sobre 60 tareas sorteadas, sin cambiar el agente y con el registro nuevo; antes va el rescate que mira bytes (#156), el registro del notebook y el ensayo bajo un núcleo real con cortes forzados"
+    },
+    {
+      "action": "estimate_issue",
+      "success": false,
+      "error": "La vuelta tampoco tuvo estimación propia: el bloque estimate copia la «Estimación v1» del issue #103, que es de la línea base entera. Sí la tuvieron, antes de empezar, los dos issues que salieron de ella (#154 y #156)"
+    }
+  ],
+  "lessons": [
+    "Entrega la decisión con lo que ya está medido y marca lo que falta: una medición larga solo bloquea si la recomendación cambia según su resultado; si no, corre en segundo plano y se anota como pendiente",
+    "Todo costo de una corrida en Kaggle se da en horas de cuota, no de reloj, con el factor leído: la cuota se lee justo antes y justo después de cada sesión, con su hora, sin otra sesión de GPU entre medias",
+    "Un ensayo local solo valida lo que ejecuta igual que el sistema real: si el notebook corre bajo un núcleo Jupyter y el ensayo como un programa normal, su «pasa» no cubre nada que dependa de esa diferencia",
+    "El encargo a un rol de un concilio lleva la pregunta y las rutas, no cifras: una cifra equivocada en la convocatoria puede propagarse a los informes de los roles hasta que alguien la vuelve a medir",
+    "Una propuesta externa se audita frase por frase contra los archivos, igual que la de un rol propio, y se anota tanto en qué acierta como en qué falla: su «sin registro no hay iteración» era más tajante que lo escrito por el equipo",
+    "Antes de afirmar que una señal no existe, mídela contra una base: las pruebas visibles ya fallaban antes de cualquier parche en las 33 tareas medidas, y solo la comparación con esa base separa lo que el parche rompe",
+    "Cuando dos archivos definen la misma lista con tamaños distintos, el diseño nombra cuál usa y por qué: «las tareas válidas» eran 103 o 71 según el archivo",
+    "El nombre de un parámetro de configuración no es su efecto: léelo en el código que lo consume antes de describir una condición"
+  ]
+}
