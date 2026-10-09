@@ -37,24 +37,29 @@
       "error": "La primera versión de la comprobación resolvía también líneas «!include» dentro del Markdown de la instrucción, una semántica inventada: el cargador del compilador del organizador (adk_submission/yaml_loader.py) trata !include solo como etiqueta de un valor YAML y deja el contenido como texto. Se corrigió al leer ese cargador"
     },
     {
-      "action": "write_tests",
-      "success": false,
-      "error": "La prueba «un nombre más largo no es el nombre» usaba una lista que ya contenía las herramientas del texto, de modo que una coincidencia por subcadena también pasaba; el probador adversarial lo reveló al sobrevivir 1 de 23 defectos inyectados"
-    },
-    {
       "action": "edit_module",
       "success": false,
       "error": "Buscando un kit que pasara la regla ordenando una herramienta ausente, se vio que el lector leía solo la primera línea de una instrucción escrita en varias líneas sin barra vertical y no seguía la clave sub_agents, que el esquema del organizador admite; en ambos casos la instrucción de un subagente quedaba sin comprobar"
     },
     {
       "action": "edit_module",
+      "success": false,
+      "error": "La primera pasada de ruff señaló líneas de más de 110 caracteres y dos archivos sin formato en el módulo y en sus pruebas; se corrigió antes de la primera entrega"
+    },
+    {
+      "action": "edit_module",
       "success": true,
-      "note": "El lector junta las líneas del escalar y sigue sub_agents además de agent_tool; HARNESS_TOOLS es la única lista, compartida con compile_with_adk. Quedan documentados como límites, con pruebas que los fijan, los nombres partidos, con escape de Markdown o con guiones, y la descripción de un subagente"
+      "note": "El lector junta las líneas del escalar y sigue sub_agents además de agent_tool; HARNESS_TOOLS es la única lista, compartida con compile_with_adk. Quedan documentados como límites, con pruebas que los fijan, los nombres partidos, con escape de Markdown o con guiones, y la descripción de un subagente. Las líneas largas y el formato que ruff señaló en la primera pasada se corrigieron en esta misma edición"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba «un nombre más largo no es el nombre» usaba una lista que ya contenía las herramientas del texto, de modo que una coincidencia por subcadena también pasaba; el probador adversarial lo reveló al sobrevivir 1 de 23 defectos inyectados"
     },
     {
       "action": "write_tests",
       "success": true,
-      "note": "Pruebas con kits inventados y mínimos: ausente, presente, subagente con su lista, bloque de código, sin comillas, mayúsculas, include en otra carpeta, aviso con y sin --sin-resultados, CLI y compilador simulado. De 25 defectos inyectados, los 25 los detectan las pruebas tras corregir la prueba que dejaba pasar el de subcadena"
+      "note": "Pruebas con kits inventados y mínimos: ausente, presente, subagente con su lista, bloque de código, sin comillas, mayúsculas, include en otra carpeta, aviso con y sin --sin-resultados, CLI y compilador simulado. De los 25 defectos que inyectó el propio implementador, los 25 los detectan las pruebas tras corregir la prueba que dejaba pasar el de subcadena (eran defectos que el implementador ya había pensado, no una medida independiente)"
     },
     {
       "action": "run_demo",
@@ -62,14 +67,39 @@
       "note": "Ensayo local en la imagen aal-ensayo:local, sin red ni GPU, con el arnés real, el modelo falso del simulacro adaptado y una tarea de juguete inventada: K ofrece seis herramientas y el modelo llama a cinco de ellas, ninguna retirada. El mismo guion sobre A ofrece diez, cuatro de ellas retiradas. La corrida no resuelve la tarea porque el sandbox del contenedor no tiene pytest, y el contador tool_calls del arnés da 3 para 5 llamadas del rastro (no se investigó por qué)"
     },
     {
-      "action": "update_docs",
+      "action": "run_tests",
+      "success": true,
+      "note": "Comprobaciones de CONTRIBUTING.md en verde con las pruebas nuevas; el registro de K (sub-004, prepared) se escribió con el compilador del organizador dentro de la imagen y sobre una copia del registro"
+    },
+    {
+      "action": "review_code",
       "success": false,
-      "error": "En la primera pasada ruff señaló líneas de más de 110 caracteres y dos archivos sin formato; se corrigió antes de la entrega"
+      "error": "La revisión independiente encontró que la regla fallaba abierta ante YAML válido, porque leía el YAML línea a línea con expresiones regulares: pasaba un kit que ordena una herramienta ausente con un BOM, la clave entre comillas, todas las claves sangradas, un !include en la línea siguiente, un alias, un subagente como mapa en estilo de flujo, un espacio antes de los dos puntos, el documento entero en estilo de flujo, sub_agents con !include o una clave compleja; también rechazaba kits que el compilador acepta (tools: ~, !include entrecomillado, un comentario en columna 0 dentro de tools, una lista en flujo partida, tools con !include, un apóstrofo en un comentario, un ancla en un ítem, una ruta con espacio, un archivo huérfano de sub_agents/ cuyo nombre es una palabra corriente, subagentes pares que se nombran). Además inyectó 32 defectos y 6 sobrevivían a las pruebas (los 25 de 25 anteriores eran defectos propios, no independientes). El analista de datos no pudo reproducir la cifra «12 carpetas: 0 errores»: la réplica pública da 1 error por una mención en negativo, y un agent.yaml que no es UTF-8 lanzaba UnicodeDecodeError sin capturar"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "PyYAML declarado en pyproject.toml: extra nuevo kaggle y también en dev (la CI instala .[dev]); sin él la comprobación falla cerrado con un [ERROR] que lo dice"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La regla carga cada archivo con yaml.SafeLoader y una etiqueta !include que replica la semántica del cargador del organizador (rutas relativas al archivo que cita, dentro del envío, sin enlaces simbólicos, extensiones permitidas, profundidad y tamaño); lee el SKILL.md de cada skill; falla cerrado ante un archivo ilegible, un agente LlmAgent sin instruction o PyYAML ausente; no declara conocidos los archivos huérfanos de sub_agents/ y deja a los hijos de un mismo sub_agents nombrarse entre sí. Añade --permitir-mencion (con un [AVISO] por aparición) y corrige las entradas: agent.yaml no UTF-8 es [ERROR], una ruta de --sin-resultados inexistente sale 2, y la lista vacía se distingue en la salida. Para no tocar las pruebas estructurales existentes, un esqueleto sin name, tools, sub_agents ni skills no se trata como agente sin instruction"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Una prueba por cada una de las diez evasiones y de los diez falsos positivos, más skills, falla cerrado, mención en negativo, errores de entrada y las que faltaban (nombre propio del subagente, lista en flujo con conteo exacto, agent_tool sin config_path, ruta relativa a la raíz, ítem entre comillas, línea del error con dos apariciones). Las diez evasiones pasaban con la regla anterior y ahora fallan"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "En la imagen aal-ensayo:local, con el compilador del organizador y una invocación cada vez: el zip K sigue VÁLIDO con 0 avisos y su SHA-256 no cambió (3346af0e…c8b1); cuatro kits de falsos positivos (tools: ~, ruta con espacio, subagentes pares, archivo huérfano) los compila el organizador y la regla ya no los rechaza. Sobre los 12 kits reales: 11 de 12 carpetas con 0 errores; la réplica pública da 1 por una mención en negativo"
     },
     {
       "action": "run_tests",
       "success": true,
-      "note": "Comprobaciones de CONTRIBUTING.md en verde con las pruebas nuevas; el registro de K (sub-004, prepared) se escribió con el compilador del organizador dentro de la imagen y sobre una copia del registro"
+      "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; 109 pruebas de tests/test_kaggle_submission*.py en verde en local. La suite completa y las mutaciones se leen en la CI del PR, no se corrieron en local"
     }
   ],
   "lessons": [
@@ -77,6 +107,8 @@
     "Una prueba de «no coincide» debe usar una lista donde el nombre buscado falte; con la herramienta ya presente, una coincidencia por subcadena y una por palabra completa dan el mismo resultado",
     "Antes de dar por buena una regla, busca el kit que la pasa aunque el defecto exista: las formas legales de escribir una instrucción (varias líneas, otra clave que declara subagentes) dejaban sin leer la de un subagente",
     "Lo que una regla no detecta se escribe como límite en el código y se fija con una prueba que afirma que pasa, para que quien lo mejore cambie la prueba a propósito",
-    "Un zip ya registrado puede no reproducirse bit a bit con el empaquetador actual (fechas de los miembros); compara el contenido de los miembros, no el SHA del zip, y no cambies la fecha sin justificarlo"
+    "Un zip ya registrado puede no reproducirse bit a bit con el empaquetador actual (fechas de los miembros); compara el contenido de los miembros, no el SHA del zip, y no cambies la fecha sin justificarlo",
+    "Una regla que lee un formato con expresiones regulares falla abierta ante las formas legales que no previó: léelo con el analizador real (PyYAML) y falla cerrado cuando algo no se pueda interpretar",
+    "Un conteo de implementación («25 de 25 defectos detectados») mide al implementador: la revisión independiente inyectó 32 defectos y 6 sobrevivían; y una cifra de entrega («12 carpetas: 0 errores») se reproduce antes de escribirla"
   ]
 }

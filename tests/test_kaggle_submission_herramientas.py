@@ -211,7 +211,12 @@ def test_tools_con_forma_ilegible_falla_en_vez_de_aprobar(tmp_path: Path) -> Non
     )
     ok, msgs = check_tool_references(kit)
     assert ok is False
-    assert "no sabe leer" in errors(msgs)[0]
+    assert "tools.yaml" in errors(msgs)[0] and "no existe" in errors(msgs)[0]
+    # con el archivo presente, `tools: !include` es legítimo (lo acepta el compilador) y se lee
+    _write(kit / "tools.yaml", "- read_file\n")
+    ok, msgs = check_tool_references(kit)
+    assert ok is False
+    assert "search_similar_code" in errors(msgs)[0]
 
 
 def test_comentarios_en_la_lista_no_son_herramientas(tmp_path: Path) -> None:
@@ -271,17 +276,27 @@ def test_subagente_con_instruccion_y_lista_coherentes_pasa(tmp_path: Path) -> No
     assert ok is True, msgs
 
 
-def test_nombrar_al_subagente_sin_declararlo_falla(tmp_path: Path) -> None:
-    kit = make_kit(
-        tmp_path,
-        tools=BASIC,
-        instruction="Delega en `agente_analizador`.\n",
-        sub_tools=["read_file"],
-        sub_listed=False,  # el archivo del subagente queda, pero agent.yaml ya no lo declara
+def test_nombrar_a_un_subagente_alcanzable_que_no_declara_falla(tmp_path: Path) -> None:
+    # el principal declara a `agente_analizador`, que a su vez declara a `agente_nieto`; el principal no
+    # puede llamar al nieto
+    kit = make_kit(tmp_path, tools=BASIC, instruction="Delega en `agente_nieto`.\n", sub_tools=["read_file"])
+    _write(
+        kit / "sub_agents" / "analizador.yaml",
+        "name: agente_analizador\ninstruction: x\ntools: [read_file]\nsub_agents:\n"
+        "  - config_path: sub_agents/nieto.yaml\n",
     )
+    _write(kit / "sub_agents" / "nieto.yaml", "name: agente_nieto\ninstruction: y\ntools: [read_file]\n")
     ok, msgs = check_tool_references(kit)
     assert ok is False
-    assert "agente_analizador" in errors(msgs)[0]
+    assert len(errors(msgs)) == 1
+    assert "agente_nieto" in errors(msgs)[0]
+
+
+def test_un_archivo_huerfano_de_sub_agents_no_vuelve_conocido_su_nombre(tmp_path: Path) -> None:
+    kit = make_kit(tmp_path, tools=BASIC, instruction="Haz un plan antes de editar.\n")
+    _write(kit / "sub_agents" / "viejo.yaml", "name: plan\ninstruction: z\ntools: [read_file]\n")
+    ok, msgs = check_tool_references(kit)
+    assert ok is True, msgs
 
 
 def test_subagente_que_no_existe_falla(tmp_path: Path) -> None:
