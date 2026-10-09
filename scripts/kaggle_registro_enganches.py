@@ -35,14 +35,29 @@ petición respondida o si la tarea no dejó su `agente_fin` o su `diff_cierre`. 
 quedar en FALLO, así que la primera guardia no los cubre.
 
 Límite conocido: el texto parcial de una petición cortada no se guarda (el arnés no usa streaming).
+
+Tope por tarea y mapa de hilos del núcleo (#164). En `ipykernel` 6.29.5 una escritura a stdout o stderr desde
+un hilo recorre el mapa `_thread_to_parent` de `OutStream` sin guardia: si el mapa cierra un ciclo, el hilo
+gira para siempre. Tres defensas, que no tocan al agente ni sus topes:
+
+- `Registro.tarea` vacía ese mapa antes de cada tarea y anota en `tarea_inicio` cuántas entradas había y si
+  cerraban un ciclo. Si no hay núcleo de Jupyter o el atributo no existe en esa versión, lo anota y sigue;
+- `Registro.correr_con_tope` corre cada tarea en un hilo demonio y la espera como mucho el tope. Vale con
+  cualquier versión de `ipykernel` y para cualquier causa del cuelgue;
+- `Registro.tarea_colgada` vuelca la pila de todos los hilos, pide la cancelación de la tarea, vacía el mapa
+  y espera un margen corto. Devuelve True solo si el hilo de la tarea terminó: entonces el notebook puede
+  seguir con la tarea siguiente. Si el hilo sigue vivo, o es la segunda tarea colgada seguida, devuelve
+  False y el notebook termina la sesión. Nunca corren dos tareas a la vez.
 """
 
 import asyncio
+import faulthandler
 import hashlib
 import json
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 from datetime import UTC, datetime
@@ -61,6 +76,8 @@ DIFF_AL_CIERRE = (
 )
 MODOS_RICH = ("archivo", "global", "ninguno")
 ENGANCHE_NO_EXIGIDO = "retrollamadas de litellm"
+CLASE_TAREA_COLGADA = "tarea_colgada"
+PAQUETES_CON_VERSION = ("ipykernel", "jupyter_client", "nbclient", "papermill", "rich", "litellm")
 
 
 def caracteres_de(x: Any) -> int:
@@ -102,6 +119,115 @@ def archivos_de_un_diff(texto: str, tope: int = 50) -> list[str]:
     return rutas[:tope]
 
 
+class TareaColgada(RuntimeError):
+    """La tarea no volvió dentro del tope por tarea. Su hilo sigue vivo: Python no puede matarlo."""
+
+    def __init__(self, tope_segundos: float, segundos: float, hilo: Any = None, caja: Any = None) -> None:
+        super().__init__(f"la tarea no volvió en {round(segundos, 1)} s (tope por tarea: {tope_segundos} s)")
+        self.tope_segundos = tope_segundos
+        self.segundos = segundos
+        self.hilo = hilo
+        self.caja = caja if caja is not None else {}
+
+
+def nucleo_de_jupyter() -> Any:
+    """El núcleo de Jupyter en que corre esta celda, o None si no hay IPython o no es un núcleo."""
+    try:
+        return getattr(get_ipython(), "kernel", None)  # type: ignore[name-defined]
+    except NameError:
+        return None
+
+
+def versiones() -> dict[str, Any]:
+    """Versión de Python y de los paquetes que deciden si el núcleo se parece al del laboratorio."""
+    import importlib.metadata
+
+    hallado: dict[str, Any] = {"python": sys.version.split()[0]}
+    for paquete in PAQUETES_CON_VERSION:
+        try:
+            hallado[paquete] = importlib.metadata.version(paquete)
+        except Exception:
+            hallado[paquete] = None
+    return hallado
+
+
+def flujos_con_mapa() -> tuple[list[Any], str]:
+    """Flujos de salida del núcleo que llevan el mapa de hilo a padre, y con qué texto se anota.
+
+    Se mira `_stdout` y `_stderr` del núcleo y también `sys.stdout` y `sys.stderr`. En las versiones de
+    `ipykernel` sin ese mapa la lista sale vacía: no es un fallo.
+    """
+    nucleo = nucleo_de_jupyter()
+    if nucleo is None:
+        return [], "sin núcleo de Jupyter"
+    flujos: list[Any] = []
+    for flujo in (getattr(nucleo, "_stdout", None), getattr(nucleo, "_stderr", None), sys.stdout, sys.stderr):
+        mapa = getattr(flujo, "_thread_to_parent", None)
+        if isinstance(mapa, dict) and all(flujo is not otro for otro in flujos):
+            flujos.append(flujo)
+    if not flujos:
+        return [], f"este ipykernel ({versiones()['ipykernel']}) no tiene el mapa _thread_to_parent"
+    return flujos, f"{len(flujos)} flujos con mapa (ipykernel {versiones()['ipykernel']})"
+
+
+def hay_ciclo(mapa: dict[Any, Any]) -> bool:
+    """True si recorrer el mapa desde alguna de sus claves no termina nunca."""
+    copia = dict(mapa)
+    for inicio in copia:
+        vistos, actual = set(), inicio
+        while actual in copia:
+            if actual in vistos:
+                return True
+            vistos.add(actual)
+            actual = copia[actual]
+    return False
+
+
+def mapa_de_hilos(vaciar: bool) -> dict[str, Any]:
+    """Estado del mapa de hilo a padre del núcleo; con `vaciar`, además lo deja vacío. Nunca lanza.
+
+    Devuelve `disponible`, `entradas` y `ciclo` (lo que había antes de vaciar) y `vaciado`.
+    """
+    try:
+        flujos, detalle = flujos_con_mapa()
+        if not flujos:
+            return {"disponible": False, "motivo": detalle, "vaciado": False}
+        entradas, ciclo = 0, False
+        for flujo in flujos:
+            mapa = flujo._thread_to_parent
+            entradas += len(mapa)
+            ciclo = hay_ciclo(mapa) or ciclo
+            if vaciar:
+                mapa.clear()
+        return {"disponible": True, "entradas": entradas, "ciclo": ciclo, "vaciado": bool(vaciar)}
+    except Exception as exc:
+        return {"disponible": False, "motivo": type(exc).__name__ + ": " + str(exc)[:120], "vaciado": False}
+
+
+def carga_del_sistema() -> dict[str, Any]:
+    """Carga de la máquina, número de CPU e hilos vivos de este proceso. Lo que falte se anota como error."""
+    carga: dict[str, Any] = {"cpus": os.cpu_count(), "hilos_vivos": threading.active_count()}
+    try:
+        carga["cpus_utilizables"] = len(
+            os.sched_getaffinity(0)
+        )  # afinidad: no existe en todas las plataformas
+    except (AttributeError, OSError) as exc:
+        carga["cpus_utilizables"] = {"error": type(exc).__name__}
+    try:
+        carga["carga"] = [round(x, 2) for x in os.getloadavg()]
+    except (AttributeError, OSError) as exc:
+        carga["carga"] = {"error": type(exc).__name__}
+    return carga
+
+
+def cpu_de_un_hilo(hilo: Any) -> float | None:
+    """Segundos de CPU que lleva gastados un hilo vivo (Linux). None si no se puede leer."""
+    try:
+        return round(time.clock_gettime(time.pthread_getcpuclockid(hilo.ident)), 2)
+    except Exception:
+        return None
+
+
 class Registro:
     """Escribe los eventos de una sesión del notebook y lleva la cuenta de las peticiones en vuelo."""
 
@@ -123,6 +249,7 @@ class Registro:
         self.ruta_latido = self.carpeta / f"latido_{nombre}.jsonl"
         self.ruta_servidor = self.carpeta / f"servidor_log_{nombre}.txt"
         self.ruta_diff_en_curso = self.carpeta / f"diff_en_curso_{nombre}.diff"
+        self.ruta_pila = self.carpeta / f"pila_tarea_colgada_{nombre}.txt"
         self.t_sesion = inicio_de_sesion()
         self.estado: dict[str, Any] = {"etiqueta": None, "tarea": None, "indice": None}
         self.en_vuelo: dict[int, dict[str, Any]] = {}
@@ -139,6 +266,16 @@ class Registro:
         self.parche_rich = "archivo"
         self.vistos: dict[str, int] = {}
         self.diffs_tomados = 0
+        self.vaciar_mapa = True
+        self.ultimo_evento: tuple[str, float] | None = None
+        self.t_tarea: float | None = None
+        self.hilo_de_tarea: threading.Thread | None = None
+        self.con_tope: bool | None = None
+        self.tareas_con_tope = 0
+        self.colgadas = 0
+        self.colgadas_seguidas = 0
+        self.ciclos_vaciados = 0
+        self.cerrado = False
         self._lock = threading.RLock()
         self._parar = threading.Event()
         self._hilo: threading.Thread | None = None
@@ -175,6 +312,7 @@ class Registro:
         try:
             ahora = time.time()
             with self._lock:
+                self.ultimo_evento = (tipo, ahora)
                 self._linea(
                     self.ruta_eventos,
                     {
@@ -477,6 +615,7 @@ class Registro:
                     for n, p in sorted(self.en_vuelo.items())
                 ]
             proceso = getattr(self.servidor, "process", None)
+            ultimo, hilo, t_tarea = self.ultimo_evento, self.hilo_de_tarea, self.t_tarea
             latido: dict[str, Any] = {
                 "hora": round(ahora, 3),
                 "hora_utc": datetime.fromtimestamp(ahora, UTC).isoformat(timespec="seconds"),
@@ -485,6 +624,14 @@ class Registro:
                 "tarea": self.estado["tarea"],
                 "peticiones": self.peticiones,
                 "en_vuelo": en_vuelo,
+                # Lo que distingue una tarea que gira o está bloqueada de una que avanza (#164)
+                "ultimo_evento": None if ultimo is None else ultimo[0],
+                "segundos_sin_eventos": None if ultimo is None else round(ahora - ultimo[1], 1),
+                "tarea_segundos": None if t_tarea is None else round(ahora - t_tarea, 1),
+                "hilo_de_tarea": None
+                if hilo is None
+                else {"vivo": hilo.is_alive(), "cpu_s": cpu_de_un_hilo(hilo)},
+                **carga_del_sistema(),
                 "gpu": self._gpu(),
                 "servidor_sano": self._salud(),
                 "servidor_codigo_de_salida": proceso.poll() if proceso is not None else None,
@@ -517,15 +664,141 @@ class Registro:
     # -- lo que llama el notebook ------------------------------------------------------------------
 
     def tarea(self, etiqueta: str, instance_id: str, indice: int) -> None:
+        """Inicio de una tarea. Antes vacía el mapa de hilos del núcleo: quita la causa probable del giro."""
         self.estado.update(etiqueta=etiqueta, tarea=instance_id, indice=indice)
-        self.evento("tarea_inicio", indice=indice, peticiones_previas=self.peticiones)
+        mapa = (
+            mapa_de_hilos(vaciar=True)
+            if self.vaciar_mapa
+            else {**mapa_de_hilos(vaciar=False), "motivo": "vaciado desactivado"}
+        )
+        if mapa.get("ciclo") and mapa.get("vaciado"):
+            self.ciclos_vaciados += 1
+        self.t_tarea, self.con_tope = time.time(), False
+        self.evento("tarea_inicio", indice=indice, peticiones_previas=self.peticiones, mapa_de_hilos=mapa)
 
     def fin_tarea(self, **campos: Any) -> None:
         """Fila con el motivo de fin de la tarea, se resuelva o no, y lo que quedó en vuelo."""
         with self._lock:
             pendientes = sorted(self.en_vuelo)
-        self.evento("tarea_fin", peticiones=self.peticiones, en_vuelo=pendientes, **campos)
+        # Una tarea cortada por el tope por tarea no es una tarea «no resuelta»: es un par que falta al
+        # comparar dos pasadas. Se marca con un campo propio para poder excluirla.
+        colgada = campos.get("clase") == CLASE_TAREA_COLGADA
+        self.evento(
+            "tarea_fin",
+            peticiones=self.peticiones,
+            en_vuelo=pendientes,
+            con_tope=self.con_tope,
+            par_faltante=colgada,
+            **campos,
+        )
+        if not colgada:
+            self.colgadas_seguidas = 0
         self.estado.update(tarea=None, indice=None)
+        self.t_tarea, self.hilo_de_tarea = None, None
+
+    # -- tope por tarea (#164) ---------------------------------------------------------------------
+
+    def correr_con_tope(self, fabrica: Any, tope_segundos: float) -> Any:
+        """Corre la corrutina de `fabrica()` en un hilo demonio y la espera como mucho `tope_segundos`.
+
+        Sustituye al `with ThreadPoolExecutor` del notebook, que esperaba sin tope y, al salir, volvía a
+        esperar al hilo. Si la tarea no vuelve lanza `TareaColgada` con el hilo, que sigue vivo. No depende
+        de que el registro esté activo ni de la versión de `ipykernel`.
+        """
+        caja: dict[str, Any] = {}
+
+        async def principal() -> Any:
+            caja["bucle"], caja["tarea"] = asyncio.get_running_loop(), asyncio.current_task()
+            return await fabrica()
+
+        def cuerpo() -> None:
+            try:
+                caja["valor"] = asyncio.run(principal())
+            except BaseException as exc:  # se entrega a quien espera, como hace un Future
+                caja["error"] = exc
+
+        hilo = threading.Thread(target=cuerpo, name="tarea-del-notebook", daemon=True)
+        self.hilo_de_tarea, self.con_tope = hilo, True
+        self.tareas_con_tope += 1
+        t0 = time.time()
+        hilo.start()
+        hilo.join(tope_segundos)
+        if hilo.is_alive():
+            raise TareaColgada(tope_segundos, time.time() - t0, hilo, caja)
+        if "error" in caja:
+            raise caja["error"]
+        return caja["valor"]
+
+    def volcar_pila(self) -> dict[str, Any]:
+        """Pila de todos los hilos, con `faulthandler`, en un archivo de la salida. Nunca lanza."""
+        if not self.activo:
+            return {}
+        try:
+            with open(self.ruta_pila, "a", encoding="utf-8") as f:
+                f.write(
+                    f"=== {datetime.now(UTC).isoformat(timespec='seconds')} tarea {self.estado['tarea']} "
+                    f"hilo de la tarea {getattr(self.hilo_de_tarea, 'ident', None)}\n"
+                )
+                for hilo in threading.enumerate():
+                    f.write(
+                        f"hilo {hilo.ident} 0x{hilo.ident or 0:016x} {hilo.name} demonio={hilo.daemon} "
+                        f"cpu_s={cpu_de_un_hilo(hilo)}\n"
+                    )
+                f.flush()
+                faulthandler.dump_traceback(file=f, all_threads=True)
+                f.flush()
+                os.fsync(f.fileno())
+            return {"pila": self.ruta_pila.name, "pila_bytes": self.ruta_pila.stat().st_size}
+        except Exception as exc:
+            self._anotar_error(exc)
+            return {"pila": None, "pila_error": type(exc).__name__ + ": " + str(exc)[:120]}
+
+    def tarea_colgada(self, colgada: TareaColgada, margen_segundos: float, **campos: Any) -> bool:
+        """El notebook dejó de esperar la tarea en curso. Devuelve True si puede seguir con la siguiente.
+
+        Vuelca la pila, pide la cancelación de la tarea, vacía el mapa de hilos (si el hilo giraba en él,
+        eso lo suelta) y espera `margen_segundos` a que el hilo termine. Solo se sigue si el hilo terminó
+        y no es la segunda tarea colgada seguida: con el hilo vivo habría dos tareas a la vez sobre el
+        mismo servidor y el mismo registro. Nunca lanza.
+        """
+        hilo, caja = colgada.hilo, colgada.caja
+        try:
+            self.colgadas += 1
+            self.colgadas_seguidas += 1
+            pila = self.volcar_pila()
+            cpu_antes = cpu_de_un_hilo(hilo)
+            antes = mapa_de_hilos(vaciar=False)
+            try:
+                caja["bucle"].call_soon_threadsafe(caja["tarea"].cancel)
+                cancelacion = "pedida"
+            except Exception as exc:
+                cancelacion = "no se pudo pedir: " + type(exc).__name__
+            t0 = time.time()
+            mapa_de_hilos(vaciar=True)
+            if hilo is not None:
+                hilo.join(max(0.0, float(margen_segundos)))
+            vivo = hilo is None or hilo.is_alive()
+            sigue = not vivo and self.colgadas_seguidas < 2
+            self.evento(
+                "tarea_colgada",
+                tope_s=colgada.tope_segundos,
+                segundos=round(colgada.segundos, 1),
+                **pila,
+                mapa_de_hilos=antes,
+                cancelacion=cancelacion,
+                margen_s=margen_segundos,
+                hilo_vivo=vivo,
+                segundos_hasta_terminar=None if vivo else round(time.time() - t0, 2),
+                cpu_del_hilo_s=[cpu_antes, cpu_de_un_hilo(hilo) if vivo else None],
+                colgadas_seguidas=self.colgadas_seguidas,
+                sigue=sigue,
+                **carga_del_sistema(),
+                **campos,
+            )
+            return sigue
+        except Exception as exc:
+            self._anotar_error(exc)
+            return False
 
     def corte(self, por: str, **campos: Any) -> None:
         with self._lock:
@@ -588,7 +861,7 @@ class Registro:
         """Archivos del registro que el notebook copia al zip de salida."""
         if not self.activo:
             return []
-        rutas = (self.ruta_eventos, self.ruta_latido, self.ruta_servidor)
+        rutas = (self.ruta_eventos, self.ruta_latido, self.ruta_servidor, self.ruta_pila)
         return [p for p in rutas if p.exists()]
 
     def resumen(self) -> dict[str, Any]:
@@ -598,6 +871,8 @@ class Registro:
             "en_vuelo": sorted(self.en_vuelo),
             "retrollamadas": dict(self.retrollamadas),
             "latidos": self.latidos,
+            "tareas_colgadas": self.colgadas,
+            "ciclos_vaciados_del_mapa_de_hilos": self.ciclos_vaciados,
             "errores_del_registro": self.errores,
             "ultimo_error": self.ultimo_error,
             "costo_del_registro_s": round(self.costo_segundos, 4),
@@ -610,10 +885,12 @@ class Registro:
         """Último latido (con la copia final del log del servidor) y evento de cierre.
 
         Hay que llamarlo antes de detener el servidor: el arnés borra su log al detenerlo. Una sesión cuyo
-        registro no termina en `cierre` murió desde fuera.
+        registro no termina en `cierre` murió desde fuera. Una segunda llamada no hace nada: el notebook
+        cierra en la celda de tareas cuando termina la sesión por una tarea colgada, y otra vez al final.
         """
-        if not self.activo:
+        if not self.activo or self.cerrado:
             return
+        self.cerrado = True
         self._parar.set()
         if self._hilo is not None:
             self._hilo.join(timeout=60)
@@ -629,12 +906,17 @@ def instalar_registro(
     activo: bool = True,
     parche_rich: str = "archivo",
     latido_segundos: float = 30.0,
+    vaciar_mapa: bool = True,
 ) -> Registro:
-    """Crea el registro e instala los seis enganches. Cada enganche se anota: instalado, o por qué no."""
+    """Crea el registro e instala los seis enganches. Cada enganche se anota: instalado, o por qué no.
+
+    `vaciar_mapa=False` solo sirve al ensayo: deja el mapa de hilos del núcleo como está antes de cada tarea.
+    """
     if parche_rich not in MODOS_RICH:
         raise ValueError(f"parche_rich debe ser uno de {MODOS_RICH}")
     registro = Registro(carpeta, nombre, servidor, activo=activo, latido_segundos=latido_segundos)
     registro.parche_rich = parche_rich
+    registro.vaciar_mapa = vaciar_mapa
     if not activo:
         print("REGISTRO", nombre, "inactivo: no se instala ningún enganche", flush=True)
         return registro
@@ -704,8 +986,26 @@ def instalar_registro(
     instalar("log del servidor", lambda: f"origen {getattr(servidor, 'log_path', None)}")
     registro.arrancar_latido()
     registro.enganches["latido"] = f"cada {registro.latido_segundos} s"
-    registro.evento("registro_instalado", nucleo=nucleo(), enganches=registro.enganches, pid=os.getpid())
+    # No es un enganche exigido: donde el mapa no existe no hay nada que vaciar, y el tope por tarea sigue.
+    estado_del_mapa = mapa_de_hilos(vaciar=False)
+    registro.enganches["mapa de hilos del núcleo"] = (
+        ("se vacía antes de cada tarea" if vaciar_mapa else "no se vacía (desactivado)")
+        if estado_del_mapa["disponible"]
+        else "no disponible: " + str(estado_del_mapa.get("motivo"))
+    )
+    registro.evento(
+        "registro_instalado",
+        nucleo=nucleo(),
+        enganches=registro.enganches,
+        pid=os.getpid(),
+        versiones=versiones(),
+        mapa_de_hilos=estado_del_mapa,
+        **carga_del_sistema(),
+    )
     print("REGISTRO", nombre, "| nucleo", nucleo(), flush=True)
+    # Lo que hay que saber de la plataforma antes de la primera tarea: versiones, mapa y carga.
+    print("REGISTRO versiones", versiones(), flush=True)
+    print("REGISTRO mapa de hilos", estado_del_mapa, "| maquina", carga_del_sistema(), flush=True)
     for enganche, estado in registro.enganches.items():
         print("REGISTRO enganche", enganche, "->", estado, flush=True)
     return registro

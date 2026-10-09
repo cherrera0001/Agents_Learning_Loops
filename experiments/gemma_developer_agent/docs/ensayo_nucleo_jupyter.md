@@ -1,8 +1,14 @@
-# Registro del notebook de la iteración 08 y ensayo bajo un núcleo Jupyter real (#160)
+# Registro del notebook de la iteración 08 y ensayo bajo un núcleo Jupyter real (#160, #164)
 
 **Nada de esto se subió, se envió ni se corrió en Kaggle, y no se gastó cuota de GPU.** Todo lo que este
 documento mide se midió en esta máquina, en Docker, el 2026-10-09 (UTC), con un modelo falso. Las cifras son
 de un ensayo local: dicen si el registro explica un corte, no cuántas tareas resuelve el agente.
+
+El documento tiene dos capas. El #160 dejó el registro, el notebook y el ensayo. El #164 añadió al notebook
+un tope por tarea y el vaciado del mapa de hilos del núcleo, y al diagnóstico dos códigos; está en
+[su sección](#tope-por-tarea-y-mapa-de-hilos-del-núcleo-164). Donde el #164 cambió algo que el #160
+describía, el texto lo dice. Las cifras de las secciones del #160 son de su batería, que se conserva sin
+tocar en `…/iteracion_08/ensayo_salida_160/`; las del #164 son de una batería nueva, en `ensayo_salida/`.
 
 La vuelta 40 del experimento Kaggle decidió que la iteración 08 no se sube sin tres cosas: el rescate que
 mira bytes (#156), el notebook con su registro y un ensayo local que demuestre que ese registro explica un
@@ -18,7 +24,7 @@ corte. Este documento cubre las dos últimas.
 | Los enganches de registro y las guardias, que el notebook lleva como una celda | [`scripts/kaggle_registro_enganches.py`](../../../scripts/kaggle_registro_enganches.py) | Sí, con `tests/test_kaggle_registro_enganches.py` |
 | El sorteo de tareas y el lector del registro | [`scripts/kaggle_registro.py`](../../../scripts/kaggle_registro.py) | Sí, con `tests/test_kaggle_registro.py` |
 | `armar.py`, el ensayo, el modelo falso, el Dockerfile y los notebooks armados | `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/` | No: `data/` está ignorada por git |
-| Las salidas del ensayo | `…/iteracion_08/ensayo_salida/` | No; se citan por ruta y SHA-256 ([huellas](#huellas)) |
+| Las salidas del ensayo | `…/iteracion_08/ensayo_salida_160/` (batería del #160) y `…/iteracion_08/ensayo_salida/` (batería del #164) | No; se citan por ruta y SHA-256 ([huellas](#huellas)) |
 
 **Consecuencia:** el código de las guardias está versionado, pero las líneas del notebook que las llaman
 las escribe `armar.py`, que no lo está. De esas líneas el repositorio solo tiene los SHA-256 que este
@@ -33,7 +39,8 @@ por pasada, porque 120 tareas no caben en una sesión de 9 000 s.
 |---|---|---|
 | Condición `A` y un solo grupo, `sorteo_60`, con las 60 tareas sorteadas | 4 | 2, 2 |
 | Celda nueva: el texto de `kaggle_registro_enganches.py`, byte a byte, la línea que instala el registro y la guardia previa (17 líneas) | 8 | celda nueva |
-| Plan de una pasada (`A8P1` o `A8P2`), nombres de salida `iteracion_08_p1` o `_p2`, tope de sesión de 150 min con 10 de margen, las llamadas al registro, la guardia tras la primera tarea (2 líneas) y el reempaquetado del zip si la celda falla (1 línea) | 10 (antes 9) | 5, 23 |
+| Plan de una pasada (`A8P1` o `A8P2`), nombres de salida `iteracion_08_p1` o `_p2`, tope de sesión de 150 min con 10 de margen, las llamadas al registro, la guardia tras la primera tarea (2 líneas) y el reempaquetado del zip si la celda falla (1 línea) | 10 (antes 9) | 5, 23 (#160) |
+| Tope por tarea (#164): dos constantes con su comentario (4 líneas), `run_sync` espera con tope (quita 2, añade 1), la llamada a `run_sync` va en un `try` con lo que se hace si la tarea no vuelve (quita 1, añade 23) y la guardia mira la primera tarea que no se colgó (quita 1, añade 1) | 10 | 4, 29 sobre lo anterior; 8, 51 en total respecto de la 07 |
 | Cierre del registro y nuevo empaquetado antes de detener el servidor | 11 (antes 10) | 0, 8 |
 
 Las celdas 0, 1, 2, 3, 5, 6, 7 y 9 son las de la 07, byte a byte (la 9 es su antigua 8).
@@ -45,23 +52,27 @@ Las celdas 0, 1, 2, 3, 5, 6, 7 y 9 son las de la 07, byte a byte (la 9 es su ant
 - **Dos pasadas.** La pasada 2 es la pasada 1 con `A8P1` → `A8P2` e `iteracion_08_p1` → `iteracion_08_p2`:
   cambia una línea en la celda 8 y tres en la 10, y nada más. `armar.py` lo comprueba, y el notebook de la
   pasada 2 se ejecutó bajo el núcleo ([escenario `pasada_2`](#resultado-por-escenario)).
-- **Topes.** No se cambian los del agente ni los de la condición. El tope de sesión vuelve a los 150 min y 10
-  de margen de las iteraciones 03, 04 y 06 (la 07 los había recortado a 60 y 5 por la cuota que quedaba). El
-  tope del conjunto de tareas sigue en `TOPE_SEGUNDOS = 7200`, que vence antes que los 150 min: ver
-  [lo que queda sin medir](#lo-que-el-ensayo-no-puede-decir).
+- **Topes.** No se cambian los del agente ni los de la condición: `armar.py` comprueba además que el bloque
+  que construye la configuración del arnés (`EvalConfig`) es el de la 07, byte a byte. El tope de sesión
+  vuelve a los 150 min y 10 de margen de las iteraciones 03, 04 y 06 (la 07 los había recortado a 60 y 5 por
+  la cuota que quedaba). El tope del conjunto de tareas sigue en `TOPE_SEGUNDOS = 7200`, que vence antes que
+  los 150 min: ver [lo que queda sin medir](#lo-que-el-ensayo-no-puede-decir). El #164 añade un tope **por
+  tarea** de 900 s, que es del notebook y no del agente:
+  [por qué 900](#el-tope-por-qué-900-s-y-qué-margen-deja).
 
-Notebooks armados, de 91 527 bytes cada uno:
+Notebooks armados tras el #164, de 108 297 bytes cada uno (los del #160 pesaban 91 527 y están en
+`…/iteracion_08/instrumentos_160/`):
 
 | Archivo | SHA-256 |
 |---|---|
-| `kernel_iteracion_08_p1/iteracion.ipynb` | `62c07ff6d1779062087e1a32dcdb8981645e4cf588175ab0cf68d97560f5afae` |
-| `kernel_iteracion_08_p2/iteracion.ipynb` | `0be9615e88b6c9eeb7344ae84b79854138012c6a79c8fabba1401e6ca7419831` |
-| `armar.py` | `7fefc5d9d9c4381f15923844f0aaa72870081c75f37e3a1cdb4488aec0ee738b` |
+| `kernel_iteracion_08_p1/iteracion.ipynb` | `30aa9b31f776ac522077ef5e93562082ea7bdfdcbd7dbc7e49193b76808714fa` |
+| `kernel_iteracion_08_p2/iteracion.ipynb` | `0351fd806807223f21382457ab2352be761dbaeaf0e57c25de4a1491eec214c5` |
+| `armar.py` | `52a5f85c9144f1da485f4350a4864d85002c4e7abe1cc81a49cbc58353bb379d` |
 
 El texto de los enganches que llevan tiene el SHA-256
-`d2333a3de07329450411cd04dfe3ee64e9de1905403cfa5152853740f6dd454c`, el de
-`scripts/kaggle_registro_enganches.py` en el commit `20b6136`. Si ese archivo cambia, los notebooks se vuelven
-a armar y el ensayo se repite.
+`3d342272fdc9b9357c56867225ba6ce8263e0f15caaf84b8aa0adc700469f130`, el de
+`scripts/kaggle_registro_enganches.py` en el commit `2e57468`. Si ese archivo cambia, los notebooks se
+vuelven a armar y el ensayo se repite.
 
 ## Los enganches
 
@@ -139,9 +150,15 @@ una tarea se repite, cada corrida conserva lo suyo. Distingue:
 | 3 | Sesión cortada por el notebook; la causa está en el registro |
 | 4 | Registro no fiable: un enganche exigido no se instaló; hubo errores propios; hay tareas corridas y **en toda la sesión** no hay ninguna petición respondida; una tarea terminada no trae su `agente_fin` o su `diff_cierre`; falta `registro_instalado`; o una guardia detuvo el notebook. En `comprobar`, además, una pasada esperada sin carpeta en el rescate o sin registro |
 | 5 | Sesión muerta desde fuera: el registro no termina en `cierre` |
+| 6 | Sesión viva y detenida (#164): el registro no termina en `cierre` ni anota un corte, y el latido siguió más de 960 s después del último evento |
+| 7 | Sesión terminada con tareas colgadas (#164): el notebook cortó al menos una tarea por su tope por tarea, comprobó que su hilo había terminado y siguió con las demás. Esas tareas son pares faltantes |
 
-**Precedencia en `diagnosticar`:** 4 gana a 3, y 3 gana a 5. Un registro no fiable se dice aunque la sesión
-esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre.
+Una sesión que el notebook **terminó** por una tarea colgada lleva `corte('tarea_colgada')` y sale con 3,
+como los demás cortes del notebook; el veredicto dice cuál.
+
+**Precedencia en `diagnosticar`:** 4 gana a 3, y 3 gana a 7, a 6 y a 5. Un registro no fiable se dice aunque
+la sesión esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre. El 7 exige
+`cierre`; el 6 y el 5 son de un registro sin `cierre`, y los separa cuánto siguió el latido sin eventos.
 
 La comprobación de peticiones respondidas es de toda la sesión, no por tarea: una sesión con una tarea
 resuelta y otra cuyas peticiones terminaron todas en error sale con 0, y la segunda tarea lo dice en su
@@ -155,9 +172,46 @@ guardia», antes o tras la primera tarea.
 **El 0 es de la sesión, no de cada tarea.** Una tarea cortada por tiempo o por llamadas no cambia el código:
 el notebook siguió y la sesión terminó. Su motivo está en `agente_fin` y en `tope_que_corto` de su ficha.
 
-**Una sesión colgada sale con 5.** Si el notebook queda vivo y detenido, su registro tampoco termina en
-`cierre` y el veredicto dice «muerta desde fuera». El diagnóstico no distingue las dos cosas; se ve en el
-latido, que sigue llegando con la misma tarea en curso y ninguna petición en vuelo durante minutos.
+**Una sesión colgada ya no sale con 5 (#164).** Antes, un notebook vivo y detenido se llamaba «muerta desde
+fuera». Ahora hay tres desenlaces distintos, y ninguno es 0:
+
+- el notebook cortó la tarea y siguió: 7, con la lista de tareas cortadas en `tareas_colgadas` y en
+  `pares_faltantes`;
+- el notebook cortó la tarea y terminó la sesión: 3, con `cortado_por: tarea_colgada`;
+- el notebook no llegó a cortar (no debería ocurrir con el tope, y es lo que pasó en el #160, que no lo
+  tenía): 6 si el latido siguió más de 960 s tras el último evento, 5 si menos. El veredicto de un 5 dice
+  cuántos segundos de latido sin eventos hubo.
+
+El umbral de 960 s es el tope por tarea (900 s), su margen tras el corte (30 s) y un latido (30 s): con
+menos silencio el notebook aún no había tenido ocasión de cortar. Es una constante de
+`scripts/kaggle_registro.py` (`SILENCIO_DETENIDA_SEGUNDOS`); si cambia el tope del notebook hay que cambiarla.
+La corrida que se colgó en el #160 (983,7 s de latido sin eventos) sale ahora con 6.
+
+**Reglas que impiden un 0 sobre una sesión colgada o cortada por el tope.** Dan 4 (registro no fiable):
+
+- un registro cerrado, sin ningún corte ni guardia, con una tarea que empezó y no tiene su `tarea_fin`;
+- una tarea terminada que no dice `con_tope: true`. En un registro del #164 en adelante (el que declara el
+  enganche «mapa de hilos del núcleo») el campo se exige: ausente, `null` o cualquier valor que no sea `true`
+  da 4. Un registro anterior no trae el campo y solo cuenta un `false` explícito;
+- una tarea colgada que figura como resuelta, que no lleva `par_faltante: true` o que no trae su evento
+  `tarea_colgada`. Una tarea con `par_faltante: true` y sin corte entra en `pares_faltantes` y da 4;
+- un evento `tarea_colgada` cuyo `sigue` no es un booleano (un texto como «no» no se interpreta);
+- haber seguido tras una tarea colgada sin que el registro pruebe que su hilo terminó (`hilo_vivo` distinto
+  de `false`), o siendo la segunda colgada seguida;
+- haber empezado otra tarea, o haber cerrado sin `corte`, después de decidir no seguir;
+- un evento `tarea_colgada` que no cae dentro de la corrida de ninguna tarea;
+- cualquier evento después del `cierre`. Un segundo `cierre` no cuenta como evento posterior; esa tolerancia
+  es inocua y no responde a ningún caso visto: de los 16 registros del #160, 14 traen un solo `cierre` y 2
+  ninguno; ninguno trae dos.
+
+Cinco de estas reglas (la exigencia de `con_tope`, `sigue` no booleano, la segunda seguida, la marca sin
+corte y los eventos tras el cierre) salieron de la revisión del PR #176. Se corrigieron las cinco en vez de
+documentarlas como límite: son comprobaciones de una línea sobre el registro, y los 42 registros reales del
+ensayo (#160 y #164) dan el mismo código antes y después del cambio.
+
+**`diagnosticar` no sabe cuántas tareas había.** Un registro que termina en `cierre` tras dos tareas
+completas sale con 0 aunque el plan fuera de sesenta: el número de tareas está en el JSON de resultados de
+la pasada, no en el registro.
 
 **La regla de `agente_fin` y `diff_cierre` puede dar un 4 que no es del registro.** Inferido por la revisión
 leyendo el arnés local, no ejecutado: si falta el snapshot de una tarea, el arnés devuelve sin llamar a
@@ -204,6 +258,23 @@ eso el rescate solo no basta:
    en vuelo y el estado del servidor), `diff_en_curso_<nombre>.diff` (el árbol en ese latido) y
    `servidor_log_<nombre>.txt`.
 4. Si dice 4, leer `problemas_del_registro`: la corrida no es válida como registro aunque tenga resultados.
+5. Si dice 7, la sesión terminó y perdió tareas. `sesion.pares_faltantes` las lista. **Una tarea cortada por
+   el tope por tarea es un par faltante, no una tarea no resuelta:** al comparar las dos pasadas se excluye
+   de la cuenta de discordantes. Lleva `par_faltante: true` en su fila del JSON de la pasada, en su línea de
+   `task_results.jsonl` y en su `tarea_fin`, y la clase `tarea_colgada`. Mirar en su ficha (`tareas[].colgada`)
+   si el mapa de hilos cerraba un ciclo (`mapa_de_hilos.ciclo`) y abrir `pila_tarea_colgada_<nombre>.txt`,
+   que está suelto y dentro del zip (`registro/`): dice en qué línea estaba cada hilo.
+6. Si dice 3 con `cortado_por: tarea_colgada`, el notebook terminó la sesión porque el hilo de la tarea
+   seguía vivo tras el margen, o porque era la segunda tarea colgada seguida. La pila dice dónde giraba o
+   esperaba. Las tareas que no llegaron a correr no están en el registro.
+7. Si dice 6, el notebook quedó vivo sin cortar. Mirar `sesion.ultimo_latido_de_la_tarea`: con
+   `hilo_de_tarea.cpu_s` creciendo un segundo por segundo el hilo giraba; con la CPU quieta, esperaba.
+8. En cualquier caso, leer del primer evento (`registro_instalado`) las versiones de `ipykernel`,
+   `jupyter_client`, `rich`, `litellm` y Python, y si el mapa de hilos existe (`mapa_de_hilos.disponible`): es
+   la primera medición de la plataforma, y decide con qué versión hay que repetir el ensayo. El notebook las
+   imprime también en la celda 8 (`REGISTRO versiones` y `REGISTRO mapa de hilos`). Cada latido trae la
+   carga, el número de CPU y los hilos vivos; `sesion.tareas_que_empezaron_con_un_ciclo_en_el_mapa` dice
+   cuántas veces el vaciado encontró un ciclo, que es la primera medida de si la carrera ocurre en Kaggle.
 
 En una sesión muerta el zip va atrasado respecto de los archivos sueltos: se empaqueta tras cada tarea,
 así que no trae la petición en vuelo ni el último `diff_en_curso`.
@@ -366,10 +437,11 @@ medido es: una corrida colgada de cinco con el modo global a lo largo del día, 
 el modo `archivo` o sin parche. La corrida se repitió una vez, sola, a las 04:06 UTC, y terminó bien; las
 cifras del modo global de este documento son de esa repetición.
 
-**Nada en el notebook corta una tarea colgada sin peticiones.** `run_sync` espera sin tope a que la tarea
-termine, el tope de 4 minutos del arnés empieza con el bucle del agente y los topes de sesión solo se miran
-entre tareas. El latido es lo único que lo deja visible. Queda como límite conocido y como decisión del
-concilio antes de subir; aquí no se cambió.
+**Nada en el notebook del #160 cortaba una tarea colgada sin peticiones.** `run_sync` esperaba sin tope a que
+la tarea terminara, el tope de 4 minutos del arnés empieza con el bucle del agente y los topes de sesión solo
+se miran entre tareas. El #164 lo cambió: ver
+[la sección del tope por tarea](#tope-por-tarea-y-mapa-de-hilos-del-núcleo-164), que también recoge lo que
+el forense del arnés reconstruyó de este cuelgue.
 
 ## Los cuatro cortes
 
@@ -547,7 +619,8 @@ y sale con su 4.
    modelo que sigue pidiendo herramientas recibe errores de presupuesto y la sesión continúa: en una prueba
    previa, con un modelo falso que nunca cedía, una tarea llegó a 100 peticiones (su salida no se conservó).
    En el escenario final el modelo cede tras 45 llamadas y la sesión tiene 46 peticiones.
-5. **Una tarea puede colgarse sin que nada la corte** ([el cuelgue](#una-corrida-con-el-parche-global-se-colgó)).
+5. **Una tarea podía colgarse sin que nada la cortara** ([el cuelgue](#una-corrida-con-el-parche-global-se-colgó)).
+   Desde el #164 la corta el tope por tarea.
 
 ## Lo que el ensayo no puede decir
 
@@ -573,14 +646,16 @@ Lo que sigue no se parece a Kaggle o no se midió.
 - **El escenario del tope de sesión cortó tras la primera tarea**; el modo lento del modelo falso nunca corrió.
 - **No se ensayó la cadencia real.** El ensayo late cada 2 s y su escenario de tope de sesión usa 45 s; el
   notebook real late cada 30 s y su tope de sesión es de 150 min.
-- **Una tarea colgada sin peticiones no la corta nada**
-  ([el cuelgue](#una-corrida-con-el-parche-global-se-colgó)).
+- **Una tarea colgada sin peticiones** la corta desde el #164 el tope por tarea; lo que ese tope no cubre
+  está en [sus límites](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle).
 - **Qué hace Kaggle.** No está comprobado que detenga «Run All» en la primera excepción, ni que conserve los
   archivos sueltos de `/kaggle/working` de una sesión que mata.
 - **Matar el núcleo no es lo mismo que el corte de Kaggle.** Aquí es una señal al proceso del núcleo.
-- **El cuelgue de una corrida** no tiene causa diagnosticada.
+- **El cuelgue de una corrida** tiene una causa probable, inferida y no reproducida en el ensayo completo
+  ([#164](#la-causa-probable-del-cuelgue-del-160)).
 - **Versiones.** La imagen local trae litellm 1.104.0. Otra versión podría disparar la retrollamada de fallo
-  ante una cancelación; el envoltorio no depende de eso.
+  ante una cancelación; el envoltorio no depende de eso. La versión de `ipykernel` de la imagen la eligió el
+  `Dockerfile` local y la de Kaggle no está medida ([#164](#versiones-de-ipykernel)).
 - **Costo del registro en el disco de Kaggle.** No medido. Tampoco por qué la sincronización del inicio
   cambió entre baterías.
 
@@ -608,6 +683,459 @@ Lo que sigue no se parece a Kaggle o no se midió.
   prefijo común. No se cambió ningún tope: lo debe mirar el concilio antes de subir.
 - **Predicciones fechadas de la iteración 08.** Fuera de este issue: las escribe el concilio.
 
+## Tope por tarea y mapa de hilos del núcleo (#164)
+
+**Nada de esta sección se subió ni se corrió en Kaggle.** Es código del notebook y ensayo local del
+2026-10-09, entre las 12:20 y las 15:41 UTC. La máquina no estuvo en reposo: otros procesos ajenos al
+ensayo la cargaron durante la batería (carga de un minuto de la máquina virtual de Docker entre 0,70 y
+10,64 al empezar o terminar cada corrida), y las tareas del ensayo que no se colgaron, que en el #160
+duraban unos 11 s, duraron de 11,7 a 518,1 s. Ningún reloj de esta sección sirve para comparar con el #160.
+
+### La causa probable del cuelgue del #160
+
+Lo reconstruyó el forense del arnés. Lo que este issue volvió a medir por su cuenta lo dice cada punto.
+
+- **Leído en el código** (`ipykernel` 6.29.5, `iostream.py`, línea 516): una escritura a stdout o stderr
+  desde un hilo sin cabecera propia recorre el mapa `_thread_to_parent` con
+  `while identity in self._thread_to_parent`, sin guardia. `ipkernel.py` añade una entrada al mapa cuando
+  arranca un hilo creado por otro hilo que no es el del núcleo, y solo las quita, para los hilos ya muertos,
+  cuando arranca el recolector de basura.
+- **Medido aquí:** con un ciclo en ese mapa que pasa por el identificador del hilo de la tarea, la tarea
+  queda girando: la pila del núcleo muestra al hilo en `iostream.py`, línea 516, `parent_header`, y el
+  latido lo muestra gastando un segundo de CPU por segundo, sin ningún evento
+  ([escenario `ciclo_sin_arreglo`](#las-dos-ramas-del-corte)).
+- **Medido aquí, fuera del arnés** (sonda con el patrón de hilos del notebook y la máquina cargada): el
+  ciclo aparece solo, por la reutilización de identificadores de hilo entre una tarea y la siguiente
+  ([tabla](#el-arreglo-de-la-causa-vaciar-el-mapa-antes-de-cada-tarea)).
+- **Inferido, no medido:** que ese fuera el cuelgue del #160. El forense le dio cerca de un 75 %; no hay pila
+  del proceso que se colgó. En el ensayo completo, con el arnés, el cuelgue **no** se reprodujo por la
+  carrera natural: ni en las 9 corridas del forense ni en las de esta batería, que no lo buscó (ver
+  [límites](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle)).
+- **Por qué importa en el modo `archivo`:** el arnés escribe a stderr desde el hilo de la tarea en sus
+  avisos (`logger.warning` de `swegemma.harness.agent_runner`, por ejemplo cuando una tarea agota su tope).
+  Leído en el código; el escenario lo imita con un `WARNING` desde el hilo de la tarea.
+
+### Versiones de ipykernel
+
+- La imagen del ensayo trae `ipykernel` **6.29.5** porque lo fija su `Dockerfile` local, no porque Kaggle
+  lo traiga. **La versión de Kaggle no está medida:** ningún log de las corridas reales la dice.
+- Leído en el código por el arquitecto de IA, no comprobado aquí más que en tres versiones: el bucle sin
+  guardia existe de la 6.29.0 a la 7.0.1 y no existe hasta la 6.28.0 ni desde la 7.1.0. Comprobado aquí:
+  `iostream.py` no nombra `_thread_to_parent` ni en la 6.17.1 ni en la 7.1.0, y sí en la 6.29.5.
+- **Qué hace el código si la versión es otra.** El vaciado busca el mapa con
+  `getattr(flujo, "_thread_to_parent", None)` en `_stdout` y `_stderr` del núcleo y en `sys.stdout` y
+  `sys.stderr`. Si no hay núcleo, o ningún flujo lo tiene, anota
+  `mapa_de_hilos: {disponible: false, motivo: …}` en `registro_instalado` y en cada `tarea_inicio`, lo
+  imprime en la celda 8 y sigue. No es un enganche exigido: la guardia previa no detiene el notebook por
+  esto. **El tope por tarea no depende del mapa ni de la versión.**
+- **Ensayado sin el mapa.** Dos imágenes más, que solo cambian `ipykernel` (6.17.1 y 7.1.0; una anterior
+  al bucle y otra posterior, las dos instalan con Python 3.12): una sesión de 4 tareas sin corte y una
+  tarea colgada en cada una. En las cuatro el registro anota «este ipykernel (…) no tiene el mapa
+  _thread_to_parent», nada falla por el atributo y el tope corta igual
+  ([tabla](#resultado-de-la-batería-del-164)).
+- **Condición de lanzamiento, pendiente:** repetir el ensayo con la versión que resulte de Kaggle.
+  `imagen_otro_ipykernel/Dockerfile` la recibe como argumento:
+  `docker build --build-arg IPYKERNEL=<versión> -t aal-ensayo-nucleo:ipykernel-<versión> <carpeta>`.
+
+### El arreglo de la causa: vaciar el mapa antes de cada tarea
+
+`Registro.tarea` vacía el mapa (el mismo diccionario, con `clear()`) antes de crear el hilo de la tarea y
+anota en `tarea_inicio` cuántas entradas había y si cerraban un ciclo. Se eligió frente a la otra opción
+del issue, un único grupo de hilos para toda la sesión, con esta medición.
+
+Sonda fuera del arnés (`sonda_164/sonda_arreglos.py`): un núcleo real, el patrón de hilos del notebook (un
+hilo por tarea que corre `asyncio.run` y lanza un hilo hijo) y, en cada frontera entre dos tareas, el mismo
+recorrido que hace `parent_header`, con tope, desde el hilo de la tarea y desde su hijo. Configuración: 12
+procesos quemando CPU dentro del contenedor, `--cpus 4`, 20 ms de trabajo del hilo del núcleo entre tareas.
+
+| Cómo se lanza la tarea | Fronteras | Con un ciclo que dejaría girando una escritura |
+|---|---|---|
+| Un grupo de hilos nuevo por tarea (celda 10 del #160) | 1 500 | 11 |
+| Un hilo demonio nuevo por tarea (celda 10 del #164), sin vaciar | 1 500 | 25 |
+| Un hilo demonio nuevo por tarea y el mapa vaciado antes | 1 500 | **0** |
+| Un único grupo de hilos para toda la sesión, sin vaciar | 1 500 | **0** |
+
+Los cuatro modos corrieron uno tras otro, cada uno en su contenedor. Para que el cero del arreglo no
+dependa de que la carga hubiera cambiado, los dos brazos se repitieron **intercalados en el mismo núcleo**,
+en 12 bloques alternos de 250 fronteras:
+
+| Brazo | Fronteras | Con ciclo | Por bloque |
+|---|---|---|---|
+| Sin vaciar (control positivo) | 1 500 | 60 | 3, 4, 3, 14, 17, 19 |
+| Con el vaciado | 1 500 | **0** | 0, 0, 0, 0, 0, 0 |
+
+El control positivo tiene eventos en sus seis bloques, así que la carga abrió la carrera mientras el
+arreglo daba cero. **Esto mide el laboratorio y no es una cota para Kaggle:** la tasa sin arreglo fue de
+11, 25 y 60 por 1 500 fronteras en tres tandas de la misma configuración, y el auditor del método la vio
+variar de 0,03 % a 29 % según la configuración. Sin carga, el forense midió 0 de 3 000.
+
+Las dos opciones dan cero en la carrera natural. Lo que las separa es un ciclo que **ya está** en el mapa
+(prueba determinista de la misma sonda, cinco veces por modo: se planta un ciclo que pasa por el
+identificador que usará el hilo de la tarea):
+
+| Modo | Una escritura del hilo de la tarea no terminaría |
+|---|---|
+| Hilo o grupo nuevo por tarea, sin vaciar | 5 de 5 |
+| Un único grupo de hilos, sin vaciar | **5 de 5** |
+| Con el vaciado | **0 de 5** |
+
+Un único grupo de hilos evita que la carrera cree el ciclo pero no quita uno que ya exista; el vaciado
+quita los dos casos, cambia menos líneas y deja en el registro, tarea a tarea, si había un ciclo. Por eso se
+eligió. Lo que el vaciado no cubre: un ciclo que se forme **dentro** de una tarea, entre hilos que no son
+el de la tarea (hace falta que un hilo cree otro después de morir el que lo creó a él). No se observó; lo
+cubre el tope.
+
+**El vaciado no cambia lo que el notebook manda a su salida** (comparación con y sin él sobre las mismas 6
+tareas, escenarios `sin_vaciado` y `control_sin_parche`): 1 368 bytes de texto y 6 salidas ricas en la celda
+de tareas en los dos, de 101 833 y 101 835 bytes serializadas. Los segundos entre que el servidor responde
+y recibe la petición siguiente quedaron entre 0,04 y 0,19 en `ciclo_con_arreglo`, sin ningún corte, y entre
+0,04 y 0,20 en las cuatro tareas que siguieron a un corte (`ciclo_sin_arreglo_599` y
+`ciclo_sin_arreglo_anillo`): son 8 esperas por lado y no distinguen nada.
+
+### El tope: por qué 900 s y qué margen deja
+
+`run_sync` ya no usa `with ThreadPoolExecutor`, que esperaba sin tope y, al salir del `with`, volvía a
+esperar al hilo. Ahora llama a `Registro.correr_con_tope`: la tarea corre en un hilo **demonio** y el
+notebook la espera `TOPE_TAREA_SEGUNDOS`. El hilo es demonio para que un hilo colgado no impida salir al
+proceso del núcleo.
+
+El valor, **900 s**, lo fijó el concilio: tres veces la tarea real más larga medida.
+
+| Qué | Segundos | Margen que deja el tope |
+|---|---|---|
+| Tarea real más larga (reloj por tarea, 250 filas de los JSON de las iteraciones 01 a 07 del rescate `2026-10-08T2231Z`; 145 `duration_seconds` de sus 12 zips distintos dan el mismo máximo) | 303,6 | 596,4 s (2,96 veces) |
+| Lo que el arnés permite sin colgarse: 4 min del agente más cinco órdenes de la verificación a su tope de 60 s (`eval_config.yaml` del zip) | 540 | 360 s |
+| Tarea más larga de las 15 corridas con tope de 900 s y sin cuelgue forzado: la que corta el tope de 4 min del agente en `corte_tiempo` | 269,1 | 630,9 s |
+| Tarea más larga de `completa` (26 tareas) | 50,4 | 849,6 s |
+| Tarea legítima más larga de todo el día, en una corrida con **tope de ensayo de 600 s**, no de 900 (`fastapi_15280` en `ciclo_con_arreglo`) | 518,1 | 381,9 s frente a 900; 81,9 s frente a los 600 con que corrió |
+
+El recuento del coordinador habla de 310 tareas; aquí se contaron 250 filas con `segundos_reloj` en los
+JSON de `iteracion-01` a `iteracion-07` y ninguna pasa de 304 s. La diferencia de recuento no está
+explicada.
+
+**El tope no cortó ninguna tarea legítima** en las corridas con el tope de 900 s: `completa`,
+`corte_tiempo`, `corte_llamadas`, `corte_sesion`, `corte_sesion_duro`, `servidor_caido`, las tres
+guardias, `pasada_2`, `control_sin_parche`, `parche_global`, `sin_vaciado` y las dos sesiones cortas con
+otro `ipykernel` (el ensayo lo exige en cada una: cero filas `tarea_colgada` y `con_tope: true` en todos
+los `tarea_fin`). Son 15 corridas y su tarea más larga duró 269,1 s. Diez de las 15 arrancaron a la vez,
+entre las 13:02:16 y las 13:02:19 UTC, junto con `tarea_colgada_tope_real`: once contenedores en paralelo,
+así que parte de la carga de esas corridas era la propia batería.
+
+**Con un tope corto sí se cortan tareas legítimas, y eso se vio.** Los escenarios que cuelgan una tarea usan
+un tope de ensayo más corto para no esperar 15 minutos. Con 90 s y la máquina cargada, tres corridas
+cortaron además una tarea que no estaba colgada (tardaba 83 s solo en copiar las ruedas al sandbox, con la
+CPU del hilo en 0). Las tres se conservan con el sufijo `_t90`. Lo que enseñan: una tarea lenta pero viva
+se cancela bien (su hilo terminó en 0,57, 6,21 y 11,58 s y el notebook siguió), y un tope cerca de la
+duración real pierde tareas. Con 540 s, el valor que este issue iba a proponer antes de la decisión del
+concilio, la tarea de 518,1 s habría quedado a 22 s del corte.
+
+**Lo que el tope de 900 s deja sin cubrir, por aritmética y sin medir:** el notebook deja de empezar tareas
+cuando quedan 600 s de sesión (`MARGEN_FINAL_SEGUNDOS`). Una tarea que se cuelgue en los últimos 330 s
+antes de ese punto (entre los 8 070 y los 8 400 s de una sesión de 9 000) se cortaría a los 930 s, después
+del fin de la sesión. Ahí manda el corte de Kaggle y el diagnóstico dará 5. Lo arregla subir el margen
+final o bajar el tope; es decisión del concilio.
+
+### Qué pasa cuando vence el tope
+
+`Registro.tarea_colgada`, en este orden:
+
+1. vuelca la pila de **todos** los hilos con `faulthandler` a `pila_tarea_colgada_<nombre>.txt` (con la hora,
+   la tarea y, por hilo, su nombre y su CPU gastada), que queda suelta y dentro del zip;
+2. mira, sin tocarlo, si el mapa de hilos cierra un ciclo;
+3. pide la cancelación de la tarea a su bucle de eventos;
+4. vacía el mapa de hilos: si el hilo giraba en él, eso lo suelta, y la cancelación ya pedida le entra en
+   su primer `await`;
+5. espera `MARGEN_TAREA_COLGADA_SEGUNDOS` (30 s) a que el hilo termine;
+6. anota el evento `tarea_colgada` con todo lo anterior, la carga y los hilos vivos, y devuelve si se puede
+   seguir.
+
+**Regla, comprobada en ejecución cada vez:** el notebook sigue con la tarea siguiente solo si el hilo de la
+tarea cortada **terminó** dentro del margen. Si sigue vivo, o si es la segunda tarea colgada seguida, anota
+`corte('tarea_colgada')` y la celda termina con la excepción `TareaColgada`; el manejador de la celda
+cierra el registro, vuelve a empaquetar el zip, detiene el servidor y relanza. **Nunca corren dos tareas a
+la vez.** «Dos seguidas» se eligió porque dos cortes consecutivos con el mapa recién vaciado señalan una
+causa que no es el mapa, y cada uno cuesta un tope entero.
+
+En las dos ramas la tarea deja su fila: `clase: tarea_colgada`, `resuelta: false` y **`par_faltante: true`**
+en el JSON de la pasada, una línea con `resolved: false`, `status: tarea_colgada` y `par_faltante: true` en
+`task_results.jsonl`, y su `tarea_fin` con `par_faltante: true`. No queda como «no resuelta» a secas.
+
+La guardia tras la primera tarea mira ahora la primera tarea que **no** se colgó.
+
+### Las dos ramas del corte
+
+| Rama | Escenario | Qué se fuerza | Qué pasó, medido |
+|---|---|---|---|
+| Corta y sigue | `ciclo_sin_arreglo_599` (notebook sin el vaciado previo) | Antes de la segunda tarea, un ciclo en el mapa sobre los identificadores de seis hilos recién muertos (cada uno apunta a sí mismo); el hilo de la tarea reutiliza uno y escribe un `WARNING` tras arrancar su sandbox | El hilo quedó girando: 595,58 s de CPU en 600 s, ningún evento, ninguna petición al servidor. El tope (600 s de ensayo) la cortó. La pila lo muestra en `iostream.py`, línea 516, `parent_header`, y el corte vio el ciclo en el mapa. Al vaciar el mapa el hilo dejó de girar y la cancelación entró en menos de un segundo (`diff_cierre` y `agente_fin` con `CancelledError`); el hilo terminó a los 25,31 s. El notebook siguió y las tareas 3 y 4 terminaron (97,9 y 195,0 s). Tras el `tarea_fin` de la cortada no hay ningún evento suyo ni peticiones suyas en el servidor. Diagnóstico 7. La validación del ensayo no pasa por una comprobación: exigía 600,0 s o más y el reloj de pared midió 599,9 (el tope se espera con el reloj monótono) |
+| Corta y termina, porque el hilo suelto tardó | `ciclo_sin_arreglo_margen`, el mismo escenario repetido | Lo mismo | Igual hasta el corte (594,66 s de CPU, pila en `parent_header`, ciclo visto, `CancelledError` en menos de un segundo, CPU quieta después). El hilo **seguía vivo a los 30 s** del margen, sin gastar CPU. El notebook no siguió: `corte('tarea_colgada')`, registro cerrado, excepción. Diagnóstico 3. Es lo que manda la regla; la validación del ensayo, que esperaba «sigue», no pasa |
+| Corta y termina | `tarea_colgada` | El hilo de la segunda tarea entra en un bucle síncrono tras arrancar su sandbox | El tope (90 s de ensayo) la cortó a los 90,0 s. La pila nombra el bucle. Vaciar el mapa no lo suelta: el hilo seguía vivo tras el margen (CPU del hilo de 86,05 a 101,16 s en 15 s). `corte('tarea_colgada')`, registro cerrado, zip con la pila y el cierre, servidor detenido. Corrió 1 tarea de 4 y el servidor no recibió peticiones de ninguna otra. Diagnóstico 3, también leído solo desde el zip |
+| Corta y termina, con el tope real | `tarea_colgada_tope_real` | Lo mismo, sin variables de entorno: 900 s y 30 s | Cortada a los 900,0 s; el hilo siguió girando (890,58 a 920,65 s de CPU). Diagnóstico 3 |
+| No se cuelga | `ciclo_con_arreglo` (notebook de la pasada 1) | Un ciclo sobre los seis identificadores; **no se puede saber por sus archivos si en anillo o de cada uno consigo mismo** (ver abajo) | El hilo de la tarea reutilizó un identificador del ciclo plantado y ya no estaba en el mapa: `tarea_inicio` anota 12 entradas, `ciclo: true`, `vaciado: true`. Las 4 tareas terminaron. Diagnóstico 0 |
+
+El escenario del ciclo sin el arreglo se corrió cinco veces y **ninguna pasa entera la validación del
+ensayo**; se conservan las cinco y el motivo de cada una está en su `informe.json`:
+
+| Corrida | Tope | Qué pasó | Por qué no pasa la validación |
+|---|---|---|---|
+| Primera prueba, antes de la batería | 40 s | Cortó, el hilo terminó en 0,29 s y siguió | Esperaba la clase `resuelta` en una tarea que da `parche_no_pasa`. No se conserva: la batería la pisó |
+| `ciclo_sin_arreglo_t90` | 90 s | Cortó la tarea 1, que no estaba colgada (terminó en 11,58 s), y después la 2, con el ciclo (terminó en 8,96 s): segunda seguida, sesión terminada. Diagnóstico 3 | El tope de 90 s cortó una tarea legítima |
+| `ciclo_sin_arreglo_anillo` | 600 s | El ciclo en anillo dejó de existir a los 545 s de CPU; el tope cortó la tarea cuando ya avanzaba, el hilo terminó en 16,89 s y siguió. Diagnóstico 7 | La pila ya no muestra `parent_header` ni el corte ve el ciclo |
+| `ciclo_sin_arreglo_599` | 600 s | Cortó y siguió (fila de arriba) | 599,9 s frente a 600,0 |
+| `ciclo_sin_arreglo_margen` | 600 s | Cortó y terminó la sesión (fila de arriba) | Esperaba «sigue» |
+
+**El desacuerdo del concilio, con el dato.** Tras vencer el tope y vaciar el mapa, el hilo que giraba en el
+mapa **deja de girar y no sigue con la tarea vieja**: en las corridas conservadas su CPU dejó de
+crecer, `agente_fin` anotó `CancelledError` en menos de un segundo y el servidor no recibió ninguna petición
+suya. Lo que tarda es en **terminar**: 8,96, 16,89 y 25,31 s en las corridas conservadas (0,29 s en la
+primera prueba, que no se conserva), y en una corrida más de 30 s, con la máquina cargada. De esas, solo en
+dos el corte vio el ciclo plantado: en una el hilo terminó en 25,31 s y el notebook siguió; en la otra no
+terminó en 30 s. «Corta y sigue» con el ciclo a la vista tiene, por tanto, un solo caso. No se midió en qué espera ese rato (hipótesis: el cierre de su bucle de eventos espera a
+los hilos que recogen el sandbox). En esa corrida el notebook terminó la sesión, como manda la regla. Un
+hilo en un bucle síncrono que no depende del mapa **no** termina y sigue gastando CPU (15 s de CPU en 15 s
+de margen): ahí el notebook nunca sigue. Las dos posturas quedan cubiertas por la regla: se sigue solo con
+el hilo muerto.
+
+**El margen de 30 s queda justo.** Una de cinco esperas lo superó y otra llegó a 25,31 s. Subirlo cuesta
+poco frente a un tope de 900 s y es una línea de `armar.py`, pero cambia el notebook y obliga a repetir el
+ensayo: queda como decisión del concilio y no se cambió aquí.
+
+**Qué queda del sandbox de la tarea cortada.** En la rama «corta y sigue» la cancelación pasa por el
+`finally` del arnés: la tarea deja su `diff_cierre` y su `agente_fin` (con `lanzo: true`) antes de su
+`tarea_fin`, y al terminar el ensayo no queda ninguna carpeta `swegemma_sandbox_*` en `/tmp`. En la rama
+«corta y termina» queda una (`swegemma_sandbox_…`), porque el hilo nunca llega a ese `finally`.
+
+**El apagado del núcleo no espera al hilo colgado.** Tras la última celda, `nbclient` tardó entre 1,0 y 3,5
+s en apagar el núcleo en todas las corridas, también en las seis que dejaron un hilo vivo (2,3 a 2,8 s). Con
+el `with ThreadPoolExecutor` del #160 el hilo no era demonio. No se midió el apagado con el código anterior.
+
+### Lo que el latido dice ahora
+
+Cada latido añade: `ultimo_evento` y `segundos_sin_eventos`, `tarea_segundos`, `hilo_de_tarea` (`vivo` y
+`cpu_s`, los segundos de CPU de ese hilo), `carga` (`os.getloadavg()`), `cpus`, `cpus_utilizables` (la
+afinidad, donde la plataforma la da) e `hilos_vivos`. Donde falta `getloadavg` o la afinidad se anota el
+error y el latido sigue. `registro_instalado` añade `versiones` (Python, `ipykernel`, `jupyter_client`,
+`nbclient`, `papermill`, `rich` y `litellm`; `None` si el paquete no está) y el estado del mapa.
+
+Con esos campos un giro y un bloqueo se distinguen. Medido en `ciclo_sin_arreglo_t90`: la
+primera tarea esperaba al disco (72,4 s sin eventos y `cpu_s` 0,0) y la segunda giraba en el mapa (20,1 s
+sin eventos y `cpu_s` 16,79; 32,8 s y 29,48).
+
+### Resultado de la batería del #164
+
+Notebook de la pasada 1 salvo donde se dice. «Tope» es el tope por tarea de esa corrida. «Rescate» y
+«Comprobar» como en la [tabla del #160](#resultado-por-escenario).
+
+| Escenario | `ipykernel` | Qué se fuerza | Tope (s) | Filas, de tareas | Tareas cortadas por el tope | Tarea no cortada más larga (s) | Diagnóstico | Rescate | Comprobar | Validación del ensayo |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `completa` | 6.29.5 | Nada | 900 | 26 de 26 | 0 | 50,4 | 0 | 0 | 0 | pasa |
+| `pasada_2` | 6.29.5 | Nada, con el notebook de la **pasada 2** | 900 | 3 de 3 | 0 | 55,0 | 0 | 0 | 0 | pasa |
+| `control_sin_parche` | 6.29.5 | Nada, sin el parche de rich | 900 | 6 de 6 | 0 | 55,4 | 0 | 4 | 4 | pasa |
+| `parche_global` | 6.29.5 | Nada, con el parche global de rich | 900 | 6 de 6 | 0 | 42,8 | 0 | 0 | 0 | pasa |
+| `sin_vaciado` | 6.29.5 | Nada, sin el vaciado del mapa | 900 | 6 de 6 | 0 | 73,4 | 0 | 0 | 0 | pasa |
+| `corte_tiempo` | 6.29.5 | El modelo retiene una petición más de 4 min | 900 | 3 de 3 | 0 | 269,1 | 0 | 0 | 0 | pasa |
+| `corte_llamadas` | 6.29.5 | El modelo pasa de 40 llamadas | 900 | 3 de 3 | 0 | 56,5 | 0 | 0 | 0 | pasa |
+| `corte_sesion` | 6.29.5 | `TOPE_SESION_SEGUNDOS=45` | 900 | 1 de 5 | 0 | 56,8 | 3 | 0 | 3 | pasa |
+| `corte_sesion_duro` | 6.29.5 | El ensayo mata el núcleo con una petición en vuelo | 900 | 1 de 3 | 0 | 59,4 | 5 | 0 | 5 | pasa |
+| `servidor_caido` | 6.29.5 | El servidor deja de escuchar | 900 | 2 de 3 | 0 | 189,3 | 3 | 0 | 3 | pasa |
+| `guardia_enganche` | 6.29.5 | Sin `agent_runner.Console` | 900 | — de 3 | 0 | — | 4 | 0 | 4 | pasa |
+| `guardia_log` | 6.29.5 | Toda consola con archivo se cree en Jupyter | 900 | 1 de 3 | 0 | 56,1 | 4 | 4 | 4 | pasa |
+| `guardia_diff` | 6.29.5 | El arnés usa un `sandbox_stop` sin envolver | 900 | 1 de 3 | 0 | 53,2 | 4 | 0 | 4 | pasa |
+| `ciclo_con_arreglo` | 6.29.5 | Ciclo en el mapa antes de la tarea 2 | 600 | 4 de 4 | 0 | 518,1 | 0 | 0 | 0 | pasa |
+| `ciclo_sin_arreglo_599` | 6.29.5 | Ciclo en el mapa antes de la tarea 2, sin el vaciado previo | 600 | 4 de 4 | 1 | 317,9 | **7** | 4 | 4 | no pasa (1) |
+| `ciclo_sin_arreglo_margen` | 6.29.5 | Lo mismo, repetido | 600 | 2 de 4 | 1 | 314,4 | **3** | 4 | 4 | no pasa (5) |
+| `tarea_colgada` | 6.29.5 | Bucle síncrono en la tarea 2 | 90 | 2 de 4 | 1 | 73,8 | **3** | 0 | 3 | pasa |
+| `tarea_colgada_tope_real` | 6.29.5 | Bucle síncrono en la tarea 2 | 900 | 2 de 4 | 1 | 54,5 | **3** | 0 | 3 | pasa |
+| `completa_ipykernel_6.17.1` | 6.17.1 | Nada | 900 | 4 de 4 | 0 | 39,5 | 0 | 0 | 0 | pasa |
+| `colgada_ipk_6.17.1` | 6.17.1 | Bucle síncrono en la tarea 2 | 90 | 2 de 4 | 1 | 57,4 | **3** | 0 | 3 | pasa |
+| `completa_ipykernel_7.1.0` | 7.1.0 | Nada | 900 | 4 de 4 | 0 | 151,9 | 0 | 0 | 0 | pasa |
+| `colgada_ipk_7.1.0` | 7.1.0 | Bucle síncrono en la tarea 2 | 600 | 2 de 4 | 1 | 309,2 | **3** | 0 | 3 | pasa |
+| `ciclo_sin_arreglo_t90` | 6.29.5 | Como `ciclo_sin_arreglo_599`, con tope de 90 s | 90 | 2 de 4 | 2 | — | 3 | 4 | 4 | no pasa (9) |
+| `ciclo_con_arreglo_t90` | 6.29.5 | Como `ciclo_con_arreglo`, con tope de 90 s | 90 | 4 de 4 | 1 | 62,6 | 7 | 0 | 7 | no pasa (9) |
+| `colgada_ipk_7.1.0_t90` | 7.1.0 | Como `colgada_ipk_7.1.0`, con tope de 90 s | 90 | 2 de 4 | 2 | — | 3 | 0 | 3 | no pasa (3) |
+| `ciclo_sin_arreglo_anillo` | 6.29.5 | Como `ciclo_sin_arreglo_599`, con el ciclo en anillo | 600 | 4 de 4 | 1 | 225,2 | 7 | 4 | 4 | no pasa (2) |
+
+Son 26 corridas: **20 pasan su validación y 6 no** (contado en los `informe.json`: `problemas` vacío o no).
+En las seis el diagnóstico da un código distinto de 0.
+
+| Corrida que no pasa | Motivo |
+|---|---|
+| `ciclo_sin_arreglo_599` | Exigía 600,0 s o más hasta el corte y el reloj de pared midió 599,9 |
+| `ciclo_sin_arreglo_margen` | Esperaba «sigue»; el hilo seguía vivo a los 30 s y el notebook terminó la sesión |
+| `ciclo_sin_arreglo_anillo` | La pila no muestra `parent_header` y el corte no vio el ciclo: el anillo se había deshecho |
+| `ciclo_sin_arreglo_t90` | El tope de 90 s cortó una tarea legítima (y después la del ciclo: segunda seguida) |
+| `ciclo_con_arreglo_t90` | El tope de 90 s cortó una tarea legítima |
+| `colgada_ipk_7.1.0_t90` | El tope de 90 s cortó una tarea legítima |
+
+Las corridas de la batería no usaron todas la misma versión de `ensayo_nucleo.py`: entre unas y otras
+cambió el tope de ensayo de los escenarios, la forma del ciclo plantado y una comprobación de reloj. **El
+SHA-256 que trae cada `informe.json` es el del archivo al escribir el informe, no al arrancar** (se calcula
+al final): si el archivo se editó durante la corrida, el informe trae el de después. Pasó con
+`ciclo_con_arreglo`: arrancó a las 14:28:02 UTC y su informe trae el mismo SHA que `ciclo_sin_arreglo_599`,
+que plantó ciclos de cada identificador consigo mismo. Por el orden de la sesión, la edición que cambió el
+anillo por esos ciclos fue posterior a su arranque, así que lo probable es que plantara el anillo; ningún
+archivo lo prueba. Para lo que el escenario demuestra da igual: `tarea_inicio` anota `ciclo: true` y 12
+entradas vaciadas, y el hilo de la tarea reutilizó un identificador plantado. El notebook sí es el mismo
+en todas las corridas.
+
+**`comprobar` da 4 y no 7 cuando la tarea cortada dejó su log vacío.** En las corridas del ciclo, la tarea
+se corta antes de que el agente escriba nada en `logs/<tarea>.log`, que queda en 0 bytes; el rescate que
+mira bytes lo cuenta como faltante y sale con 4, y `comprobar` da el código del rescate antes que el del
+diagnóstico. El JSON de `comprobar` trae el 7 de la pasada. En `ciclo_con_arreglo_t90` la tarea cortada ya
+tenía su log y `comprobar` da 7. Con las pasadas nombradas (`comprobar_pasadas.py`): la pasada 2 terminada
+por una tarea colgada da 3; con una tarea cortada y la sesión seguida da 4 (por el rescate) o 7.
+
+Las seis corridas de medición de tiempo con y sin enganches del #160 **no se repitieron**: la primera
+llevaba 11 minutos en 5 tareas (una de 357,2 s, `consolas/con_enganches_r1.log`) y se detuvo a mano. El
+costo del registro medido en el #160 no se volvió a medir con el código nuevo.
+
+### Defectos inyectados y entradas adversas
+
+- **Defectos.** `defectos_inyectados_164.py`, con el molde del #160: un reemplazo de texto por defecto en el
+  código nuevo de los dos guiones, las tres baterías de pruebas tras cada uno. Se corre sobre una copia del
+  árbol, no sobre el que montan los contenedores. Primera pasada, 76 defectos: las pruebas detectaron 72.
+  Los cuatro que sobrevivían (no imprimir las versiones al arrancar; seguir sin hilo que comprobar; una
+  colgada sin la marca de par faltante; tomar del primer latido lo que dice el último) llevaron a reforzar
+  cuatro pruebas. Segunda pasada, con dos defectos más: **78 de 78 detectados**
+  (`defectos_inyectados_164.json`). Ese archivo trae `commit: ""`, porque la copia sobre la que corre no es
+  un repositorio: que la copia era la del commit `2e57468` lo dice solo el orden de la sesión. Dos de los 78
+  (esperar a la tarea sin tope y esperar al hilo sin margen) se detectan porque la batería no termina en
+  180 s, no por una aserción. Es una lista elegida a mano, no una búsqueda exhaustiva, y la revisión del
+  PR #176 lo demostró: encontró cuatro defectos que sobrevivían (el 7 sin exigir `cierre`; la guardia como
+  corte para la tarea sin fin; esperar el doble del tope; `tarea_colgada` que devuelve «seguir» cuando
+  algo lanza). Con las pruebas añadidas tras esa revisión, esos cuatro y otros cinco sobre las reglas
+  nuevas del diagnóstico se reinyectaron sobre una copia y los nueve se detectan (no quedó archivo de esa
+  pasada: es la salida de consola de la sesión).
+- **Entradas adversas contra `diagnosticar`** (`adversas_164.py`): los registros reales de cinco sesiones
+  con una tarea colgada o cortada y el de la corrida colgada del #160, deformados de a un cambio (quitar un
+  evento, moverlo al final, quitar o cambiar un campo, truncar en cada punto con y sin un `cierre`, quitar
+  el latido). De 4 397 variantes, 12 salen con 0, y las 12 son de la misma forma: el registro truncado justo
+  después de una o dos tareas completas, o antes de la primera, con un `cierre` añadido. Eso es el registro
+  de una sesión más corta y completa, y el diagnóstico no puede distinguirlo (no sabe cuántas tareas había).
+  Ninguna otra deformación da 0 (`adversas_164.json`).
+- **Casos de «sale con 0 sin merecerlo» que encontró el propio implementador** antes de la revisión, y que
+  ahora dan 4: un registro cerrado con una tarea sin `tarea_fin` y sin ningún corte (ya salía con 0 antes
+  del #164); una tarea que no corrió bajo el tope por tarea; y un evento `tarea_colgada` fuera de la corrida
+  de su tarea con una fila que dice que terminó bien. Ninguno de los tres lo produce el notebook armado, que
+  se sepa. Además, dos códigos equivocados que no eran 0: una sesión terminada por una primera tarea colgada
+  sin peticiones salía con 4 en vez de 3, y una sesión cerrada sin `corte` tras decidir no seguir salía con 7.
+
+### Lo que el #164 no midió o no se parece a Kaggle
+
+- **La versión de `ipykernel` de Kaggle**, y por tanto si el mapa existe allí.
+- **El cuelgue por la carrera natural en el ensayo completo.** No se buscó: la carrera se midió en la sonda,
+  sin el arnés. En el ensayo, sin el arreglo, la tarea solo se cuelga con el ciclo plantado a mano.
+- **Qué rompe un ciclo solo.** En una corrida (`ciclo_sin_arreglo_anillo`) el ciclo
+  plantado, un anillo entre seis identificadores, dejó de existir a los 545 s: la CPU del hilo dejó de crecer
+  y la tarea siguió. Hipótesis sin medir: la limpieza que `ipykernel` hace al arrancar el recolector de
+  basura quitó las entradas de los hilos muertos del anillo. El escenario planta desde entonces un ciclo de
+  cada identificador consigo mismo, que dura mientras viva el hilo.
+- **Un cuelgue que no suelta el GIL.** El tope lo aplica el hilo del núcleo. Si el hilo colgado no suelta el
+  GIL (una llamada nativa que lo retiene), el hilo del núcleo no corre y nada corta. No apareció en ningún
+  escenario: el bucle síncrono del ensayo es Python puro y el hilo del núcleo siguió corriendo. Haría falta
+  un vigía en otro proceso; es otro issue.
+- **Cómo termina Kaggle el núcleo** con un hilo demonio girando, y si conserva la salida de una celda que
+  termina con excepción en este caso. Consta que la conserva en otra corrida
+  (`data/ensayo_kaggle/kernel_out_l4v3/`), según el arquitecto de IA; no se comprobó aquí.
+- **Kaggle ejecuta con papermill**, no con `nbclient` directo. La imagen no trae papermill.
+- **El reloj de 4 minutos de las tareas siguientes a un corte.** Tras «corta y sigue» no queda ningún hilo
+  girando, así que no hay CPU que repartir; no se midió un caso con un hilo vivo y el notebook siguiendo,
+  porque la regla lo impide.
+- **Una tarea vieja que siguiera viva contaminaría sin dejar rastro por nombre.** El registro atribuye cada
+  evento a la tarea en curso, no al hilo que lo emite. La única defensa es la que hay: no seguir con el
+  hilo vivo.
+- **La carga de la máquina durante la batería** no se controló y fue alta.
+- **El costo del registro** con los campos nuevos del latido no se midió.
+- **La ventana final de la sesión** ([arriba](#el-tope-por-qué-900-s-y-qué-margen-deja)).
+
+### Nadie consume todavía la marca de par faltante
+
+La regla del concilio es que una tarea cortada por el tope por tarea es un par faltante: al comparar la
+pasada 1 con la pasada 2, ese par se excluye. **Hoy ningún guion versionado hace esa exclusión**, porque
+ningún guion versionado compara dos pasadas del notebook:
+
+- Se buscó en `scripts/kaggle_*.py` quién lee el JSON de una pasada o su `task_results.jsonl`. El único
+  guion con una prueba por pares es `scripts/kaggle_replicas.py` (McNemar exacto entre réplicas).
+- `kaggle_replicas convertir` no acepta el `task_results.jsonl` que escribe el notebook: exige las claves
+  del arnés (`instance_id`, `repo`, `agent_patch_size`, `error`), y las filas del notebook traen `task_id`,
+  `status` y `error_message`. Leído en el código (`convert_harness_results`); no se ejecutó sobre una
+  salida del notebook.
+- Si alguien adaptara las filas a esa forma, la de una tarea colgada no se clasificaría: la lista de textos
+  de error del arnés es cerrada y el del corte no está en ella, así que el análisis sale con 2 en vez de
+  contarla como no resuelta. Lo fija una prueba
+  (`test_el_analisis_de_replicas_no_cuenta_una_tarea_colgada_como_no_resuelta`).
+
+Así que la tarea cortada no puede entrar hoy como par discordante por un guion versionado, pero tampoco hay
+uno que la excluya: la comparación de las iteraciones anteriores se hizo fuera de git. Queda como
+[condición de lanzamiento](#condiciones-de-lanzamiento). La orden que lista los pares que hay que excluir,
+por pasada:
+
+```bash
+python -m scripts.kaggle_registro diagnosticar --salida <carpeta o zip de la pasada> | python -c "import json,sys; print(json.load(sys.stdin)['sesion']['pares_faltantes'])"
+```
+
+Un par se excluye si la tarea está en esa lista en cualquiera de las dos pasadas.
+
+### Condiciones de lanzamiento
+
+Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
+
+1. PR del #164 fusionado, con la CI en verde.
+2. Ensayo repetido con la versión de `ipykernel` de Kaggle, que **no está medida**
+   ([versiones](#versiones-de-ipykernel)).
+3. Exclusión de los pares faltantes resuelta: un análisis de la pasada 1 contra la pasada 2 que excluya
+   las tareas de `pares_faltantes` de cualquiera de las dos y diga cuántas excluyó
+   ([arriba](#nadie-consume-todavía-la-marca-de-par-faltante)).
+4. Primera subida en serie: una pasada, y la segunda solo después de leer la primera.
+5. Orden del dueño, con la orden a la vista.
+6. Cuota disponible de al menos 14,6 h. La cifra es de la regla del concilio 41 y llegó por el
+   coordinador; no se comprobó aquí.
+
+### Límites conocidos
+
+- **La pérdida máxima de 1,1 h de cuota se cumple por cuelgue, no por sesión.** Con los parámetros del
+  notebook (sesión de 9 000 s, margen final de 600 s, tope de 900 s, margen de 30 s) una colgada aislada
+  cuesta hasta 930 s (0,26 h) y dos seguidas hasta 1 860 s (0,52 h). Con colgadas alternas caben unas ocho
+  en una sesión y se irían cerca de 7 440 s (unas 2,07 h de las 2,5 h). Es aritmética, no medición.
+- **El tope de 900 s frente a las duraciones reales.** En las 145 filas de tarea de los 12 zips rescatados
+  de las iteraciones 03 a 07: mediana 107 s, percentil 95 de 289 s, máximo 303,6 s; 2 pasan de 300 s y
+  ninguna de 600 s. Esas corridas tenían un tope de agente de 4 minutos: no descartan una tarea legítima
+  más larga con otro tope.
+- **La sonda mide el laboratorio.** Sus 1 500 pasadas por sesión son una corrida en serie en un solo núcleo,
+  no 1 500 ensayos independientes (los bloques de 250 van de 3 a 19 fronteras y suben con el tiempo). No dice
+  nada de la tasa en Kaggle, y la causa del cuelgue original sigue siendo inferida.
+- **No hay tope al total de tareas colgadas, solo a las seguidas.** Una sesión en que se cuelgue una tarea
+  de cada dos, y cada hilo termine, sigue hasta el final y gasta hasta 930 s por cada una. `diagnosticar`
+  da 7 y las lista. Si hace falta un tope al total lo decide el concilio.
+- **La ventana final de la sesión.** Una tarea que se cuelgue entre los 8 070 y los 8 400 s de una sesión de
+  9 000 se cortaría después del fin de la sesión: se pierden las celdas finales y el diagnóstico da 5.
+  Aritmética, no medición ([arriba](#el-tope-por-qué-900-s-y-qué-margen-deja)).
+- **El margen de 30 s tras el corte queda justo:** el hilo suelto tardó 25,31 s en terminar en una corrida
+  y más de 30 en otra ([arriba](#las-dos-ramas-del-corte)).
+- **Un registro truncado tras tareas completas, con un `cierre` añadido, sale con 0** en `diagnosticar` y
+  en `comprobar`: ninguno sabe cuántas tareas se esperaban. El notebook armado no puede producirlo, porque
+  toda salida temprana del bucle de tareas anota un `corte` (leído en la celda 10; no hay un escenario que
+  lo ejercite). El número de tareas está en el JSON de la pasada.
+- **Un cuelgue que no suelte el GIL no lo corta este tope**
+  ([arriba](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle)).
+- **`comprobar` puede dar 4 en vez de 7** cuando la tarea cortada dejó su log por tarea en 0 bytes
+  ([arriba](#resultado-de-la-batería-del-164)).
+- **Un evento escrito después del `cierre` da 4, y puede tapar un 3.** Es alcanzable de dos maneras: un hilo
+  suelto que se destraba después de «corta y termina» y escribe un evento con el registro ya cerrado, o una
+  retrollamada tardía de litellm que llega tras el cierre de una corrida buena. El 4 gana al 3, así que el
+  código dejaría de decir «cortada por el notebook»; el veredicto sí lo sigue diciendo, detrás del
+  problema. En los 42 registros del ensayo no ocurrió: en los 39 que tienen `cierre`, entre el último evento
+  y el `cierre` pasan de 0,014 a 0,418 s y después no hay nada. Con el modelo real no está medido.
+- **Un registro con `registro_instalado` y `cierre`, sin ninguna tarea, sale con 0.** Es el caso extremo de
+  no saber cuántas tareas se esperaban.
+
+### Pruebas versionadas del #164
+
+`tests/test_kaggle_tope_por_tarea.py`, 81 pruebas, sin Docker, sin el arnés y sin un núcleo: el núcleo es un
+doble con el mapa o sin él. No se modificó ninguna prueba del #160. Como en el #160, la cobertura que exige
+el CI no mide `scripts/`. Las comparaciones con el reloj llevan tolerancia: la primera versión exigía que
+la espera de un tope de 0,3 s durara 0,3 s o más, y en Windows `Thread.join` volvió a los 0,296 s, con la
+CI en rojo.
+
 ## Cómo repetirlo
 
 ```bash
@@ -625,11 +1153,78 @@ python <instrumentos>/iteracion_08/defectos_inyectados.py <árbol del repositori
 `correr_todo.sh` vuelve a armar los notebooks, borra `ensayo_salida/` y deja un contenedor efímero por
 escenario. Al terminar no quedó ningún contenedor.
 
+Lo que añade el #164:
+
+```bash
+# Imágenes con otro ipykernel (una vez por versión)
+docker build --build-arg IPYKERNEL=6.17.1 -t aal-ensayo-nucleo:ipykernel-6.17.1 <instrumentos>/iteracion_08/imagen_otro_ipykernel
+# Un escenario suelto; IMAGEN, TAREAS_MAX y TOPE_ESCENARIO son opcionales
+IMAGEN=aal-ensayo-nucleo:ipykernel-6.17.1 TAREAS_MAX=4 SUFIJO=_ipk_6.17.1 sh <instrumentos>/iteracion_08/correr_ensayo_nucleo.sh tarea_colgada
+# La sonda de la carrera, fuera del arnés: los cuatro modos, y los dos brazos intercalados
+sh <instrumentos>/iteracion_08/sonda_164/correr_sonda.sh 1500 12 4 20 <nombre de la fase>
+sh <instrumentos>/iteracion_08/sonda_164/correr_intercalada.sh 12 250 12 4 20
+# Tabla del documento, entradas adversas y defectos (estos últimos, sobre una COPIA del árbol)
+python <instrumentos>/iteracion_08/tabla_164.py
+python <instrumentos>/iteracion_08/adversas_164.py <árbol del repositorio>
+python <instrumentos>/iteracion_08/defectos_inyectados_164.py <copia del árbol>
+```
+
+Tres avisos de esta batería:
+
+- **`correr_todo.sh` borra `ensayo_salida/`.** La batería del #160 se copió antes a `ensayo_salida_160/` y
+  sus instrumentos a `instrumentos_160/`.
+- **Los nombres de carpeta se acortaron a mano** para que el rescate quepa en una ruta de Windows:
+  `tarea_colgada_ipykernel_<versión>` pasó a `colgada_ipk_<versión>`. `correr_todo.sh` sigue usando el
+  sufijo largo y hay que cambiarlo antes de repetir la batería entera. `ensayo_salida/estado.txt` anota cada
+  cambio de nombre.
+- **Los guiones de la sonda** que quedaron en `sonda_164/` apuntan a una carpeta temporal de esta sesión
+  (`C:/Users/herre/AppData/Local/Temp/t164`): hay que cambiar esa ruta para repetirlos.
+
+La batería no corrió de un tirón: `completa` sola, once escenarios en paralelo, cinco uno tras otro, las
+cuatro corridas con otro `ipykernel`, y después tres repeticiones sueltas (`correr_ciclo_164.sh` y dos
+corridas más de `ciclo_sin_arreglo`). Un contenedor de medición de tiempo que debía haberse detenido corrió
+unos 20 minutos a la vez que la primera repetición (`ciclo_sin_arreglo_anillo`). Al terminar no quedó ningún
+contenedor del ensayo.
+
 ## Huellas
 
 Todo bajo `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/`, ignorado por
-git. `ensayo_salida/HUELLAS.txt` lista los 294 archivos de salida con sus bytes y su SHA-256, incluida la
-copia de la corrida colgada.
+git.
+
+**Del #164** (`ensayo_salida/HUELLAS.txt` lista 420 archivos de salida con sus bytes y su SHA-256):
+
+| Archivo | SHA-256 |
+|---|---|
+| `ensayo_salida/HUELLAS.txt` | `7d200887001c5d6863ca4f0b8990276d9e2a36b6c99d18d6ee111fc802b5e1d5` |
+| `ensayo_salida/RESUMEN.json` | `9c79722fa8aa68a5b71c83cca7d13c27955f25d01d0dc9e9223e0382e88b34bb` |
+| `ensayo_salida/rescate_sobre_ensayo.json` | `9e790d977c7311cff3f49b8789b70fbf3a7c9b0022fc4ae3a083c9697a9fc8ee` |
+| `ensayo_salida/comprobar_pasadas.json` | `5f423a3f0d8013d70a4cfe7d55a44d4475f84622fe78e321c64b5bdb87637e60` |
+| `ensayo_salida/completa/informe.json` | `2723bb9a55e799a249e98b86728eed53218881195e856e2fec62933e72952848` |
+| `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `93973b1cbd16eac5d888fd2d7e0581eee8dbb43d8c9cb89b2b48e3306c64e625` |
+| `ensayo_salida/pasada_2/informe.json` | `f1155018e71d8c30055ee86e4a8d095babf6f9ad65e74807d5b5a82c9ae2c765` |
+| `ensayo_salida/sin_vaciado/informe.json` | `0c2b9b9ad8953b0e2da232e1174c638c9c50fb394198ce02063210605b04bb57` |
+| `ensayo_salida/ciclo_sin_arreglo_599/informe.json` | `b04255ffd35a7d5160ccc99cce75a5e79d90fac93ea5e69e61fc56ccc55101e6` |
+| `ensayo_salida/ciclo_sin_arreglo_599/working/pila_tarea_colgada_iteracion_08_p1.txt` | `63ef87acca60000e611512b73185cacbf0915392b2f0fcfab76ca6efcaf8e2c9` |
+| `ensayo_salida/ciclo_sin_arreglo_599/working/crudo_iteracion_08_p1_A8P1.zip` | `ef1cf97552a6b6857020a0f2753942b9746b3d755de14629207895a20e9b1900` |
+| `ensayo_salida/tarea_colgada/informe.json` | `13ce14301a4c18bd1d0d7579fcb906c0fd92f4cf372eb3ac1babd948f5858314` |
+| `ensayo_salida/tarea_colgada/working/pila_tarea_colgada_iteracion_08_p1.txt` | `fc90a5249fd7dabb467e3a5a24a51287a50ac5d30a93260d88cb4d6a1b42eb46` |
+| `ensayo_salida/tarea_colgada/working/crudo_iteracion_08_p1_A8P1.zip` | `5723b0e74b4508ea80d0242a7ab29cf2f32866506ffb6fd9577f4372d9073da4` |
+| `sonda_164/resultado.jsonl` | `d9ad2be52c1a76a9a1c38aecd3d6fd954663b9500310bc83a494e2008eb05073` |
+| `sonda_164/sonda_arreglos.py` | `1e73f1f7637527d1b19b9dd6b08dc1bd8ea7c532459ae687f7d63d12611b38f9` |
+| `defectos_inyectados_164.json` | `89f2dd79c3daa3550e9bb79eb007955ceee904a5b8ff41b5efb67ef935746d98` |
+| `adversas_164.json` | `97f20285040cebba61855a0afb366c58574a28c3fcfc465a92f31a68edac9826` |
+| `armado.json` | `d08b54869fff64c652c7119eac3979c4cb1caa3f0de8295639d63aaf046a4468` |
+| `armar.py` | `52a5f85c9144f1da485f4350a4864d85002c4e7abe1cc81a49cbc58353bb379d` |
+| `ensayo_nucleo.py` (última versión; cada `informe.json` trae la suya) | `c5f4a203014d35c8a6eb74b26acbd10684f88cbfccc0893d06535fd344896457` |
+| `imagen_otro_ipykernel/Dockerfile` | `ad84974284054a5212b7b2e46c2d850d255476bbd2931f67f7ecd5e496553095` |
+
+`armar.py` se volvió a correr al final y `armado.json` salió idéntico: los notebooks armados son los que
+ejecutó la batería.
+
+**Del #160.** Las rutas `ensayo_salida/…` de la tabla siguiente están ahora bajo `ensayo_salida_160/…`, y
+`armar.py`, `ensayo_nucleo.py` y `armado.json` de entonces, bajo `instrumentos_160/`. Sus huellas no
+cambiaron: `ensayo_salida_160/HUELLAS.txt` sigue siendo `a6a10b39…`, con 294 archivos de salida, incluida
+la copia de la corrida colgada.
 
 | Archivo | SHA-256 |
 |---|---|
