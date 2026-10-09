@@ -143,6 +143,14 @@ Aclaraciones escritas antes de conocer el desenlace de las predicciones 1, 2, 3 
   distinto del orquestador la registre con su enlace.
 - **Predicción 5: sin cerrar.** La CI del commit `b98af92` tenía comprobaciones en curso al escribir esto.
 
+### 8.3 bis Una afirmación de la sección 5 que resultó falsa
+
+La nota sobre la predicción 6 dice que un episodio nuevo «hizo fallar una prueba» y da a entender que `main`
+habría fallado al fusionar los dos PR. La revisión de código del PR #163 lo midió: `main` con los episodios
+de los dos PR pasaba. La prueba es frágil por otra causa (la relevancia baja con cada episodio nuevo porque
+las aristas viejas decaen) y el arreglo de este PR le da margen para unos 15 episodios, no la cura. La
+predicción 6 no cambia; su nota era una explicación equivocada del orquestador.
+
 ### 8.4 Medida y tamaño, corregidos
 
 Sustituye a los dos últimos puntos de la lista de la sección 4 y a su párrafo de potencia.
@@ -177,9 +185,9 @@ no cifras.
 
 Propuesta del analista, sin aplicar todavía (issues #165 y #166): un rol distinto del implementador escribe
 las predicciones y registra su hash antes de que empiece el trabajo; un sorteo fijado de antemano decide
-cuáles ve el implementador y cuáles quedan selladas. Comparar la frecuencia del hecho entre reveladas y selladas
-separa el efecto de predecir del acierto de predecir. Con frecuencias de 0,4 frente a 0,2 hacen falta unas 62
-predicciones por rama, y unas 135 contando la agrupación por issue.
+cuáles ve el implementador y cuáles quedan selladas. Comparar la frecuencia del hecho entre reveladas y
+selladas separa el efecto de predecir del acierto de predecir. Con frecuencias de 0,4 frente a 0,2 hacen
+falta unas 62 predicciones por rama, y unas 135 contando la agrupación por issue.
 
 Las seis predicciones de la sección 5 las escribió quien hace el trabajo y las vio todo el mundo. Sirven para
 ensayar el protocolo, no para esa comparación.
