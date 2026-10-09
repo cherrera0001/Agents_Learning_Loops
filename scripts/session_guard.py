@@ -31,10 +31,14 @@ from scripts.board_check import (
     REPO,
     BoardReadError,
     Runner,
+    candidates_in_scope,
     check_board,
     check_missing_cards,
+    exemption_notes,
     read_github,
+    read_pr_refs,
     read_snapshot,
+    read_snapshot_pr_refs,
 )
 
 EPISODES_DIR = Path(__file__).resolve().parent.parent / "learning" / "episodes"
@@ -140,16 +144,23 @@ def informe(
     if snapshot is not None:
         items, issues, subs = read_snapshot(snapshot)
         prs: list[str] | None = None
+        pr_refs = read_snapshot_pr_refs(snapshot)
     else:
         items, issues, subs = read_github(runner)
         prs = prs_abiertos(runner)
+        # Una llamada por candidato a exención (hoy dos): lo que no se pueda leer no se exime.
+        pr_refs = read_pr_refs(candidates_in_scope(issues, episodes, DESDE), runner)
     hallazgos = sorted(
-        check_board(issues, items, episodes, subs, DESDE) + check_missing_cards(issues, items, DESDE)
+        check_board(issues, items, episodes, subs, DESDE, pr_refs=pr_refs)
+        + check_missing_cards(issues, items, DESDE, episodes=episodes, pr_refs=pr_refs)
     )
     lineas = [f"GUARDIÁN DEL TABLERO · Project #{PROJECT_NUMBER} de {REPO}"]
     lineas += _bloque(
         "Hallazgos (tarjeta, issue y episodio no coinciden)", [f"  {h.line()}" for h in hallazgos], "ninguno"
     )
+    exentos = exemption_notes(issues, episodes, pr_refs, DESDE)
+    if exentos:
+        lineas += _bloque("Exentos de las reglas 2, 3 y 9", [f"  {e}" for e in exentos], "ninguno")
     lineas += _bloque("Issues abiertos", abiertos(issues), "ninguno")
     if prs is not None:
         lineas += _bloque("PR abiertos", prs, "ninguno")

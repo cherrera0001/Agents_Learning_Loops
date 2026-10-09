@@ -266,6 +266,32 @@ Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (9), «cifra
 «cambio sin revisar» y «texto que dice más que la fuente», porque dependen de lo que haga el orquestador y no
 el implementador, y «defecto de lógica propio», que la 7 y la 8 recogen de forma indirecta.
 
+## 11. Predicciones del issue #169
+
+Escritas por el orquestador antes de que el implementador empiece. La fecha que vale es la del commit que
+añade esta sección, el primero de la rama `issue-169-guardian-sin-trabajo`. El implementador las ve: no son
+selladas (apartado 8.6).
+
+El issue #169 cambia tres reglas del guardián del tablero (`scripts/board_check.py`) para que no exijan
+entrega a un issue cerrado sin trabajo. La regla exacta la escribió el auditor del método.
+
+| # | Hecho | Probabilidad | Línea base y de dónde sale |
+|---|---|---|---|
+| 13 | El primer informe de `revisor-codigo` sobre el PR del #169 tiene el veredicto «cambios requeridos antes de fusionar» o «cambios requeridos» | 0,15 | 0,00: en los PR #158, #161 y #163 el primer veredicto fue «aprobado con observaciones» (0 de 3; Wilson 0,00 a 0,56) |
+| 14 | El PR del #169 pasa por tres o más informes de `revisor-codigo` antes de fusionarse | 0,30 | 1,00: PR #158, tres; PR #161, cuatro (2 de 2; Wilson 0,34 a 1,00) |
+| 15 | Algún informe de `revisor-codigo` sobre ese PR muestra un issue que queda exento de las reglas 2, 3 o 9 sin deberlo según la regla del issue, o uno que sigue saltando debiendo quedar exento | 0,35 | 0,5: sin historia contada |
+| 16 | Todas las comprobaciones del primer commit del PR del #169 que traiga código terminan en `success` (una `cancelled` cuenta como no verde) | 0,85 | 0,86: 44 de 51 primeros commits (apartado 8.1) |
+
+Plazo: las cuatro vencen el 2026-10-23. Si el PR no se ha fusionado para entonces, la 14 se anula.
+
+Por qué la 14 va tan por debajo de su línea base: los dos PR de la historia eran de talla S y L con un guion
+nuevo que juzga corridas; este cambia una condición ya escrita por otro rol, con sus casos de prueba
+enumerados en el issue. Si aun así necesita tres rondas, la línea base acierta y la predicción falla.
+
+Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (15), «entorno» y «prueba frágil» (16, en
+parte), «defecto de lógica propio» (13 y 14, de forma indirecta). Quedan fuera las demás: no hay cifras de
+experimento ni ensayo en este issue.
+
 ## 13. Predicciones del issue #173
 
 Escritas por el orquestador antes de armar el kit y antes de que el implementador empiece. La fecha que vale
