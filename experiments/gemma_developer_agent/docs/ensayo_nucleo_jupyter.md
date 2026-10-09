@@ -1031,11 +1031,78 @@ python <instrumentos>/iteracion_08/defectos_inyectados.py <árbol del repositori
 `correr_todo.sh` vuelve a armar los notebooks, borra `ensayo_salida/` y deja un contenedor efímero por
 escenario. Al terminar no quedó ningún contenedor.
 
+Lo que añade el #164:
+
+```bash
+# Imágenes con otro ipykernel (una vez por versión)
+docker build --build-arg IPYKERNEL=6.17.1 -t aal-ensayo-nucleo:ipykernel-6.17.1 <instrumentos>/iteracion_08/imagen_otro_ipykernel
+# Un escenario suelto; IMAGEN, TAREAS_MAX y TOPE_ESCENARIO son opcionales
+IMAGEN=aal-ensayo-nucleo:ipykernel-6.17.1 TAREAS_MAX=4 SUFIJO=_ipk_6.17.1 sh <instrumentos>/iteracion_08/correr_ensayo_nucleo.sh tarea_colgada
+# La sonda de la carrera, fuera del arnés: los cuatro modos, y los dos brazos intercalados
+sh <instrumentos>/iteracion_08/sonda_164/correr_sonda.sh 1500 12 4 20 <nombre de la fase>
+sh <instrumentos>/iteracion_08/sonda_164/correr_intercalada.sh 12 250 12 4 20
+# Tabla del documento, entradas adversas y defectos (estos últimos, sobre una COPIA del árbol)
+python <instrumentos>/iteracion_08/tabla_164.py
+python <instrumentos>/iteracion_08/adversas_164.py <árbol del repositorio>
+python <instrumentos>/iteracion_08/defectos_inyectados_164.py <copia del árbol>
+```
+
+Tres avisos de esta batería:
+
+- **`correr_todo.sh` borra `ensayo_salida/`.** La batería del #160 se copió antes a `ensayo_salida_160/` y
+  sus instrumentos a `instrumentos_160/`.
+- **Los nombres de carpeta se acortaron a mano** para que el rescate quepa en una ruta de Windows:
+  `tarea_colgada_ipykernel_<versión>` pasó a `colgada_ipk_<versión>`. `correr_todo.sh` sigue usando el
+  sufijo largo y hay que cambiarlo antes de repetir la batería entera. `ensayo_salida/estado.txt` anota cada
+  cambio de nombre.
+- **Los guiones de la sonda** que quedaron en `sonda_164/` apuntan a una carpeta temporal de esta sesión
+  (`C:/Users/herre/AppData/Local/Temp/t164`): hay que cambiar esa ruta para repetirlos.
+
+La batería no corrió de un tirón: `completa` sola, once escenarios en paralelo, cinco uno tras otro, las
+cuatro corridas con otro `ipykernel`, y después tres repeticiones sueltas (`correr_ciclo_164.sh` y dos
+corridas más de `ciclo_sin_arreglo`). Un contenedor de medición de tiempo que debía haberse detenido corrió
+unos 20 minutos a la vez que la primera repetición (`ciclo_sin_arreglo_anillo`). Al terminar no quedó ningún
+contenedor del ensayo.
+
 ## Huellas
 
 Todo bajo `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/`, ignorado por
-git. `ensayo_salida/HUELLAS.txt` lista los 294 archivos de salida con sus bytes y su SHA-256, incluida la
-copia de la corrida colgada.
+git.
+
+**Del #164** (`ensayo_salida/HUELLAS.txt` lista 420 archivos de salida con sus bytes y su SHA-256):
+
+| Archivo | SHA-256 |
+|---|---|
+| `ensayo_salida/HUELLAS.txt` | `7d200887001c5d6863ca4f0b8990276d9e2a36b6c99d18d6ee111fc802b5e1d5` |
+| `ensayo_salida/RESUMEN.json` | `9c79722fa8aa68a5b71c83cca7d13c27955f25d01d0dc9e9223e0382e88b34bb` |
+| `ensayo_salida/rescate_sobre_ensayo.json` | `9e790d977c7311cff3f49b8789b70fbf3a7c9b0022fc4ae3a083c9697a9fc8ee` |
+| `ensayo_salida/comprobar_pasadas.json` | `5f423a3f0d8013d70a4cfe7d55a44d4475f84622fe78e321c64b5bdb87637e60` |
+| `ensayo_salida/completa/informe.json` | `2723bb9a55e799a249e98b86728eed53218881195e856e2fec62933e72952848` |
+| `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `93973b1cbd16eac5d888fd2d7e0581eee8dbb43d8c9cb89b2b48e3306c64e625` |
+| `ensayo_salida/pasada_2/informe.json` | `f1155018e71d8c30055ee86e4a8d095babf6f9ad65e74807d5b5a82c9ae2c765` |
+| `ensayo_salida/sin_vaciado/informe.json` | `0c2b9b9ad8953b0e2da232e1174c638c9c50fb394198ce02063210605b04bb57` |
+| `ensayo_salida/ciclo_sin_arreglo_599/informe.json` | `b04255ffd35a7d5160ccc99cce75a5e79d90fac93ea5e69e61fc56ccc55101e6` |
+| `ensayo_salida/ciclo_sin_arreglo_599/working/pila_tarea_colgada_iteracion_08_p1.txt` | `63ef87acca60000e611512b73185cacbf0915392b2f0fcfab76ca6efcaf8e2c9` |
+| `ensayo_salida/ciclo_sin_arreglo_599/working/crudo_iteracion_08_p1_A8P1.zip` | `ef1cf97552a6b6857020a0f2753942b9746b3d755de14629207895a20e9b1900` |
+| `ensayo_salida/tarea_colgada/informe.json` | `13ce14301a4c18bd1d0d7579fcb906c0fd92f4cf372eb3ac1babd948f5858314` |
+| `ensayo_salida/tarea_colgada/working/pila_tarea_colgada_iteracion_08_p1.txt` | `fc90a5249fd7dabb467e3a5a24a51287a50ac5d30a93260d88cb4d6a1b42eb46` |
+| `ensayo_salida/tarea_colgada/working/crudo_iteracion_08_p1_A8P1.zip` | `5723b0e74b4508ea80d0242a7ab29cf2f32866506ffb6fd9577f4372d9073da4` |
+| `sonda_164/resultado.jsonl` | `d9ad2be52c1a76a9a1c38aecd3d6fd954663b9500310bc83a494e2008eb05073` |
+| `sonda_164/sonda_arreglos.py` | `1e73f1f7637527d1b19b9dd6b08dc1bd8ea7c532459ae687f7d63d12611b38f9` |
+| `defectos_inyectados_164.json` | `89f2dd79c3daa3550e9bb79eb007955ceee904a5b8ff41b5efb67ef935746d98` |
+| `adversas_164.json` | `97f20285040cebba61855a0afb366c58574a28c3fcfc465a92f31a68edac9826` |
+| `armado.json` | `d08b54869fff64c652c7119eac3979c4cb1caa3f0de8295639d63aaf046a4468` |
+| `armar.py` | `52a5f85c9144f1da485f4350a4864d85002c4e7abe1cc81a49cbc58353bb379d` |
+| `ensayo_nucleo.py` (última versión; cada `informe.json` trae la suya) | `c5f4a203014d35c8a6eb74b26acbd10684f88cbfccc0893d06535fd344896457` |
+| `imagen_otro_ipykernel/Dockerfile` | `ad84974284054a5212b7b2e46c2d850d255476bbd2931f67f7ecd5e496553095` |
+
+`armar.py` se volvió a correr al final y `armado.json` salió idéntico: los notebooks armados son los que
+ejecutó la batería.
+
+**Del #160.** Las rutas `ensayo_salida/…` de la tabla siguiente están ahora bajo `ensayo_salida_160/…`, y
+`armar.py`, `ensayo_nucleo.py` y `armado.json` de entonces, bajo `instrumentos_160/`. Sus huellas no
+cambiaron: `ensayo_salida_160/HUELLAS.txt` sigue siendo `a6a10b39…`, con 294 archivos de salida, incluida
+la copia de la corrida colgada.
 
 | Archivo | SHA-256 |
 |---|---|
