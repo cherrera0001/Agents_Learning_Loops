@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso, vueltas 7 a 42. El vigía de inicio de sesión (scripts/kaggle_vigia.py) imprime los que llevan más de una vuelta en `medido`.",
+  "estados": ["medido", "decidido", "aplicado", "descartado"],
+  "hallazgos": [
+    {
+      "id": "repeticiones_identicas",
+      "que_se_midio": "Llamadas del agente principal que repiten una anterior de la misma sesión. Vuelta 32: 50 % (1 267 de 2 532). Vuelta 42, sobre 4 246 llamadas: 1 689 por nombre y argumentos; 1 347 sin edición de por medio (solo las que cuentan contra el tope); 1 178 con la misma salida.",
+      "primera_vuelta": 7,
+      "primera_fecha": "2026-10-04",
+      "vueltas_medido": [7, 12, 32, 42],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Solo se puede pedir («no repitas más de 2»); no es brazo de resolución.",
+        "quien": "concilio 42",
+        "vuelta": 42,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "busqueda_por_similitud_vacia",
+      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente).",
+      "primera_vuelta": 38,
+      "primera_fecha": "2026-10-07",
+      "vueltas_medido": [38, 42],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Se quita en el kit «interfaz limpia» (sin las tres herramientas de grafo y sin la línea 11 de la instrucción). Decidido, todavía no aplicado.",
+        "quien": "concilio 42",
+        "vuelta": 42,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "subagente_sin_resolver",
+      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 145 sesiones.",
+      "primera_vuelta": 38,
+      "primera_fecha": "2026-10-07",
+      "vueltas_medido": [38, 42],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Se quita en el kit «interfaz limpia». Decidido, todavía no aplicado.",
+        "quien": "concilio 42",
+        "vuelta": 42,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "argumento_mal_formado",
+      "que_se_midio": "Lecturas con el nombre de un argumento mal formado. Vuelta 32: 344 llamadas, concluido «no separa resueltas de no resueltas». Vuelta 42: 507 lecturas en 44 sesiones, 359 de ellas repitiendo un rango ya pedido.",
+      "primera_vuelta": 32,
+      "primera_fecha": "2026-10-06",
+      "vueltas_medido": [32, 42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Petición exploratoria posterior (lectura con `sed -n`); sin decisión de quitar o corregir. Se añade como criterio secundario la fracción de lecturas con clave rota."
+    },
+    {
+      "id": "salida_truncada_por_la_cabeza",
+      "que_se_midio": "Salida de órdenes y lecturas truncada. Vuelta 42: 805 lecturas truncadas de 4 444 llamadas; la salida de pytest quedó truncada sin su resumen en 6 de 69 corridas.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Petición exploratoria posterior; aparece en una sola vuelta."
+    },
+    {
+      "id": "aviso_de_presupuesto_en_la_llamada_30",
+      "que_se_midio": "El arnés pega el aviso «termina y entrega» a la respuesta cuando quedan 10 llamadas, en la llamada 30 con tope de 40. Vuelta 13: las tareas no resueltas editan en las llamadas 31 a 40. Vuelta 42: la última edición de quien no vuelve a ejecutar cae en la llamada 30 a 32 de mediana.",
+      "primera_vuelta": 13,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [13, 42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "En la vuelta 42 sirvió para retirar la hipótesis «volver a ejecutar ayuda» (la señal sería en buena parte presupuesto agotado); no hay decisión sobre el aviso mismo."
+    },
+    {
+      "id": "ruido_entre_dos_envios_del_mismo_zip",
+      "que_se_midio": "Dos envíos del mismo zip dan notas distintas. Vuelta 12: 4 y 3 tareas de 58 (sin razonamiento). Vuelta 42: 5 y 8 tareas de 58 (con razonamiento).",
+      "primera_vuelta": 12,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [12, 42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Se usa en el criterio de decisión válida (repetición de la base en la misma semana); no tiene decisión escrita propia."
+    },
+    {
+      "id": "reproductor_antes_de_editar",
+      "que_se_midio": "Brazo propuesto en la vuelta 42: un reproductor antes de editar. Verde antes de editar en 18 de 27 sesiones malas; cuesta de 5 a 7 llamadas.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "descartado",
+      "decision": null,
+      "motivo_descarte": "Retirado por sus autores y por los datos: el reproductor que escribe el agente sale verde antes de editar en 18 de 27 sesiones malas (auditor del método, vuelta 42).",
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "guion_mapa_al_inicio",
+      "que_se_midio": "Brazo propuesto en la vuelta 42: un guion-mapa al inicio de la sesión. Descubrimiento de 0,3 a 0,7 llamadas por sesión.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "descartado",
+      "decision": null,
+      "motivo_descarte": "Retirado por sus autores y por los datos: 0,3 a 0,7 llamadas por sesión de descubrimiento, poco que ahorrar (auditor del método, vuelta 42).",
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "sesiones_sin_edicion_de_fuente",
+      "que_se_midio": "Sesiones que no editan código fuente. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta; vuelta 11, 12, 25 y 32: tope agotado sin editar.",
+      "primera_vuelta": 11,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [11, 12, 25, 32, 42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "En la vuelta 42 se fijó la definición (por el parche final), no una acción; sin decisión sobre qué hacer con estas sesiones."
+    }
+  ]
+}

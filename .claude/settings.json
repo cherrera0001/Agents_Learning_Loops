@@ -8,6 +8,12 @@
             "type": "command",
             "command": "python \"$CLAUDE_PROJECT_DIR/scripts/session_guard.py\"",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/kaggle_vigia.py\"",
+            "timeout": 30,
+            "statusMessage": "Mirando los envíos de Kaggle..."
           }
         ]
       }
