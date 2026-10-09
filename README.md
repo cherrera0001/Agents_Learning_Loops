@@ -1025,6 +1025,12 @@ frente a 6, 7 y 7 de las corridas anteriores, por debajo del umbral de 10) se re
 lecciones consolidadas en una skill del envío, frente a un texto de relleno del mismo largo.
 El concurso cierra el 2026-12-02 y su pista de artículo, el 2026-11-12.
 
+Desde el 2026-10-09 hay una tercera línea, sin ninguna medición todavía:
+[`experiments/azar/`](experiments/azar/README.md) pregunta si en un sistema físico diseñado para dar
+resultados aleatorios (un sorteo con esferas) hay alguna estructura que permita predecir por encima del azar.
+Es un estudio de auditoría de aleatoriedad, no un sistema de apuestas; hoy contiene la pregunta, las reglas de
+evidencia, una primera pasada verificada del estado del arte y un pre-registro.
+
 ```mermaid
 flowchart TB
     E0["Experimento 0<br/>mecanismo sintético · #31"]

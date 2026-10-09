@@ -1,0 +1,74 @@
+{
+  "seq": 70,
+  "id": "issue-162-caja-azar",
+  "goal": "Crear la caja del experimento «azar» dentro de experiments/: documento de entrada con la pregunta, las reglas de evidencia, las fases y los roles que faltan, y un estado del arte en el que solo figura como verificada la obra cuyo identificador se abrió",
+  "ref": "#162",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 2,
+    "risk": 1,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Ante la pregunta del dueño por el estado del arte, el orquestador respondió de memoria con unas veinte obras, avisando de que no las había abierto. La verificación posterior halló cinco cosas mal: un coautor y un año equivocados, un preprint dado por no publicado que ya lo estaba, dos años de arXiv corridos, unas auditorías de la lotería británica que no aparecieron, y «muchos artículos que predicen lotería con LSTM» de los que no se encontró ninguno revisado"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "El investigador de papers verificó la lista obra por obra con un presupuesto de 60 búsquedas: separó artículo abierto, solo metadatos y solo búsqueda, añadió tres obras nuevas y un modelo a escala de una máquina de sorteo, y dejó dicho qué no buscó. El documento del estado del arte se escribió después, a partir de su informe"
+    },
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Issue con Estimación v1 y tarjeta en el tablero antes de escribir ningún archivo"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento de entrada sin ninguna cita, con las reglas de evidencia como condición desde el primer día, y matriz de evidencia con una columna que dice qué se abrió de cada obra; lo no verificado va en lista aparte y no se cita"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Con una primera versión de este episodio falló test_recall_works_without_the_file: su consulta solo activaba una acción con relevancia 0,0106, sobre un umbral de 0,01. El orquestador lo atribuyó a que el episodio usaba update_docs y escribió que fusionar este PR y el #161 habría roto main. La revisión de código midió que las dos cosas eran falsas: un episodio nuevo puede bajar esa relevancia, porque cada episodio avanza el reloj y las aristas viejas decaen (graph.py:138), y otro puede subirla, y main con los dos episodios pasaba"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "La prueba usa ahora una consulta que activa ocho o nueve acciones (máximo 0,03). El revisor midió que eso aplaza la fragilidad, no la quita: unos 15 episodios seguidos sobre otro tema la volverían a romper, y otras dos pruebas tienen el mismo problema. El arreglo de fondo, fijar los episodios dentro de la prueba, queda para un issue aparte"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El dueño fijó la pregunta con que arranca el experimento: predecir el error antes de que ocurra. Pre-registro con clases de fallo, puntuación de Brier contra la frecuencia histórica, mínimo de 30 predicciones para leer y seis predicciones fechadas antes de conocer su desenlace"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Tres revisiones independientes antes de fusionar: documentos (hora del pre-registro equivocada, predicciones no comprobables por un tercero, «verificado» de más), datos (tres de seis líneas base mal o sin contar, potencia insuficiente con 30 predicciones, una clase de fallo que faltaba) y código (la causa del fallo de la prueba era otra). Corregido en el mismo PR. La segunda revisión de documentos halló que una de las correcciones afirmaba algo ya falso (una CI «en curso» que había terminado) y que el umbral de lectura no salía de la tabla de potencia; corregido también"
+    }
+  ],
+  "lessons": [
+    "Un estado del arte dicho de memoria se entrega como hipótesis de trabajo y se verifica antes de escribirlo en un archivo: en una lista de unas veinte obras recordadas, cinco tenían un dato equivocado o no aparecieron",
+    "En una matriz de evidencia, di por cada obra qué se abrió: el artículo, solo sus metadatos o solo un resultado de búsqueda; con solo metadatos, lo que la obra afirma viene de otra fuente y se dice",
+    "«No encontrado» lleva su presupuesto: una búsqueda acotada que no halla un artículo no demuestra que no exista, y la lista de lo que no se buscó va en el mismo documento",
+    "Al abrir un experimento nuevo, las reglas de evidencia (pre-registro, potencia antes de correr, evaluación prospectiva, comparaciones múltiples) se escriben en el documento de entrada antes de tener datos, no al cierre",
+    "Una prueba que afirma «hay resultado» sobre datos reales que crecen y decaen con el tiempo debe fijar sus datos dentro de la prueba: mirar el valor con que pasa no basta si ese valor baja con cada dato nuevo",
+    "Aislar un fallo quitando y poniendo un archivo dice dónde aparece, no por qué: antes de escribir la causa en un episodio, mide el mecanismo (qué número cambia y en qué línea) o escríbela como hipótesis",
+    "Una línea base de un pre-registro la cuenta otro, desde los archivos, antes de predecir: de seis escritas de memoria, tres estaban mal o sin contar"
+  ]
+}
