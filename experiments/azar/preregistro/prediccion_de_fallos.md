@@ -265,3 +265,24 @@ Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (9), «cifra
 «ensayo que no se parece al sistema real» (12), «entorno» y «prueba frágil» (11, en parte). Quedan fuera
 «cambio sin revisar» y «texto que dice más que la fuente», porque dependen de lo que haga el orquestador y no
 el implementador, y «defecto de lógica propio», que la 7 y la 8 recogen de forma indirecta.
+
+## 13. Predicciones del issue #173
+
+Escritas por el orquestador antes de armar el kit y antes de que el implementador empiece. La fecha que vale
+es la del commit que añade esta sección, el primero de la rama `issue-173-kit-interfaz-limpia`. El
+implementador las ve: no son selladas (apartado 8.6).
+
+El issue #173 arma un kit de envío sin el subagente ni las herramientas de grafo (no se envía) y añade a
+`kaggle_submission verify` la comprobación de que la instrucción no nombra herramientas ausentes.
+
+| # | Hecho | Probabilidad | Línea base y de dónde sale |
+|---|---|---|---|
+| 21 | El primer informe de `revisor-codigo` sobre el PR del #173 tiene el veredicto «cambios requeridos antes de fusionar» o «cambios requeridos» | 0,45 | 0,25: uno de cuatro primeros veredictos (PR #158, #161, #163 y #170; Wilson 0,05 a 0,70) |
+| 22 | Algún informe de `revisor-codigo` muestra un kit con el que la comprobación nueva pasa aunque la instrucción ordena una herramienta que el agente no tiene (por ejemplo, nombrada sin comillas invertidas, en la instrucción de un subagente o en un archivo incluido) | 0,55 | 0,80: cuatro de las cinco revisiones de guiones que juzgan en los PR #161 y #170 hallaron un caso de «da por bueno lo que no lo es» (Wilson 0,38 a 0,96) |
+| 23 | El primer ensayo local del kit K con el modelo falso no termina con una entrega (no compila, no arranca, o el guion del modelo falso llama a una herramienta retirada) | 0,35 | 0,5: sin historia contada para un kit nuevo; el ensayo del notebook de la iteración 08 falló en su primera corrida (1 de 1) |
+| 24 | El `diff` entre el kit A y el K muestra algún cambio fuera de los tres decididos (lista de herramientas, subagente y su instrucción, una línea de la instrucción) | 0,10 | 0,5: sin historia contada |
+
+Plazo: las cuatro vencen el 2026-10-23.
+
+Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (22), «ensayo que no se parece al sistema
+real» (23), «defecto de lógica propio» (21 y 24).
