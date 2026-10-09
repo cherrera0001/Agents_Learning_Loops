@@ -331,10 +331,10 @@ no es una marca independiente.
 | 23 | 0,35 | 0,5 | No ocurrió | El primer ensayo local del kit K terminó con entrega: seis herramientas ofrecidas, cinco llamadas, ninguna de las retiradas (informe del implementador; el revisor no lo repitió) |
 | 24 | 0,10 | 0,5 | No ocurrió | El cuerpo del PR #175 describe la diferencia entre A y K en conteos y no muestra nada fuera de los tres cambios decididos; el orquestador afirma que `analista-datos` lo comprobó miembro a miembro en los dos zips (su informe no está publicado) |
 
-Lectura, sin puntuación: de las ocho, seis ocurrieron. De las cuatro que el orquestador puso por debajo de 0,40
-(13, 14, 23 y 24), ocurrieron la 13 y la 14. En la 13 la probabilidad (0,15) quedó más cerca del desenlace que
-la línea base (0,00); en la 14 quedó más lejos que la línea base (1,00). Con catorce predicciones cerradas en
-cuatro issues no se calcula nada: la convención del orquestador (apartado 8.4) pide cien en veinte.
+Lectura, sin puntuación: de las ocho, seis ocurrieron. De las cinco que el orquestador puso por debajo de 0,40
+(13, 14, 15, 23 y 24), ocurrieron la 13, la 14 y la 15. En la 13 la probabilidad (0,15) quedó más cerca del
+desenlace que la línea base (0,00); en la 14 quedó más lejos que la línea base (1,00). Con catorce predicciones
+cerradas en cuatro issues no se calcula nada: la convención del orquestador (apartado 8.4) pide cien en veinte.
 
 En el PR #175 la primera revisión halló un caso de «da por bueno lo que no lo es» en la regla que juzga (el
 YAML leído con expresiones regulares). Para el PR #170 no consta qué halló el primer informe. Dos casos no
