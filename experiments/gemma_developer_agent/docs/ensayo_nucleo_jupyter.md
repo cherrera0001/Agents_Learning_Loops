@@ -266,9 +266,11 @@ real; solo acota lo que el registro añade.
 
 ## El rescate sobre la salida del ensayo
 
-El rescate que mira bytes (#156, PR #158) no estaba en `main` al hacer el ensayo. Se usó, en solo lectura,
-desde su rama `issue-156-rescate-bytes` en el commit `bde8104`
-(`scripts/kaggle_rescate.py` con SHA-256 `be2553059cca1723dafb961575537443b9443c6e28bb3b16dced37f12add6117`).
+El rescate que mira bytes (#156) se fusionó en `main` con el PR #158 (commit `d8b95f7`) mientras se hacía este
+trabajo. La comprobación se corrió dos veces con el mismo resultado: primero desde la rama
+`issue-156-rescate-bytes` en el commit `bde8104`, en solo lectura, y después con el guion de `main` ya
+fusionado. `scripts/kaggle_rescate.py` es el mismo archivo en los dos (SHA-256
+`be2553059cca1723dafb961575537443b9443c6e28bb3b16dced37f12add6117`). La tabla es la de la segunda.
 
 `--sin-red` espera la disposición de una bajada real: `envios.json`, `tabla_publica.zip` y
 `notebooks/<slug>/` con `estado.json`, `metadatos.json`, `log.txt` y cada archivo de salida como
@@ -283,8 +285,6 @@ dicen «ensayo local».
 | Los cinco cortes y el parche global | 0 | — | 0 |
 | `control_sin_parche` | **4** | 35 | 6 (`logs/<tarea>.log`) |
 | `sin_enganches` (3 corridas) | 4 | 35 | 6 |
-
-Cuando #158 se fusione hay que repetir esta comprobación con el guion de `main`.
 
 ## Lo que el ensayo encontró y el concilio no tenía
 
@@ -351,9 +351,9 @@ git. `ensayo_salida/HUELLAS.txt` lista los 194 archivos de salida con sus bytes 
 
 | Archivo | SHA-256 |
 |---|---|
-| `ensayo_salida/HUELLAS.txt` | `cb72a20d45e33b0f11c2d34ac40ab5b6fd81b3a4e11fffc853d82dfd97e0c954` |
-| `ensayo_salida/RESUMEN.json` | `95ccfcc8a081fab759c70fb98b80dd340aa607707699176bcf81a17f062ac2b5` |
-| `ensayo_salida/rescate_sobre_ensayo.json` | `02c9d80e936244e9185d329c7e39f3de201b163d00752ff10ba64a0e38804132` |
+| `ensayo_salida/HUELLAS.txt` | `e4befcf1b21ad4dc76b8281a03f6893cf0ccbcba8a7c170c4922a8288cfc6160` |
+| `ensayo_salida/RESUMEN.json` | `3babe9e9c2a7157a6f319df58fe43d9b6c4f3cc5613f28b5b4170ab10d2cdc85` |
+| `ensayo_salida/rescate_sobre_ensayo.json` | `d248aae65492e53079597ac0837b565c26574bffe1ea0ff6b00569ffcda91938` |
 | `ensayo_salida/completa/informe.json` | `0389bb61fced327718aa98ef848a1753ce5912285828660928e3e7a98d3f5f2c` |
 | `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `77c566f21224458666a6c8861ee153be71055e9406500cee1dcfbab7fad8e381` |
 | `ensayo_salida/control_sin_parche/informe.json` | `f47b4426822833d75b66df2f521fe104189f821e1c5d557b5f895566225ddeea` |
