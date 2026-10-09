@@ -183,7 +183,9 @@ flowchart LR
 ```
 
 Analista de datos, forense del arnés y auditor del método van en todas las vueltas. Los otros se
-convocan cuando la pregunta lo pide. El staff no reemplaza al [revisor](#revisor) de un PR ni al
+convocan cuando la pregunta lo pide. Tras la primera ronda, cada rol lee los informes de los demás sin
+firma, refuta, retira lo suyo y ordena las acciones candidatas; el auditor entra después de esa revisión
+cruzada ([procedimiento](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 4). El staff no reemplaza al [revisor](#revisor) de un PR ni al
 [staff de texto público](#staff-de-texto-público): el primero revisa un cambio del repositorio y el
 segundo un texto que sale hacia fuera.
 

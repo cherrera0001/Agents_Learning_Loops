@@ -42,7 +42,7 @@
       "note": "Antes de relanzar se miró qué había dejado cada uno en disco: uno tenía el informe completo y los otros dos sus guiones y datos intermedios. Se reanudaron con su contexto y cerraron en un cuarto de hora, sin repetir mediciones"
     },
     {
-      "action": "update_docs",
+      "action": "analyze_results",
       "success": false,
       "error": "El expediente de la revisión cruzada se armó quitando solo el título de cada informe; cada informe citaba la carpeta de su rol y la sección «lo de mi oficio» lo delataba: no era anónimo"
     },
@@ -60,11 +60,6 @@
       "action": "analyze_results",
       "success": true,
       "note": "El auditor entró después de la revisión cruzada y recontó desde los archivos crudos: fijó cuál de las cuatro definiciones vale para decidir, convirtió el peor caso del límite global en un rango, y corrigió a dos roles (un factor de cuota tomado como mínimo cuando es techo; un recuento de verificaciones cortadas)"
-    },
-    {
-      "action": "review_code",
-      "success": true,
-      "note": "La auditoría del procedimiento detectó que el expediente no era anónimo y que el orquestador arrastraba tres afirmaciones sin fuente; la revisión de documentos del PR detectó después que tres predicciones se habían marcado con un criterio distinto del que la misma sección aplicaba a otras seis"
     },
     {
       "action": "update_docs",
@@ -85,6 +80,11 @@
       "action": "update_docs",
       "success": true,
       "note": "Un solo criterio: no se marca una predicción sobre un informe que no está publicado. Quedan una marcada y nueve sin marcar, y el informe del analista sobre este PR se publicó como comentario"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "La auditoría del procedimiento detectó que el expediente no era anónimo y que el orquestador arrastraba tres afirmaciones sin fuente; la revisión de documentos del PR detectó después que tres predicciones se habían marcado con un criterio distinto del que la misma sección aplicaba a otras seis"
     },
     {
       "action": "gh_create_issues",

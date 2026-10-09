@@ -197,10 +197,11 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    dos veces, separadas en el tiempo, antes de afirmarlo, y cada lectura se guarda con su hora. Un error
    genérico de la plataforma se anota «sin lectura», se vuelve a leer en el rescate siguiente y no cuenta
    como refutación de una predicción.
-4. **Concilio.** Roles independientes, en paralelo, sobre los mismos archivos. Ninguno modifica el
-   repositorio, la evidencia ni un sistema externo; lo que ejecutan lo ejecutan en local y escriben solo
-   en una carpeta ignorada por git.
-   - Van siempre el analista de datos, el forense del arnés y el auditor del método. Según la pregunta se
+4. **Concilio.** Una primera ronda de roles independientes, en paralelo, sobre los mismos archivos.
+   Ninguno modifica el repositorio, la evidencia ni un sistema externo; lo que ejecutan lo ejecutan en
+   local y escriben solo en una carpeta ignorada por git.
+   - Van siempre el analista de datos, el forense del arnés y el auditor del método (este, después de la
+     revisión cruzada). Según la pregunta se
      suman QA de trayectorias (si se propone cambiar la conducta del agente), el arquitecto de IA (si se
      propone cambiar el modelo, el presupuesto o el cómputo, o adoptar un método ajeno) e inteligencia
      pública (si el experimento se mide en un sistema externo).

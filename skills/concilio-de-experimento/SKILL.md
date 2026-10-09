@@ -51,8 +51,9 @@ envío falla sin explicación.
    auditor del método, con todo a la vista, y vuelve a contar las cifras de las que dependa
    una decisión. No se promedian los órdenes; los desacuerdos se anotan con el dato que los cerraría. Si
    falta la respuesta cruzada de un rol, no escribas decisiones. Una pregunta nueva del dueño a mitad del
-   concilio va a todos los roles, no solo al auditor. Antes de cualquier subida, un rol escribe las
-   predicciones fechadas; no las escribe el orquestador.
+   concilio, o un hecho nuevo, va a todos los roles, no solo al auditor. Antes de cualquier subida, un
+   rol escribe las predicciones fechadas; no las escribe el orquestador. Mientras no exista un rol
+   propio, las escribe un rol del staff que no sea quien arma la corrida.
 6. **Registra.** El orquestador copia el parecer de cada rol tal cual en la bitácora del experimento,
    junto con lo que cada uno retiró y sus propios fallos de la vuelta. Los roles no escriben en ella.
 7. **Si el relato ya se corrigió a sí mismo**, o si la decisión cuesta dinero, cuota o un envío, encarga

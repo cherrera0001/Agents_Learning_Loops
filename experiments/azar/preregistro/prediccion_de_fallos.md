@@ -371,14 +371,14 @@ permiten generalizar.
 Siguen abiertas, con plazo al 2026-10-23: las predicciones 7 a 12 (issue #164, PR #176) y 17 a 20 (issue
 #171, PR #174; sección 12, solo en la rama de ese PR).
 
-## 15. Desenlaces registrados en la vuelta 43, 2026-10-09 y 10 UTC (issues #164 y #171)
+## 15. Desenlaces registrados en la vuelta 43, 2026-10-09 (issues #164 y #171)
 
 Los marca el concilio de la vuelta 43 del caso Kaggle (auditor del método, con el recuento del analista de
 datos), no el orquestador solo. Sigue sin existir el rol que marca (issue #165). Los informes de
 `revisor-codigo` y de `analista-datos` sobre los PR #176 y #174 no están publicados: `gh pr view 176` devuelve
 cero comentarios y cero reseñas. Criterio de esta sección, uno solo: una predicción sobre lo que dice un
-informe no se marca si ese informe no está publicado, aunque la bitácora del caso lo resuma. Por eso nueve
-de las diez quedan sin marcar. La sección 14 marcó con fuentes no publicadas y lo dijo en cada fila; aquí
+informe no se marca si ese informe no está publicado, aunque la bitácora del caso lo resuma. Por eso ocho
+de las diez quedan sin marcar; una novena, la 11, por otra razón que su fila dice. La sección 14 marcó con fuentes no publicadas y lo dijo en cada fila; aquí
 no se sigue ese camino. La sección 12, que la 14 daba «solo en la rama de ese PR», ya está en `main`.
 
 | # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
@@ -401,4 +401,5 @@ Lectura, sin puntuación: de diez predicciones, una se pudo marcar (la 12, que d
 versionado) y nueve no. Ocho, por la misma causa: el informe de revisión vive en la sesión del orquestador y
 no en el PR. La otra, la 11, porque el hecho que predecía no llegó a existir. Mientras los informes no se
 publiquen como comentario del PR, las predicciones sobre lo que dice un informe no se pueden cerrar; desde
-el PR #183 se publican. Plazo de las nueve que siguen abiertas: 2026-10-23.
+el PR #183 se publican. Plazo de las ocho que siguen abiertas: 2026-10-23. La 11 no tiene plazo que la
+cierre: su hecho no existió.
