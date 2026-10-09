@@ -174,9 +174,10 @@ potencia. Quedan como estaban «Medida», «Línea base» y «Lo que no se puede
   de una cola al 5 %. Con el tamaño de decisión alcanzado:
   - si el extremo inferior del intervalo es mayor que cero, **se afirma** que predecir acierta mejor, y se
     da el intervalo;
-  - si el extremo superior es menor o igual que cero, **se refuta**: predecir no acierta mejor que la
-    frecuencia histórica;
-  - si el intervalo contiene el cero, el resultado es **no concluyente** y así se informa.
+  - si el extremo superior es menor que cero, **se refuta**: predecir acierta peor que la frecuencia
+    histórica;
+  - en cualquier otro caso (el intervalo contiene el cero o lo toca), el resultado es **no concluyente** y
+    así se informa. Un «no concluyente» no dice que predecir no sirva: dice que estos datos no lo deciden.
 - **Unidad efectiva:** las predicciones de un mismo issue están correlacionadas. Se agrupan por issue y la
   prueba se hace sobre la media por issue.
 - **Potencia, calculada por el analista de datos** (simulación con un predictor calibrado, que es el mejor
