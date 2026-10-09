@@ -161,7 +161,8 @@ def test_un_registro_que_no_registro_no_es_una_sesion_completa() -> None:
     problemas = d["sesion"]["problemas_del_registro"]
     assert sum(p.startswith("enganche sin instalar") for p in problemas) == 2
     assert any("7 errores propios" in p for p in problemas)
-    assert any("ninguna petición con respuesta" in p for p in problemas)
+    assert any("ninguna petición respondida en toda la sesión (0 iniciadas" in p for p in problemas)
+    assert any("terminó sin agente_fin ni diff_cierre" in p for p in problemas)
     assert kr.codigo_de(d) == kr.EXIT_REGISTRO
 
 
@@ -312,6 +313,8 @@ def test_dos_tareas_no_se_mezclan_ni_una_tarea_repetida_se_pisa() -> None:
     )
     # Un evento con el nombre de otra tarea en medio de esta sesión no se le atribuye.
     segunda.insert(-1, _e("diff_cierre", "t_9", bytes=999, sha256="ajeno", archivos=[]))
+    # Ni un evento suelto con su mismo nombre después de su fila de fin: la corrida ya está cerrada.
+    segunda.append(_e("diff_cierre", "t_2", bytes=777, sha256="tardio", archivos=[]))
     eventos = [
         INSTALADO,
         *_tarea("t_1", _peticion(1, "tool_calls") + _peticion(2, "stop"), 10),
@@ -388,46 +391,223 @@ def test_una_salida_sin_registro_es_una_entrada_invalida(tmp_path: Path) -> None
         assert kr.main(["diagnosticar", "--salida", str(ruta)]) == kr.EXIT_ENTRADA
 
 
-def _rescate(tmp_path: Path, registros: dict[str, list[str]]) -> Path:
+def _rescate(tmp_path: Path, notebooks: dict[str, dict[str, str]]) -> Path:
+    """Carpeta con la forma de un rescate: por notebook, sus archivos de salida (nombre → contenido)."""
     destino = tmp_path / "rescate"
-    for slug, lineas in registros.items():
+    for slug, archivos in notebooks.items():
         carpeta = destino / "notebooks" / slug
         carpeta.mkdir(parents=True)
-        (carpeta / "salida__registro_s.jsonl").write_text("\n".join(lineas) + "\n", encoding="utf-8")
-    (destino / "notebooks" / "sin-registro").mkdir(parents=True, exist_ok=True)
+        for nombre, contenido in archivos.items():
+            (carpeta / nombre).write_text(contenido, encoding="utf-8")
     return destino
 
 
-def test_comprobar_corre_el_rescate_y_el_diagnostico_y_falla_si_falla_cualquiera(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
-) -> None:
+def _con_registro(lineas: list[str]) -> dict[str, str]:
+    return {"salida__registro_s.jsonl": "\n".join(lineas) + "\n", "salida__latido_s.jsonl": "{}\n"}
+
+
+SANA = _salida()[0].splitlines()
+CORTADA = [*SANA[:-1], json.dumps(_e("corte", None, cortado_por="sesion")), SANA[-1]]
+NOTEBOOK_VIEJO = {"salida__crudo_iteracion_07_I5.zip": "zip", "salida__iteracion_07.json": "{}"}
+
+
+@pytest.fixture
+def rescate_falso(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     from scripts import kaggle_rescate
 
-    llamadas: list[list[str]] = []
-    codigo_del_rescate = {"valor": 0}
+    estado: dict[str, Any] = {"codigo": 0, "llamadas": []}
 
-    def rescate_falso(argv: list[str]) -> int:
-        llamadas.append(argv)
-        print(json.dumps({"descarga_incompleta": [1] * (2 if codigo_del_rescate["valor"] else 0)}))
-        return codigo_del_rescate["valor"]
+    def principal(argv: list[str]) -> int:
+        estado["llamadas"].append(argv)
+        print(json.dumps({"descarga_incompleta": [1] * (2 if estado["codigo"] else 0)}))
+        return int(estado["codigo"])
 
-    monkeypatch.setattr(kaggle_rescate, "main", rescate_falso)
-    sana = _salida()[0].splitlines()
-    destino = _rescate(tmp_path, {"completa": sana, "muerta": sana[:-1]})
+    monkeypatch.setattr(kaggle_rescate, "main", principal)
+    return estado
 
+
+def _comprobar(destino: Path, capsys: pytest.CaptureFixture[str], *extra: str) -> tuple[int, dict[str, Any]]:
+    codigo = kr.main(["comprobar", "--rescate", str(destino), *extra])
+    return codigo, json.loads(capsys.readouterr().out)
+
+
+def test_comprobar_corre_el_rescate_y_el_diagnostico_y_ve_la_sesion_muerta(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _rescate(tmp_path, {"completa": _con_registro(SANA), "muerta": _con_registro(SANA[:-1])})
     # El rescate da 0 sobre una sesión muerta desde fuera: el diagnóstico es el que la ve.
-    assert kr.main(["comprobar", "--rescate", str(destino)]) == kr.EXIT_MUERTA
-    resumen = json.loads(capsys.readouterr().out)
-    assert llamadas == [["--destino", str(destino), "--sin-red"]]
-    assert resumen["rescate"] == {"codigo": 0, "faltantes": 0}
+    codigo, resumen = _comprobar(destino, capsys)
+    assert codigo == kr.EXIT_MUERTA
+    assert rescate_falso["llamadas"] == [["--destino", str(destino), "--sin-red"]]
+    assert resumen["rescate"] == {"codigo": 0, "faltantes": 0} and resumen["omitidos"] == {}
     assert {k: v["codigo"] for k, v in resumen["sesiones"].items()} == {
         "completa": 0,
         "muerta": kr.EXIT_MUERTA,
     }
+    assert _comprobar(destino, capsys, "--notebook", "completa")[0] == kr.EXIT_OK
 
-    assert kr.main(["comprobar", "--rescate", str(destino), "--notebook", "completa"]) == kr.EXIT_OK
-    capsys.readouterr()
-    codigo_del_rescate["valor"] = 4
-    assert kr.main(["comprobar", "--rescate", str(destino), "--notebook", "completa"]) == 4
-    assert json.loads(capsys.readouterr().out)["rescate"] == {"codigo": 4, "faltantes": 2}
-    assert kr.main(["comprobar", "--rescate", str(destino), "--notebook", "sin-registro"]) == kr.EXIT_ENTRADA
+
+def test_comprobar_no_salta_en_silencio_una_pasada_que_no_trae_su_registro(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    """El caso de la segunda revisión: una copia de la pasada sin su registro, con zip, latido y log."""
+    sin_registro = {
+        "salida__crudo_iteracion_08_p2_A8P2.zip": "zip",
+        "salida__latido_iteracion_08_p2.jsonl": "{}\n",
+        "salida__servidor_log_iteracion_08_p2.txt": "INFO\n",
+    }
+    destino = _rescate(tmp_path, {"completa": _con_registro(SANA), "pasada-sin-registro": sin_registro})
+    codigo, resumen = _comprobar(destino, capsys)
+    assert codigo == kr.EXIT_REGISTRO
+    omitido = resumen["omitidos"]["pasada-sin-registro"]
+    assert omitido["codigo"] == kr.EXIT_REGISTRO and "señales" in omitido["motivo"]
+    assert omitido["senales"] == sorted(sin_registro)
+    assert list(resumen["sesiones"]) == ["completa"]
+    # Cada señal basta por sí sola.
+    for nombre in sin_registro:
+        otro = _rescate(tmp_path / nombre, {"completa": _con_registro(SANA), "p": {nombre: "x"}})
+        assert _comprobar(otro, capsys)[0] == kr.EXIT_REGISTRO, nombre
+
+
+def test_comprobar_lista_un_notebook_viejo_sin_registro_y_no_lo_cuenta_como_hallazgo(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _rescate(tmp_path, {"iteracion-07": NOTEBOOK_VIEJO, "pasada-buena": _con_registro(SANA)})
+    codigo, resumen = _comprobar(destino, capsys)
+    assert codigo == kr.EXIT_OK
+    assert resumen["omitidos"] == {
+        "iteracion-07": {"codigo": 0, "motivo": "no trae salida__registro_*.jsonl", "senales": []}
+    }
+    assert resumen["sesiones"]["pasada-buena"]["codigo"] == 0
+
+
+def test_comprobar_imprime_siempre_el_rescate_y_no_pierde_su_codigo(
+    tmp_path: Path, rescate_falso: dict[str, Any], capsys: pytest.CaptureFixture[str]
+) -> None:
+    solo_viejo = _rescate(tmp_path, {"iteracion-07": NOTEBOOK_VIEJO})
+    rescate_falso["codigo"] = 4
+    codigo, resumen = _comprobar(solo_viejo, capsys)
+    assert codigo == 4 and resumen["rescate"] == {"codigo": 4, "faltantes": 2} and resumen["sesiones"] == {}
+    # Sin ningún registro que diagnosticar y sin hallazgos: entrada inválida, pero con el rescate impreso.
+    rescate_falso["codigo"] = 0
+    codigo = kr.main(["comprobar", "--rescate", str(solo_viejo)])
+    salida = capsys.readouterr()
+    assert codigo == kr.EXIT_ENTRADA and "ningún notebook" in salida.err
+    assert json.loads(salida.out)["rescate"] == {"codigo": 0, "faltantes": 0}
+    assert kr.main(["comprobar", "--rescate", str(solo_viejo), "--notebook", "no-existe"]) == kr.EXIT_ENTRADA
+
+
+@pytest.mark.parametrize(
+    ("notebooks", "codigo_del_rescate", "esperado"),
+    [
+        # Fallan el rescate y un diagnóstico: gana el rescate.
+        ({"a": SANA[:-1]}, 4, 4),
+        # Fallan dos diagnósticos: gana el primero por nombre, no el último ni el mayor.
+        ({"a-cortada": CORTADA, "b-muerta": SANA[:-1]}, 0, 3),
+        ({"a-muerta": SANA[:-1], "b-cortada": CORTADA}, 0, 5),
+        # Un registro ilegible en un notebook no impide diagnosticar los demás.
+        ({"a-buena": SANA, "b-rota": ['{"evento": "tarea_inicio", "tarea": ["t_1"]}']}, 0, 2),
+    ],
+)
+def test_comprobar_precedencia_de_codigos(
+    tmp_path: Path,
+    rescate_falso: dict[str, Any],
+    capsys: pytest.CaptureFixture[str],
+    notebooks: dict[str, list[str]],
+    codigo_del_rescate: int,
+    esperado: int,
+) -> None:
+    rescate_falso["codigo"] = codigo_del_rescate
+    destino = _rescate(tmp_path, {k: _con_registro(v) for k, v in notebooks.items()})
+    codigo, resumen = _comprobar(destino, capsys)
+    assert codigo == esperado and set(resumen["sesiones"]) == set(notebooks)
+    if "b-rota" in notebooks:
+        assert resumen["sesiones"]["b-rota"]["codigo"] == kr.EXIT_ENTRADA
+        assert "ilegible" in resumen["sesiones"]["b-rota"]["veredicto"]
+        assert resumen["sesiones"]["a-buena"]["codigo"] == 0
+
+
+def test_precedencia_de_diagnosticar_no_fiable_sobre_cortada_y_cortada_sobre_muerta() -> None:
+    sesion = _tarea("t_1", _peticion(1, "stop"), 10)
+    corte = _e("corte", None, cortado_por="sesion")
+    casos = {
+        kr.EXIT_OK: [INSTALADO, *sesion, CIERRE],
+        kr.EXIT_MUERTA: [INSTALADO, *sesion],
+        kr.EXIT_CORTADA: [INSTALADO, *sesion, corte],  # cortada y además sin cierre: 3 gana a 5
+        kr.EXIT_REGISTRO: [*sesion, corte],  # no fiable, cortada y sin cierre: 4 gana a 3 y a 5
+    }
+    for codigo, eventos in casos.items():
+        assert kr.codigo_de(kr.diagnosticar(eventos, [])) == codigo, codigo
+    assert kr.codigo_de(kr.diagnosticar([*sesion], [])) == kr.EXIT_REGISTRO  # no fiable y muerta: 4 gana a 5
+
+
+@pytest.mark.parametrize(
+    ("evento", "campo"),
+    [
+        ({"evento": "registro_instalado", "tarea": None, "enganches": ["peticiones"]}, "enganches"),
+        ({"evento": "registro_instalado", "tarea": None, "enganches": "instalado"}, "enganches"),
+        ({"evento": "tarea_inicio", "tarea": ["t_1"]}, "tarea"),
+        ({"evento": "peticion_fin", "tarea": "t_1", "peticion": [1], "motivo": "stop"}, "peticion"),
+        ({"evento": "peticion_inicio", "tarea": "t_1", "peticion": "1"}, "peticion"),
+        ({"evento": ["cierre"], "tarea": None}, "evento"),
+        ({"evento": "cierre", "tarea": None, "errores_del_registro": "7"}, "errores_del_registro"),
+    ],
+)
+def test_un_evento_con_un_campo_de_otro_tipo_es_una_entrada_ilegible_y_no_una_traza(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], evento: dict[str, Any], campo: str
+) -> None:
+    eventos = [INSTALADO, *_tarea("t_1", _peticion(1, "stop"), 10), evento, CIERRE]
+    with pytest.raises(kr.RegistroError, match=f"«{campo}»"):
+        kr.diagnosticar(eventos, [])
+    (tmp_path / "registro_s.jsonl").write_text("\n".join(json.dumps(e) for e in eventos), encoding="utf-8")
+    assert kr.main(["diagnosticar", "--salida", str(tmp_path)]) == kr.EXIT_ENTRADA
+    salida = capsys.readouterr()
+    assert "ENTRADA INVÁLIDA: Registro ilegible" in salida.err and campo in salida.err
+    assert kr.EXIT_ENTRADA != kr.EXIT_DIFIERE
+
+
+def test_una_sesion_que_detuvo_una_guardia_no_se_llama_completa() -> None:
+    guardia = _e("guardia", None, cuando="antes de la primera tarea", problemas=["logs por tarea (rich)"])
+    d = kr.diagnosticar([INSTALADO, guardia, CIERRE], [])
+    veredicto = d["sesion"]["veredicto"]
+    assert "completa" not in veredicto and d["sesion"]["estado"] == "detenida"
+    assert veredicto.endswith("sesión detenida por una guardia antes de la primera tarea")
+    assert kr.codigo_de(d) == kr.EXIT_REGISTRO
+    # Aunque la celda también haya anotado su corte, manda la guardia.
+    corte = _e("corte", None, cortado_por="fallo RuntimeError")
+    otra = kr.diagnosticar([INSTALADO, *_tarea("t_1", _peticion(1, "stop"), 10), guardia, corte, CIERRE], [])
+    assert otra["sesion"]["estado"] == "detenida" and otra["sesion"]["cortado_por"] == "fallo RuntimeError"
+
+
+def test_una_tarea_terminada_sin_su_fin_de_agente_o_sin_su_diff_hace_desconfiar() -> None:
+    completa = _tarea("t_1", _peticion(1, "stop"), 10)
+    otra = _tarea("t_2", _peticion(2, "stop", "t_2"), 20)
+    sin_agente = [e for e in otra if e["evento"] != "agente_fin"]
+    sin_diff = [e for e in otra if e["evento"] != "diff_cierre"]
+    diff_fallido = [
+        {**e, "error": "RuntimeError: sin git"} if e["evento"] == "diff_cierre" else e for e in otra
+    ]
+    for cola, frase in (
+        (sin_agente, "la tarea t_2 (corrida 2) terminó sin agente_fin"),
+        (sin_diff, "la tarea t_2 (corrida 2) terminó sin diff_cierre"),
+        (diff_fallido, "la tarea t_2 (corrida 2) terminó sin diff_cierre"),
+        ([e for e in sin_agente if e["evento"] != "diff_cierre"], "terminó sin agente_fin ni diff_cierre"),
+    ):
+        d = kr.diagnosticar([INSTALADO, *completa, *cola, CIERRE], [])
+        assert kr.codigo_de(d) == kr.EXIT_REGISTRO and frase in d["sesion"]["veredicto"], frase
+    # Una tarea que no terminó (sesión muerta) no se juzga por lo que le falta.
+    muerta = kr.diagnosticar([INSTALADO, *completa, _e("tarea_inicio", "t_2")], [])
+    assert kr.codigo_de(muerta) == kr.EXIT_MUERTA
+
+
+def test_las_peticiones_respondidas_se_cuentan_en_toda_la_sesion_y_no_por_tarea() -> None:
+    """Lo que el código hace, tal como lo dice el documento: una tarea entera en error no basta para el 4."""
+    primera = _tarea("t_1", _peticion(1, "stop"), 10)
+    segunda = _tarea("t_2", _peticion(2, "error", "t_2", error="APIError"), 20)
+    d = kr.diagnosticar([INSTALADO, *primera, *segunda, CIERRE], [])
+    assert d["sesion"]["registro_fiable"] is True and kr.codigo_de(d) == kr.EXIT_OK
+    assert d["tareas"][1]["no_respondidas"] == 1 and d["tareas"][1]["peticion_cortada"]["peticion"] == 2
+    solo_errores = kr.diagnosticar([INSTALADO, *segunda, CIERRE], [])
+    (problema,) = solo_errores["sesion"]["problemas_del_registro"]
+    assert "en toda la sesión (1 iniciadas, 1 con error o canceladas)" in problema
+    assert "el enganche de peticiones no surte efecto, o el servidor nunca respondió" in problema

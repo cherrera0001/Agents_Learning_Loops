@@ -17,20 +17,33 @@ consola: si el registro es de fiar, si la sesión se cerró o murió desde fuera
 cuál era la petición en vuelo o cortada (su hora y el tamaño de su entrada) y qué diff dejó cada tarea al
 cierre. No abre ningún archivo fuera de los del registro y no extrae nada de un zip.
 
+``diagnosticar`` solo mira el registro: no ve, por ejemplo, que los logs por tarea de un zip pesen 0 bytes.
+Para juzgar una corrida se usa ``comprobar``.
+
 ``comprobar`` corre ``scripts.kaggle_rescate --sin-red`` sobre la carpeta de un rescate y después
 ``diagnosticar`` sobre los archivos ``salida__registro_*`` de cada notebook. Hace falta porque el rescate
-solo mira bytes: una sesión muerta desde fuera deja un zip sano, empaquetado antes de morir.
+solo mira bytes: una sesión muerta desde fuera deja un zip sano, empaquetado antes de morir. Imprime siempre
+lo que dio el rescate y lista cada notebook que no diagnosticó, con su motivo. Un notebook sin registro que
+trae señales de ser una pasada con registro (un ``salida__latido_*``, ``salida__servidor_log_*``,
+``salida__diff_en_curso_*`` o cualquier salida con ``iteracion_08`` en el nombre) es un hallazgo; un notebook
+viejo sin nada de eso solo se lista.
 
 Salida:
     0  sin hallazgos: lista reproducida, o registro fiable y sesión completa
     1  la lista sorteada difiere de la guardada
-    2  entrada inválida o ilegible (archivo ausente, JSON roto, acta o validez sin sus campos)
+    2  entrada inválida o ilegible (archivo ausente, JSON roto, acta o validez sin sus campos, un evento
+       del registro con un campo de otro tipo), o ningún registro que diagnosticar
     3  sesión cortada por el notebook; la causa está en el registro
-    4  registro no fiable: un enganche no se instaló, hubo errores propios, hay tareas sin ninguna
-       petición respondida, falta ``registro_instalado`` o una guardia detuvo el notebook
+    4  registro no fiable: un enganche exigido no se instaló, hubo errores propios, hay tareas corridas y
+       en toda la sesión no hay ninguna petición respondida, una tarea terminada no trae su ``agente_fin`` o
+       su ``diff_cierre``, falta ``registro_instalado`` o una guardia detuvo el notebook; en ``comprobar``,
+       además, una pasada con registro que no trae su registro
     5  sesión muerta desde fuera: el registro no termina en ``cierre``
-``comprobar`` sale con el código del rescate si no es 0 y, si lo es, con el del primer diagnóstico que no
-lo sea.
+Precedencia en ``diagnosticar``: 4 gana a 3, y 3 gana a 5 (un registro no fiable se dice aunque la sesión
+esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre).
+Precedencia en ``comprobar``: el código del rescate, si no es 0; si lo es, el del primer notebook, en orden
+alfabético de su nombre, cuyo código no sea 0 (sea de su diagnóstico o por faltarle el registro); si no hay
+ningún registro que diagnosticar ni ningún hallazgo, 2.
 """
 
 from __future__ import annotations
@@ -69,6 +82,13 @@ TOPES_DE_TAREA = (
     ("turns budget", "tope de turnos"),
     ("maximum allowed llm turns", "tope de turnos"),
     ("connection error", "el servidor del modelo dejó de responder"),
+)
+# Archivos de salida que solo deja un notebook con registro: si están y falta el registro, es un hallazgo.
+SENALES_DE_PASADA = (
+    "salida__latido_*",
+    "salida__servidor_log_*",
+    "salida__diff_en_curso_*",
+    "salida__*iteracion_08*",
 )
 CORTES_DE_SESION = {
     "tareas": "tope de tiempo del conjunto de tareas (TOPE_SEGUNDOS)",
@@ -202,6 +222,29 @@ def cargar_salida(ruta: Path) -> dict[str, Any]:
     }
 
 
+def validar_eventos(eventos: Sequence[dict[str, Any]]) -> None:
+    """Lanza ``RegistroError`` si un evento trae un campo de otro tipo: es una entrada ilegible."""
+    esperados: tuple[tuple[str, tuple[type, ...], tuple[str, ...]], ...] = (
+        ("evento", (str,), ()),
+        ("tarea", (str, type(None)), ()),
+        ("peticion", (int,), ("peticion_inicio", "peticion_fin")),
+        ("enganches", (dict,), ("registro_instalado",)),
+        ("errores_del_registro", (int, type(None)), ("cierre",)),
+    )
+    for numero, e in enumerate(eventos, start=1):
+        for campo, tipos, solo_en in esperados:
+            if solo_en and e.get("evento") not in solo_en:
+                continue
+            if campo == "tarea" and campo not in e:
+                continue
+            valor = e.get(campo)
+            if not isinstance(valor, tipos) or isinstance(valor, bool):
+                raise RegistroError(
+                    f"Registro ilegible: en el evento {numero} ({str(e.get('evento'))[:40]}) el campo "
+                    f"«{campo}» es de tipo {type(valor).__name__}."
+                )
+
+
 def emparejar(eventos: Iterable[dict[str, Any]]) -> dict[int, dict[str, Any]]:
     """Cada petición con su inicio, su fin (o ``None``) y las retrollamadas de litellm que disparó."""
     peticiones: dict[int, dict[str, Any]] = {}
@@ -283,8 +326,8 @@ def salud_del_registro(
 ) -> list[str]:
     """Por qué no hay que fiarse de este registro. Lista vacía si no hay motivo.
 
-    Un registro puede existir y no registrar: enganches que no se instalaron, errores propios al escribir,
-    o tareas corridas sin una sola petición respondida.
+    Un registro puede existir y no registrar: enganches que no se instalaron o que no surten efecto,
+    errores propios al escribir, o una sesión con tareas corridas y ninguna petición respondida.
     """
     problemas: list[str] = []
     instalado = next((e for e in eventos if e.get("evento") == "registro_instalado"), None)
@@ -301,7 +344,25 @@ def salud_del_registro(
         )
     respondidas = sum(f["como_termino"] not in NO_RESPONDIDAS for f in fichas)
     if any(o["fin"] is not None for o in ocurrencias) and respondidas == 0:
-        problemas.append("hay tareas corridas y ninguna petición con respuesta en el registro")
+        con_error = sum(f["como_termino"] in ("error", "cancelada") for f in fichas)
+        problemas.append(
+            f"hay tareas corridas y ninguna petición respondida en toda la sesión ({len(fichas)} iniciadas, "
+            f"{con_error} con error o canceladas): o el enganche de peticiones no surte efecto, o el "
+            "servidor nunca respondió"
+        )
+    # Una tarea terminada sin su motivo de fin o sin su diff: el enganche dice «instalado» y no surte efecto.
+    for orden, o in enumerate(ocurrencias, start=1):
+        if o["fin"] is None:
+            continue
+        faltan = [
+            nombre
+            for nombre, evento in (("agente_fin", o["agente"]), ("diff_cierre", o["diff"]))
+            if evento is None or (nombre == "diff_cierre" and "error" in evento)
+        ]
+        if faltan:
+            problemas.append(
+                f"la tarea {o['inicio'].get('tarea')} (corrida {orden}) terminó sin {' ni '.join(faltan)}"
+            )
     for guardia in (e for e in eventos if e.get("evento") == "guardia"):
         problemas.append(f"la guardia detuvo el notebook {guardia.get('cuando')}: {guardia.get('problemas')}")
     return problemas
@@ -309,6 +370,7 @@ def salud_del_registro(
 
 def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """Qué pasó en la sesión, solo con lo que quedó en el registro."""
+    validar_eventos(eventos)
     pares = emparejar(eventos)
     fichas = [_ficha(pares[n]) for n in sorted(pares)]
     por_numero = {f["peticion"]: f for f in fichas}
@@ -353,7 +415,11 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
             }
         )
     ultimo_latido = latidos[-1] if latidos else None
-    if cortes:
+    guardias = [e for e in eventos if e.get("evento") == "guardia"]
+    if guardias:
+        # Una sesión que una guardia detuvo no es «completa» aunque su registro termine en «cierre».
+        estado, veredicto = "detenida", f"detenida por una guardia {guardias[-1].get('cuando')}"
+    elif cortes:
         por = str(cortes[-1].get("cortado_por"))
         estado, veredicto = "cortada", "cortada por el notebook: " + CORTES_DE_SESION.get(por, por)
     elif cierre is not None:
@@ -407,7 +473,8 @@ def codigo_de(informe: dict[str, Any]) -> int:
     sesion = informe["sesion"]
     if not sesion["registro_fiable"]:
         return EXIT_REGISTRO
-    return {"completa": EXIT_OK, "cortada": EXIT_CORTADA, "muerta": EXIT_MUERTA}[sesion["estado"]]
+    codigos = {"completa": EXIT_OK, "cortada": EXIT_CORTADA, "muerta": EXIT_MUERTA, "detenida": EXIT_REGISTRO}
+    return codigos[sesion["estado"]]
 
 
 # ---------------------------------------------------------------------------
@@ -461,17 +528,42 @@ def _orden_comprobar(args: argparse.Namespace) -> int:
     if args.notebook:
         carpetas = [p for p in carpetas if p.name == args.notebook]
     sesiones: dict[str, Any] = {}
+    omitidos: dict[str, Any] = {}
+    por_notebook: list[int] = []
     for carpeta in carpetas:
         if not list(carpeta.glob("salida__registro_*.jsonl")):
+            senales = sorted({p.name for patron in SENALES_DE_PASADA for p in carpeta.glob(patron)})
+            codigo = EXIT_REGISTRO if senales else EXIT_OK
+            motivo = "no trae salida__registro_*.jsonl"
+            if senales:
+                motivo += " y sí trae señales de ser una pasada con registro"
+            omitidos[carpeta.name] = {"codigo": codigo, "motivo": motivo, "senales": senales}
+            por_notebook.append(codigo)
             continue
-        informe = _diagnostico_de(carpeta)
-        sesiones[carpeta.name] = {"codigo": codigo_de(informe), "veredicto": informe["sesion"]["veredicto"]}
-    if not sesiones:
-        raise RegistroError("Ningún notebook del rescate trae un salida__registro_*.jsonl.")
-    codigos = [codigo_rescate, *(s["codigo"] for s in sesiones.values())]
-    resumen = {"rescate": {"codigo": codigo_rescate, "faltantes": faltantes}, "sesiones": sesiones}
+        try:
+            informe = _diagnostico_de(carpeta)
+            sesiones[carpeta.name] = {
+                "codigo": codigo_de(informe),
+                "veredicto": informe["sesion"]["veredicto"],
+            }
+        except RegistroError as exc:
+            sesiones[carpeta.name] = {"codigo": EXIT_ENTRADA, "veredicto": str(exc)}
+        por_notebook.append(sesiones[carpeta.name]["codigo"])
+    resumen = {
+        "rescate": {"codigo": codigo_rescate, "faltantes": faltantes},
+        "sesiones": sesiones,
+        "omitidos": omitidos,
+    }
     print(json.dumps(resumen, ensure_ascii=False, indent=1))
-    return next((c for c in codigos if c != EXIT_OK), EXIT_OK)
+    # Gana el rescate; después, el primer notebook (por nombre) cuyo código no sea 0.
+    codigo = next((c for c in [codigo_rescate, *por_notebook] if c != EXIT_OK), EXIT_OK)
+    if codigo == EXIT_OK and not sesiones:
+        print(
+            "ENTRADA INVÁLIDA: ningún notebook del rescate trae un registro que diagnosticar.",
+            file=sys.stderr,
+        )
+        return EXIT_ENTRADA
+    return codigo
 
 
 def main(argv: list[str] | None = None) -> int:

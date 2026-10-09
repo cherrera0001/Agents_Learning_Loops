@@ -225,7 +225,7 @@ def _modulo_de_sandbox(llamadas: list[Any], salida: Any) -> Any:
 
     async def sandbox_exec(docker: Any, sandbox_id: str, orden: str) -> Any:
         llamadas.append(("exec", orden))
-        if isinstance(salida, Exception):
+        if isinstance(salida, BaseException):
             raise salida
         return types.SimpleNamespace(stdout=salida, exit_code=0)
 
@@ -612,27 +612,101 @@ def test_la_guardia_no_exige_las_retrollamadas_ni_actua_con_el_registro_inactivo
     inactivo.comprobar_primera_tarea(tmp_path / "no_existe.log")
 
 
+def _con_fin_de_agente_y_diff(registro: ke.Registro) -> ke.Registro:
+    """Deja el registro como tras una primera tarea sana: una petición respondida, su agente_fin y su diff."""
+    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+    registro.evento("agente_fin", error=None)
+    registro.diffs_tomados = 1
+    return registro
+
+
 def test_la_guardia_tras_la_primera_tarea_mira_el_log_y_las_peticiones(tmp_path: Path) -> None:
     log = tmp_path / "t_1.log"
-    registro = ke.Registro(tmp_path, "s")
-    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+    registro = _con_fin_de_agente_y_diff(ke.Registro(tmp_path, "s"))
 
-    with pytest.raises(RuntimeError, match=r"no existe el log por tarea t_1.log"):
+    with pytest.raises(RuntimeError, match=r"no existe el log por tarea t_1\.log"):
         registro.comprobar_primera_tarea(log)
     log.write_bytes(b"")
-    with pytest.raises(RuntimeError, match=r"el log por tarea t_1.log pesa 0 bytes"):
+    with pytest.raises(RuntimeError, match=r"el log por tarea t_1\.log pesa 0 bytes"):
         registro.comprobar_primera_tarea(log)
     log.write_bytes(b"x")
     registro.comprobar_primera_tarea(log)
-
-    # El control sin parche no exige el log, pero sí las peticiones.
-    sin_parche = ke.Registro(tmp_path / "c", "s")
-    sin_parche.carpeta.mkdir()
-    sin_parche.parche_rich = "ninguno"
-    sin_parche.fin_peticion(sin_parche.inicio_peticion("m", MENSAJES, None, {}), error=ConnectionError("x"))
-    with pytest.raises(RuntimeError, match=r"ninguna petición con inicio y fin \(1 iniciadas\)"):
-        sin_parche.comprobar_primera_tarea(tmp_path / "no_existe.log")
-    sin_parche.fin_peticion(sin_parche.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
-    sin_parche.comprobar_primera_tarea(tmp_path / "no_existe.log")
     guardias = [e for e in _eventos(registro) if e["evento"] == "guardia"]
     assert [g["cuando"] for g in guardias] == ["tras la primera tarea"] * 2
+
+
+@pytest.mark.parametrize("error", [ConnectionError("x"), asyncio.CancelledError()])
+def test_la_guardia_no_cuenta_como_respondida_una_peticion_con_error_ni_una_cancelada(
+    tmp_path: Path, error: BaseException
+) -> None:
+    # El control sin parche no exige el log, pero sí las peticiones.
+    registro = ke.Registro(tmp_path, "s")
+    registro.parche_rich = "ninguno"
+    registro.evento("agente_fin", error=None)
+    registro.diffs_tomados = 1
+    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), error=error)
+    patron = (
+        r"ninguna petición respondida \(1 iniciadas, 1 con error o canceladas\): o el enganche de peticiones "
+        r"no surte efecto, o el servidor no respondió"
+    )
+    with pytest.raises(RuntimeError, match=patron):
+        registro.comprobar_primera_tarea(tmp_path / "no_existe.log")
+    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+    registro.comprobar_primera_tarea(tmp_path / "no_existe.log")
+
+
+def test_la_guardia_exige_que_la_primera_tarea_deje_su_fin_de_agente_y_su_diff(tmp_path: Path) -> None:
+    log = tmp_path / "t_1.log"
+    log.write_bytes(b"x")
+    registro = ke.Registro(tmp_path, "s")
+    registro.fin_peticion(registro.inicio_peticion("m", MENSAJES, None, {}), respuesta=_Respuesta("stop"))
+    with pytest.raises(
+        RuntimeError, match=r"no dejó su agente_fin .*; la primera tarea no dejó su diff_cierre"
+    ):
+        registro.comprobar_primera_tarea(log)
+    registro.evento("agente_fin", error=None)
+    with pytest.raises(RuntimeError, match=r"GUARDIA registro: la primera tarea no dejó su diff_cierre"):
+        registro.comprobar_primera_tarea(log)
+    # Un diff que falló no cuenta: el evento existe, pero el diff no se tomó.
+    asyncio.run(
+        registro.diff_al_cierre(_modulo_de_sandbox([], RuntimeError("sin git")).sandbox_exec, None, "sb")
+    )
+    with pytest.raises(RuntimeError, match="no dejó su diff_cierre"):
+        registro.comprobar_primera_tarea(log)
+    asyncio.run(registro.diff_al_cierre(_modulo_de_sandbox([], "diff").sandbox_exec, None, "sb"))
+    registro.comprobar_primera_tarea(log)
+    assert registro.vistos["agente_fin"] == 1 and registro.diffs_tomados == 1
+
+
+class _Interrupcion(BaseException):
+    """Una excepción que no hereda de Exception, como las que atraviesan el arnés al cancelar."""
+
+
+@pytest.mark.parametrize("interrupcion", [asyncio.CancelledError(), _Interrupcion("x")])
+def test_si_el_diff_se_interrumpe_el_sandbox_se_destruye_igual_y_la_interrupcion_sigue(
+    tmp_path: Path, interrupcion: BaseException
+) -> None:
+    llamadas: list[Any] = []
+    modulo = _modulo_de_sandbox(llamadas, interrupcion)
+    registro = ke.Registro(tmp_path, "s")
+    registro.tarea("E1", "t_1", 1)
+    registro.envolver_sandbox(modulo)
+    registro.espacio = tmp_path
+
+    async def parar() -> None:
+        await modulo.sandbox_stop(object(), "sb9")
+
+    with pytest.raises(type(interrupcion)):
+        asyncio.run(parar())
+    assert llamadas == [("exec", ke.DIFF_AL_CIERRE), ("stop", "sb9")]
+    assert registro.espacio is None and registro.diffs_tomados == 0
+
+
+def test_con_el_registro_inactivo_el_cierre_del_sandbox_no_ejecuta_nada_mas(tmp_path: Path) -> None:
+    llamadas: list[Any] = []
+    modulo = _modulo_de_sandbox(llamadas, "diff")
+    registro = ke.Registro(tmp_path, "s", activo=False)
+    registro.estado.update(etiqueta="E1", tarea="t_1")
+    registro.envolver_sandbox(modulo)
+    assert asyncio.run(modulo.sandbox_stop(object(), "sb1")) == "parado"
+    assert llamadas == [("stop", "sb1")] and list(tmp_path.iterdir()) == [] and registro.diffs_tomados == 0

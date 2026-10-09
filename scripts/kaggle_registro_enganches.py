@@ -29,8 +29,10 @@ pinta en el notebook y multiplica por más de cien el texto que la celda de tare
 
 Dos guardias, para no descubrir al final de la sesión que el registro no registró: `exigir_enganches`
 detiene el notebook antes de la primera tarea si un enganche exigido no quedó instalado, y
-`comprobar_primera_tarea` lo detiene tras la primera si su log por tarea pesa 0 bytes o no hay ninguna
-petición con inicio y fin. Un enganche puede decir «instalado» y no surtir efecto: por eso la segunda.
+`comprobar_primera_tarea` lo detiene tras la primera si su log por tarea pesa 0 bytes, si no hay ninguna
+petición respondida o si la tarea no dejó su `agente_fin` o su `diff_cierre`. Un enganche puede decir
+«instalado» y no surtir efecto: por eso la segunda. Los enganches `log del servidor` y `latido` no pueden
+quedar en FALLO, así que la primera guardia no los cubre.
 
 Límite conocido: el texto parcial de una petición cortada no se guarda (el arnés no usa streaming).
 """
@@ -135,6 +137,8 @@ class Registro:
         self.costos: dict[str, list[float]] = {}
         self.latidos = 0
         self.parche_rich = "archivo"
+        self.vistos: dict[str, int] = {}
+        self.diffs_tomados = 0
         self._lock = threading.RLock()
         self._parar = threading.Event()
         self._hilo: threading.Thread | None = None
@@ -184,6 +188,7 @@ class Registro:
                     },
                     sincronizar=tipo != "peticion_fin" and not tipo.startswith("cb_"),
                 )
+                self.vistos[tipo] = self.vistos.get(tipo, 0) + 1
         except Exception as exc:
             self._anotar_error(exc)
         finally:
@@ -383,6 +388,7 @@ class Registro:
                 carpeta.mkdir(parents=True, exist_ok=True)
                 ruta = carpeta / (str(self.estado["tarea"]).replace("/", "_") + ".diff")
                 ruta.write_bytes(datos)
+            self.diffs_tomados += 1
             self.evento(
                 "diff_cierre",
                 bytes=len(datos),
@@ -547,10 +553,11 @@ class Registro:
             )
 
     def comprobar_primera_tarea(self, ruta_log: Path) -> None:
-        """Guardia tras la primera tarea: su log por tarea pesa más de 0 bytes y hay una petición con fin.
+        """Guardia tras la primera tarea: mira que cada enganche dejó lo suyo.
 
-        Un enganche puede decir «instalado» y no surtir efecto (el arnés crea la consola por otra ruta, o
-        llama al modelo por otra): solo se ve mirando lo que la primera tarea dejó.
+        Su log por tarea pesa más de 0 bytes, hay una petición respondida, y la tarea dejó su `agente_fin` y
+        su `diff_cierre`. Un enganche puede decir «instalado» y no surtir efecto (el arnés crea la consola,
+        llama al modelo o destruye el sandbox por otra ruta): solo se ve mirando lo que la primera tarea dejó.
         """
         if not self.activo:
             return
@@ -563,9 +570,16 @@ class Registro:
                 problemas.append(f"el log por tarea {ruta.name} pesa 0 bytes")
         respondidas = sum(v for k, v in self.motivos.items() if k not in ("cancelada", "error"))
         if respondidas == 0:
+            sin_respuesta = sum(v for k, v in self.motivos.items() if k in ("cancelada", "error"))
             problemas.append(
-                f"el registro no tiene ninguna petición con inicio y fin ({self.peticiones} iniciadas)"
+                f"el registro no tiene ninguna petición respondida ({self.peticiones} iniciadas, "
+                f"{sin_respuesta} con error o canceladas): o el enganche de peticiones no surte efecto, o el "
+                "servidor no respondió"
             )
+        if self.vistos.get("agente_fin", 0) == 0:
+            problemas.append("la primera tarea no dejó su agente_fin (motivo de fin del agente)")
+        if self.diffs_tomados == 0:
+            problemas.append("la primera tarea no dejó su diff_cierre (diff del árbol al cierre)")
         if problemas:
             self.evento("guardia", cuando="tras la primera tarea", problemas=problemas)
             raise RuntimeError("GUARDIA registro: " + "; ".join(problemas))
