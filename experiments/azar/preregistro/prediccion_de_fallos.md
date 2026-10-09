@@ -312,3 +312,33 @@ Plazo: las cuatro vencen el 2026-10-23.
 
 Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (22), «ensayo que no se parece al sistema
 real» (23), «defecto de lógica propio» (21 y 24).
+
+## 14. Desenlaces registrados el 2026-10-09 (issues #169 y #173)
+
+Los registra el orquestador, que es también quien escribió las predicciones, a partir de los informes de
+`revisor-codigo` y de `analista-datos`. Esos informes no están en GitHub: quedan resumidos en la bitácora del
+caso y en el comentario de cierre de cada issue. Sigue sin existir el rol que marca (issue #165): esta tabla
+no es una marca independiente.
+
+| # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
+|---|---|---|---|---|
+| 13 | 0,15 | 0,00 | Ocurrió | Primer informe de `revisor-codigo` sobre el PR #170: «cambios requeridos». No consta en ninguna fuente publicada; lo afirma el orquestador |
+| 14 | 0,30 | 1,00 | Ocurrió | Tres informes de `revisor-codigo` antes de fusionar. El tercero («tercera lectura», «aprobado con observaciones no bloqueantes») consta en el comentario de cierre del issue #169; que hubo dos anteriores y que pidieron cambios no consta en ninguna fuente publicada: lo afirma el orquestador. PR #170 fusionado, `mergedAt` 2026-10-09T15:08:18Z |
+| 15 | 0,35 | 0,5 | Ocurrió | Según el orquestador, el primer informe mostró un issue exento sin deberlo (uno cerrado como no planeado que tenía PR fusionados anteriores a su cierre) y el segundo, que la regla se anulaba al fusionar su propio PR. El cuerpo del PR #170 y la bitácora recogen esos dos casos como hallazgos del implementador. No consta en ninguna fuente publicada qué informe mostró cada uno |
+| 16 | 0,85 | 0,86 | Ocurrió | `analista-datos`: las 12 comprobaciones de `f262573`, el primer commit con código del PR #170, en `success` |
+| 21 | 0,45 | 0,25 | Ocurrió | Primer informe de `revisor-codigo` sobre el PR #175, en `923fe33`: «cambios requeridos antes de fusionar» |
+| 22 | 0,55 | 0,80 | Ocurrió | Ese informe mostró diez kits que el compilador del organizador acepta y con los que la comprobación pasaba aunque la instrucción ordenaba una herramienta ausente |
+| 23 | 0,35 | 0,5 | No ocurrió | El primer ensayo local del kit K terminó con entrega: seis herramientas ofrecidas, cinco llamadas, ninguna de las retiradas (informe del implementador; el revisor no lo repitió) |
+| 24 | 0,10 | 0,5 | No ocurrió | El cuerpo del PR #175 describe la diferencia entre A y K en conteos y no muestra nada fuera de los tres cambios decididos; el orquestador afirma que `analista-datos` lo comprobó miembro a miembro en los dos zips (su informe no está publicado) |
+
+Lectura, sin puntuación: de las ocho, seis ocurrieron. De las cinco que el orquestador puso por debajo de 0,40
+(13, 14, 15, 23 y 24), ocurrieron la 13, la 14 y la 15. En la 13 la probabilidad (0,15) quedó más cerca del
+desenlace que la línea base (0,00); en la 14 quedó más lejos que la línea base (1,00). Con catorce predicciones
+cerradas en cuatro issues no se calcula nada: la convención del orquestador (apartado 8.4) pide cien en veinte.
+
+En el PR #175 la primera revisión halló un caso de «da por bueno lo que no lo es» en la regla que juzga (el
+YAML leído con expresiones regulares). Para el PR #170 no consta qué halló el primer informe. Dos casos no
+permiten generalizar.
+
+Siguen abiertas, con plazo al 2026-10-23: las predicciones 7 a 12 (issue #164, PR #176) y 17 a 20 (issue
+#171, PR #174; sección 12, solo en la rama de ese PR).
