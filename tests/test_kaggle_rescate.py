@@ -558,7 +558,17 @@ def test_un_exigido_vacio_a_cualquier_nivel_es_un_faltante(tmp_path: Path, miemb
 
 @pytest.mark.parametrize(
     "miembro",
-    ["mylogs/a.log", "catalogs/b.log", "logs_old/c.log", "x/logs", "task_results.jsonl.bak", "otros/d.txt"],
+    [
+        "mylogs/a.log",
+        "catalogs/b.log",
+        "logs_old/c.log",
+        "x/logs",
+        "task_results.jsonl.bak",
+        "otros/d.txt",
+        "Logs/e.log",
+        "TRACES/f.json",
+        "Task_Results.jsonl",
+    ],
 )
 def test_un_nombre_parecido_a_uno_exigido_no_es_un_faltante(tmp_path: Path, miembro: str) -> None:
     faltantes, conteo = _revisar(tmp_path, {miembro: b""})
@@ -574,13 +584,32 @@ def test_un_miembro_que_es_una_carpeta_no_se_revisa(tmp_path: Path) -> None:
     assert conteo["miembros_de_0_bytes"] == 0
 
 
-def test_decide_la_carpeta_conocida_mas_externa(tmp_path: Path) -> None:
-    miembros = {"patches/logs/h.diff": b"", "test_outputs/traces/i.txt": b"", "logs/patches/j.log": b""}
+def test_una_carpeta_exigida_gana_a_una_opcional_a_cualquier_nivel(tmp_path: Path) -> None:
+    miembros = {
+        "patches/logs/h.diff": b"",
+        "test_outputs/t/traces/i.txt": b"",
+        "logs/patches/j.log": b"",
+        "patches/task_results.jsonl": b"",
+    }
     faltantes, conteo = _revisar(tmp_path, miembros)
-    assert faltantes == ["logs/patches/j.log"]
-    assert conteo["exigidos_de_0_bytes"] == 1
+    assert faltantes == list(miembros)
+    assert conteo["exigidos_de_0_bytes"] == 4
+    assert conteo["patches_de_0_bytes"] == 0
+    assert conteo["test_outputs_de_0_bytes"] == 0
+
+
+def test_un_miembro_bajo_las_dos_carpetas_opcionales_cuenta_en_las_dos(tmp_path: Path) -> None:
+    faltantes, conteo = _revisar(tmp_path, {"patches/test_outputs/x.txt": b""})
+    assert faltantes == []
     assert conteo["patches_de_0_bytes"] == 1
     assert conteo["test_outputs_de_0_bytes"] == 1
+
+
+def test_un_miembro_con_barra_invertida_tambien_es_exigido(tmp_path: Path) -> None:
+    # zipfile convierte la barra al leer en Windows; fuera de Windows el nombre llega tal cual.
+    faltantes, conteo = _revisar(tmp_path, {"logs\\b.log": b""})
+    assert len(faltantes) == 1
+    assert conteo["exigidos_de_0_bytes"] == 1
 
 
 def test_varios_exigidos_vacios_se_cuentan_uno_por_uno(tmp_path: Path) -> None:
@@ -594,6 +623,11 @@ def test_un_zip_con_la_extension_en_mayusculas_tambien_se_revisa(
 ) -> None:
     destino = _bajar_con_zip(tmp_path, monkeypatch, _zip({"logs/a.log": b""}), nombres=("Z.ZIP",))
     assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
-    carpeta = Path(json.loads(capsys.readouterr().out)["directorio"])
+    bajada = json.loads(capsys.readouterr().out)
+    carpeta = Path(bajada["directorio"])
     faltantes = json.loads((carpeta / "faltantes.json").read_text(encoding="utf-8"))
     assert [f["miembro"] for f in faltantes] == ["logs/a.log"]
+    # --sin-red la encuentra igual: fuera de Windows un glob con `.zip` no vería `.ZIP`.
+    (carpeta / "faltantes.json").write_text("[]", encoding="utf-8")
+    assert kr.main(["--destino", str(carpeta), "--sin-red"]) == kr.EXIT_PARCIAL
+    assert json.loads(capsys.readouterr().out)["descarga_incompleta"] == bajada["descarga_incompleta"]

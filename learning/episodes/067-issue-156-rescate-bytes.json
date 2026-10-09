@@ -83,8 +83,13 @@
     },
     {
       "action": "edit_module",
+      "success": false,
+      "error": "Al corregir, el orquestador añadió pruebas y además cambió la regla (decidía la carpeta conocida más externa, para que un parche vacío bajo patches/logs/ no fuera faltante) y lo subió sin revisión, avisando de ello en vez de revisarlo. El dueño ordenó pasarlo por el ciclo. La segunda revisión midió que el cambio aflojaba la detección: un log vacío bajo test_outputs/<tarea>/logs/ dejaba de dar código 4. El recuento desde los zips crudos midió que ningún dato real lo necesitaba: 0 de 1574 miembros vacíos cambian de clasificación y ninguna ruta trae dos carpetas conocidas"
+    },
+    {
+      "action": "edit_module",
       "success": true,
-      "note": "Ocho pruebas más sobre revisar_zip (exigidos a cualquier nivel, nombres parecidos, carpetas, conteo, extensión en mayúsculas) y un cambio de regla: decide la carpeta conocida más externa. Cinco de los defectos, inyectados de nuevo, hacen fallar ahora de 1 a 7 pruebas; el documento anota lo que la revisión no detecta (mayúsculas, tamaño declarado, zip sin logs)"
+      "note": "Regla devuelta a la ya revisada (lo exigido gana a cualquier nivel), con pruebas que la fijan: exigida bajo opcional, las dos opcionales a la vez, barra invertida y nombres con otras mayúsculas. Un arreglo que la segunda revisión pidió: --sin-red busca los zips sin distinguir mayúsculas en la extensión, como la bajada. El documento ya no se contradice y dice de qué nombre es el campo archivo en cada tipo de faltante"
     }
   ],
   "lessons": [
@@ -93,6 +98,8 @@
     "Un guion que cuenta lo que hay dentro de un zip lee solo infolist(): los nombres de los miembros son texto no confiable y no se usan para construir rutas",
     "Un modo sin red que repite una revisión no escribe dentro de la carpeta vieja: informa en el resumen y en el código de salida, y no duplica lo que su faltantes.json ya traía",
     "Al leer la salida de un guion redirigida a un archivo en Windows, fija PYTHONIOENCODING=utf-8 antes de decodificarla",
-    "Una regla que clasifica nombres se prueba también por sus bordes: cada valor de la lista, el caso negativo parecido, el anidado y el conteo distinto de cero; una prueba por criterio de aceptación no los cubre"
+    "Una regla que clasifica nombres se prueba también por sus bordes: cada valor de la lista, el caso negativo parecido, el anidado y el conteo distinto de cero; una prueba por criterio de aceptación no los cubre",
+    "Una corrección posterior a un dictamen es un cambio nuevo y vuelve al revisor antes de fusionar; avisar de que un trozo quedó sin revisar no lo revisa",
+    "En un guion que decide si una corrida dejó rastro, ante un caso ambiguo se elige el faltante de más: antes de relajar una regla, cuenta en los datos crudos cuántos casos reales la necesitan"
   ]
 }
