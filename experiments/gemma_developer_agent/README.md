@@ -925,6 +925,7 @@ entorno del experimento, que fija el ensayo de notebook.
 | [`docs/validez_tareas.md`](docs/validez_tareas.md) | Ficha de `scripts/kaggle_validez.py` | Vigente; ejecutado con el verificador real en un notebook sin GPU (agregado en `calibracion/validez_notebook_2026-10-04.json`) |
 | [`docs/paper/manuscript_en.md`](../../docs/paper/manuscript_en.md) | Manuscrito con lo medido, en conteos agregados; versión en castellano en `manuscript_es.md` | Vigente como fuente de las cifras de las secciones 1 y 11; exploratorio; sin enviar al Paper Track |
 | [`docs/ensayo_notebook.md`](docs/ensayo_notebook.md) | Paso a paso del ensayo de notebook | Vigente; nunca ejecutado |
+| [`docs/ensayo_nucleo_jupyter.md`](docs/ensayo_nucleo_jupyter.md) | Registro del notebook de la iteración 08 y ensayo local bajo un núcleo Jupyter real, con cuatro cortes forzados y un modelo falso | Vigente; ensayo local del 2026-10-09, sin GPU y sin subir nada. No mide al agente |
 | [`conditions/a_kit/README.md`](conditions/a_kit/README.md) | Cómo reconstruir el kit desde un manifiesto | Vigente |
 | [`conditions/a_linea_base/README.md`](conditions/a_linea_base/README.md) | Cómo armar el envío de la línea base | Vigente |
 | [`docs/supervision-codex-2026-10-03.md`](docs/supervision-codex-2026-10-03.md) | Supervisión de Codex: reparto de responsables y política de registro | Registro fechado; no se reescribe |

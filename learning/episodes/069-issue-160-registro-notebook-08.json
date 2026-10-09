@@ -1,0 +1,220 @@
+{
+  "seq": 69,
+  "id": "issue-160-registro-notebook-08",
+  "goal": "Notebook de la iteración 08 del experimento Kaggle con registro (inicio y fin de cada petición, motivo de fin, latido, log del servidor, diff al cierre y logs por tarea) y ensayo local bajo un núcleo Jupyter real con cuatro cortes forzados, más el sorteo fechado de 60 tareas; sin subir nada",
+  "ref": "#160",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-08",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "gh_project_update",
+      "success": false,
+      "error": "La consulta de GraphQL para comprobar que el item era la tarjeta del #160, lanzada desde PowerShell, perdió sus comillas dobles: Argument 'id' on Field 'node' has an invalid value. Expected type 'ID!'. Antes, gh issue view 160 --comments había devuelto solo el comentario con la semilla, sin el cuerpo del issue"
+    },
+    {
+      "action": "gh_project_update",
+      "success": true,
+      "note": "Consulta repetida desde Git Bash con comillas simples: el item es la tarjeta del #160; pasó de Todo a In Progress. El cuerpo del issue se leyó con gh api repos/<dueño>/<repo>/issues/160 --jq .body"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código. Lección aplicada: un ensayo local solo valida lo que ejecuta igual que el sistema real. Issues parecidos: las vueltas 39 y 40 de #103"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Leídos el notebook de la 07 celda a celda, el concilio 40, el guion del rescate de #156 y el código del arnés copiado de la imagen del ensayo: el arnés destruye el sandbox dentro de run_agent_sandbox, así que el diff al cierre no puede tomarse envolviendo _run_agent_sandbox"
+    },
+    {
+      "action": "add_dependency",
+      "success": true,
+      "note": "Imagen aal-ensayo-nucleo:local derivada de aal-ensayo:local con ipykernel, nbclient y pytest; el diff de pip freeze muestra solo paquetes añadidos, ninguno cambiado"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Primer ensayo bajo el núcleo: la celda 5 del notebook (demostración del grafo) se dejó correr tal cual y lanzó KeyError porque la primera tarea de tasks.jsonl no tiene grafo en la máquina; además el ensayo terminaba con os._exit sin vaciar la salida y su veredicto no se imprimía"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "El guion de corrección se escribió con un heredoc dentro de la orden: la barra y la n de una cadena de Python llegaron como un salto de línea real y el ensayo quedó con SyntaxError: unterminated string literal"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corregido con la herramienta de edición: doble declarado para la celda 5, vaciado de la salida antes de salir. El notebook corrió entero bajo ZMQInteractiveShell en un proceso distinto del ensayo"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Ensayo del tope de llamadas: el modelo falso nunca cedía el turno y el arnés no cortó a las 40 llamadas, la tarea llegó a 100 peticiones; y con cualquier corte la fila de la tarea decía «resuelta» sin error, porque el arnés descarta el motivo cuando el parche pasa. El registro no decía qué tope cortó"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Añadido el enganche agente_fin (envoltorio de Evaluator._run_agent_sandbox), que conserva el motivo de fin del agente, y el modelo falso cede el turno tras pasar el tope. Los cinco escenarios de corte dicen qué cortó. Medido el parche de rich en sus dos formas: se adoptó force_jupyter=False solo en la consola del log por tarea"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "El test del sorteo llevaba valores esperados escritos a ojo, sin calcular: AssertionError en los cinco primeros elementos; otro test contaba 6 eventos donde había 7. Y ningún test pasaba dos peticiones por el envoltorio ni dos tareas por el diagnóstico: la revisión independiente inyectó 56 defectos y sobrevivieron 13"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Primera batería completa del ensayo: las dos corridas sin enganches salieron «NO PASA» porque la validación del ensayo exigía logs con contenido en un notebook que, sin registro, no lleva el parche de rich; y la medición de tiempo cayó en parte bajo la carga de otros agentes, como avisó el orquestador"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Corregida la validación (sin enganches es otro control: logs de 0 bytes) y repetida la batería entera con una sola versión del ensayo, la medición de tiempo al final, sola y alternada, con la carga anotada. Rescate: 0 con el parche, 4 sin él"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Defectos que encontró la revisión independiente del PR #161 en scripts/kaggle_registro.py: diagnosticar respondía «completa» y salía con 0 con los enganches en FALLO, 0 peticiones y 7 errores del registro; daba como petición en vuelo un error transitorio ya recuperado; indexaba diffs y fines por nombre de tarea, de modo que una tarea repetida se pisaba; y un acta corrupta o una validez sin instance_id terminaban en traza con el código 1, el de «difiere». En el notebook, un enganche en FALLO no detenía nada: los logs volvían a 0 bytes y se descubría al final"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El documento y el PR daban 2381 pruebas, medidas antes del rebase sobre main (el revisor midió 2409); «96 veces» valía solo para el texto de la celda y no decía que el total crece 1,27 veces; y faltaban límites: la cobertura del CI no mide los dos guiones, el fsync corre dentro del tope de la tarea, el ensayo no ejercita ninguna de las 34 tareas nuevas. El episodio usaba research_sources y run_experiment, que no están en el vocabulario"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisión independiente (revisor de código y analista de datos) sobre 1c0b7dc: aprobado con observaciones, cifras reproducidas, y la lista de defectos de los dos pasos anteriores y del paso de pruebas"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "diagnosticar lee registro_instalado, los errores del cierre y las guardias, agrupa por corrida de tarea, separa petición en vuelo (inicio sin fin) de petición cortada, y sale con 3, 4 o 5 según el caso; entrada ilegible sale con 2. Orden comprobar: rescate y diagnóstico juntos. Guardias exigir_enganches y comprobar_primera_tarea en el notebook, declaradas en armar.py"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "64 pruebas. Inyectados uno a uno 29 defectos (los 13 que sobrevivían y 16 sobre el código nuevo): las pruebas detectan los 29. Los valores del sorteo se calcularon aparte, sin el guion"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Batería del ensayo repetida entera con el notebook rearmado: 16 corridas, las 16 pasan, incluidas las dos guardias con sabotaje a propósito; diagnosticar da 5 en la sesión muerta desde fuera, donde el rescate da 0. ruff, mypy, export_schema --check y pytest --cov: 2433 pasan, 9 omitidos, cobertura 98,72 %"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento del ensayo reescrito con las cifras de la batería final, las dos cifras del parche de rich, el procedimiento tras una corrida real, la medición del analista sobre sesiones resueltas y cortadas, y los límites que pidió la revisión"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Segunda revisión independiente sobre 34a0b7c: exige un cambio antes de fusionar (comprobar) y una lista corta más; da por buenos el emparejado, el agrupado por corrida, las guardias y las huellas"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Defectos de la segunda revisión en el código de la primera ronda de correcciones: comprobar saltaba en silencio un notebook sin registro (una pasada sin su registro junto a otra buena salía con 0) y, si ninguno traía registro, salía con 2 sin imprimir lo que dio el rescate; un campo de otro tipo en un evento (enganches como lista, tarea como lista) daba traza y código 1; el veredicto de una sesión detenida por una guardia decía a la vez «registro no fiable» y «sesión completa»; y ni la guardia tras la primera tarea ni diagnosticar miraban agente_fin y diff_cierre, de modo que un enganche instalado y sin efecto salía con 0"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "comprobar imprime siempre el rescate, lista los omitidos y cuenta como hallazgo una pasada sin registro; precedencia escrita y probada en comprobar y en diagnosticar; validación de tipos con código 2; estado «detenida»; la guardia y el diagnóstico exigen agente_fin y diff_cierre; el zip se vuelve a empaquetar si la celda de tareas falla"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Cinco defectos inyectados por la segunda revisión sobrevivían (comprobar devuelve el último código, parada original fuera del finally, la guardia cuenta cancelada como respondida, diff con el registro inactivo, tarea_fin no cierra la corrida), y defectos_inyectados.json se había generado antes del commit que decía medir. Al repetir la inyección, tres definiciones viejas ya no aplicaban al código cambiado y el guion las contaba como si sobrevivieran"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "88 pruebas. Inyección repetida sobre el commit 20b6136 con el árbol limpio, que el guion comprueba y anota: 49 defectos, detectados 49; los 13 de la primera revisión y los 5 de la segunda incluidos; ninguno equivalente"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "En la batería final del ensayo, la corrida con el parche global de rich se colgó en su tercera tarea: 16 minutos sin peticiones ni subprocesos, con el latido vivo. No se pudo sacar la pila del núcleo (el contenedor no permite ptrace): causa sin diagnosticar"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Copiada la salida de la corrida colgada, matado su contenedor y repetida una vez, sola: termina bien. Batería final: 18 corridas válidas, las 18 pasan, incluidas la pasada 2 y tres guardias con sabotaje a propósito. ruff, mypy, export_schema --check y pytest --cov: 2457 pasan, 9 omitidos, cobertura 98,72 %"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento con las cifras de la batería final, la precedencia de códigos, los límites que pidió la segunda revisión, las tres medidas de la razón del parche de rich y el cuelgue con su causa sin diagnosticar"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Tercera revisión independiente sobre f89a375: da por resueltos los puntos 2 a 10 y exige un cambio en comprobar, más una prueba que pasaba por la razón equivocada y dos huecos menores"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "comprobar seguía saliendo con 0 sin merecerlo, por tercera ronda: con una pasada muerta antes de instalar el registro (solo estado, metadatos y log; o con servidor_error_salida.txt; o la carpeta vacía; o sin carpeta) la orden no tenía cómo saber que faltaba, porque la defensa era reconocer la pasada por el nombre de sus archivos y esa pasada no deja ninguno. Además un cb_antes con peticion_en_curso de tipo lista daba traza y código 1"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Arreglo de fondo: --notebook es repetible y nombra las pasadas esperadas; que falte la carpeta, el registro o que el diagnóstico no dé 0 es un hallazgo; sin ninguna pasada nombrada la orden nunca sale con 0. Las señales por nombre quedan como aviso. scripts/kaggle_registro_enganches.py no se tocó: los notebooks armados y el ensayo siguen valiendo"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba «cada señal basta por sí sola» pasaba por la razón equivocada: sus tres nombres de archivo contenían iteracion_08, así que el cuarto patrón los cubría a todos y quitar cualquiera de los otros tres no hacía fallar nada. Tampoco había prueba de que diagnosticar no cuente una petición cancelada como respondida"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "97 pruebas: los cuatro casos de la revisión, el caso bueno, sin pasadas nombradas, precedencia por orden de nombrado, y un nombre de archivo por patrón que solo casa con ese patrón (la prueba lo comprueba). Inyección sobre f5c1e62 con el árbol limpio: 60 defectos, 59 detectados; el que sobrevive es equivalente (nombrar dos veces una pasada: el diccionario ya quita el duplicado)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "comprobar con las dos pasadas nombradas sobre las salidas ya guardadas del ensayo, sin repetirlo: 0 con las dos pasadas con registro, 4 en los cuatro casos de la revisión, 5 con la pasada 2 muerta. ruff, mypy, export_schema --check y pytest --cov: 2466 pasan, 9 omitidos, cobertura 98,72 %"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento: pasadas esperadas, qué significa el 0, sesión colgada frente a muerta, el falso positivo de la regla de agente_fin y diff_cierre (inferido, no ejecutado), el zip atrasado en una sesión muerta y que nada corta una tarea colgada sin peticiones"
+    }
+  ],
+  "lessons": [
+    "Antes de fiarse de la clase «resuelta» de una tarea del arnés de Kaggle, mirar el motivo de fin del agente: el arnés descarta el error del tope cuando el parche pasa las pruebas",
+    "Para registrar una llamada asíncrona que puede cancelarse, envolver la llamada y capturar BaseException: las retrollamadas de litellm de éxito y de fallo no se disparan ante una cancelación",
+    "Un lector de registros debe comprobar primero que el registro registró (enganches instalados, sin errores propios, alguna petición respondida) antes de decir que la sesión está completa: un archivo que existe no es un registro sano",
+    "Un enganche que se instala sobre código ajeno necesita dos guardias: una que detenga si no se instaló y otra que mire, tras la primera unidad de trabajo, que dejó lo que debía; «instalado» no prueba que surta efecto",
+    "Probar cada función que recorre una colección con al menos dos elementos distintos: con uno solo, «el primero», «el último» y «todos» son indistinguibles y los defectos de índice sobreviven",
+    "Antes de adoptar un parche global de una biblioteca en un notebook, medir qué más cambia, y dar la razón sobre el total y no solo sobre la parte que crece",
+    "Volver a medir las cifras de las comprobaciones después de un rebase: la cuenta de pruebas escrita antes ya no es la de la rama",
+    "En un ensayo con escenarios de control, escribir la expectativa de cada control antes de lanzar la batería: una validación que exige lo contrario obliga a repetirla entera",
+    "No escribir valores esperados de un test a ojo: calcularlos aparte, sin el código bajo prueba, antes de escribir la aserción",
+    "Medir tiempos con la máquina compartida solo en corridas alternadas y con la carga anotada",
+    "Para corregir un archivo con cadenas que llevan secuencias de escape, usar la herramienta de edición y no un heredoc dentro de la orden",
+    "Una orden que recorre varias entradas debe listar las que omite y por qué: lo que se salta en silencio se lee como «sin hallazgos»",
+    "Cuando una orden junta dos comprobaciones, fijar por escrito y con una prueba qué código gana si fallan las dos",
+    "Generar el resultado de una inyección de defectos sobre el commit que se cita, con el árbol limpio, y hacer que el guion anote ese commit: un defecto que ya no aplica al código no es un defecto que sobrevive",
+    "Antes de lanzar una batería de contenedores en paralelo, dejar un tope de tiempo por corrida: una corrida colgada bloquea las que esperan detrás",
+    "Una comprobación de «está todo» necesita que le digan cuánto es todo: recibir la lista de lo esperado y exigir cada elemento, en vez de inferir lo que falta por los rastros que dejó, porque lo que murió antes no deja rastro",
+    "Cuando el mismo tipo de defecto vuelve en la revisión siguiente, cambiar el diseño y no añadir otro caso a la heurística",
+    "En una prueba parametrizada por patrones, comprobar en la propia prueba que cada dato casa con un solo patrón: si casa con dos, quitar uno no la hace fallar"
+  ]
+}
