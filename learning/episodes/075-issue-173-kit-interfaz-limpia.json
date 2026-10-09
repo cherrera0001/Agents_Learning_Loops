@@ -1,0 +1,82 @@
+{
+  "seq": 75,
+  "id": "issue-173-kit-interfaz-limpia",
+  "goal": "Kit «interfaz limpia» (condición K, la A sin subagente, sin las tres herramientas de grafo y sin una línea de la instrucción) y comprobación mecánica de que la instrucción de un agente no nombra herramientas que no están en su lista; ensayo local del kit con modelo falso bajo el arnés real, sin enviar nada a Kaggle",
+  "ref": "#173",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue antes de leer el código: sin lecciones sobre kits de envío; las que salieron (heredocs largos en Git Bash, no usar gh auth switch) se tuvieron en cuenta"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Se comprobó con diff -r y con los miembros de los dos zips que K difiere de A solo en lo decidido: 6 líneas menos en agent.yaml, 1 línea menos en prompts/system.md y 2 archivos menos; los otros dos miembros son idénticos byte a byte. Se midió que el zip de A tiene fecha 2026-01-01 en sus miembros y los de b a i, z y K, 2026-10-01; en el historial el empaquetador solo aparece en #134 con 2026-10-01, y el zip de A es anterior a ese commit (hipótesis: lo empaquetó una versión local previa)"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "La primera versión de la comprobación resolvía también líneas «!include» dentro del Markdown de la instrucción, una semántica inventada: el cargador del compilador del organizador (adk_submission/yaml_loader.py) trata !include solo como etiqueta de un valor YAML y deja el contenido como texto. Se corrigió al leer ese cargador"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba «un nombre más largo no es el nombre» usaba una lista que ya contenía las herramientas del texto, de modo que una coincidencia por subcadena también pasaba; el probador adversarial lo reveló al sobrevivir 1 de 23 defectos inyectados"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Buscando un kit que pasara la regla ordenando una herramienta ausente, se vio que el lector leía solo la primera línea de una instrucción escrita en varias líneas sin barra vertical y no seguía la clave sub_agents, que el esquema del organizador admite; en ambos casos la instrucción de un subagente quedaba sin comprobar"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "El lector junta las líneas del escalar y sigue sub_agents además de agent_tool; HARNESS_TOOLS es la única lista, compartida con compile_with_adk. Quedan documentados como límites, con pruebas que los fijan, los nombres partidos, con escape de Markdown o con guiones, y la descripción de un subagente"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas con kits inventados y mínimos: ausente, presente, subagente con su lista, bloque de código, sin comillas, mayúsculas, include en otra carpeta, aviso con y sin --sin-resultados, CLI y compilador simulado. De 25 defectos inyectados, los 25 los detectan las pruebas tras corregir la prueba que dejaba pasar el de subcadena"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Ensayo local en la imagen aal-ensayo:local, sin red ni GPU, con el arnés real, el modelo falso del simulacro adaptado y una tarea de juguete inventada: K ofrece seis herramientas y el modelo llama a cinco de ellas, ninguna retirada. El mismo guion sobre A ofrece diez, cuatro de ellas retiradas. La corrida no resuelve la tarea porque el sandbox del contenedor no tiene pytest, y el contador tool_calls del arnés da 3 para 5 llamadas del rastro (no se investigó por qué)"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En la primera pasada ruff señaló líneas de más de 110 caracteres y dos archivos sin formato; se corrigió antes de la entrega"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Comprobaciones de CONTRIBUTING.md en verde con las pruebas nuevas; el registro de K (sub-004, prepared) se escribió con el compilador del organizador dentro de la imagen y sobre una copia del registro"
+    }
+  ],
+  "lessons": [
+    "Una comprobación sobre un archivo de configuración se escribe leyendo el cargador real del sistema que lo consume: la semántica de !include que supuse (líneas dentro del Markdown) no era la del compilador del organizador",
+    "Una prueba de «no coincide» debe usar una lista donde el nombre buscado falte; con la herramienta ya presente, una coincidencia por subcadena y una por palabra completa dan el mismo resultado",
+    "Antes de dar por buena una regla, busca el kit que la pasa aunque el defecto exista: las formas legales de escribir una instrucción (varias líneas, otra clave que declara subagentes) dejaban sin leer la de un subagente",
+    "Lo que una regla no detecta se escribe como límite en el código y se fija con una prueba que afirma que pasa, para que quien lo mejore cambie la prueba a propósito",
+    "Un zip ya registrado puede no reproducirse bit a bit con el empaquetador actual (fechas de los miembros); compara el contenido de los miembros, no el SHA del zip, y no cambies la fecha sin justificarlo"
+  ]
+}
