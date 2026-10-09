@@ -163,7 +163,7 @@
       "estado": "decidido",
       "decision": {
         "texto": "Criterio de decisión válida: 60 tareas por brazo o 6 pares discordantes a favor, prueba exacta de McNemar con p de 0,05 o menos y una repetición de la base en la misma semana; con menos, el resultado es exploratorio.",
-        "quien": "dueño, a propuesta del auditor del método",
+        "quien": "concilio, a propuesta del auditor del método; el dueño confirmó el 2026-10-09 que la prueba exacta se exige siempre",
         "vuelta": 39,
         "fecha": "2026-10-08"
       },
@@ -199,10 +199,10 @@
     },
     {
       "id": "minutos_por_tarea_frente_al_presupuesto",
-      "que_se_midio": "Minutos por tarea de la sesión frente a los disponibles. Vuelta 3: 1,62 minutos por tarea de 4 disponibles en dos tareas. Vueltas 11 y 12: minutos por tarea por pasada. Vuelta 33: el razonamiento con 4 minutos resolvió una tarea menos. Vuelta 37: 5,5 minutos por tarea son unas 11 horas del límite de 12.",
+      "que_se_midio": "Minutos por tarea de la sesión frente a los disponibles. Vuelta 3: 1,62 minutos por tarea de 4 disponibles en dos tareas. Vueltas 11 y 12: minutos por tarea por pasada; en la 11, el razonamiento con 4 minutos resolvió una tarea menos (3 contra 4). Vuelta 37: 5,5 minutos por tarea son unas 11 horas del límite de 12. Vuelta 42: los notebooks públicos que declaran más nota usan de 5 a 8 minutos por tarea; el tope propio es de 4.",
       "primera_vuelta": 3,
       "primera_fecha": "2026-10-04",
-      "vueltas_medido": [3, 11, 12, 33, 37],
+      "vueltas_medido": [3, 11, 12, 37, 42],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
@@ -217,11 +217,11 @@
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "El concilio 42 vetó exigir ejecución antes de entregar; sobre una comprobación de sintaxis antes de entregar (lo único con respaldo, vuelta 38) no hay decisión escrita."
+      "por_que_sigue_abierto": "El concilio 42 vetó exigir ejecución antes de entregar; sobre una comprobación de sintaxis antes de entregar (el cambio con más apoyo en el informe de trayectorias de la vuelta 42) no hay decisión escrita."
     },
     {
       "id": "gasto_sin_avance",
-      "que_se_midio": "Llamadas que no aportan información nueva (repetida sin edición de por medio, búsqueda vacía, lectura mal formada, llamada del subagente, rechazada sin ejecutar). Vuelta 42: 1 822 de 4 086 contadas por el arnés y 2 038 de 4 444 registradas en la traza (el verificador independiente da 2 037); 51,9 % con tope 40 y 14,5 % con tope 60.",
+      "que_se_midio": "Llamadas que no aportan información nueva (repetida sin edición de por medio, búsqueda vacía, lectura mal formada, llamada del subagente, rechazada sin ejecutar). Vuelta 42: 1 822 de 4 086 contadas por el arnés y 2 038 de 4 444 registradas en la traza (el verificador independiente da 2 037); 51,9 % con tope 40 y 14,5 % con tope 60 (comparación confundida: cambian a la vez las tareas, el tope y el razonamiento).",
       "primera_vuelta": 42,
       "primera_fecha": "2026-10-09",
       "vueltas_medido": [42],
