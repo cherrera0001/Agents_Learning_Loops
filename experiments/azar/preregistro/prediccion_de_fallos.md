@@ -265,3 +265,31 @@ Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (9), «cifra
 «ensayo que no se parece al sistema real» (12), «entorno» y «prueba frágil» (11, en parte). Quedan fuera
 «cambio sin revisar» y «texto que dice más que la fuente», porque dependen de lo que haga el orquestador y no
 el implementador, y «defecto de lógica propio», que la 7 y la 8 recogen de forma indirecta.
+
+## 12. Predicciones del issue #171
+
+Escritas por el orquestador antes de que el implementador empiece. La fecha que vale es la del commit que
+añade esta sección, el primero de la rama `issue-171-procesamiento-de-logs`. El implementador las ve: no son
+selladas (apartado 8.6).
+
+El issue #171 añade un vigía de solo lectura de los envíos de Kaggle al iniciar sesión, una cuenta por llamada
+de cada sesión a partir de las trazas, y un registro de hallazgos medidos con su estado.
+
+| # | Hecho | Probabilidad | Línea base y de dónde sale |
+|---|---|---|---|
+| 17 | El primer informe de `revisor-codigo` sobre el PR del #171 tiene el veredicto «cambios requeridos antes de fusionar» o «cambios requeridos» | 0,55 | 0,25: uno de cuatro primeros veredictos (PR #158, #161 y #163 «aprobado con observaciones»; PR #170 «cambios requeridos»; Wilson 0,05 a 0,70) |
+| 18 | El PR del #171 pasa por tres o más informes de `revisor-codigo` antes de fusionarse | 0,60 | 1,00: PR #158, tres; PR #161, cuatro (2 de 2; Wilson 0,34 a 1,00). El PR #170 sigue abierto y no cuenta |
+| 19 | Algún recuento de `analista-datos` sobre ese PR marca «no se reproduce» en al menos una cifra de la cuenta por llamada frente a las que recalculó el auditor del método en el concilio 42 (una cifra que solo cambia con otra definición, declarada, no cuenta) | 0,45 | 0,5: sin historia contada. En el concilio 42 tres roles dieron cifras distintas de lo mismo por usar definiciones distintas |
+| 20 | Algún informe de `revisor-codigo` muestra una entrada con la que el vigía calla un cambio de estado de un envío que debía avisar, o lo da por procesado sin estarlo | 0,40 | 0,80: cuatro de las cinco revisiones de guiones que juzgan corridas en los PR #161 y #170 hallaron un caso de «da por bueno lo que no lo es» (Wilson 0,38 a 0,96) |
+
+Plazo: las cuatro vencen el 2026-10-23. Si el PR no se ha fusionado para entonces, la 18 se anula.
+
+**Corrección a mis probabilidades anteriores.** En las predicciones 13 y 15 del issue #169 di 0,15 y 0,35 a
+que la primera revisión pidiera cambios y a que mostrara un caso mal resuelto; ocurrieron las dos. Subo las de
+este issue respecto de aquellas, y lo digo aquí para que quede a la vista: es el orquestador ajustando tras
+fallar, no una línea base nueva.
+
+Clases de la sección 3 cubiertas: «da por bueno lo que no lo es» (20), «cifra que no se reproduce» (19),
+«defecto de lógica propio» (17 y 18, de forma indirecta). Quedan fuera «ensayo que no se parece al sistema
+real» (no hay ensayo) y «entorno» (el vigía depende de la red y del token: lo cubren sus criterios, no una
+predicción).
