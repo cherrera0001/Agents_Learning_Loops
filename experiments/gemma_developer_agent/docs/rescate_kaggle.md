@@ -40,7 +40,11 @@ para leer su lista de miembros y sus tamaños (`infolist()`): no extrae nada, as
 `..` no escribe fuera de la carpeta. Un miembro *exigido* de 0 bytes es un faltante: los de `logs/` y
 `traces/` (a cualquier nivel de carpeta) y `task_results.jsonl`. Un zip que no se puede abrir también. Cada
 uno entra en `faltantes.json` con `notebook`, `archivo` (el zip), `miembro` y `causa`, y el guion sale con 4.
-Un `patches/` o `test_outputs/` de 0 bytes es un desenlace legítimo: no es un faltante, pero se cuenta. El
+Un `patches/` o `test_outputs/` de 0 bytes es un desenlace legítimo: no es un faltante, pero se cuenta. Si
+un miembro cuelga de varias de esas carpetas decide la más externa: `patches/logs/x.diff` es un parche. Los
+nombres se comparan tal cual, con sus mayúsculas: `Logs/a.log` no es exigido. El tamaño es el que declara el
+zip; no se lee el contenido. Un zip sin ningún log no es un faltante: solo se detectan los vacíos. En un
+faltante, `archivo` es el nombre en disco (acortado si hizo falta); `salidas.json` lo cruza con el de Kaggle. El
 resumen añade a cada notebook con zips `revision_de_zips` (zips, zips ilegibles, miembros revisados, de
 0 bytes, exigidos de 0 bytes, `patches` y `test_outputs` de 0 bytes). El 2026-10-08 cinco corridas pasaron por
 completas con 145 logs por tarea vacíos porque el guion solo miraba que el zip existiera (episodio 065).

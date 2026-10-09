@@ -528,3 +528,72 @@ def test_sin_red_no_repite_lo_que_faltantes_ya_trae(
     carpeta = Path(json.loads(capsys.readouterr().out)["directorio"])
     assert kr.main(["--destino", str(carpeta), "--sin-red"]) == kr.EXIT_PARCIAL
     assert len(json.loads(capsys.readouterr().out)["descarga_incompleta"]) == 1
+
+
+def _revisar(tmp_path: Path, miembros: dict[str, bytes]) -> tuple[list[str], dict[str, int]]:
+    ruta = tmp_path / "salida__z.zip"
+    ruta.write_bytes(_zip(miembros))
+    conteo = kr._conteo_vacio()
+    faltantes = kr.revisar_zip(ruta, "nb", conteo)
+    return [f["miembro"] for f in faltantes], conteo
+
+
+@pytest.mark.parametrize(
+    "miembro",
+    [
+        "traces/t.json",
+        "logs/sub/x.log",
+        "run/x/logs/d.log",
+        "run/traces/sub/t.json",
+        "sub/task_results.jsonl",
+    ],
+)
+def test_un_exigido_vacio_a_cualquier_nivel_es_un_faltante(tmp_path: Path, miembro: str) -> None:
+    faltantes, conteo = _revisar(tmp_path, {miembro: b"", "logs/lleno.log": b"x"})
+    assert faltantes == [miembro]
+    assert conteo["exigidos_de_0_bytes"] == 1
+    assert conteo["miembros_de_0_bytes"] == 1
+    assert conteo["miembros_revisados"] == 2
+
+
+@pytest.mark.parametrize(
+    "miembro",
+    ["mylogs/a.log", "catalogs/b.log", "logs_old/c.log", "x/logs", "task_results.jsonl.bak", "otros/d.txt"],
+)
+def test_un_nombre_parecido_a_uno_exigido_no_es_un_faltante(tmp_path: Path, miembro: str) -> None:
+    faltantes, conteo = _revisar(tmp_path, {miembro: b""})
+    assert faltantes == []
+    assert conteo["exigidos_de_0_bytes"] == 0
+    assert conteo["miembros_de_0_bytes"] == 1
+
+
+def test_un_miembro_que_es_una_carpeta_no_se_revisa(tmp_path: Path) -> None:
+    faltantes, conteo = _revisar(tmp_path, {"logs/": b"", "traces/sub/": b"", "logs/a.log": b"x"})
+    assert faltantes == []
+    assert conteo["miembros_revisados"] == 1
+    assert conteo["miembros_de_0_bytes"] == 0
+
+
+def test_decide_la_carpeta_conocida_mas_externa(tmp_path: Path) -> None:
+    miembros = {"patches/logs/h.diff": b"", "test_outputs/traces/i.txt": b"", "logs/patches/j.log": b""}
+    faltantes, conteo = _revisar(tmp_path, miembros)
+    assert faltantes == ["logs/patches/j.log"]
+    assert conteo["exigidos_de_0_bytes"] == 1
+    assert conteo["patches_de_0_bytes"] == 1
+    assert conteo["test_outputs_de_0_bytes"] == 1
+
+
+def test_varios_exigidos_vacios_se_cuentan_uno_por_uno(tmp_path: Path) -> None:
+    faltantes, conteo = _revisar(tmp_path, {"logs/a.log": b"", "logs/b.log": b"", "traces/c.json": b""})
+    assert len(faltantes) == 3
+    assert conteo["exigidos_de_0_bytes"] == 3
+
+
+def test_un_zip_con_la_extension_en_mayusculas_tambien_se_revisa(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    destino = _bajar_con_zip(tmp_path, monkeypatch, _zip({"logs/a.log": b""}), nombres=("Z.ZIP",))
+    assert kr.main(["--destino", str(destino)]) == kr.EXIT_PARCIAL
+    carpeta = Path(json.loads(capsys.readouterr().out)["directorio"])
+    faltantes = json.loads((carpeta / "faltantes.json").read_text(encoding="utf-8"))
+    assert [f["miembro"] for f in faltantes] == ["logs/a.log"]

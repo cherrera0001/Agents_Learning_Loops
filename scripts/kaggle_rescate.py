@@ -286,7 +286,9 @@ def revisar_zip(ruta: Path, notebook: str, conteo: dict[str, int]) -> list[dict[
     """Revisa los miembros de un zip de salida sin extraer nada: solo lee ``infolist()``.
 
     Un miembro exigido (bajo ``logs/`` o ``traces/``, o ``task_results.jsonl``) de 0 bytes es un faltante,
-    y un zip ilegible también. Los de ``patches/`` y ``test_outputs/`` de 0 bytes solo se cuentan. Los zips
+    y un zip ilegible también. Los de ``patches/`` y ``test_outputs/`` de 0 bytes solo se cuentan. Si un
+    miembro cuelga de varias carpetas conocidas, decide la más externa. Los nombres se comparan tal cual, con
+    sus mayúsculas. Los zips
     son datos no confiables: un nombre absoluto o con ``..`` se trata como texto y no causa escritura alguna.
     """
     conteo["zips"] += 1
@@ -303,14 +305,14 @@ def revisar_zip(ruta: Path, notebook: str, conteo: dict[str, int]) -> list[dict[
             continue
         conteo["miembros_de_0_bytes"] += 1
         carpetas, base = _partes_de(nombre)
-        if CARPETAS_EXIGIDAS & set(carpetas) or base == ARCHIVO_EXIGIDO:
+        # Decide la carpeta conocida más externa: `patches/logs/x.diff` es un parche, no un log.
+        conocida = next((c for c in carpetas if c in CARPETAS_EXIGIDAS or c in CARPETAS_OPCIONALES), None)
+        if conocida in CARPETAS_EXIGIDAS or base == ARCHIVO_EXIGIDO:
             conteo["exigidos_de_0_bytes"] += 1
             causa = "miembro exigido de 0 bytes"
             faltantes.append({"notebook": notebook, "archivo": ruta.name, "miembro": nombre, "causa": causa})
-            continue
-        for opcional in CARPETAS_OPCIONALES:
-            if opcional in carpetas:
-                conteo[f"{opcional}_de_0_bytes"] += 1
+        elif conocida is not None:
+            conteo[f"{conocida}_de_0_bytes"] += 1
     return faltantes
 
 
