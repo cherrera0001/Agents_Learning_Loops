@@ -886,14 +886,19 @@ ensayo**; se conservan las cinco y el motivo de cada una está en su `informe.js
 **El desacuerdo del concilio, con el dato.** Tras vencer el tope y vaciar el mapa, el hilo que giraba en el
 mapa **deja de girar y no sigue con la tarea vieja**: en las corridas conservadas su CPU dejó de
 crecer, `agente_fin` anotó `CancelledError` en menos de un segundo y el servidor no recibió ninguna petición
-suya. Lo que tarda es en **terminar**: 8,96, 16,89 y 25,31 s en las corridas conservadas (0,29 s en la
-primera prueba, que no se conserva), y en una corrida más de 30 s, con la máquina cargada. De esas, solo en
-dos el corte vio el ciclo plantado: en una el hilo terminó en 25,31 s y el notebook siguió; en la otra no
-terminó en 30 s. «Corta y sigue» con el ciclo a la vista tiene, por tanto, un solo caso. No se midió en qué espera ese rato (hipótesis: el cierre de su bucle de eventos espera a
-los hilos que recogen el sandbox). En esa corrida el notebook terminó la sesión, como manda la regla. Un
-hilo en un bucle síncrono que no depende del mapa **no** termina y sigue gastando CPU (15 s de CPU en 15 s
-de margen): ahí el notebook nunca sigue. Las dos posturas quedan cubiertas por la regla: se sigue solo con
-el hilo muerto.
+suya. Lo que tarda es en **terminar**. Los tiempos medidos en las corridas conservadas
+(`segundos_hasta_terminar` del evento `tarea_colgada`, releídos del registro de cada una en el #179) son:
+0,57 s (`ciclo_con_arreglo_t90`), 6,21 s (`colgada_ipk_7.1.0_t90`), 8,96 s y 11,58 s
+(`ciclo_sin_arreglo_t90`), 16,89 s (`ciclo_sin_arreglo_anillo`) y 25,31 s (`ciclo_sin_arreglo_599`), más
+0,29 s en la primera prueba, que no se conserva; y en una corrida (`ciclo_sin_arreglo_margen`) más de 30 s,
+con la máquina cargada. Los de 0,57, 6,21 y 11,58 s son de tareas legítimas que un tope de 90 s cortó, no
+de tareas con el ciclo plantado. De las corridas con el ciclo plantado, solo en dos el corte vio el ciclo:
+en una el hilo terminó en 25,31 s y el notebook siguió; en la otra no terminó en 30 s. «Corta y sigue» con
+el ciclo a la vista tiene, por tanto, un solo caso. No se midió en qué espera ese rato (hipótesis: el
+cierre de su bucle de eventos espera a los hilos que recogen el sandbox). En esa corrida el notebook
+terminó la sesión, como manda la regla. Un hilo en un bucle síncrono que no depende del mapa **no** termina
+y sigue gastando CPU (15 s de CPU en 15 s de margen): ahí el notebook nunca sigue. Las dos posturas quedan
+cubiertas por la regla: se sigue solo con el hilo muerto.
 
 **El margen de 30 s queda justo.** Una de cinco esperas lo superó y otra llegó a 25,31 s. Subirlo cuesta
 poco frente a un tope de 900 s y es una línea de `armar.py`, pero cambia el notebook y obliga a repetir el
@@ -1049,6 +1054,30 @@ costo del registro medido en el #160 no se volvió a medir con el código nuevo.
 
 ### Nadie consume todavía la marca de par faltante
 
+**Actualización del #179.** Ya hay un guion versionado que la consume:
+`python -m scripts.kaggle_comparar_pasadas`. Lo que sigue, hasta la orden de abajo, es lo que se encontró
+antes de escribirlo y se conserva por su motivo. El guion:
+
+```bash
+python -m scripts.kaggle_comparar_pasadas --base <salida de la pasada 1> --otra <salida de la pasada 2> \
+    [--lista <sorteo_60.json>]
+```
+
+- Cada lado acepta varias `--base` o `--otra`: una pasada repartida en porciones que juntas cubren la misma
+  lista de tareas (por ejemplo, la pasada de la base frente a las porciones de otro brazo).
+- Lee el JSON de cada salida y su registro, quita los pares cuya tarea esté en `pares_faltantes` (o marcada
+  `par_faltante` en el JSON) de cualquiera de los dos lados, dice cuántos quitó y cuáles quedan, cuenta
+  concordantes y discordantes en cada sentido y da la prueba exacta de McNemar (la de
+  `scripts/kaggle_replicas.py`, no otra).
+- **Una pasada con una tarea colgada no cuenta como completa** (regla del concilio de la vuelta 43): el
+  guion escribe la cuenta igual, lo dice y sale con 3. Sale con 4 si la comparación no es completa por otra
+  causa (registro no fiable, sesión cortada o muerta, JSON sin `completo: true`, los dos lados no cubren las
+  mismas tareas o la `--lista`); gana el 4. Con 0 solo si ningún par se excluyó y todo lo anterior está bien.
+- Probado a mano sobre las salidas del ensayo (`ensayo_salida/completa` frente a `pasada_2`: 4, porque la
+  segunda trae 3 de las 26 tareas; y `completa` frente a `comprobar_pasadas/caso_9`, con una tarea colgada:
+  4, por la sesión cortada, con el par excluido). Las pruebas versionadas usan datos inventados:
+  `tests/test_kaggle_comparar_pasadas.py`.
+
 La regla del concilio es que una tarea cortada por el tope por tarea es un par faltante: al comparar la
 pasada 1 con la pasada 2, ese par se excluye. **Hoy ningún guion versionado hace esa exclusión**, porque
 ningún guion versionado compara dos pasadas del notebook:
@@ -1084,11 +1113,19 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
    ([versiones](#versiones-de-ipykernel)).
 3. Exclusión de los pares faltantes resuelta: un análisis de la pasada 1 contra la pasada 2 que excluya
    las tareas de `pares_faltantes` de cualquiera de las dos y diga cuántas excluyó
-   ([arriba](#nadie-consume-todavía-la-marca-de-par-faltante)).
+   ([arriba](#nadie-consume-todavía-la-marca-de-par-faltante)). Cumplida por
+   `scripts/kaggle_comparar_pasadas.py` (#179) cuando ese PR esté fusionado.
 4. Primera subida en serie: una pasada, y la segunda solo después de leer la primera.
 5. Orden del dueño, con la orden a la vista.
-6. Cuota disponible de al menos 14,6 h. La cifra es de la regla del concilio 41 y llegó por el
-   coordinador; no se comprobó aquí.
+6. Cuota disponible para lo que cuesta una pasada, **recontado por el auditor del concilio 43**: una pasada
+   cuesta **5,0 h de cuota** con un factor de 2,0 entre reloj y cuota, y como techo **5,6 h** con 2,25. La
+   cifra anterior de esta condición («al menos 14,6 h», de la regla del concilio 41, llegada por el
+   coordinador) no tenía derivación y se retira. No he repetido la cuenta: es la del auditor.
+   **La holgura de una pasada la fija `TOPE_SEGUNDOS = 7200`, el tope del conjunto de tareas, contado desde
+   el inicio de las tareas, y no el de sesión.** Queda entre 360 y 1 260 s: menos que una tarea colgada
+   (930 s) o poco más. Por aritmética (no medida), una sola tarea colgada puede hacer que `TOPE_SEGUNDOS`
+   corte la pasada antes de la última tarea; el diagnóstico lo diría (`cortado_por: tareas`, código 3) y el
+   guion de comparación no daría la pasada por completa.
 
 ### Límites conocidos
 
@@ -1112,9 +1149,11 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
 - **El margen de 30 s tras el corte queda justo:** el hilo suelto tardó 25,31 s en terminar en una corrida
   y más de 30 en otra ([arriba](#las-dos-ramas-del-corte)).
 - **Un registro truncado tras tareas completas, con un `cierre` añadido, sale con 0** en `diagnosticar` y
-  en `comprobar`: ninguno sabe cuántas tareas se esperaban. El notebook armado no puede producirlo, porque
-  toda salida temprana del bucle de tareas anota un `corte` (leído en la celda 10; no hay un escenario que
-  lo ejercite). El número de tareas está en el JSON de la pasada.
+  en `comprobar` si no se les dice cuántas tareas se esperaban. El notebook armado no puede producirlo,
+  porque toda salida temprana del bucle de tareas anota un `corte` (leído en la celda 10; no hay un
+  escenario que lo ejercite). Desde el #179 ambas órdenes aceptan `--tareas-esperadas N` y un registro que
+  empezó otro número sale con 4; `scripts.kaggle_comparar_pasadas` además exige `completo: true` en el JSON
+  y que cada lado cubra la lista del sorteo. Sin la opción el límite sigue siendo el de arriba.
 - **Un cuelgue que no suelte el GIL no lo corta este tope**
   ([arriba](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle)).
 - **`comprobar` puede dar 4 en vez de 7** cuando la tarea cortada dejó su log por tarea en 0 bytes
@@ -1125,6 +1164,10 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
   código dejaría de decir «cortada por el notebook»; el veredicto sí lo sigue diciendo, detrás del
   problema. En los 42 registros del ensayo no ocurrió: en los 39 que tienen `cierre`, entre el último evento
   y el `cierre` pasan de 0,014 a 0,418 s y después no hay nada. Con el modelo real no está medido.
+  **No se cambió (#179, punto 10).** El 4 es la respuesta prudente para un registro en que algo escribió tras
+  cerrarse, y el JSON del diagnóstico conserva la causa (`sesion.estado: cortada`, `cortado_por`); una
+  prueba lo fija (`test_un_evento_tras_el_cierre_da_4_pero_el_diagnostico_sigue_diciendo_cortada`). Cambiar
+  la precedencia para que un 3 gane al 4 haría pasar por «cortada» un registro que no es de fiar.
 - **Un registro con `registro_instalado` y `cierre`, sin ninguna tarea, sale con 0.** Es el caso extremo de
   no saber cuántas tareas se esperaban.
 
@@ -1135,6 +1178,9 @@ doble con el mapa o sin él. No se modificó ninguna prueba del #160. Como en el
 el CI no mide `scripts/`. Las comparaciones con el reloj llevan tolerancia: la primera versión exigía que
 la espera de un tope de 0,3 s durara 0,3 s o más, y en Windows `Thread.join` volvió a los 0,296 s, con la
 CI en rojo.
+
+Del #179: `tests/test_kaggle_comparar_pasadas.py` (la comparación de dos pasadas, con datos inventados) y
+`tests/test_kaggle_seguimiento_179.py` (`--tareas-esperadas`, el vigía y el registro de envíos).
 
 ## Cómo repetirlo
 

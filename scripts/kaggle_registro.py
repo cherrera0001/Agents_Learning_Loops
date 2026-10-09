@@ -50,7 +50,11 @@ Precedencia en ``diagnosticar``: 4 gana a 3, y 3 gana a 7, a 6 y a 5 (un registr
 sesión esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre). El 7 exige
 ``cierre``; el 6 y el 5 son de un registro sin ``cierre`` y los separa el silencio antes del último latido.
 El 0 de ``diagnosticar`` significa «registro fiable y sesión completa», no «todas las tareas completas»: una
-tarea cortada por tiempo o por llamadas no cambia el código; su motivo está en ``agente_fin``.
+tarea cortada por tiempo o por llamadas no cambia el código; su motivo está en ``agente_fin``. Tampoco sabe
+cuántas tareas se esperaban: un registro truncado tras tareas completas, con un ``cierre`` añadido, sale con
+0. Con ``--tareas-esperadas N`` (en ``diagnosticar`` y en ``comprobar``) un registro que empezó otro número de
+tareas no es fiable y sale con 4. Para comparar dos pasadas, ``scripts.kaggle_comparar_pasadas`` además
+exige el ``completo: true`` del JSON y que cada lado cubra la lista del sorteo.
 Precedencia en ``comprobar``: el código del rescate, si no es 0; si lo es, el de la primera pasada nombrada,
 en el orden en que se nombraron, cuyo código no sea 0; sin ninguna pasada nombrada, 2 si todo lo demás da 0.
 """
@@ -378,14 +382,23 @@ def silencio_antes_del_ultimo_latido(
 
 
 def salud_del_registro(
-    eventos: Sequence[dict[str, Any]], fichas: Sequence[dict[str, Any]], ocurrencias: Sequence[dict[str, Any]]
+    eventos: Sequence[dict[str, Any]],
+    fichas: Sequence[dict[str, Any]],
+    ocurrencias: Sequence[dict[str, Any]],
+    tareas_esperadas: int | None = None,
 ) -> list[str]:
     """Por qué no hay que fiarse de este registro. Lista vacía si no hay motivo.
 
     Un registro puede existir y no registrar: enganches que no se instalaron o que no surten efecto,
-    errores propios al escribir, o una sesión con tareas corridas y ninguna petición respondida.
+    errores propios al escribir, o una sesión con tareas corridas y ninguna petición respondida. Con
+    ``tareas_esperadas``, también un registro que trae otro número de tareas (#179, punto 9): un registro
+    truncado tras tareas completas con un ``cierre`` añadido, que sin ese número sale con 0.
     """
     problemas: list[str] = []
+    if tareas_esperadas is not None and len(ocurrencias) != tareas_esperadas:
+        problemas.append(
+            f"el registro trae {len(ocurrencias)} tareas empezadas y se esperaban {tareas_esperadas}"
+        )
     instalado = next((e for e in eventos if e.get("evento") == "registro_instalado"), None)
     if instalado is None:
         problemas.append("el registro no trae el evento «registro_instalado»")
@@ -502,8 +515,16 @@ def salud_del_registro(
     return problemas
 
 
-def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, Any]]) -> dict[str, Any]:
-    """Qué pasó en la sesión, solo con lo que quedó en el registro."""
+def diagnosticar(
+    eventos: Sequence[dict[str, Any]],
+    latidos: Sequence[dict[str, Any]],
+    tareas_esperadas: int | None = None,
+) -> dict[str, Any]:
+    """Qué pasó en la sesión, solo con lo que quedó en el registro.
+
+    ``tareas_esperadas``, si se da, es el número de tareas que la pasada debía empezar (el de su lista); un
+    registro con otro número no es fiable.
+    """
     validar_eventos(eventos)
     pares = emparejar(eventos)
     fichas = [_ficha(pares[n]) for n in sorted(pares)]
@@ -602,7 +623,7 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
         estado, veredicto = "muerta", "muerta desde fuera: el registro no termina en «cierre»"
         if silencio is not None:
             veredicto += f" ({silencio} s de latido sin eventos antes del último latido)"
-    problemas = salud_del_registro(eventos, fichas, ocurrencias)
+    problemas = salud_del_registro(eventos, fichas, ocurrencias, tareas_esperadas)
     if problemas:
         veredicto = "registro no fiable (" + "; ".join(problemas) + "); sesión " + veredicto
     canales = Counter(e.get("evento") for e in eventos if str(e.get("evento", "")).startswith("cb_"))
@@ -708,21 +729,21 @@ def _orden_sortear(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
-def _diagnostico_de(ruta: Path) -> dict[str, Any]:
+def _diagnostico_de(ruta: Path, tareas_esperadas: int | None = None) -> dict[str, Any]:
     datos = cargar_salida(ruta)
-    informe = diagnosticar(datos["eventos"], datos["latidos"])
+    informe = diagnosticar(datos["eventos"], datos["latidos"], tareas_esperadas)
     informe["lineas_ilegibles"] = datos["lineas_ilegibles"]
     informe["hay_latido"] = datos["hay_latido"]
     return informe
 
 
 def _orden_diagnosticar(args: argparse.Namespace) -> int:
-    informe = _diagnostico_de(args.salida)
+    informe = _diagnostico_de(args.salida, args.tareas_esperadas)
     print(json.dumps(informe, ensure_ascii=False, indent=1))
     return codigo_de(informe)
 
 
-def _pasada(carpeta: Path) -> dict[str, Any]:
+def _pasada(carpeta: Path, tareas_esperadas: int | None = None) -> dict[str, Any]:
     """Lo que se puede decir de una pasada esperada: su código y el motivo, con la carpeta que haya."""
     if not carpeta.is_dir():
         return {"codigo": EXIT_REGISTRO, "motivo": "no existe la carpeta de este notebook en el rescate"}
@@ -734,7 +755,7 @@ def _pasada(carpeta: Path) -> dict[str, Any]:
             "salidas": salidas,
         }
     try:
-        informe = _diagnostico_de(carpeta)
+        informe = _diagnostico_de(carpeta, tareas_esperadas)
     except RegistroError as exc:
         return {"codigo": EXIT_ENTRADA, "motivo": str(exc)}
     return {"codigo": codigo_de(informe), "veredicto": informe["sesion"]["veredicto"]}
@@ -752,7 +773,7 @@ def _orden_comprobar(args: argparse.Namespace) -> int:
     except (ValueError, KeyError, TypeError):
         faltantes = None
     esperadas: list[str] = list(dict.fromkeys(args.notebook or []))
-    pasadas = {slug: _pasada(args.rescate / "notebooks" / slug) for slug in esperadas}
+    pasadas = {slug: _pasada(args.rescate / "notebooks" / slug, args.tareas_esperadas) for slug in esperadas}
     no_nombrados: dict[str, Any] = {}
     for carpeta in sorted(p for p in (args.rescate / "notebooks").glob("*") if p.is_dir()):
         if carpeta.name in pasadas:
@@ -783,6 +804,16 @@ def _orden_comprobar(args: argparse.Namespace) -> int:
     return codigo
 
 
+def _tareas_esperadas(texto: str) -> int:
+    try:
+        n = int(texto)
+    except ValueError:
+        n = 0
+    if n < 1:
+        raise argparse.ArgumentTypeError("debe ser un entero positivo")
+    return n
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="python -m scripts.kaggle_registro", description=__doc__.split("\n")[0])
     sub = p.add_subparsers(dest="orden", required=True)
@@ -793,6 +824,12 @@ def main(argv: list[str] | None = None) -> int:
     s.set_defaults(funcion=_orden_sortear)
     d = sub.add_parser("diagnosticar", help="Dice qué cortó una sesión, solo con su registro")
     d.add_argument("--salida", type=Path, required=True, help="Carpeta de salida o zip crudo_*.zip")
+    d.add_argument(
+        "--tareas-esperadas",
+        type=_tareas_esperadas,
+        default=None,
+        help="Tareas que la pasada debía empezar; con otro número el registro no es fiable (salida 4)",
+    )
     d.set_defaults(funcion=_orden_diagnosticar)
     c = sub.add_parser("comprobar", help="Rescate que mira bytes y diagnóstico del registro, juntos")
     c.add_argument("--rescate", type=Path, required=True, help="Carpeta de un rescate ya bajado")
@@ -801,6 +838,12 @@ def main(argv: list[str] | None = None) -> int:
         action="append",
         default=None,
         help="Slug de una pasada esperada; se repite, una por pasada. Sin ninguna, la orden no sale con 0",
+    )
+    c.add_argument(
+        "--tareas-esperadas",
+        type=_tareas_esperadas,
+        default=None,
+        help="Tareas que cada pasada nombrada debía empezar; con otro número su registro no es fiable",
     )
     c.set_defaults(funcion=_orden_comprobar)
     args = p.parse_args(argv)

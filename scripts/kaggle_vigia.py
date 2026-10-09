@@ -1,10 +1,12 @@
 """Vigía de Kaggle al iniciar la sesión: qué cambió desde el último rescate y qué hallazgo no tiene decisión.
 
 Lo ejecuta el gancho ``SessionStart`` de Claude Code (``.claude/settings.json``) y su salida entra en el
-contexto de la sesión. **Solo lee**: pide por la API los envíos propios y la lista de notebooks propios, los
-compara con la última lectura guardada por el rescate y dice lo que cambió y está **sin procesar**. No sube,
-no envía, no escribe nada. Reutiliza ``scripts.kaggle_rescate.pedir`` (token solo a hosts de Kaggle, https,
-sin seguir redirecciones a otro host), así que no hay una segunda forma de llamar a la API.
+contexto de la sesión. **Solo lee de Kaggle**: pide por la API los envíos propios y la lista de notebooks
+propios, los compara con la última lectura guardada por el rescate y dice lo que cambió y está **sin
+procesar**. No sube ni envía nada. Lo único que escribe es su propio registro, dentro de la carpeta de
+rescates (ignorada por git): ``vigia_cambios.jsonl`` y ``vigia_ultima_lectura.json`` (ver más abajo).
+Reutiliza ``scripts.kaggle_rescate.pedir`` (token solo a hosts de Kaggle, https, sin seguir redirecciones a
+otro host), así que no hay una segunda forma de llamar a la API.
 
     python scripts/kaggle_vigia.py                      # como gancho: siempre sale con 0
     python scripts/kaggle_vigia.py --rescates <carpeta> # otra carpeta de rescates
@@ -22,6 +24,17 @@ con fecha de modificación posterior y, si aún empatan, el de ruta mayor. Una c
 no se considera. Tampoco sirven (y se avisa de ellas) las de marca futura y las incompletas: el rescate
 escribe ``envios.json`` primero y puede morir justo después, así que una lectura vale solo si trae también
 ``tabla_publica.zip`` o ``notebooks.json``.
+
+**Cada cambio de estado se guarda con la hora de las dos lecturas que lo acotan** (#179, punto 16), en
+``vigia_cambios.jsonl`` (una línea por envío que cambió: ``ref``, ``antes``, ``ahora``,
+``lectura_anterior_utc``, ``lectura_anterior_de`` y ``lectura_utc``). La lectura no dice cuándo cambió un
+envío, solo entre qué dos lecturas: de ``error`` a ``complete`` entre las 21:13 y las 21:37 acota una
+evaluación; no la mide. La lectura anterior es la más reciente de dos: el ``envios.json`` del último rescate
+o la última lectura del propio vigía (``vigia_ultima_lectura.json``), así que un cambio se anota una sola
+vez y con el intervalo más corto que hay. Si no puede escribir, lo dice y sigue.
+
+**Avisa de un envío sin terminar** (punto 17): cualquiera que la API devuelva en un estado que no sea
+``complete`` ni ``error``. El organizador anunció un límite de envíos pendientes, aparte del de uno al día.
 
 «Sin procesar» quiere decir solo esto: hay un cambio en Kaggle respecto del último rescate. Un rescate
 nuevo lo apaga; que la bitácora y la memoria se actualicen es trabajo del orquestador.
@@ -266,6 +279,114 @@ def comparar_envios(
     return lineas
 
 
+TERMINADOS = frozenset({"complete", "error"})
+FORMATO_HORA = "%Y-%m-%dT%H:%M:%SZ"
+ARCHIVO_DE_CAMBIOS = "vigia_cambios.jsonl"
+ARCHIVO_DE_LECTURA = "vigia_ultima_lectura.json"
+
+
+def envios_sin_terminar(envios: Any) -> list[tuple[int, str, str]]:
+    """``(ref, estado, fecha de envío)`` de los envíos que no están en ``complete`` ni en ``error``.
+
+    Una lista de envíos que no se entiende da una lista vacía: ``resumen_de_envios`` ya la rechazó antes.
+    """
+    if not isinstance(envios, list):
+        return []
+    return [
+        (int(e["ref"]), str(e["status"]).strip(), str(e.get("date") or "sin fecha"))
+        for e in envios
+        if isinstance(e, dict) and "ref" in e and str(e.get("status", "")).strip().lower() not in TERMINADOS
+    ]
+
+
+def _hora(momento: datetime) -> str:
+    return momento.astimezone(UTC).strftime(FORMATO_HORA)
+
+
+def _par(valor: tuple[str, float | None] | None) -> dict[str, Any] | None:
+    return None if valor is None else {"estado": valor[0], "nota": valor[1]}
+
+
+def cambios_de_estado(
+    base: dict[int, tuple[str, float | None]],
+    actuales: dict[int, tuple[str, float | None]],
+    desde: datetime,
+    hasta: datetime,
+    origen: str,
+) -> list[dict[str, Any]]:
+    """Un registro por cada envío que cambió entre dos lecturas, con la hora de las dos.
+
+    El cambio ocurrió en algún momento entre ``desde`` y ``hasta``; la lectura no dice cuándo, solo lo acota.
+    ``origen`` dice de dónde sale la lectura anterior: ``rescate`` (el ``envios.json`` guardado) o ``vigia``
+    (la última lectura que dejó este mismo guion).
+    """
+    return [
+        {
+            "ref": ref,
+            "antes": _par(base.get(ref)),
+            "ahora": _par(actuales.get(ref)),
+            "lectura_anterior_utc": _hora(desde),
+            "lectura_anterior_de": origen,
+            "lectura_utc": _hora(hasta),
+        }
+        for ref in sorted(set(base) | set(actuales))
+        if base.get(ref) != actuales.get(ref)
+    ]
+
+
+def leer_lectura_del_vigia(carpeta: Path) -> tuple[datetime, dict[int, tuple[str, float | None]]] | None:
+    """La última lectura que dejó el vigía, o ``None`` si no hay o no se entiende."""
+    try:
+        datos = json.loads((carpeta / ARCHIVO_DE_LECTURA).read_text(encoding="utf-8"))
+        momento = datetime.strptime(datos["leido_utc"], FORMATO_HORA).replace(tzinfo=UTC)
+        envios = {int(ref): (str(v[0]), _nota(v[1])) for ref, v in datos["envios"].items()}
+    except (OSError, ValueError, KeyError, TypeError, IndexError, AttributeError):
+        return None
+    return momento, envios
+
+
+def registrar_lectura(
+    carpeta: Path,
+    marca: datetime,
+    guardados: dict[int, tuple[str, float | None]],
+    actuales: dict[int, tuple[str, float | None]],
+    ahora: datetime,
+) -> list[str]:
+    """Guarda cada cambio de estado con la hora de las dos lecturas que lo acotan y la lectura de ahora.
+
+    La lectura anterior es la más reciente de dos: el ``envios.json`` del último rescate y la última lectura
+    del propio vigía. Así un cambio queda acotado por dos lecturas seguidas y se anota una sola vez, aunque
+    el rescate no se repita. Escribe solo en ``carpeta`` (la de los rescates, ignorada por git). Si no puede
+    escribir, lo dice en una línea y no lanza.
+    """
+    previa = leer_lectura_del_vigia(carpeta)
+    if previa is not None and marca < previa[0] <= ahora:
+        desde, base, origen = previa[0], previa[1], "vigia"
+    else:
+        desde, base, origen = marca, guardados, "rescate"
+    cambios = cambios_de_estado(base, actuales, desde, ahora, origen)
+    try:
+        if cambios:
+            with (carpeta / ARCHIVO_DE_CAMBIOS).open("a", encoding="utf-8", newline="\n") as archivo:
+                for cambio in cambios:
+                    archivo.write(json.dumps(cambio, ensure_ascii=False) + "\n")
+        lectura = {
+            "leido_utc": _hora(ahora),
+            "envios": {str(r): list(v) for r, v in sorted(actuales.items())},
+        }
+        (carpeta / ARCHIVO_DE_LECTURA).write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
+    except OSError as exc:
+        return [
+            f"no pude guardar la lectura del vigía ({type(exc).__name__}): los cambios no quedaron anotados"
+        ]
+    if not cambios:
+        return []
+    return [
+        f"anoté {len(cambios)} cambios de estado en {ARCHIVO_DE_CAMBIOS}: entre la lectura de {_hora(desde)} "
+        f"({origen}) y la de {_hora(ahora)}"
+    ]
+
+
 def notebooks_cambiados(guardados: Any, actuales: Any) -> list[str]:
     """Refs de notebooks nuevos o con otra ``lastRunTime`` que la guardada."""
     if not isinstance(guardados, list) or not isinstance(actuales, list):
@@ -345,6 +466,15 @@ def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
     for campo in ("descripcion", "estados"):
         if PROHIBIDO_EN_HALLAZGOS.search(json.dumps(datos.get(campo), ensure_ascii=False)):
             problemas.append(f"`{campo}`: parece llevar un identificador de tarea, un enlace o una ruta")
+    # La lista `estados` del archivo documenta los estados válidos: uno que no figure en ESTADOS la desmiente.
+    # No se exige que traiga todos (un registro mínimo puede nombrar solo los que usa).
+    if "estados" in datos:
+        if not isinstance(datos["estados"], list):
+            problemas.append("`estados` debe ser una lista")
+        else:
+            desconocidos = [e for e in datos["estados"] if e not in ESTADOS]
+            if desconocidos:
+                problemas.append(f"`estados` nombra estados que el validador no conoce: {desconocidos}")
     ids: set[str] = set()
     for fila in datos["hallazgos"]:
         if not isinstance(fila, dict):
@@ -395,6 +525,10 @@ def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
                     )
                 if (fecha := _fecha_iso(decision["fecha"])) is None or fecha > hoy:
                     problemas.append(f"{nombre}: `decision.fecha` debe ser AAAA-MM-DD y no futura")
+                elif primera is not None and fecha < primera:
+                    problemas.append(
+                        f"{nombre}: `decision.fecha` es anterior a la `primera_fecha` del hallazgo"
+                    )
                 if _entero(fila.get("primera_vuelta")) and decision["vuelta"] < fila["primera_vuelta"]:
                     problemas.append(f"{nombre}: `decision.vuelta` es anterior a la primera vuelta")
         elif decision is not None:
@@ -494,9 +628,19 @@ def _usuario_de(carpeta: Path, envios: Any) -> str | None:
 
 
 def consultar(
-    carpeta: Path, marca: datetime, token: str, pedir: Pedir, ahora: datetime, limite: float
+    carpeta: Path,
+    marca: datetime,
+    token: str,
+    pedir: Pedir,
+    ahora: datetime,
+    limite: float,
+    registro: Path | None = None,
 ) -> list[str]:
-    """Compara la lectura guardada en ``carpeta`` con la API. Lanza si algo no se pudo leer."""
+    """Compara la lectura guardada en ``carpeta`` con la API. Lanza si algo no se pudo leer.
+
+    Con ``registro`` (la carpeta de los rescates) guarda además cada cambio de estado con la hora de las dos
+    lecturas que lo acotan (``registrar_lectura``); sin él, no escribe nada.
+    """
     try:
         guardados_crudo = json.loads((carpeta / "envios.json").read_text(encoding="utf-8"))
         guardados = resumen_de_envios(guardados_crudo)
@@ -517,6 +661,15 @@ def consultar(
         return [*lineas, f"no pude leer Kaggle (respuesta de envíos ilegible: {type(exc).__name__})"]
     cambios = comparar_envios(guardados, actuales)
     lineas += cambios
+    pendientes = envios_sin_terminar(actuales_crudo)
+    if pendientes:
+        detalle = "; ".join(f"{ref} `{estado}` (enviado {fecha})" for ref, estado, fecha in pendientes)
+        lineas.append(
+            f"HAY {len(pendientes)} ENVÍOS SIN TERMINAR ({detalle}): el organizador anunció un límite de "
+            "envíos pendientes, aparte del de uno al día; no envíes otro hasta que terminen"
+        )
+    if registro is not None:
+        lineas += registrar_lectura(registro, marca, guardados, actuales, ahora)
     if max(len(actuales), len(guardados)) >= PAGINA_LLENA:
         lineas.append(
             f"solo leí la primera página de envíos ({len(actuales)}): "
@@ -608,7 +761,7 @@ def vigia(
                 )
             )
             lineas = con_tope(
-                lambda: consultar(lectura[0], lectura[1], token, pedir_real, ahora, limite), tope_s
+                lambda: consultar(lectura[0], lectura[1], token, pedir_real, ahora, limite, carpeta), tope_s
             )
             salida += (
                 lineas

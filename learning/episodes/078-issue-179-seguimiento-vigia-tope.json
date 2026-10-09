@@ -1,0 +1,84 @@
+{
+  "seq": 78,
+  "id": "issue-179-seguimiento-vigia-tope",
+  "goal": "Seguimiento de los PR #174 y #176: guion que compara las dos pasadas del notebook de la iteración 08 excluyendo los pares con tarea colgada (condición de lanzamiento), registro de envíos y vigía (cambios de estado con la hora de las dos lecturas, aviso de envío sin terminar), puntos menores del vigía y del registro, y los textos de CONTRIBUTING y del ensayo",
+  "ref": "#179",
+  "estimate": {
+    "version": 2,
+    "date": "2026-10-10",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 1,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del issue antes de leer el código; devolvió el episodio del guardián de sesión y los de issues parecidos, sin lecciones sobre comparación de pasadas"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Dos listados recursivos de la carpeta de salidas del ensayo y una búsqueda de líneas de más de 110 columnas sobre el documento del ensayo volcaron cientos de líneas de tablas y rutas al contexto; hacía falta filtrar por patrón y contar antes de imprimir"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "scripts/kaggle_comparar_pasadas.py reutiliza cargar_salida, diagnosticar y codigo_de de kaggle_registro y mcnemar_exact_p de kaggle_replicas; acepta varias salidas por lado, une las colgadas del JSON y del registro, y sale con 3 (colgadas) o 4 (otra incompletitud; gana al 3). Probado a mano sobre completa frente a pasada_2 y a comprobar_pasadas/caso_9: da 4 en los dos, con el par excluido en el segundo"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "En la primera versión de una prueba de la comparación dejé una aserción de relleno (una expresión condicional sobre la propia salida) que no comprobaba nada; la encontré al releer el archivo antes de ejecutarlo y puse el valor esperado calculado a mano"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "El validador de hallazgos solo exige que `estados` no nombre estados desconocidos y no que traiga todos, porque una prueba existente acepta ['medido'] y no se modifican las existentes; se añadió la comprobación de que la fecha de una decisión no sea anterior a la primera_fecha. El vigía guarda cada cambio con la hora de la lectura anterior (la más reciente entre el rescate y la última del propio vigía) y la de ahora, y avisa de cualquier envío que no esté en complete ni en error"
+    },
+    {
+      "action": "run_demo",
+      "success": false,
+      "error": "kaggle_submission verify sobre submission_i_razona.zip sale INVÁLIDO («adk-submission no instalado») y register devolvería el registro existente si el SHA-256 ya figura, fijaría la fecha del día y el estado prepared: no sirve para dos envíos del mismo zip con fecha y nota propias. Los dos registros (sub-005 y sub-006) se añadieron a mano al JSON, con SHA-256 y tamaño recalculados sobre el archivo local, y una prueba valida su esquema"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En la nota de corrección de rescate_kaggle.md escribí que no se había corrido un rescate desde el 2026-10-06; releyendo los envios.json guardados había uno del 2026-10-07 02:13 UTC que ya traía el envío 56895202 en pending. Se corrigió a «no hay ninguna lectura guardada entre el rescate del 2026-10-07 02:13 y el del 2026-10-08 21:13»"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corrección sobre el episodio 073 sin reescribirlo: el envío 56916129 seguía en error a las 22:31 UTC del 2026-10-08 y puntuó entre esa hora y las 13:42 del día siguiente; el 56895202 se leyó puntuado el 2026-10-08 a las 21:37. La corrección vive en docs/rescate_kaggle.md y se cita desde este episodio (los episodios son evidencia y alimentan el grafo). Condición de lanzamiento 6 del ensayo con la cifra recontada por el auditor del concilio 43 (no repetida aquí); CONTRIBUTING con la regla de los dos envíos finales y la advertencia sobre el patrón de hallazgos"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Las dos discrepancias del manuscrito se compararon con los JSON de las iteraciones 01 a 07: en las 10 corridas sobre las 15 tareas de rich ningún par difiere en más de 2 tareas y todas resolvieron entre 2 y 4, así que vale la versión en inglés («no más de 2»); la versión en castellano conserva la frase anterior a la corrección del validador y el encabezado 4.3 de antes de la séptima condición (iteracion-06: 9 de 19). No se editó el manuscrito: cualquier cambio exige otra firma del validador y regenerar el PDF. No se pudo reproducir cuáles son «siete corridas, tres de ellas de la base»: los datos traen cinco corridas con la etiqueta A sobre esas 15 tareas"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "La primera ejecución de ruff check dio 21 errores E501 y ruff format --check dio 4 archivos por reformatear, en los dos guiones y las dos pruebas nuevas; se corrigieron con ruff format y acortando una línea de docstring"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check y ruff format --check en verde; mypy sin problemas; export_schema --check sincronizado; 644 pruebas de los archivos tocados y de los de submission y replicas en verde, sin Docker. La suite completa y la mutación se leen en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Un guion que compara dos pasadas debe decir en su salida y en su código que una pasada con una tarea colgada no es completa, y no dar nunca 0 a una comparación con pares excluidos",
+    "Antes de escribir una fecha de «desde cuándo no hay lectura» en un documento, releer los envios.json guardados: la ausencia de una lectura se afirma con la lista de las que existen"
+  ]
+}

@@ -55,6 +55,32 @@
       "public_score": null,
       "kaggle_url": null,
       "notes": "NO ENVIADO: kit preparado y verificado con el compilador del organizador, sin subir nada a Kaggle. Condición K «interfaz limpia»: la A con tres cambios decididos en el concilio 42 por criterio mecánico. (1) La lista de herramientas pasa de 10 entradas a 6: se quitan get_code_neighbors, search_similar_code y get_code_subgraph. (2) Se quita el subagente code_analyzer_agent: la entrada agent_tool de agent.yaml (3 líneas), sub_agents/code_analyzer.yaml y prompts/analyzer.md. (3) Se quita 1 línea de prompts/system.md, la que ordena usar search_similar_code. El zip tiene 4 archivos en vez de 6; eval_config.yaml y configs/sampling.yaml son idénticos byte a byte a los de A (topes y muestreo). Si se envía, su nota no se podrá atribuir a uno de los tres cambios. Ensayo local con modelo falso (issue 173): el arnés ofrece 6 herramientas y ninguna de las retiradas."
+    },
+    {
+      "submission_id": "sub-005",
+      "date": "2026-10-07",
+      "condition": "I",
+      "zip_filename": "submission_i_razona.zip",
+      "sha256": "65a0216007e19bf6b26ec1ae0386be06814e97a3d85f63636fb10053651a6763",
+      "size_bytes": 3494,
+      "is_exploratory": true,
+      "status": "scored",
+      "public_score": 0.08,
+      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
+      "notes": "Ref. Kaggle 56895202, enviado 2026-10-07 00:26 UTC. Kit con razonamiento (include_thoughts true, 60 llamadas, 4,5 min por tarea). Nota pública 0,08, leída el 2026-10-08 21:37 UTC. ADVERTENCIA: antes de puntuar pasó por estado de error: se leyó `pending` el 2026-10-07 02:13 UTC, `error` el 2026-10-08 21:13 UTC y `complete` con 0,08 el 2026-10-08 21:37 UTC (no hay lecturas guardadas entre la primera y la segunda). Es el mismo zip que sub-006 (SHA-256 y tamaño recalculados sobre el archivo local el 2026-10-09). Kaggle guarda 79 355 bytes para este envío: su identidad con el zip local no está comprobada. Este registro se escribió a mano: `kaggle_submission register` no lo admite (ver sub-006 y el issue 179). Los ids siguen el orden de escritura, no el de la fecha del envío."
+    },
+    {
+      "submission_id": "sub-006",
+      "date": "2026-10-07",
+      "condition": "I",
+      "zip_filename": "submission_i_razona.zip",
+      "sha256": "65a0216007e19bf6b26ec1ae0386be06814e97a3d85f63636fb10053651a6763",
+      "size_bytes": 3494,
+      "is_exploratory": true,
+      "status": "scored",
+      "public_score": 0.13,
+      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
+      "notes": "Ref. Kaggle 56916129, enviado 2026-10-07 16:25 UTC como reenvío del mismo zip de sub-005 tras un error de sistema. Nota pública 0,13, leída el 2026-10-09 13:42 UTC. ADVERTENCIA: también pasó por estado de error antes de puntuar: `error` («A system error. Please try resubmitting to resolve the error») en todas las lecturas guardadas del 2026-10-08 entre las 21:13 y las 22:31 UTC, y `complete` con 0,13 en la del 2026-10-09 13:42 UTC; no hay lecturas guardadas entre esas dos. Mismo zip, notas distintas (0,08 y 0,13): es el ruido de la tabla, no un efecto del zip. Kaggle guarda 72 108 bytes para este envío y 79 355 para sub-005, y la API no deja bajar el archivo: su identidad con el zip local no está comprobada. Escrito a mano: `register` devuelve el registro existente si el SHA-256 ya figura, fija la fecha del día y el estado `prepared`, y aquí además `verify` da INVÁLIDO sin `adk-submission` instalado."
     }
   ]
 }
