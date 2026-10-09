@@ -116,7 +116,7 @@ Límites de las guardias:
 
 ```bash
 python -m scripts.kaggle_registro diagnosticar --salida <carpeta o zip de salida de una sesión>
-python -m scripts.kaggle_registro comprobar --rescate <carpeta de un rescate> [--notebook <slug>]
+python -m scripts.kaggle_registro comprobar --rescate <carpeta de un rescate> --notebook <pasada 1> --notebook <pasada 2>
 ```
 
 `diagnosticar` dice si el registro es de fiar, si la sesión se cerró o murió desde fuera, qué tope cortó cada
@@ -133,11 +133,11 @@ una tarea se repite, cada corrida conserva lo suyo. Distingue:
 
 | Código | Qué significa |
 |---|---|
-| 0 | Registro fiable y sesión completa (en `sortear`: lista reproducida) |
+| 0 | Registro fiable y sesión completa (en `sortear`: lista reproducida). No significa «todas las tareas completas» |
 | 1 | Solo `sortear`: la lista sorteada difiere de la guardada |
-| 2 | Entrada inválida o ilegible: archivo ausente, JSON roto, acta o validez sin sus campos, un evento del registro con un campo de otro tipo; en `comprobar`, además, ningún registro que diagnosticar |
+| 2 | Entrada inválida o ilegible: archivo ausente, JSON roto, acta o validez sin sus campos, un evento del registro con un campo de otro tipo; en `comprobar`, además, no haber nombrado ninguna pasada |
 | 3 | Sesión cortada por el notebook; la causa está en el registro |
-| 4 | Registro no fiable: un enganche exigido no se instaló; hubo errores propios; hay tareas corridas y **en toda la sesión** no hay ninguna petición respondida; una tarea terminada no trae su `agente_fin` o su `diff_cierre`; falta `registro_instalado`; o una guardia detuvo el notebook. En `comprobar`, además, una pasada con registro que no trae su registro |
+| 4 | Registro no fiable: un enganche exigido no se instaló; hubo errores propios; hay tareas corridas y **en toda la sesión** no hay ninguna petición respondida; una tarea terminada no trae su `agente_fin` o su `diff_cierre`; falta `registro_instalado`; o una guardia detuvo el notebook. En `comprobar`, además, una pasada esperada sin carpeta en el rescate o sin registro |
 | 5 | Sesión muerta desde fuera: el registro no termina en `cierre` |
 
 **Precedencia en `diagnosticar`:** 4 gana a 3, y 3 gana a 5. Un registro no fiable se dice aunque la sesión
@@ -152,19 +152,41 @@ iniciadas y las que terminaron en error.
 Una sesión que una guardia detuvo no se llama «completa»: su veredicto termina en «sesión detenida por una
 guardia», antes o tras la primera tarea.
 
-**`comprobar`** corre `kaggle_rescate --sin-red` y después `diagnosticar` sobre los archivos
-`salida__registro_*` de cada notebook del rescate.
+**El 0 es de la sesión, no de cada tarea.** Una tarea cortada por tiempo o por llamadas no cambia el código:
+el notebook siguió y la sesión terminó. Su motivo está en `agente_fin` y en `tope_que_corto` de su ficha.
 
-- Imprime siempre lo que dio el rescate, también cuando no hay ningún registro que diagnosticar.
-- Lista en `omitidos` cada notebook que no diagnosticó, con su motivo.
-- Un notebook sin registro es un hallazgo (4) si trae señales de ser una pasada con registro. Las señales
-  son archivos que solo deja un notebook con registro: `salida__latido_*`, `salida__servidor_log_*`,
-  `salida__diff_en_curso_*`, o cualquier salida con `iteracion_08` en el nombre. Un notebook viejo sin nada de
-  eso solo se lista y no cambia el código. La regla es por nombre de archivo: una iteración posterior que
-  cambie los nombres de salida tiene que añadir el suyo a `SENALES_DE_PASADA`.
-- **Precedencia:** el código del rescate, si no es 0; si lo es, el del primer notebook, en orden alfabético
-  de su nombre, cuyo código no sea 0, sea de su diagnóstico o por faltarle el registro. Un registro ilegible
-  en un notebook no impide diagnosticar los demás.
+**Una sesión colgada sale con 5.** Si el notebook queda vivo y detenido, su registro tampoco termina en
+`cierre` y el veredicto dice «muerta desde fuera». El diagnóstico no distingue las dos cosas; se ve en el
+latido, que sigue llegando con la misma tarea en curso y ninguna petición en vuelo durante minutos.
+
+**La regla de `agente_fin` y `diff_cierre` puede dar un 4 que no es del registro.** Inferido por la revisión
+leyendo el arnés local, no ejecutado: si falta el snapshot de una tarea, el arnés devuelve sin llamar a
+`_run_agent_sandbox`, así que esa tarea no deja ninguno de los dos y la sesión sale con 4; si es la primera
+tarea, la guardia detiene el notebook. Un `diff_cierre` con error da el mismo 4. Falla hacia el lado seguro.
+Se distingue en la ficha de la tarea: sin snapshot no tiene ninguna petición y su fila trae el error
+«Snapshot file not found»; con un enganche sin efecto la tarea sí tiene peticiones respondidas.
+
+**`comprobar`** corre `kaggle_rescate --sin-red` y después `diagnosticar` sobre los archivos
+`salida__registro_*` de cada **pasada esperada**, que se nombra con `--notebook`, una vez por pasada.
+
+- Para cada pasada nombrada, es un hallazgo que falte su carpeta en el rescate (4), que falte su registro
+  (4) o que su diagnóstico no dé 0. El JSON dice cuál y por qué, y lista las salidas que sí trae.
+- **Sin ninguna pasada nombrada la orden nunca sale con 0:** no puede afirmar que la corrida está completa
+  sin saber cuántas pasadas se esperaban. Imprime lo que encontró y sale con 2, o con el código del rescate
+  si no es 0.
+- Imprime siempre lo que dio el rescate.
+- Los notebooks del rescate que no se nombraron solo se listan. Si alguno no trae registro y sí trae
+  archivos que solo deja un notebook con registro (`salida__latido_*`, `salida__servidor_log_*`,
+  `salida__diff_en_curso_*`, o una salida con `iteracion_08` en el nombre), lleva un aviso que no cambia el
+  código. La defensa es nombrar las pasadas, no esa lista de nombres.
+- **Precedencia:** el código del rescate, si no es 0; si lo es, el de la primera pasada nombrada, en el
+  orden en que se nombraron, cuyo código no sea 0. Un registro ilegible en una pasada no impide
+  diagnosticar las demás.
+- En Windows, si la salida se redirige a un archivo sin `PYTHONIOENCODING=utf-8`, no sale en UTF-8.
+
+Por qué hace falta nombrarlas: una pasada puede morir antes de instalar el registro. La celda 7 escribe
+`servidor_error_*.txt` cuando el servidor no arranca y el registro nace en la celda 8, así que esa pasada no
+deja ningún archivo del registro, ni siquiera un nombre por el que reconocerla.
 
 ## Tras una corrida real
 
@@ -173,14 +195,18 @@ la tarea anterior y está sano; sobre un notebook que la guardia previa detuvo t
 eso el rescate solo no basta:
 
 1. Bajar con `python -m scripts.kaggle_rescate --destino <carpeta>` y anotar el código y la hora.
-2. Correr `python -m scripts.kaggle_registro comprobar --rescate <carpeta fechada>`. Distinto de 0 es un
-   hallazgo; el JSON dice de cuál de los dos, el veredicto de cada sesión y los notebooks omitidos.
+2. Correr, con las dos pasadas nombradas,
+   `python -m scripts.kaggle_registro comprobar --rescate <carpeta fechada> --notebook iteracion-08-p1 --notebook iteracion-08-p2`.
+   Distinto de 0 es un hallazgo; el JSON dice si es del rescate o de una pasada, y de cuál.
 3. Si el diagnóstico dice 5 (muerta desde fuera), el zip no trae el cierre ni la tarea cortada. Lo que hay
    que mirar son los archivos sueltos de la salida, que el notebook escribe fuera del zip:
    `registro_<nombre>.jsonl` (el inicio sin fin), `latido_<nombre>.jsonl` (el último latido, con la petición
    en vuelo y el estado del servidor), `diff_en_curso_<nombre>.diff` (el árbol en ese latido) y
    `servidor_log_<nombre>.txt`.
 4. Si dice 4, leer `problemas_del_registro`: la corrida no es válida como registro aunque tenga resultados.
+
+En una sesión muerta el zip va atrasado respecto de los archivos sueltos: se empaqueta tras cada tarea,
+así que no trae la petición en vuelo ni el último `diff_en_curso`.
 
 No está comprobado que Kaggle conserve los archivos sueltos de `/kaggle/working` cuando mata una sesión. El
 latido del notebook real es cada 30 s: la ventana para ver por el latido una petición en vuelo, o el árbol de
@@ -257,7 +283,7 @@ final, solas y una tras otra, las seis corridas con y sin enganches. **Los reloj
 escenarios en paralelo no son comparables con los de `completa`** ni entre baterías.
 
 «Rescate» es el código de `kaggle_rescate --sin-red` sobre esa salida; «Comprobar», el de la orden que junta
-rescate y diagnóstico.
+rescate y diagnóstico, con ese notebook nombrado como pasada esperada.
 
 | Escenario | Notebook | Tareas | Qué se fuerza | Cómo termina el notebook | Logs por tarea de 0 bytes | Diagnóstico | Rescate | Comprobar |
 |---|---|---|---|---|---|---|---|---|
@@ -307,6 +333,24 @@ Ningún nombre de la pasada 1 aparece en la salida ni dentro del zip, y los even
 
 En las dos últimas el zip se volvió a empaquetar después de la guardia y, leído solo, da diagnóstico 4.
 
+### `comprobar` con las pasadas nombradas
+
+Sin repetir el ensayo, sobre salidas ya guardadas (`comprobar_pasadas.py`, código del commit `f5c1e62`). La
+pasada 1 es siempre la salida de `completa`. La pasada 2 es la salida de `pasada_2`, que lleva los nombres
+de la segunda pasada, o lo que dice cada fila. Las cuatro filas en negrita son los casos de la tercera
+revisión, que antes salían con 0.
+
+| Pasada 2 | Con las dos nombradas | Sin nombrar ninguna |
+|---|---|---|
+| La salida de `pasada_2`, con su registro | 0 | 2 |
+| **Solo `estado.json`, `metadatos.json` y `log.txt`** | 4 | 2 |
+| **Además, `salida__servidor_error_salida.txt`** | 4 | 2 |
+| **La carpeta vacía** | 4 | 2 |
+| **Sin carpeta** | 4 | 2 |
+| La salida de `corte_sesion_duro` (muerta desde fuera) | 5 | 2 |
+| La salida de `guardia_diff` (detenida por la guardia) | 4 | 2 |
+| La salida de `control_sin_parche` (logs por tarea vacíos) | 4, por el rescate | 4, por el rescate |
+
 ### Una corrida con el parche global se colgó
 
 En la batería final, la primera corrida de `parche_global` se quedó parada en su tercera tarea
@@ -322,8 +366,10 @@ medido es: una corrida colgada de cinco con el modo global a lo largo del día, 
 el modo `archivo` o sin parche. La corrida se repitió una vez, sola, a las 04:06 UTC, y terminó bien; las
 cifras del modo global de este documento son de esa repetición.
 
-Para la corrida real importa otra cosa: un cuelgue así no dispara ningún tope del notebook hasta que
-termina la tarea, y **el latido es lo único que lo deja visible**.
+**Nada en el notebook corta una tarea colgada sin peticiones.** `run_sync` espera sin tope a que la tarea
+termine, el tope de 4 minutos del arnés empieza con el bucle del agente y los topes de sesión solo se miran
+entre tareas. El latido es lo único que lo deja visible. Queda como límite conocido y como decisión del
+concilio antes de subir; aquí no se cambió.
 
 ## Los cuatro cortes
 
@@ -525,7 +571,10 @@ Lo que sigue no se parece a Kaggle o no se midió.
 - **Tareas.** Corrieron 26 de las 60 sorteadas: las ya corridas en iteraciones anteriores, que son las únicas
   con snapshot aquí. Ninguna de las 34 tareas nuevas del sorteo se ejercitó.
 - **El escenario del tope de sesión cortó tras la primera tarea**; el modo lento del modelo falso nunca corrió.
-- **Latido.** El ensayo late cada 2 s y el notebook real cada 30 s.
+- **No se ensayó la cadencia real.** El ensayo late cada 2 s y su escenario de tope de sesión usa 45 s; el
+  notebook real late cada 30 s y su tope de sesión es de 150 min.
+- **Una tarea colgada sin peticiones no la corta nada**
+  ([el cuelgue](#una-corrida-con-el-parche-global-se-colgó)).
 - **Qué hace Kaggle.** No está comprobado que detenga «Run All» en la primera excepción, ni que conserve los
   archivos sueltos de `/kaggle/working` de una sesión que mata.
 - **Matar el núcleo no es lo mismo que el corte de Kaggle.** Aquí es una señal al proceso del núcleo.
@@ -543,11 +592,13 @@ Lo que sigue no se parece a Kaggle o no se midió.
   `evaluador`, `rich`) se prueban en los tests con módulos falsos. Contra el arnés real solo las ejercita el
   ensayo, que no corre en el CI.
 - Las líneas del notebook que llaman a las guardias las escribe `armar.py`, sin versionar.
-- Sobre el commit `20b6136`, con el árbol limpio, se inyectaron 49 defectos, uno a uno, en los dos guiones:
-  los 13 que la primera revisión dijo que sobrevivían, los 5 de la segunda y 31 sobre el código de las dos
-  rondas de correcciones. Las pruebas detectan los 49 (`defectos_inyectados.json`); ninguno resultó
-  equivalente. Los commits posteriores solo cambian este documento, el episodio y el registro de cambios. Es
-  una lista elegida a mano, no una búsqueda exhaustiva.
+- Sobre el commit `f5c1e62`, con el árbol limpio, se inyectaron 60 defectos, uno a uno, en los dos guiones:
+  los 13 que la primera revisión dijo que sobrevivían, los de la segunda y la tercera, y los demás sobre el
+  código de las tres rondas de correcciones (19 sobre la lógica de pasadas esperadas, incluido quitar cada
+  patrón de `SENALES_DE_PASADA`). Las pruebas detectan 59 (`defectos_inyectados.json`). El que sobrevive es
+  equivalente: «una pasada nombrada dos veces se cuenta dos veces» no cambia nada, porque las pasadas se
+  guardan en un diccionario por nombre y el duplicado se pierde igual. Los commits posteriores solo cambian
+  este documento y el episodio. Es una lista elegida a mano, no una búsqueda exhaustiva.
 
 **De la corrida real.**
 
@@ -577,14 +628,15 @@ escenario. Al terminar no quedó ningún contenedor.
 ## Huellas
 
 Todo bajo `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/`, ignorado por
-git. `ensayo_salida/HUELLAS.txt` lista los 293 archivos de salida con sus bytes y su SHA-256, incluida la
+git. `ensayo_salida/HUELLAS.txt` lista los 294 archivos de salida con sus bytes y su SHA-256, incluida la
 copia de la corrida colgada.
 
 | Archivo | SHA-256 |
 |---|---|
-| `ensayo_salida/HUELLAS.txt` | `7a1d8e65dd5628086d3fcbcbed56dca6e8bb176a80179c1cc5483209b0a6c8d5` |
-| `ensayo_salida/RESUMEN.json` | `cbc9435c2d421e23cc6b6746f3fdf7dd0af60a901b9053cf7e9ff3df52e9bffd` |
-| `ensayo_salida/rescate_sobre_ensayo.json` | `227aeb6b15d5098baa1e058f82e8e10fce49a70305e10dd7269eeaf979509776` |
+| `ensayo_salida/HUELLAS.txt` | `a6a10b3908f5786afb392fe89e18112a041c0604cfed87988dc22cac27b2ef0d` |
+| `ensayo_salida/RESUMEN.json` | `ff7679894e05d3112c15a2eca5ed0fb578ce8c8c45234ec7fe88043e77d53030` |
+| `ensayo_salida/rescate_sobre_ensayo.json` | `9a2f544e6ff7633764df2c29959d8236b5c915feb6392ba46af48b52973c6d9e` |
+| `ensayo_salida/comprobar_pasadas.json` | `0a003cb1e60b9d69f3219f3d88f94c004d294480f57d71486f36a8e41d3f87e4` |
 | `ensayo_salida/completa/informe.json` | `8706790a8e3dcc58641c3e681724bc2af9070b627a824b1798b0db42b367a468` |
 | `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `dbd59df23fbb0ca6ec9473d79410221f2759b47cab2cc1bcaf3cc6a64502e24f` |
 | `ensayo_salida/pasada_2/informe.json` | `6db6f0ba2588d3ff66a79e666804055238360ed4911c49e95bf93f8533fe9856` |
@@ -600,11 +652,16 @@ copia de la corrida colgada.
 | `ensayo_salida/guardia_enganche/informe.json` | `df263dfbed4d6975aa60f55ba7674529df43dc3dff5b10e7f1fb1010d433bb05` |
 | `ensayo_salida/guardia_log/informe.json` | `6e0e03489ed478521879a88c5be38c6857151cdd04896f9d81ecac0002970bf0` |
 | `ensayo_salida/guardia_diff/informe.json` | `ea4c273dabd9963bbf3a2358f405b5cf2008e19f8e27750feb71f2a9c9651909` |
-| `defectos_inyectados.json` | `52b5667f37b92fbc20e16438cc6f5decbf875db9a070cdc4e870fc6fa3c0f3f7` |
+| `defectos_inyectados.json` | `cd35bbac252709556f373b82ce9c5fd1e8f7451803f459e49a7928e2cac69f5e` |
 | `armado.json` | `3c0eaaf4541b6606a2aa3d57c45a6a3d3cee693e63ba91445627c0467e80ebeb` |
 | `ensayo_nucleo.py` | `b288652594fbb4e4f011d61a992e5d340c71ed1b3078fd72e888a1e69c3b829c` |
 | `sorteo_60.json` | `0a2d9eb3e2aa5f7e03a3e9e4acac1ff963f21f66058a497a10b1aff0e86c61a6` |
 | `imagen/Dockerfile` | `8243082780996d9fe83295046ad7181d26d35ca097fde2e45f9dbaf70dc599c8` |
+
+La tercera ronda de correcciones solo tocó `scripts/kaggle_registro.py`, sus pruebas y este documento:
+`scripts/kaggle_registro_enganches.py` no cambió desde el commit `20b6136`, así que los notebooks armados y
+el ensayo siguen valiendo y no se repitieron. Se volvieron a generar `rescate_sobre_ensayo.json`,
+`RESUMEN.json` y `HUELLAS.txt`, porque `comprobar` cambió.
 
 Las dieciocho corridas válidas usaron la misma versión de `ensayo_nucleo.py` (cada `informe.json` trae su
 SHA-256). Tres baterías anteriores del mismo día se descartaron enteras y no están en disco: la primera por

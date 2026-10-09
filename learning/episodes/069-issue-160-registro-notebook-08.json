@@ -160,6 +160,41 @@
       "action": "update_docs",
       "success": true,
       "note": "Documento con las cifras de la batería final, la precedencia de códigos, los límites que pidió la segunda revisión, las tres medidas de la razón del parche de rich y el cuelgue con su causa sin diagnosticar"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Tercera revisión independiente sobre f89a375: da por resueltos los puntos 2 a 10 y exige un cambio en comprobar, más una prueba que pasaba por la razón equivocada y dos huecos menores"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "comprobar seguía saliendo con 0 sin merecerlo, por tercera ronda: con una pasada muerta antes de instalar el registro (solo estado, metadatos y log; o con servidor_error_salida.txt; o la carpeta vacía; o sin carpeta) la orden no tenía cómo saber que faltaba, porque la defensa era reconocer la pasada por el nombre de sus archivos y esa pasada no deja ninguno. Además un cb_antes con peticion_en_curso de tipo lista daba traza y código 1"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Arreglo de fondo: --notebook es repetible y nombra las pasadas esperadas; que falte la carpeta, el registro o que el diagnóstico no dé 0 es un hallazgo; sin ninguna pasada nombrada la orden nunca sale con 0. Las señales por nombre quedan como aviso. scripts/kaggle_registro_enganches.py no se tocó: los notebooks armados y el ensayo siguen valiendo"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba «cada señal basta por sí sola» pasaba por la razón equivocada: sus tres nombres de archivo contenían iteracion_08, así que el cuarto patrón los cubría a todos y quitar cualquiera de los otros tres no hacía fallar nada. Tampoco había prueba de que diagnosticar no cuente una petición cancelada como respondida"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "97 pruebas: los cuatro casos de la revisión, el caso bueno, sin pasadas nombradas, precedencia por orden de nombrado, y un nombre de archivo por patrón que solo casa con ese patrón (la prueba lo comprueba). Inyección sobre f5c1e62 con el árbol limpio: 60 defectos, 59 detectados; el que sobrevive es equivalente (nombrar dos veces una pasada: el diccionario ya quita el duplicado)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "comprobar con las dos pasadas nombradas sobre las salidas ya guardadas del ensayo, sin repetirlo: 0 con las dos pasadas con registro, 4 en los cuatro casos de la revisión, 5 con la pasada 2 muerta. ruff, mypy, export_schema --check y pytest --cov: 2466 pasan, 9 omitidos, cobertura 98,72 %"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento: pasadas esperadas, qué significa el 0, sesión colgada frente a muerta, el falso positivo de la regla de agente_fin y diff_cierre (inferido, no ejecutado), el zip atrasado en una sesión muerta y que nada corta una tarea colgada sin peticiones"
     }
   ],
   "lessons": [
@@ -177,6 +212,9 @@
     "Una orden que recorre varias entradas debe listar las que omite y por qué: lo que se salta en silencio se lee como «sin hallazgos»",
     "Cuando una orden junta dos comprobaciones, fijar por escrito y con una prueba qué código gana si fallan las dos",
     "Generar el resultado de una inyección de defectos sobre el commit que se cita, con el árbol limpio, y hacer que el guion anote ese commit: un defecto que ya no aplica al código no es un defecto que sobrevive",
-    "Antes de lanzar una batería de contenedores en paralelo, dejar un tope de tiempo por corrida: una corrida colgada bloquea las que esperan detrás"
+    "Antes de lanzar una batería de contenedores en paralelo, dejar un tope de tiempo por corrida: una corrida colgada bloquea las que esperan detrás",
+    "Una comprobación de «está todo» necesita que le digan cuánto es todo: recibir la lista de lo esperado y exigir cada elemento, en vez de inferir lo que falta por los rastros que dejó, porque lo que murió antes no deja rastro",
+    "Cuando el mismo tipo de defecto vuelve en la revisión siguiente, cambiar el diseño y no añadir otro caso a la heurística",
+    "En una prueba parametrizada por patrones, comprobar en la propia prueba que cada dato casa con un solo patrón: si casa con dos, quitar uno no la hace fallar"
   ]
 }
