@@ -95,6 +95,16 @@
       "action": "write_tests",
       "success": true,
       "note": "Una prueba por cada defecto que sobrevivía y por cada corrección; 30 defectos reinyectados (los 13 que sobrevivían y 17 de las correcciones), 30 detectados con las dos pruebas del archivo; 149 pruebas en total entre los dos archivos"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El analista de datos reprodujo las 25 cifras de la cuenta, pero halló que el registro de hallazgos que yo había sembrado desde la bitácora afirmaba de más: el subagente «en 145 sesiones» (son 7; 145 es el universo), la búsqueda vacía fechada en la vuelta 38 cuando la primera es la 19, cifras de dos universos mezcladas en una fila de repeticiones, una cifra de un rol («6 de 69») sin recalcular, y varios hallazgos con vueltas que faltaban o con «sin decisión» cuando tenían una parcial. El rótulo `resueltas: 39` junto a `tareas: 43` se leía como 39 de 43 tareas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cada corrección se contrastó con la bitácora antes de escribirla (la vuelta 30 no consta para las repeticiones y no se añadió); nueve filas nuevas de hallazgos medidos en dos vueltas o más; el agregado dice `sesiones_resueltas` (39) y `tareas_con_alguna_sesion_resuelta` (11 de 43); el validador mira también la descripción y los estados, exige fecha ISO estricta y deja que un descartado lleve su decisión"
     }
   ],
   "lessons": [
@@ -104,6 +114,7 @@
     "«Todo procesado» solo es verdad respecto de la lectura guardada: dilo en el aviso, porque que la bitácora y la memoria estén al día es otro hecho que el vigía no ve",
     "Al inyectar defectos, un defecto que deja archivos en el árbol contamina los siguientes: limpia en un finally y revisa git status entre mutantes; y quitar una de dos capas redundantes no se detecta por diseño, así que se inyecta quitando las dos",
     "Taparle el token a un mensaje de error no basta si el token puede cambiar de forma al citarse (un salto de línea escapado): imprime de una excepción ajena solo su tipo, y rechaza un token con caracteres de control antes de usarlo",
+    "Un registro sembrado desde un relato hay que contrastarlo con la fuente de cada vuelta antes de entregarlo: una cifra copiada («en 145 sesiones», «primera aparición en la 38») conserva el universo y la fecha del texto que la resumió, no los de la medición",
     "Mis defectos inyectados salen de lo que ya imaginé; un revisor que inyecta los suyos halló 13 huecos de 38: antes de entregar, inyecta también un defecto por cada contador del agregado y por cada rama de una regla de emparejamiento",
     "Una prueba de unión sin doble conteo necesita una llamada que entre solo por una de las clases; si cada llamada de prueba cae en dos clases, quitar una clase no cambia el total y el defecto sobrevive"
   ]

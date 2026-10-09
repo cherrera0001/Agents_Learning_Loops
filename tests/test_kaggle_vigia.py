@@ -465,7 +465,15 @@ def test_un_registro_ilegible_se_dice(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "token",
-    ["KGAT_abc123\ndef456", '{"username":"yo",\n"key":"abc123"}', "con espacio", "tóken", "a\x00b", "a\rb"],
+    [
+        "KGAT_abc123\ndef456",
+        '{"username":"yo",\n"key":"abc123"}',
+        "con espacio",
+        "tóken",
+        "a\x00b",
+        "a\rb",
+        "a\tb",  # un tabulador interior; los de los extremos se recortan como el salto de línea final
+    ],
 )
 def test_un_token_mal_formado_no_se_usa_ni_se_imprime(tmp_path: Path, token: str) -> None:
     guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
@@ -586,6 +594,13 @@ def test_una_pagina_llena_de_envios_se_dice(tmp_path: Path) -> None:
     pocos = [envio(1, "complete", "0.01")]
     guardar(tmp_path / "s", "2026-10-08T2231Z", pocos)
     assert not any("primera página" in x for x in correr(tmp_path / "s", api_falsa(pocos)))
+    # la frontera exacta: 19 en cada lado no avisa; 20 en la API, sí
+    casi = [envio(i, "complete", "0.01") for i in range(kv.PAGINA_LLENA - 1)]
+    guardar(tmp_path / "u", "2026-10-08T2231Z", casi)
+    assert not any("primera página" in x for x in correr(tmp_path / "u", api_falsa(copy.deepcopy(casi))))
+    guardar(tmp_path / "v", "2026-10-08T2231Z", casi)
+    justo = [*casi, envio(99, "complete", "0.01")]
+    assert any("primera página" in x for x in correr(tmp_path / "v", api_falsa(justo)))
 
 
 @pytest.mark.parametrize("campo", ["status", "estado_nuevo"])
@@ -702,3 +717,35 @@ def test_un_campo_desconocido_en_el_registro_se_rechaza() -> None:
 def test_el_archivo_sembrado_sigue_pasando_el_validador_estricto() -> None:
     datos = json.loads(HALLAZGOS_REALES.read_text(encoding="utf-8"))
     assert kv.validar_hallazgos(datos, hoy=date.today()) == []
+
+
+@pytest.mark.parametrize("fecha", ["20261005", "2026-1-5", "2026/10/05", "05-10-2026", "2026-10-05T00:00"])
+def test_la_fecha_debe_ser_iso_estricta(fecha: str) -> None:
+    assert any("primera_fecha" in p for p in kv.validar_hallazgos(registro_minimo(primera_fecha=fecha)))
+    assert any(
+        "decision.fecha" in p for p in kv.validar_hallazgos(decidido(fecha=fecha), hoy=date(2026, 10, 9))
+    )
+
+
+def test_un_descartado_puede_llevar_decision_pero_valida() -> None:
+    bien = registro_minimo(
+        estado="descartado",
+        motivo_descarte="no ayuda",
+        por_que_sigue_abierto=None,
+        decision={"texto": "vetado", "quien": "concilio", "vuelta": 5, "fecha": "2026-10-09"},
+    )
+    assert kv.validar_hallazgos(bien, hoy=date(2026, 10, 9)) == []
+    mal = copy.deepcopy(bien)
+    mal["hallazgos"][0]["decision"]["quien"] = ""
+    assert any("exige decision" in p for p in kv.validar_hallazgos(mal, hoy=date(2026, 10, 9)))
+    sin = registro_minimo(estado="descartado", motivo_descarte="no ayuda", por_que_sigue_abierto=None)
+    assert kv.validar_hallazgos(sin, hoy=date(2026, 10, 9)) == []  # sin decision sigue valiendo
+
+
+@pytest.mark.parametrize("campo", ["descripcion", "estados"])
+def test_el_patron_tambien_mira_la_descripcion_y_los_estados(campo: str) -> None:
+    datos = registro_minimo()
+    datos[campo] = "ver src/core/models.py" if campo == "descripcion" else ["medido", "falla en repo_1234"]
+    assert any(campo in p and "identificador" in p for p in kv.validar_hallazgos(datos))
+    datos[campo] = "texto limpio" if campo == "descripcion" else ["medido"]
+    assert kv.validar_hallazgos(datos) == []

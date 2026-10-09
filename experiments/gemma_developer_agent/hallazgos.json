@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso, vueltas 7 a 42. El vigía de inicio de sesión (scripts/kaggle_vigia.py) imprime los que llevan más de una vuelta en `medido`.",
+  "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso (vueltas 3 a 42); donde una cifra no la recalculó el auditor del método, la fila lo dice. El vigía de inicio de sesión imprime los que llevan más de una vuelta en `medido`.",
   "estados": ["medido", "decidido", "aplicado", "descartado"],
   "hallazgos": [
     {
       "id": "repeticiones_identicas",
-      "que_se_midio": "Llamadas del agente principal que repiten una anterior de la misma sesión. Vuelta 32: 50 % (1 267 de 2 532). Vuelta 42, sobre 4 246 llamadas: 1 689 por nombre y argumentos; 1 347 sin edición de por medio (solo las que cuentan contra el tope); 1 178 con la misma salida.",
-      "primera_vuelta": 7,
-      "primera_fecha": "2026-10-04",
-      "vueltas_medido": [7, 12, 32, 42],
+      "que_se_midio": "Llamadas del agente principal que repiten una anterior de la misma sesión. Vuelta 32: 50 % (1 267 de 2 532). Vuelta 42, con tres definiciones; sobre todas las llamadas del principal (4 246): 1 689 por nombre y argumentos, 1 545 sin edición de por medio, 1 178 con la misma salida; solo sobre las que cuentan contra el tope: 1 490, 1 347 (la cifra del auditor) y 989. Con tope 40 son el 46,1 % y con tope 60 el 9,4 % (comparación confundida: cambian a la vez las tareas, el tope y el razonamiento encendido). La vuelta 7 solo la anunció como rasgo; la primera medida es la 12.",
+      "primera_vuelta": 12,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [12, 19, 25, 27, 31, 32, 38, 42],
       "estado": "decidido",
       "decision": {
         "texto": "Solo se puede pedir («no repitas más de 2»); no es brazo de resolución.",
@@ -21,13 +21,13 @@
     },
     {
       "id": "busqueda_por_similitud_vacia",
-      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente).",
-      "primera_vuelta": 38,
-      "primera_fecha": "2026-10-07",
-      "vueltas_medido": [38, 42],
+      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 19: 386 avisos de «no se pudo obtener el embedding» en el log frente a 196 llamadas a la herramienta. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54; se recomendó no quitarla, porque la herramienta se anuncia en el mensaje de tarea y llamar a una no declarada terminaba la tarea con parche vacío. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente).",
+      "primera_vuelta": 19,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [19, 38, 42],
       "estado": "decidido",
       "decision": {
-        "texto": "Se quita en el kit «interfaz limpia» (sin las tres herramientas de grafo y sin la línea 11 de la instrucción). Decidido, todavía no aplicado.",
+        "texto": "La vuelta 42 decidió quitarla en el kit «interfaz limpia» (sin las tres herramientas de grafo y sin la línea 11 de la instrucción). Decidido, todavía no aplicado.",
         "quien": "concilio 42",
         "vuelta": 42,
         "fecha": "2026-10-09"
@@ -37,7 +37,7 @@
     },
     {
       "id": "subagente_sin_resolver",
-      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 145 sesiones.",
+      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 7 sesiones (0 de 7 resueltas; mediana del 65 % del tope); 145 sesiones es el universo, no donde aparece.",
       "primera_vuelta": 38,
       "primera_fecha": "2026-10-07",
       "vueltas_medido": [38, 42],
@@ -53,18 +53,34 @@
     },
     {
       "id": "argumento_mal_formado",
-      "que_se_midio": "Lecturas con el nombre de un argumento mal formado. Vuelta 32: 344 llamadas, concluido «no separa resueltas de no resueltas». Vuelta 42: 507 lecturas en 44 sesiones, 359 de ellas repitiendo un rango ya pedido.",
+      "que_se_midio": "Lecturas con el nombre de un argumento mal formado (la variante de edición está en otra fila). Vuelta 32: 344 llamadas, concluido «no separa resueltas de no resueltas». Vuelta 42: 507 de 1 371 lecturas en 44 sesiones, 505 devueltas desde la línea 1, 359 repitiendo la misma petición rota; 497 están en las iteraciones de tope 40 y 10 de 243 en las de tope 60.",
       "primera_vuelta": 32,
       "primera_fecha": "2026-10-06",
       "vueltas_medido": [32, 42],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Petición exploratoria posterior (lectura con `sed -n`); sin decisión de quitar o corregir. Se añade como criterio secundario la fracción de lecturas con clave rota."
+      "por_que_sigue_abierto": "Tiene una decisión parcial: la vuelta 42 añadió la fracción de lecturas con clave rota como criterio secundario, gratis. Sin decisión sobre qué hacer con ellas: petición exploratoria posterior; el arnés descarta el argumento sin avisar y solo se puede pedir en la instrucción."
+    },
+    {
+      "id": "ediciones_rechazadas_por_esquema",
+      "que_se_midio": "Ediciones que el marco rechaza antes de ejecutarlas (falta el argumento `old_string`) y no cuentan contra el tope. Vuelta 27: 160 llamadas en 43 trazas, 4 sesiones atrapadas. Vuelta 31 (candidato con la instrucción sobre el orden de argumentos): 0 llamadas sin ese argumento en 26. Vuelta 42: 211 en las 145 sesiones (no 131 ni 234).",
+      "primera_vuelta": 27,
+      "primera_fecha": "2026-10-06",
+      "vueltas_medido": [27, 28, 30, 31, 37, 42],
+      "estado": "decidido",
+      "decision": {
+        "texto": "El candidato con la instrucción sobre el orden de argumentos se conserva, sin pedir envío (7 de 30 es la base). No hay decisión posterior sobre las 211 de la vuelta 42.",
+        "quien": "orquestador, con reglas fijadas antes de correr",
+        "vuelta": 31,
+        "fecha": "2026-10-06"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
     },
     {
       "id": "salida_truncada_por_la_cabeza",
-      "que_se_midio": "Salida de órdenes y lecturas truncada. Vuelta 42: 805 lecturas truncadas de 4 444 llamadas; la salida de pytest quedó truncada sin su resumen en 6 de 69 corridas.",
+      "que_se_midio": "Contado (vuelta 42, primer recuento de un rol): 805 lecturas truncadas de 4 444 llamadas; son de `read_file`, con su límite de 150 líneas, y 506 de ellas son las mismas lecturas de la fila `argumento_mal_formado`. Leído en el código del arnés, no contado: `run_command` devuelve los primeros 5 000 caracteres de la salida, por eso la salida de las pruebas se lee con `tail`. Cifra de un rol, no reproducida: 6 de 69 corridas de pytest con la salida truncada sin su resumen (el analista cuenta 8 de 57 con otra definición; no la recalculó el auditor).",
       "primera_vuelta": 42,
       "primera_fecha": "2026-10-09",
       "vueltas_medido": [42],
@@ -75,14 +91,14 @@
     },
     {
       "id": "aviso_de_presupuesto_en_la_llamada_30",
-      "que_se_midio": "El arnés pega el aviso «termina y entrega» a la respuesta cuando quedan 10 llamadas, en la llamada 30 con tope de 40. Vuelta 13: las tareas no resueltas editan en las llamadas 31 a 40. Vuelta 42: la última edición de quien no vuelve a ejecutar cae en la llamada 30 a 32 de mediana.",
+      "que_se_midio": "El arnés pega el aviso «termina y entrega» a la respuesta cuando quedan 10 llamadas, en la llamada 30 con tope de 40. Vuelta 13: las tareas no resueltas editan en las llamadas 31 a 40. Vueltas 14 a 16 y 19: se probó el tope 20 (el aviso llega tras la llamada 10) y la edición sigue al aviso 4 a 8 llamadas después. Vuelta 42: la última edición de quien no vuelve a ejecutar cae en la llamada 30 a 32 de mediana.",
       "primera_vuelta": 13,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [13, 42],
+      "vueltas_medido": [13, 14, 15, 16, 19, 42],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "En la vuelta 42 sirvió para retirar la hipótesis «volver a ejecutar ayuda» (la señal sería en buena parte presupuesto agotado); no hay decisión sobre el aviso mismo."
+      "por_que_sigue_abierto": "Tiene una decisión parcial: en la vuelta 19 el tope 20 quedó como diagnóstico y no pasa a candidato. Sobre el aviso mismo no hay decisión; en la vuelta 42 sirvió para retirar la hipótesis «volver a ejecutar ayuda» (la señal sería en buena parte presupuesto agotado)."
     },
     {
       "id": "ruido_entre_dos_envios_del_mismo_zip",
@@ -102,7 +118,12 @@
       "primera_fecha": "2026-10-09",
       "vueltas_medido": [42],
       "estado": "descartado",
-      "decision": null,
+      "decision": {
+        "texto": "Vetado como brazo.",
+        "quien": "concilio 42",
+        "vuelta": 42,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": "Retirado por sus autores y por los datos: el reproductor que escribe el agente sale verde antes de editar en 18 de 27 sesiones malas (auditor del método, vuelta 42).",
       "por_que_sigue_abierto": null
     },
@@ -113,20 +134,123 @@
       "primera_fecha": "2026-10-09",
       "vueltas_medido": [42],
       "estado": "descartado",
-      "decision": null,
+      "decision": {
+        "texto": "Vetado como brazo.",
+        "quien": "concilio 42",
+        "vuelta": 42,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": "Retirado por sus autores y por los datos: 0,3 a 0,7 llamadas por sesión de descubrimiento, poco que ahorrar (auditor del método, vuelta 42).",
       "por_que_sigue_abierto": null
     },
     {
       "id": "sesiones_sin_edicion_de_fuente",
-      "que_se_midio": "Sesiones que no editan código fuente. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta; vuelta 11, 12, 25 y 32: tope agotado sin editar.",
-      "primera_vuelta": 11,
+      "que_se_midio": "Sesiones que no editan código fuente. La primera tabla de sesiones sin edición es la de la vuelta 12. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta. No es lo mismo que «tope agotado sin editar» (vueltas 11, 12, 25 y 32), que mide otra cosa.",
+      "primera_vuelta": 12,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [11, 12, 25, 32, 42],
+      "vueltas_medido": [12, 42],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
       "por_que_sigue_abierto": "En la vuelta 42 se fijó la definición (por el parche final), no una acción; sin decisión sobre qué hacer con estas sesiones."
+    },
+    {
+      "id": "potencia_del_diseno",
+      "que_se_midio": "Qué diferencia puede detectar el diseño. Vuelta 39: con 19 tareas y una pasada, una mejora real de +2 se detecta 1 a 2 veces de cada 100. Vuelta 42: con 43 tareas y una pasada, un cociente de 3 en las probabilidades se detecta 8 a 13 veces de 100, y con 71 tareas y 2 pasadas por brazo, 52.",
+      "primera_vuelta": 39,
+      "primera_fecha": "2026-10-08",
+      "vueltas_medido": [39, 42],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Criterio de decisión válida: 60 tareas por brazo o 6 pares discordantes a favor, prueba exacta de McNemar con p de 0,05 o menos y una repetición de la base en la misma semana; con menos, el resultado es exploratorio.",
+        "quien": "dueño, a propuesta del auditor del método",
+        "vuelta": 39,
+        "fecha": "2026-10-08"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "razonamiento_encendido_frente_a_apagado",
+      "que_se_midio": "Razonamiento encendido frente a apagado. Vuelta 11: el razonamiento con 4 minutos casi siempre llega al tope (11 de 13) y se descartó con ese presupuesto. Vuelta 32: sin medir en condiciones válidas (23 resueltas apagado y 48 encendido en celdas ajenas, una corrida por celda).",
+      "primera_vuelta": 11,
+      "primera_fecha": "2026-10-05",
+      "vueltas_medido": [11, 32, 40],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Brazo de la iteración 08: base, base repetida y base con solo el razonamiento encendido.",
+        "quien": "concilio 40",
+        "vuelta": 40,
+        "fecha": "2026-10-08"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "compactacion_del_contexto",
+      "que_se_midio": "Vuelta 32: la compactación no explica que el agente no encuentre el archivo (quien lo ve, lo ve antes de cualquier compactación). Vuelta 40: el rechazo por contexto ocurrió en el subagente, que no tiene compactación.",
+      "primera_vuelta": 32,
+      "primera_fecha": "2026-10-06",
+      "vueltas_medido": [32, 40],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Qué se pierde al compactar el contexto sigue sin medirse (vuelta 42); sin decisión escrita."
+    },
+    {
+      "id": "minutos_por_tarea_frente_al_presupuesto",
+      "que_se_midio": "Minutos por tarea de la sesión frente a los disponibles. Vuelta 3: 1,62 minutos por tarea de 4 disponibles en dos tareas. Vueltas 11 y 12: minutos por tarea por pasada. Vuelta 33: el razonamiento con 4 minutos resolvió una tarea menos. Vuelta 37: 5,5 minutos por tarea son unas 11 horas del límite de 12.",
+      "primera_vuelta": 3,
+      "primera_fecha": "2026-10-04",
+      "vueltas_medido": [3, 11, 12, 33, 37],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Vuelve al concilio: no hay decisión escrita sobre los minutos por tarea frente al presupuesto real de la evaluación."
+    },
+    {
+      "id": "sintaxis_rota_por_comillas_escapadas",
+      "que_se_midio": "Parches con sintaxis rota por la edición del agente. Vuelta 32: 6 sesiones (5 por escapes literales al editar); nada comprueba la sintaxis antes de entregar. Vuelta 42: 6 parches con sintaxis rota, y en esos 6 no se ejecutó nada tras la última edición.",
+      "primera_vuelta": 32,
+      "primera_fecha": "2026-10-06",
+      "vueltas_medido": [32, 38, 42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "El concilio 42 vetó exigir ejecución antes de entregar; sobre una comprobación de sintaxis antes de entregar (lo único con respaldo, vuelta 38) no hay decisión escrita."
+    },
+    {
+      "id": "gasto_sin_avance",
+      "que_se_midio": "Llamadas que no aportan información nueva (repetida sin edición de por medio, búsqueda vacía, lectura mal formada, llamada del subagente, rechazada sin ejecutar). Vuelta 42: 1 822 de 4 086 contadas por el arnés y 2 038 de 4 444 registradas en la traza (el verificador independiente da 2 037); 51,9 % con tope 40 y 14,5 % con tope 60.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Aparece en una sola vuelta; el kit «interfaz limpia» ataca una parte, sin criterio escrito sobre este gasto."
+    },
+    {
+      "id": "llamadas_registradas_frente_a_contadas",
+      "que_se_midio": "El arnés registra 4 444 llamadas en la traza y cuenta 4 086 contra el tope. La diferencia de 358 cuadra en 145 de 145 sesiones: 133 entregas, 2 consultas de estado, 7 delegaciones al subagente, 5 rechazadas por presupuesto y 211 ediciones rechazadas por esquema.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Aparece en una sola vuelta; es una definición (qué cuenta contra el tope) que la cuenta por llamada ya aplica."
+    },
+    {
+      "id": "tope_40_frente_a_tope_60",
+      "que_se_midio": "Las iteraciones 03 a 05 tuvieron 40 llamadas y 4 minutos; la 06 y la 07, 60 llamadas, 4,5 minutos y el razonamiento encendido. Vuelta 42: gasto sin avance de 51,9 % con tope 40 y de 14,5 % con tope 60; repetidas 46,1 % y 9,4 %; lecturas mal formadas 497 y 10. Comparación confundida: cambian a la vez las tareas, el tope y el razonamiento.",
+      "primera_vuelta": 42,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [42],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Aparece en una sola vuelta; no se puede separar el efecto del tope del del razonamiento sin un brazo que cambie solo uno."
     }
   ]
 }

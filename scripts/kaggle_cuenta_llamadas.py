@@ -55,7 +55,9 @@ enunciado de presupuesto de la propia traza: mezclarlos esconde lo que cambia en
   de los que su herramienta declara (``filepath``, ``start_line``, ``end_line``; y ``filepath``,
   ``old_string``, ``new_string``, ``allow_multiple``). ``lecturas_..._repiten_rango``: la lectura mal formada
   cuyo ``filepath`` y cuyos demás argumentos (sin las comillas del nombre) ya se pidieron antes, en la misma
-  sesión, en otra lectura con rango. **Rechazada por esquema** es otra cosa: la salida lo dice.
+  sesión, en otra lectura mal formada: repite **la misma petición rota**. Contra lecturas previas bien
+  formadas son 0 (medido sobre el rescate del 2026-10-09: 359 y 0 de 507). **Rechazada por esquema** es otra
+  cosa: la salida lo dice.
 * **Repetida**, con tres definiciones, siempre sobre las llamadas del agente principal y contando solo las
   apariciones posteriores a la primera:
   ``repetida_por_nombre_y_argumentos`` (mismo nombre de herramienta y mismos argumentos en la sesión);
@@ -584,7 +586,9 @@ def agregar(sesiones: Sequence[dict[str, Any]], tareas: int) -> dict[str, Any]:
     return {
         "sesiones": len(sesiones),
         "tareas": tareas,
-        "resueltas": len(resueltas),
+        # Son sesiones, no tareas: una tarea puede tener varias sesiones (una por pasada y por brazo).
+        "sesiones_resueltas": len(resueltas),
+        "tareas_con_alguna_sesion_resuelta": len({s["tarea"] for s in resueltas if "tarea" in s}),
         "sesiones_sin_traza": sum(1 for s in sesiones if not s["tiene_traza"]),
         "llamadas": {
             "registradas_principal": _suma(sesiones, "registradas_principal"),

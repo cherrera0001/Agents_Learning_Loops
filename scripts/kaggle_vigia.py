@@ -342,6 +342,9 @@ def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
     problemas: list[str] = []
     if set(datos) - CAMPOS_DEL_REGISTRO:
         problemas.append(f"campos desconocidos en el registro: {sorted(set(datos) - CAMPOS_DEL_REGISTRO)}")
+    for campo in ("descripcion", "estados"):
+        if PROHIBIDO_EN_HALLAZGOS.search(json.dumps(datos.get(campo), ensure_ascii=False)):
+            problemas.append(f"`{campo}`: parece llevar un identificador de tarea, un enlace o una ruta")
     ids: set[str] = set()
     for fila in datos["hallazgos"]:
         if not isinstance(fila, dict):
@@ -374,7 +377,8 @@ def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
         if estado not in ESTADOS:
             problemas.append(f"{nombre}: estado desconocido {estado!r}")
         decision = fila.get("decision")
-        if estado in ("decidido", "aplicado"):
+        # `decidido` y `aplicado` la exigen; un `descartado` puede llevarla (el veto de un concilio).
+        if estado in ("decidido", "aplicado") or (estado == "descartado" and decision is not None):
             if not (
                 isinstance(decision, dict)
                 and _texto(decision.get("texto"))
@@ -394,7 +398,7 @@ def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
                 if _entero(fila.get("primera_vuelta")) and decision["vuelta"] < fila["primera_vuelta"]:
                     problemas.append(f"{nombre}: `decision.vuelta` es anterior a la primera vuelta")
         elif decision is not None:
-            problemas.append(f"{nombre}: solo `decidido` y `aplicado` llevan decision")
+            problemas.append(f"{nombre}: solo `decidido`, `aplicado` y `descartado` llevan decision")
         if estado == "descartado" and not _texto(fila.get("motivo_descarte")):
             problemas.append(f"{nombre}: `descartado` exige `motivo_descarte`")
         if (

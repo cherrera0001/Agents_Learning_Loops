@@ -512,7 +512,8 @@ def test_el_agregado_no_lleva_identificadores_ni_texto_de_la_competencia(tmp_pat
     ):
         assert prohibido not in texto
     assert {d["tarea"] for d in detalle} == {"proyecto_1234", "proyecto_5678"}  # el detalle sí los lleva
-    assert agregado["sesiones"] == 2 and agregado["tareas"] == 2 and agregado["resueltas"] == 1
+    assert agregado["sesiones"] == 2 and agregado["tareas"] == 2 and agregado["sesiones_resueltas"] == 1
+    assert "resueltas" not in agregado  # el rótulo viejo se leía como «39 de 43 tareas»
 
 
 def test_el_agregado_va_tambien_separado_por_tope(tmp_path: Path) -> None:
@@ -641,6 +642,18 @@ def test_el_estado_repetido_no_es_un_gasto_sin_avance() -> None:
     s = kc.contar_sesion(traza(pasos), resultado(), None)
     assert s["repetida_por_nombre_y_argumentos"] == 1  # sí es repetida por nombre...
     assert s["sin_avance_sobre_la_traza"] == 0  # ...pero la entrega y el estado no cuentan como sin avance
+
+
+def test_sesiones_resueltas_no_son_tareas_resueltas() -> None:
+    def fila(tarea: str, resuelta: bool) -> dict[str, Any]:
+        return {"tarea": tarea, **kc.contar_sesion(traza(UNA), resultado(resolved=resuelta), None)}
+
+    # la tarea a tiene tres sesiones (dos resueltas); b una sin resolver; c una resuelta
+    filas = [fila("a", True), fila("a", True), fila("a", False), fila("b", False), fila("c", True)]
+    agregado = kc.agregar(filas, 3)
+    assert agregado["sesiones"] == 5 and agregado["tareas"] == 3
+    assert agregado["sesiones_resueltas"] == 3
+    assert agregado["tareas_con_alguna_sesion_resuelta"] == 2
 
 
 def test_vacia_tambien_si_results_esta_vacio_y_no_hay_count() -> None:
