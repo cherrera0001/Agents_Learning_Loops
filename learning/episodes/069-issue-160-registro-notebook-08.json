@@ -120,6 +120,46 @@
       "action": "update_docs",
       "success": true,
       "note": "Documento del ensayo reescrito con las cifras de la batería final, las dos cifras del parche de rich, el procedimiento tras una corrida real, la medición del analista sobre sesiones resueltas y cortadas, y los límites que pidió la revisión"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Segunda revisión independiente sobre 34a0b7c: exige un cambio antes de fusionar (comprobar) y una lista corta más; da por buenos el emparejado, el agrupado por corrida, las guardias y las huellas"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Defectos de la segunda revisión en el código de la primera ronda de correcciones: comprobar saltaba en silencio un notebook sin registro (una pasada sin su registro junto a otra buena salía con 0) y, si ninguno traía registro, salía con 2 sin imprimir lo que dio el rescate; un campo de otro tipo en un evento (enganches como lista, tarea como lista) daba traza y código 1; el veredicto de una sesión detenida por una guardia decía a la vez «registro no fiable» y «sesión completa»; y ni la guardia tras la primera tarea ni diagnosticar miraban agente_fin y diff_cierre, de modo que un enganche instalado y sin efecto salía con 0"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "comprobar imprime siempre el rescate, lista los omitidos y cuenta como hallazgo una pasada sin registro; precedencia escrita y probada en comprobar y en diagnosticar; validación de tipos con código 2; estado «detenida»; la guardia y el diagnóstico exigen agente_fin y diff_cierre; el zip se vuelve a empaquetar si la celda de tareas falla"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Cinco defectos inyectados por la segunda revisión sobrevivían (comprobar devuelve el último código, parada original fuera del finally, la guardia cuenta cancelada como respondida, diff con el registro inactivo, tarea_fin no cierra la corrida), y defectos_inyectados.json se había generado antes del commit que decía medir. Al repetir la inyección, tres definiciones viejas ya no aplicaban al código cambiado y el guion las contaba como si sobrevivieran"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "88 pruebas. Inyección repetida sobre el commit 20b6136 con el árbol limpio, que el guion comprueba y anota: 49 defectos, detectados 49; los 13 de la primera revisión y los 5 de la segunda incluidos; ninguno equivalente"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "En la batería final del ensayo, la corrida con el parche global de rich se colgó en su tercera tarea: 16 minutos sin peticiones ni subprocesos, con el latido vivo. No se pudo sacar la pila del núcleo (el contenedor no permite ptrace): causa sin diagnosticar"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Copiada la salida de la corrida colgada, matado su contenedor y repetida una vez, sola: termina bien. Batería final: 18 corridas válidas, las 18 pasan, incluidas la pasada 2 y tres guardias con sabotaje a propósito. ruff, mypy, export_schema --check y pytest --cov: 2457 pasan, 9 omitidos, cobertura 98,72 %"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Documento con las cifras de la batería final, la precedencia de códigos, los límites que pidió la segunda revisión, las tres medidas de la razón del parche de rich y el cuelgue con su causa sin diagnosticar"
     }
   ],
   "lessons": [
@@ -133,6 +173,10 @@
     "En un ensayo con escenarios de control, escribir la expectativa de cada control antes de lanzar la batería: una validación que exige lo contrario obliga a repetirla entera",
     "No escribir valores esperados de un test a ojo: calcularlos aparte, sin el código bajo prueba, antes de escribir la aserción",
     "Medir tiempos con la máquina compartida solo en corridas alternadas y con la carga anotada",
-    "Para corregir un archivo con cadenas que llevan secuencias de escape, usar la herramienta de edición y no un heredoc dentro de la orden"
+    "Para corregir un archivo con cadenas que llevan secuencias de escape, usar la herramienta de edición y no un heredoc dentro de la orden",
+    "Una orden que recorre varias entradas debe listar las que omite y por qué: lo que se salta en silencio se lee como «sin hallazgos»",
+    "Cuando una orden junta dos comprobaciones, fijar por escrito y con una prueba qué código gana si fallan las dos",
+    "Generar el resultado de una inyección de defectos sobre el commit que se cita, con el árbol limpio, y hacer que el guion anote ese commit: un defecto que ya no aplica al código no es un defecto que sobrevive",
+    "Antes de lanzar una batería de contenedores en paralelo, dejar un tope de tiempo por corrida: una corrida colgada bloquea las que esperan detrás"
   ]
 }

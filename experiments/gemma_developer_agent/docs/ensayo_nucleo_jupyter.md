@@ -15,10 +15,14 @@ corte. Este documento cubre las dos últimas.
 
 | Pieza | Dónde | Versionada |
 |---|---|---|
-| Los enganches de registro, que el notebook lleva como una celda | [`scripts/kaggle_registro_enganches.py`](../../../scripts/kaggle_registro_enganches.py) | Sí, con `tests/test_kaggle_registro_enganches.py` |
+| Los enganches de registro y las guardias, que el notebook lleva como una celda | [`scripts/kaggle_registro_enganches.py`](../../../scripts/kaggle_registro_enganches.py) | Sí, con `tests/test_kaggle_registro_enganches.py` |
 | El sorteo de tareas y el lector del registro | [`scripts/kaggle_registro.py`](../../../scripts/kaggle_registro.py) | Sí, con `tests/test_kaggle_registro.py` |
 | `armar.py`, el ensayo, el modelo falso, el Dockerfile y los notebooks armados | `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/` | No: `data/` está ignorada por git |
 | Las salidas del ensayo | `…/iteracion_08/ensayo_salida/` | No; se citan por ruta y SHA-256 ([huellas](#huellas)) |
+
+**Consecuencia:** el código de las guardias está versionado, pero las líneas del notebook que las llaman
+las escribe `armar.py`, que no lo está. De esas líneas el repositorio solo tiene los SHA-256 que este
+documento cita para `armar.py` y para los dos notebooks.
 
 ## El notebook de la iteración 08
 
@@ -29,7 +33,7 @@ por pasada, porque 120 tareas no caben en una sesión de 9 000 s.
 |---|---|---|
 | Condición `A` y un solo grupo, `sorteo_60`, con las 60 tareas sorteadas | 4 | 2, 2 |
 | Celda nueva: el texto de `kaggle_registro_enganches.py`, byte a byte, la línea que instala el registro y la guardia previa (17 líneas) | 8 | celda nueva |
-| Plan de una pasada (`A8P1` o `A8P2`), nombres de salida `iteracion_08_p1` o `_p2`, tope de sesión de 150 min con 10 de margen, las llamadas al registro y la guardia tras la primera tarea (2 líneas) | 10 (antes 9) | 5, 22 |
+| Plan de una pasada (`A8P1` o `A8P2`), nombres de salida `iteracion_08_p1` o `_p2`, tope de sesión de 150 min con 10 de margen, las llamadas al registro, la guardia tras la primera tarea (2 líneas) y el reempaquetado del zip si la celda falla (1 línea) | 10 (antes 9) | 5, 23 |
 | Cierre del registro y nuevo empaquetado antes de detener el servidor | 11 (antes 10) | 0, 8 |
 
 Las celdas 0, 1, 2, 3, 5, 6, 7 y 9 son las de la 07, byte a byte (la 9 es su antigua 8).
@@ -39,22 +43,24 @@ Las celdas 0, 1, 2, 3, 5, 6, 7 y 9 son las de la 07, byte a byte (la 9 es su ant
   archivos son, byte a byte, los de la carpeta `envios/a_kit_ajustado` y los de la condición A del notebook
   de la iteración 04, y que su `eval_config.yaml` dice 4 minutos y 40 llamadas.
 - **Dos pasadas.** La pasada 2 es la pasada 1 con `A8P1` → `A8P2` e `iteracion_08_p1` → `iteracion_08_p2`:
-  cambia una línea en la celda 8 y tres en la 10, y nada más. `armar.py` lo comprueba.
+  cambia una línea en la celda 8 y tres en la 10, y nada más. `armar.py` lo comprueba, y el notebook de la
+  pasada 2 se ejecutó bajo el núcleo ([escenario `pasada_2`](#resultado-por-escenario)).
 - **Topes.** No se cambian los del agente ni los de la condición. El tope de sesión vuelve a los 150 min y 10
   de margen de las iteraciones 03, 04 y 06 (la 07 los había recortado a 60 y 5 por la cuota que quedaba). El
   tope del conjunto de tareas sigue en `TOPE_SEGUNDOS = 7200`, que vence antes que los 150 min: ver
   [lo que queda sin medir](#lo-que-el-ensayo-no-puede-decir).
 
-Notebooks armados, de 90 482 bytes cada uno:
+Notebooks armados, de 91 527 bytes cada uno:
 
-| Notebook | SHA-256 |
+| Archivo | SHA-256 |
 |---|---|
-| `kernel_iteracion_08_p1/iteracion.ipynb` | `9f3fdf02b367d989f3cf931ddb3d0f77c67027dd6138f4e8a240b86bd75bcc4a` |
-| `kernel_iteracion_08_p2/iteracion.ipynb` | `7305a3c10c9b61484ee8dcaf216077afd4309fd2785a54a5c3a7bc2ac145bfc9` |
+| `kernel_iteracion_08_p1/iteracion.ipynb` | `62c07ff6d1779062087e1a32dcdb8981645e4cf588175ab0cf68d97560f5afae` |
+| `kernel_iteracion_08_p2/iteracion.ipynb` | `0be9615e88b6c9eeb7344ae84b79854138012c6a79c8fabba1401e6ca7419831` |
+| `armar.py` | `7fefc5d9d9c4381f15923844f0aaa72870081c75f37e3a1cdb4488aec0ee738b` |
 
 El texto de los enganches que llevan tiene el SHA-256
-`fd1d3ff7de7f37776ae6f9b27d9cabfd29a877d4915ab9c956ad09a44fbf9b0c`, el de
-`scripts/kaggle_registro_enganches.py` en el commit `41ec1c5`. Si ese archivo cambia, los notebooks se vuelven
+`d2333a3de07329450411cd04dfe3ee64e9de1905403cfa5152853740f6dd454c`, el de
+`scripts/kaggle_registro_enganches.py` en el commit `20b6136`. Si ese archivo cambia, los notebooks se vuelven
 a armar y el ensayo se repite.
 
 ## Los enganches
@@ -88,11 +94,23 @@ toca el agente, sus topes ni la condición:
 | Guardia | Dónde | Cuándo detiene el notebook |
 |---|---|---|
 | `exigir_enganches` | Celda 8, antes de la primera tarea | Si un enganche exigido no quedó instalado. Antes de lanzar, cierra el registro, detiene el servidor y limpia, como las demás celdas. Las retrollamadas de litellm no se exigen: son solo el canal de comparación |
-| `comprobar_primera_tarea` | Celda 10, tras la primera tarea, con su zip ya guardado | Si su `logs/<tarea>.log` no existe o pesa 0 bytes, o si el registro no tiene ninguna petición con inicio y fin |
+| `comprobar_primera_tarea` | Celda 10, tras la primera tarea, con su zip ya guardado | Si su `logs/<tarea>.log` no existe o pesa 0 bytes; si el registro no tiene ninguna petición respondida; o si la tarea no dejó su `agente_fin` o su `diff_cierre` |
 
 La segunda existe porque un enganche puede decir «instalado» y no surtir efecto: el arnés podría crear la
-consola o llamar al modelo por otra ruta. Las dos se ensayaron bajo el núcleo
-([resultado](#resultado-por-escenario)).
+consola, llamar al modelo o destruir el sandbox por otra ruta. Las dos se ensayaron bajo el núcleo, la
+segunda de dos maneras ([resultado](#resultado-por-escenario)).
+
+Cuando la segunda guardia detiene el notebook, la celda cierra el registro y **vuelve a empaquetar el zip**,
+de modo que el zip lleva el evento `guardia`, el `corte` y el `cierre`: leído solo desde el zip, el
+diagnóstico da lo mismo que con los archivos sueltos (4). Ensayado en `guardia_log` y `guardia_diff`.
+
+Límites de las guardias:
+
+- Los enganches `log del servidor` y `latido` nunca pueden quedar en `FALLO` (con un `log_path` vacío el
+  primero dice «origen None» y cuenta como instalado), así que la guardia previa no los cubre. Si el log del
+  servidor no se copia, se ve en el latido (`servidor_log_bytes` vacío) y en que el zip no lo trae.
+- No está comprobado que Kaggle detenga «Run All» en la primera excepción. Si no lo hiciera, la guardia
+  previa no ahorraría cuota; la segunda sí, porque la celda de tareas ya terminó cuando lanza.
 
 ### Cómo se lee el registro
 
@@ -103,24 +121,50 @@ python -m scripts.kaggle_registro comprobar --rescate <carpeta de un rescate> [-
 
 `diagnosticar` dice si el registro es de fiar, si la sesión se cerró o murió desde fuera, qué tope cortó cada
 tarea, qué petición quedó en vuelo o cortada y qué diff quedó. Agrupa por corrida de tarea, no por nombre: si
-una tarea se repite, cada corrida conserva lo suyo. Distingue dos cosas que la primera versión mezclaba:
+una tarea se repite, cada corrida conserva lo suyo. Distingue:
 
 - **petición en vuelo:** un inicio sin fin de ningún tipo. Solo queda si la sesión murió durante la llamada;
 - **petición cortada:** la última petición de la tarea, si no llegó a responderse (`cancelada`, `error` o sin
   fin). Un error transitorio seguido de peticiones respondidas no es ni lo uno ni lo otro.
 
+**`diagnosticar` solo mira el registro.** Sobre una corrida con los logs por tarea vacíos
+(`control_sin_parche`) sale con 0, porque el registro está sano. Quien quiera juzgar una corrida usa
+`comprobar`, no `diagnosticar` suelto.
+
 | Código | Qué significa |
 |---|---|
 | 0 | Registro fiable y sesión completa (en `sortear`: lista reproducida) |
 | 1 | Solo `sortear`: la lista sorteada difiere de la guardada |
-| 2 | Entrada inválida o ilegible: archivo ausente, JSON roto, acta o validez sin sus campos |
+| 2 | Entrada inválida o ilegible: archivo ausente, JSON roto, acta o validez sin sus campos, un evento del registro con un campo de otro tipo; en `comprobar`, además, ningún registro que diagnosticar |
 | 3 | Sesión cortada por el notebook; la causa está en el registro |
-| 4 | Registro no fiable: un enganche exigido no se instaló, hubo errores propios, hay tareas corridas sin ninguna petición respondida, falta `registro_instalado` o una guardia detuvo el notebook |
+| 4 | Registro no fiable: un enganche exigido no se instaló; hubo errores propios; hay tareas corridas y **en toda la sesión** no hay ninguna petición respondida; una tarea terminada no trae su `agente_fin` o su `diff_cierre`; falta `registro_instalado`; o una guardia detuvo el notebook. En `comprobar`, además, una pasada con registro que no trae su registro |
 | 5 | Sesión muerta desde fuera: el registro no termina en `cierre` |
 
-`comprobar` corre `kaggle_rescate --sin-red` y después `diagnosticar` sobre los archivos `salida__registro_*`
-de cada notebook del rescate. Sale con el código del rescate si no es 0 y, si lo es, con el del primer
-diagnóstico que no lo sea.
+**Precedencia en `diagnosticar`:** 4 gana a 3, y 3 gana a 5. Un registro no fiable se dice aunque la sesión
+esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre.
+
+La comprobación de peticiones respondidas es de toda la sesión, no por tarea: una sesión con una tarea
+resuelta y otra cuyas peticiones terminaron todas en error sale con 0, y la segunda tarea lo dice en su
+ficha (`no_respondidas`, `peticion_cortada`). Cuando el 4 sale por esto, el mensaje nombra las dos lecturas
+posibles: o el enganche de peticiones no surte efecto, o el servidor nunca respondió, con las peticiones
+iniciadas y las que terminaron en error.
+
+Una sesión que una guardia detuvo no se llama «completa»: su veredicto termina en «sesión detenida por una
+guardia», antes o tras la primera tarea.
+
+**`comprobar`** corre `kaggle_rescate --sin-red` y después `diagnosticar` sobre los archivos
+`salida__registro_*` de cada notebook del rescate.
+
+- Imprime siempre lo que dio el rescate, también cuando no hay ningún registro que diagnosticar.
+- Lista en `omitidos` cada notebook que no diagnosticó, con su motivo.
+- Un notebook sin registro es un hallazgo (4) si trae señales de ser una pasada con registro. Las señales
+  son archivos que solo deja un notebook con registro: `salida__latido_*`, `salida__servidor_log_*`,
+  `salida__diff_en_curso_*`, o cualquier salida con `iteracion_08` en el nombre. Un notebook viejo sin nada de
+  eso solo se lista y no cambia el código. La regla es por nombre de archivo: una iteración posterior que
+  cambie los nombres de salida tiene que añadir el suyo a `SENALES_DE_PASADA`.
+- **Precedencia:** el código del rescate, si no es 0; si lo es, el del primer notebook, en orden alfabético
+  de su nombre, cuyo código no sea 0, sea de su diagnóstico o por faltarle el registro. Un registro ilegible
+  en un notebook no impide diagnosticar los demás.
 
 ## Tras una corrida real
 
@@ -130,7 +174,7 @@ eso el rescate solo no basta:
 
 1. Bajar con `python -m scripts.kaggle_rescate --destino <carpeta>` y anotar el código y la hora.
 2. Correr `python -m scripts.kaggle_registro comprobar --rescate <carpeta fechada>`. Distinto de 0 es un
-   hallazgo; el JSON dice de cuál de los dos y el veredicto de cada sesión.
+   hallazgo; el JSON dice de cuál de los dos, el veredicto de cada sesión y los notebooks omitidos.
 3. Si el diagnóstico dice 5 (muerta desde fuera), el zip no trae el cierre ni la tarea cortada. Lo que hay
    que mirar son los archivos sueltos de la salida, que el notebook escribe fuera del zip:
    `registro_<nombre>.jsonl` (el inicio sin fin), `latido_<nombre>.jsonl` (el último latido, con la petición
@@ -138,7 +182,9 @@ eso el rescate solo no basta:
    `servidor_log_<nombre>.txt`.
 4. Si dice 4, leer `problemas_del_registro`: la corrida no es válida como registro aunque tenga resultados.
 
-Que Kaggle conserve esos archivos sueltos cuando mata una sesión no está medido.
+No está comprobado que Kaggle conserve los archivos sueltos de `/kaggle/working` cuando mata una sesión. El
+latido del notebook real es cada 30 s: la ventana para ver por el latido una petición en vuelo, o el árbol de
+la tarea, es de hasta 30 s.
 
 ## El sorteo
 
@@ -187,7 +233,7 @@ distinto del proceso del ensayo, y el ensayo lo exige.
 | 4 | Tal cual salvo la línea `GRUPOS`, recortada a las tareas sorteadas con snapshot en esta máquina |
 | 0, 1 y 2 | Doble: no hay `/kaggle/input` y el arnés ya está instalado en la imagen |
 | 5 | Doble: la demostración del grafo usa la primera tarea de `tasks.jsonl`, que aquí no tiene grafo |
-| 7 | Doble: no hay GPU. Deja `server_instance` con `base_url`, `log_path` y un `stop()` que borra el log, como el servidor real. En los dos escenarios de guardia lleva además el sabotaje |
+| 7 | Doble: no hay GPU. Deja `server_instance` con `base_url`, `log_path` y un `stop()` que borra el log, como el servidor real. En los tres escenarios de guardia lleva además el sabotaje |
 
 De las 60 tareas sorteadas, 26 tienen snapshot en esta máquina. La corrida completa usa esas 26; las demás,
 las 6, las 5 o las 3 primeras.
@@ -196,20 +242,31 @@ las 6, las 5 o las 3 primeras.
 tarea que fuerza el corte. Escribe un log propio, que hace de log del servidor. `nvidia-smi` es un doble que
 inventa cuatro GPU.
 
+**El ensayo late cada 2 s** (`LATIDO_SEGUNDOS=2`) y el notebook real cada 30 s. Ninguna cifra de latidos de
+este documento vale para la corrida real.
+
 ### Resultado por escenario
 
-Dieciséis corridas, cada una en un contenedor efímero, entre las 02:20 y las 02:44 UTC del 2026-10-09, todas
-con la misma versión del ensayo y del notebook. Las dieciséis pasan su validación, que incluye el código que
-debe dar `diagnosticar`. «Rescate» es el código de `kaggle_rescate --sin-red` sobre esa salida; «Comprobar»,
-el de la orden que junta rescate y diagnóstico.
+Dieciocho corridas válidas, cada una en un contenedor efímero, entre las 03:28 y las 04:08 UTC del
+2026-10-09, todas con la misma versión del ensayo y del notebook. Las dieciocho pasan su validación, que
+incluye el código que debe dar `diagnosticar`. Hubo además una decimonovena que se colgó y se repitió: ver
+[el cuelgue](#una-corrida-con-el-parche-global-se-colgó).
+
+Orden: `completa` sola; después once escenarios en paralelo (inicios entre las 03:39:32 y las 03:39:35); al
+final, solas y una tras otra, las seis corridas con y sin enganches. **Los relojes por tarea de los
+escenarios en paralelo no son comparables con los de `completa`** ni entre baterías.
+
+«Rescate» es el código de `kaggle_rescate --sin-red` sobre esa salida; «Comprobar», el de la orden que junta
+rescate y diagnóstico.
 
 | Escenario | Notebook | Tareas | Qué se fuerza | Cómo termina el notebook | Logs por tarea de 0 bytes | Diagnóstico | Rescate | Comprobar |
 |---|---|---|---|---|---|---|---|---|
 | `completa` | pasada 1 | 26 | Nada | Completo | 0 de 26 | 0 | 0 | 0 |
+| `pasada_2` | **pasada 2** | 3 | Nada | Completo | 0 de 3 | 0 | 0 | 0 |
 | `control_sin_parche` | sin el parche de rich | 6 | Nada | Completo | **6 de 6** | 0 | **4** | 4 |
-| `parche_global` | con el parche global | 6 | Nada | Completo | 0 de 6 | 0 | 0 | 0 |
+| `parche_global` (repetida) | con el parche global | 6 | Nada | Completo | 0 de 6 | 0 | 0 | 0 |
 | `con_enganches` (3 corridas) | pasada 1 | 6 | Nada | Completo | 0 de 6 | 0 | 0 | 0 |
-| `sin_enganches` (3 corridas) | registro inactivo | 6 | Nada | Completo | 6 de 6 | no hay registro | 4 | 2 |
+| `sin_enganches` (3 corridas) | registro inactivo | 6 | Nada | Completo | 6 de 6 | no hay registro | 4 | 4 |
 | `corte_tiempo` | pasada 1 | 3 | El modelo retiene una petición más de 4 min | Completo: la sesión sigue | 0 de 3 | 0 | 0 | 0 |
 | `corte_llamadas` | pasada 1 | 3 | El modelo no entrega y pasa de 40 llamadas | Completo: la sesión sigue | 0 de 3 | 0 | 0 | 0 |
 | `corte_sesion` | pasada 1 | 5 | `TOPE_SESION_SEGUNDOS=45` | `cortado_por: sesion`, 1 tarea corrida | 0 de 1 | 3 | 0 | 3 |
@@ -217,17 +274,23 @@ el de la orden que junta rescate y diagnóstico.
 | `servidor_caido` | pasada 1 | 3 | El servidor cierra la conexión y deja de escuchar | `cortado_por: servidor`, 2 tareas corridas | 0 de 2 | 3 | 0 | 3 |
 | `guardia_enganche` | pasada 1 | 3 | El doble de la celda 7 borra `agent_runner.Console` | Se detiene en la celda 8, sin correr ninguna tarea | sin zip | **4** | 0 | 4 |
 | `guardia_log` | pasada 1 | 3 | El doble de la celda 7 hace que toda consola con archivo se crea en Jupyter | Se detiene tras la primera tarea: `cortado_por: fallo RuntimeError` | 1 de 1 | **4** | 4 | 4 |
+| `guardia_diff` | pasada 1 | 3 | El doble de la celda 7 deja al arnés usando un `sandbox_stop` sin envolver | Se detiene tras la primera tarea: `cortado_por: fallo RuntimeError` | 0 de 1 | **4** | 0 | 4 |
 
 Cada variante de notebook difiere de la pasada 1 en una sola línea, la que instala el registro; `armar.py` lo
 comprueba.
 
 **Sesión sin corte (`completa`).** 78 peticiones iniciadas y 78 con su fin: 52 con motivo `tool_calls` y 26 con
 `stop`. El registro cuenta las mismas 78 que recibió el servidor falso. Las 26 tareas tienen su fila de fin, su
-motivo de fin del agente y su diff al cierre. En el zip (234 483 bytes, 135 miembros, ninguno de 0 bytes) el
-registro pesa 286 204 bytes en tres archivos: eventos, latido (270 latidos) y log del servidor. El log
-original del servidor ya no existía al terminar: el doble lo borró al detenerse, así que la copia es anterior.
+motivo de fin del agente y su diff al cierre. El zip tiene 135 miembros, ninguno de 0 bytes, con el registro
+en tres archivos: eventos, latido y log del servidor. El log original del servidor ya no existía al terminar:
+el doble lo borró al detenerse, así que la copia es anterior.
 
-**Las dos guardias.**
+**La pasada 2 (`pasada_2`).** El notebook de la segunda pasada corrió 3 tareas y dejó solo archivos con su
+nombre: `crudo_iteracion_08_p2_A8P2.zip`, `iteracion_08_p2.json`, `registro_iteracion_08_p2.jsonl`,
+`latido_iteracion_08_p2.jsonl`, `servidor_log_iteracion_08_p2.txt` y `diff_en_curso_iteracion_08_p2.diff`.
+Ningún nombre de la pasada 1 aparece en la salida ni dentro del zip, y los eventos llevan la etiqueta `A8P2`.
+
+**Las guardias.**
 
 - `guardia_enganche`: el enganche de los logs falló con `AttributeError` y el notebook se detuvo en la celda 8
   con «GUARDIA registro: no quedó instalado logs por tarea (rich)». El servidor falso no recibió ninguna
@@ -235,7 +298,32 @@ original del servidor ya no existía al terminar: el doble lo borró al deteners
   latido y la copia del log del servidor; el servidor quedó detenido.
 - `guardia_log`: el enganche dijo «modo archivo» (instalado), la primera tarea dejó `logs/rich_3470.log` en 0
   bytes y el notebook se detuvo con «GUARDIA registro: el log por tarea rich_3470.log pesa 0 bytes». Corrió una
-  tarea de tres; su zip quedó guardado antes de la guardia.
+  tarea de tres.
+- `guardia_diff`: todos los enganches dijeron «instalado». El sabotaje deja a `run_agent_sandbox` con una
+  copia de sus nombres globales, así que el enganche envuelve un `sandbox_stop` que el arnés ya no usa. La
+  primera tarea dejó su log con contenido y su `agente_fin`, pero no su `diff_cierre`, y el notebook se
+  detuvo con «GUARDIA registro: la primera tarea no dejó su diff_cierre (diff del árbol al cierre)». Es el
+  único problema que la guardia anotó: la detiene esa comprobación y no otra.
+
+En las dos últimas el zip se volvió a empaquetar después de la guardia y, leído solo, da diagnóstico 4.
+
+### Una corrida con el parche global se colgó
+
+En la batería final, la primera corrida de `parche_global` se quedó parada en su tercera tarea
+(`rich_4079`) desde las 03:41:16 UTC. A las 03:57 seguía igual: el log por tarea creado y en 0 bytes, ninguna
+petición al modelo, ningún subproceso vivo dentro del contenedor, el núcleo dormido y el latido escribiendo
+(492 latidos, el último con la tarea `rich_4079` y ninguna petición en vuelo). Se copió `/kaggle/working` a
+`ensayo_salida/parche_global_colgado/` y se mató el contenedor (código 137). Sobre esa copia `diagnosticar`
+da 5.
+
+**La causa no está diagnosticada.** No se pudo sacar la pila del núcleo: el contenedor no permite `ptrace`.
+No se sabe si es del modo global de rich, de la carga (corrían once contenedores a la vez) o del arnés. Lo
+medido es: una corrida colgada de cinco con el modo global a lo largo del día, y ninguna de las corridas con
+el modo `archivo` o sin parche. La corrida se repitió una vez, sola, a las 04:06 UTC, y terminó bien; las
+cifras del modo global de este documento son de esa repetición.
+
+Para la corrida real importa otra cosa: un cuelgue así no dispara ningún tope del notebook hasta que
+termina la tarea, y **el latido es lo único que lo deja visible**.
 
 ## Los cuatro cortes
 
@@ -244,11 +332,11 @@ Lo que sigue sale de `diagnostico.json` de cada escenario, que el ensayo calcula
 
 | Corte | Qué dice la salida que cortó | Petición en vuelo o cortada | Diff del árbol |
 |---|---|---|---|
-| Tope de tiempo de la tarea | `agente_fin`: «Agent exceeded session timeout (4.0 min)» | Cortada: la 5, inicio a las 02:31:32.502 UTC, 19 145 caracteres de entrada en 4 mensajes, fin `cancelada` (`CancelledError`) a los 240,0 s. No figura en vuelo, porque tiene fin | Al cierre: 6 741 bytes, 2 archivos |
-| Tope de llamadas | `agente_fin`: «Agent exceeded tool call budget (40 calls)», 40 llamadas usadas | **Ninguna**: el arnés corta entre dos peticiones. Queda la última: la 49, a las 02:31:35.873 UTC, 29 531 caracteres, fin `stop` | Al cierre: 6 741 bytes, 2 archivos |
+| Tope de tiempo de la tarea | `agente_fin`: «Agent exceeded session timeout (4.0 min)» | Cortada: la 5, inicio a las 03:41:03.458 UTC, 19 145 caracteres de entrada en 4 mensajes, fin `cancelada` (`CancelledError`) a los 240,0 s. No figura en vuelo, porque tiene fin | Al cierre: 6 741 bytes, 2 archivos |
+| Tope de llamadas | `agente_fin`: «Agent exceeded tool call budget (40 calls)», 40 llamadas usadas | **Ninguna**: el arnés corta entre dos peticiones. Queda la última: la 49, de 29 531 caracteres, con fin `stop` | Al cierre: 6 741 bytes, 2 archivos |
 | Tope de sesión, cortado por el notebook | Evento `corte` con `sesion`, y `cortado_por: sesion` en el JSON | **Ninguna**: el notebook corta antes de empezar una tarea. Las 3 peticiones tienen su fin | Al cierre de la tarea corrida: 440 bytes |
-| Tope de sesión, sesión muerta desde fuera | El registro no termina en `cierre`; el último latido es de los 78,0 s de sesión | En vuelo: la 5, inicio a las 02:31:32.358 UTC, 19 145 caracteres, **sin fin**. El último latido la trae con 6,5 s en vuelo | No hay diff al cierre. Queda el del último latido: 6 741 bytes |
-| Servidor caído | Evento `corte` con `servidor` y `servidor_caido_A8P1_3.txt`; `agente_fin`: «…Connection error. LiteLLM Retried: 5 times» | Cortada: la 10. Las peticiones 5 a 10 terminan las seis en `error` (`InternalServerError`), de 13,6 a 14,8 s cada una; la primera a las 02:31:32 UTC, 19 145 caracteres | Al cierre: 6 741 bytes, 2 archivos |
+| Tope de sesión, sesión muerta desde fuera | El registro no termina en `cierre`; el último latido es de los 98,0 s de sesión | En vuelo: la 5, inicio a las 03:41:03.461 UTC, 19 145 caracteres, **sin fin**. El último latido la trae con 6,3 s en vuelo | No hay diff al cierre. Queda el del último latido: 6 741 bytes |
+| Servidor caído | Evento `corte` con `servidor` y `servidor_caido_A8P1_3.txt`; `agente_fin`: «…Connection error. LiteLLM Retried: 5 times» | Cortada: la 10. Las peticiones 5 a 10 terminan las seis en `error` (`InternalServerError`), de 12,3 a 13,8 s cada una; la primera a las 03:41:04 UTC, 19 145 caracteres | Al cierre: 6 741 bytes, 2 archivos |
 
 El issue pedía los cuatro cortes con su petición en vuelo. **Dos no la tienen, y no por un fallo del
 registro:** el tope de llamadas y el corte de sesión que hace el propio notebook ocurren entre dos peticiones.
@@ -272,21 +360,32 @@ El control reproduce el fallo de Kaggle: bajo el núcleo y sin parche, los 6 `lo
 celdas con `exec`, dejaba logs de 715 bytes y no podía verlo.
 
 El issue proponía la línea `rich.console._is_jupyter = lambda: False`. Se midieron las dos formas sobre las
-mismas 6 tareas:
+mismas 6 tareas. Las salidas ricas de la celda se miden de dos maneras, y dan cifras distintas: «en bruto»
+es la suma de sus textos; «serializadas» es su tamaño como JSON escapado, que es como las guarda un `.ipynb`.
 
-| Modo | Logs por tarea | Texto de la celda de tareas | Salidas ricas de esa celda | Total de la celda |
+| Modo | Logs por tarea | Texto de la celda de tareas | Salidas ricas, en bruto | Salidas ricas, serializadas |
 |---|---|---|---|---|
-| Sin parche (control) | 0 bytes | 1 368 bytes | 6 (101 827 bytes) | 103 195 bytes |
-| `archivo`: `force_jupyter=False` solo en la consola del log | 721 a 722 bytes | 1 364 a 1 365 bytes | 6 (101 835 a 101 838 bytes) | 103 199 a 103 203 bytes |
-| `global`: la línea del issue | 715 a 716 bytes | **139 778 bytes** | 0 | 139 778 bytes |
+| Sin parche (control) | 0 bytes | 1 367 bytes | 6 (75 969 bytes) | 101 835 bytes |
+| `archivo`: `force_jupyter=False` solo en la consola del log | 721 a 722 bytes | 1 363 a 1 365 bytes | 6 (75 967 bytes en la primera corrida) | 101 825 a 101 840 bytes |
+| `global`: la línea del issue | 715 a 716 bytes | **109 810 bytes** | 0 | 0 |
 
 Las dos devuelven los logs. La línea global cambia además la consola con la que el arnés pinta en el
 notebook: deja de usar las salidas ricas de Jupyter y vuelca cada repintado del panel al texto de la celda.
-Son dos cifras distintas y hay que dar las dos: el **texto** de la celda crece 102 veces (139 778 contra
-1 368 bytes); el **total** de la celda, sumando las salidas ricas que desaparecen, crece 1,35 veces (139 778
-contra 103 195). **El notebook armado usa el modo `archivo`**, que deja la salida de la celda como estaba. Es
-una desviación de la letra del issue, decidida por esta medición; `armar.py` tiene la constante `PARCHE_RICH`
-para cambiarla.
+
+| Qué se compara, global contra control | Razón |
+|---|---|
+| Solo el texto de la celda (109 810 contra 1 367 bytes) | 80 veces |
+| Texto más salidas ricas en bruto (109 810 contra 77 336) | 1,42 veces |
+| Texto más salidas ricas serializadas (109 810 contra 103 202) | 1,06 veces |
+
+El texto del modo global varió entre corridas del mismo día: 131 447, 139 778 y 109 810 bytes. Con las cifras
+de la batería anterior (139 778), el analista de datos obtuvo 1,35 veces con las salidas serializadas y 1,81
+con las salidas en bruto.
+
+**El notebook armado usa el modo `archivo`**, que deja la salida de la celda como estaba. Es una desviación de
+la letra del issue. La sostienen dos cosas medidas: el modo global cambia lo que el notebook manda a su
+salida, y la única corrida que se colgó en todo el día fue con el modo global, aunque sin causa diagnosticada.
+`armar.py` tiene la constante `PARCHE_RICH` para cambiarla.
 
 No se midió cuánto texto produciría el modo global con tareas reales de decenas de peticiones, ni si el log
 de Kaggle trata igual el texto y las salidas ricas.
@@ -317,25 +416,28 @@ El registro no tuvo ningún error propio en las corridas que llegaron al cierre 
 
 ## Cuánto cuesta el registro
 
-Seis corridas de las mismas 6 tareas (18 peticiones cada una), tres con enganches y tres sin ellos, una tras
-otra y alternadas (con, sin, sin, con, con, sin), entre las 02:35 y las 02:44 UTC. La carga de la máquina
-virtual de Docker al empezar cada una fue parecida (`/proc/loadavg` de 0,54 a 1,24). No se controló la carga
-del sistema anfitrión: la batería de pruebas de este mismo trabajo corrió en él hasta las 02:28.
+Seis corridas de las mismas 6 tareas (18 peticiones cada una), tres con enganches (A) y tres sin ellos (B),
+solas y una tras otra en orden ABBAAB, entre las 03:57 y las 04:06 UTC. Son las únicas corridas secuenciales
+de la batería además de `completa`. La carga de la máquina virtual de Docker al empezar cada una fue parecida
+(`/proc/loadavg` de 1,04 a 1,26). No se controló la carga del sistema anfitrión.
 
 | Medida | Con enganches | Sin enganches |
 |---|---|---|
-| Segundos entre que el servidor responde y recibe la petición siguiente de la misma tarea (media de 12, por corrida) | 0,110 · 0,093 · 0,091 | 0,041 · 0,045 · 0,054 |
-| Segundos de reloj por tarea (media y mediana de 18) | 11,28 y 10,00 | 11,82 y 10,25 |
-| Tiempo que el propio registro mide que le quita al hilo que lo llama, por corrida | 3,19 · 1,69 · 1,96 s | — |
+| Segundos entre que el servidor responde y recibe la petición siguiente de la misma tarea (media de 12, por corrida) | 0,081 · 0,086 · 0,103 | 0,042 · 0,040 · 0,044 |
+| Segundos de reloj por tarea (media y mediana de 18) | 11,59 y 10,85 | 11,44 y 10,55 |
+| Tiempo que el propio registro mide que le quita al hilo que lo llama, por corrida | 1,76 · 2,38 · 2,12 s | — |
 
-El registro añade entre 0,04 y 0,07 s por petición en esta máquina. Casi todo es la sincronización a disco
-del inicio de cada petición: 47 a 86 ms de media por inicio en estas tres corridas (46 ms en `completa`),
-frente a 0,1 ms del fin, que no se sincroniza. Medir la entrada cuesta 0,03 ms. Por tarea hay además cuatro
-eventos sincronizados y un diff. En segundos de reloj por tarea la diferencia no se distingue del ruido: las
-corridas sin enganches salieron algo más lentas.
+El registro añade entre 0,04 y 0,06 s por petición en esta máquina. Casi todo es la sincronización a disco
+del inicio de cada petición: 44 a 68 ms de media por inicio en estas tres corridas (55 ms en `completa`),
+frente a 0,1 ms del fin, que no se sincroniza. Por tarea hay además cuatro eventos sincronizados y un diff.
+En segundos de reloj por tarea la diferencia no se distingue del ruido.
 
-El analista de datos, sobre la batería anterior de este mismo día, contó de 16 a 36 ms por petición. La
-cifra varía con la carga del disco: no hay un número único.
+**La sincronización del inicio no dio la misma cifra en todas las baterías del día.** Por inicio de petición,
+con la medida del propio registro: de 37 a 71 ms en la primera batería, de 47 a 86 en la segunda y de 44 a
+68 en esta. El analista de datos, con su propia cuenta, obtuvo de 16 a 36 ms por petición sobre la batería
+que revisó. No se sabe si la diferencia es carga de la máquina, código o manera de contar: **no está
+medido**. Entre baterías cambió el código de los enganches (las guardias, y un contador de eventos); la
+escritura del inicio no cambió.
 
 **Ese tiempo corre dentro del tope de 4 minutos de la tarea.** Las dos pasadas de la iteración 08 lo llevan
 por igual, así que no sesga la comparación entre ellas; sí sesga, en esa medida, la comparación con las
@@ -369,9 +471,11 @@ lo que no:
 | `guardia_log` | 4 | 1 `logs/<tarea>.log` de 0 bytes |
 | `corte_sesion_duro` | **0** | El zip se empaquetó antes de la muerte y está sano. Lo ve `diagnosticar` (5) |
 | `guardia_enganche` | **0** | No hay zip que revisar. Lo ve `diagnosticar` (4) |
+| `guardia_diff` | **0** | Al zip le falta `diffs_cierre/`, que el rescate no exige. Lo ve `diagnosticar` (4) |
 | `servidor_caido` | 0 | La tarea caída deja su parche y su salida de pruebas en 0 bytes, que el rescate solo cuenta. Lo ve `diagnosticar` (3) |
 
-En las corridas sin enganches `comprobar` sale con 2: no hay registro que diagnosticar.
+En las corridas sin enganches no hay registro que diagnosticar: `comprobar` imprime el resultado del rescate
+y sale con su 4.
 
 ## Lo que el ensayo encontró y el concilio no tenía
 
@@ -391,12 +495,13 @@ En las corridas sin enganches `comprobar` sale con 2: no hay registro que diagno
    `otro_error_sin_parche` con 0 caracteres de parche; el diff al cierre guardó los 6 741 bytes que había en
    el árbol.
 3. **Un servidor caído cuesta unos tres minutos antes de que el notebook corte.** litellm reintenta 5 veces
-   por dentro y el arnés repite la llamada 5 veces más: 6 peticiones entre las 02:31:32 y las 02:34:31 UTC, y
-   la tarea duró 192,0 s. El notebook solo mira la salud del servidor antes de cada tarea.
+   por dentro y el arnés repite la llamada 5 veces más: 6 peticiones entre las 03:41:04 y las 03:43:55 UTC, y
+   la tarea duró 186,0 s. El notebook solo mira la salud del servidor antes de cada tarea.
 4. **El tope de llamadas no corta al llegar a 40.** El arnés lo comprueba cuando el modelo cede el turno. Un
    modelo que sigue pidiendo herramientas recibe errores de presupuesto y la sesión continúa: en una prueba
    previa, con un modelo falso que nunca cedía, una tarea llegó a 100 peticiones (su salida no se conservó).
    En el escenario final el modelo cede tras 45 llamadas y la sesión tiene 46 peticiones.
+5. **Una tarea puede colgarse sin que nada la corte** ([el cuelgue](#una-corrida-con-el-parche-global-se-colgó)).
 
 ## Lo que el ensayo no puede decir
 
@@ -420,12 +525,15 @@ Lo que sigue no se parece a Kaggle o no se midió.
 - **Tareas.** Corrieron 26 de las 60 sorteadas: las ya corridas en iteraciones anteriores, que son las únicas
   con snapshot aquí. Ninguna de las 34 tareas nuevas del sorteo se ejercitó.
 - **El escenario del tope de sesión cortó tras la primera tarea**; el modo lento del modelo falso nunca corrió.
-- **Qué guarda Kaggle de una sesión que mata.** El ensayo copia `/kaggle/working` después de matar el
-  núcleo. No se sabe si Kaggle conserva esos archivos cuando corta una sesión por tiempo.
+- **Latido.** El ensayo late cada 2 s y el notebook real cada 30 s.
+- **Qué hace Kaggle.** No está comprobado que detenga «Run All» en la primera excepción, ni que conserve los
+  archivos sueltos de `/kaggle/working` de una sesión que mata.
 - **Matar el núcleo no es lo mismo que el corte de Kaggle.** Aquí es una señal al proceso del núcleo.
+- **El cuelgue de una corrida** no tiene causa diagnosticada.
 - **Versiones.** La imagen local trae litellm 1.104.0. Otra versión podría disparar la retrollamada de fallo
   ante una cancelación; el envoltorio no depende de eso.
-- **Costo del registro en el disco de Kaggle.** No medido.
+- **Costo del registro en el disco de Kaggle.** No medido. Tampoco por qué la sincronización del inicio
+  cambió entre baterías.
 
 **De las pruebas versionadas.**
 
@@ -434,9 +542,12 @@ Lo que sigue no se parece a Kaggle o no se midió.
 - Las funciones internas de `instalar_registro` que importan el arnés (`cliente`, `retrollamadas`, `sandbox`,
   `evaluador`, `rich`) se prueban en los tests con módulos falsos. Contra el arnés real solo las ejercita el
   ensayo, que no corre en el CI.
-- Tras la revisión independiente se inyectaron 29 defectos, uno a uno, en los dos guiones: los 13 que la
-  revisión dijo que sobrevivían y 16 sobre el código de esta ronda. Las pruebas detectan los 29
-  (`defectos_inyectados.json`). Es una lista elegida a mano, no una búsqueda exhaustiva.
+- Las líneas del notebook que llaman a las guardias las escribe `armar.py`, sin versionar.
+- Sobre el commit `20b6136`, con el árbol limpio, se inyectaron 49 defectos, uno a uno, en los dos guiones:
+  los 13 que la primera revisión dijo que sobrevivían, los 5 de la segunda y 31 sobre el código de las dos
+  rondas de correcciones. Las pruebas detectan los 49 (`defectos_inyectados.json`); ninguno resultó
+  equivalente. Los commits posteriores solo cambian este documento, el episodio y el registro de cambios. Es
+  una lista elegida a mano, no una búsqueda exhaustiva.
 
 **De la corrida real.**
 
@@ -451,47 +562,51 @@ Lo que sigue no se parece a Kaggle o no se midió.
 ```bash
 # 1. Imagen (una vez)
 docker build -t aal-ensayo-nucleo:local <instrumentos>/iteracion_08/imagen
-# 2. Sorteo, armado, las dieciséis corridas, rescate y resumen
+# 2. Sorteo, armado, las corridas, rescate y resumen
 python -m scripts.kaggle_registro sortear --validez <validez_ensayo.json> --salida <instrumentos>/iteracion_08/sorteo_60.json
 sh <instrumentos>/iteracion_08/correr_todo.sh
 python <instrumentos>/iteracion_08/rescate_sobre_ensayo.py
 python <instrumentos>/iteracion_08/resumen_ensayo.py
-# 3. Defectos inyectados en los dos guiones versionados (los restaura siempre)
+# 3. Defectos inyectados en los dos guiones versionados (los restaura siempre; anota el commit)
 python <instrumentos>/iteracion_08/defectos_inyectados.py <árbol del repositorio>
 ```
 
 `correr_todo.sh` vuelve a armar los notebooks, borra `ensayo_salida/` y deja un contenedor efímero por
-escenario. Tardó 24 minutos. Al terminar no quedó ningún contenedor.
+escenario. Al terminar no quedó ningún contenedor.
 
 ## Huellas
 
 Todo bajo `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/`, ignorado por
-git. `ensayo_salida/HUELLAS.txt` lista los 236 archivos de salida con sus bytes y su SHA-256.
+git. `ensayo_salida/HUELLAS.txt` lista los 293 archivos de salida con sus bytes y su SHA-256, incluida la
+copia de la corrida colgada.
 
 | Archivo | SHA-256 |
 |---|---|
-| `ensayo_salida/HUELLAS.txt` | `3b9137c9c33c68762aadb9e8db9caad3704857cef6641ac8debc676c2ceed2ce` |
-| `ensayo_salida/RESUMEN.json` | `6f5c4b0dcffdd885251c05ed0b0e03253d468e09fb587d24e4224bb6ea10a397` |
-| `ensayo_salida/rescate_sobre_ensayo.json` | `625bd657dc681d478f28152a11a0abc49087f55b6170a27464a4fac0c519b8aa` |
-| `ensayo_salida/completa/informe.json` | `0b215d7af80265a6af610c5b61b12bcb1b0819b9930475d1357b8f64c90f9495` |
-| `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `3c610a5962f1a547cba6a4ab84fbad2f1c8cc54ea391782c118f5f4f6e859787` |
-| `ensayo_salida/control_sin_parche/informe.json` | `59724f1566ff1e9c997c37020717bbe2048ea60191e6f53f3857a0f0978ac99f` |
-| `ensayo_salida/control_sin_parche/working/crudo_iteracion_08_p1_A8P1.zip` | `05f0b4b3ca769d4cb10bb6fb5b1942cab154edf279f28354e9b5d9a1c042ce28` |
-| `ensayo_salida/corte_tiempo/informe.json` | `6d84e70a6f62ef39e2ae93844a71fdb147b4fa182930c18ab5704fb42a1d06a6` |
-| `ensayo_salida/corte_llamadas/informe.json` | `6961eae80a9bab6bf2937a767efd8ed1f804977b6d2f762d69ed818eb2907e62` |
-| `ensayo_salida/corte_sesion/informe.json` | `68c107c4bdedc51216c915bfa77d6e28ef055305256249fd3a47766128916bce` |
-| `ensayo_salida/corte_sesion_duro/informe.json` | `c7f0879dd89729ef9affe9183607dc4f263314b5806a621c1fefcf38450a5332` |
-| `ensayo_salida/servidor_caido/informe.json` | `8d270c1d5d6249618819ce22f90d0c53b4f6c7b8f645a325b1e8115dec3ca3b6` |
-| `ensayo_salida/guardia_enganche/informe.json` | `f2853b60d4e5f4bdb9cd65dae91b4f761c3daff3d2a1ad9e4a7038e57224059b` |
-| `ensayo_salida/guardia_log/informe.json` | `2a00c10dafb3b782ed167d8db7d8335b83ec81e7a505dbe6581acc31f5691568` |
-| `defectos_inyectados.json` | `58e72584026e18a356cc1b2b64be7d61111d37a5a00b8e1827e1905b3e2db1d7` |
-| `armado.json` | `3f000e29ba56169b3bdcaa47292dd2d3f04bec2c3616a090a2e8e2234646ef3a` |
-| `armar.py` | `a60c796f3c4ee78802c2d7ffd0809fd35d3616d707e6ad22a6be444e9ceffe11` |
-| `ensayo_nucleo.py` | `517f475902f43fa222655d8e1d3bacb554245dbca7c09ed87cef7b1d7d25e7c6` |
+| `ensayo_salida/HUELLAS.txt` | `7a1d8e65dd5628086d3fcbcbed56dca6e8bb176a80179c1cc5483209b0a6c8d5` |
+| `ensayo_salida/RESUMEN.json` | `cbc9435c2d421e23cc6b6746f3fdf7dd0af60a901b9053cf7e9ff3df52e9bffd` |
+| `ensayo_salida/rescate_sobre_ensayo.json` | `227aeb6b15d5098baa1e058f82e8e10fce49a70305e10dd7269eeaf979509776` |
+| `ensayo_salida/completa/informe.json` | `8706790a8e3dcc58641c3e681724bc2af9070b627a824b1798b0db42b367a468` |
+| `ensayo_salida/completa/working/crudo_iteracion_08_p1_A8P1.zip` | `dbd59df23fbb0ca6ec9473d79410221f2759b47cab2cc1bcaf3cc6a64502e24f` |
+| `ensayo_salida/pasada_2/informe.json` | `6db6f0ba2588d3ff66a79e666804055238360ed4911c49e95bf93f8533fe9856` |
+| `ensayo_salida/control_sin_parche/informe.json` | `11bde083d59398d729d48a7a088c176fa64710dd16253be48daf527eee275a78` |
+| `ensayo_salida/control_sin_parche/working/crudo_iteracion_08_p1_A8P1.zip` | `10b551cfaa9873cad7e630fc50389fc179d759f01efa7ce989a42b539cba85da` |
+| `ensayo_salida/parche_global/informe.json` | `2f892dd1da384f4c807977fe28dfeed701a265183385447e7cbb517dd867906b` |
+| `ensayo_salida/parche_global_colgado/working/registro_iteracion_08_p1.jsonl` | `27295dd7c9a059b7118999c36decd564e05ffb2e24f6ab28891eb18c8e51cdf1` |
+| `ensayo_salida/corte_tiempo/informe.json` | `d17a879b48e9403e0f14eafae1daa3b1e804944d97ddfdec9ede010e9e9b76bf` |
+| `ensayo_salida/corte_llamadas/informe.json` | `07810176c4bbf556fa8fed81e2f24334f16e96f69a179f633ddfb40e2bbb20e3` |
+| `ensayo_salida/corte_sesion/informe.json` | `29bda64cb1731084e6faa96b79a1d7d442619966c786ada8ebee83cae61275c0` |
+| `ensayo_salida/corte_sesion_duro/informe.json` | `a03fee3dda0ddc5d270a0c41797eded38e74f2f9723420383e824447e13888fd` |
+| `ensayo_salida/servidor_caido/informe.json` | `9038595607d049867681e1a342e65e7f0e039a1b47e3993b624e5f833ef71a2a` |
+| `ensayo_salida/guardia_enganche/informe.json` | `df263dfbed4d6975aa60f55ba7674529df43dc3dff5b10e7f1fb1010d433bb05` |
+| `ensayo_salida/guardia_log/informe.json` | `6e0e03489ed478521879a88c5be38c6857151cdd04896f9d81ecac0002970bf0` |
+| `ensayo_salida/guardia_diff/informe.json` | `ea4c273dabd9963bbf3a2358f405b5cf2008e19f8e27750feb71f2a9c9651909` |
+| `defectos_inyectados.json` | `52b5667f37b92fbc20e16438cc6f5decbf875db9a070cdc4e870fc6fa3c0f3f7` |
+| `armado.json` | `3c0eaaf4541b6606a2aa3d57c45a6a3d3cee693e63ba91445627c0467e80ebeb` |
+| `ensayo_nucleo.py` | `b288652594fbb4e4f011d61a992e5d340c71ed1b3078fd72e888a1e69c3b829c` |
 | `sorteo_60.json` | `0a2d9eb3e2aa5f7e03a3e9e4acac1ff963f21f66058a497a10b1aff0e86c61a6` |
 | `imagen/Dockerfile` | `8243082780996d9fe83295046ad7181d26d35ca097fde2e45f9dbaf70dc599c8` |
 
-Las dieciséis corridas usaron la misma versión de `ensayo_nucleo.py` (cada `informe.json` trae su SHA-256).
-Dos baterías anteriores del mismo día se descartaron enteras y no están en disco: la primera por un fallo en
-la validación del propio ensayo, la segunda porque la revisión independiente obligó a cambiar el notebook
-(las guardias) y el diagnóstico.
+Las dieciocho corridas válidas usaron la misma versión de `ensayo_nucleo.py` (cada `informe.json` trae su
+SHA-256). Tres baterías anteriores del mismo día se descartaron enteras y no están en disco: la primera por
+un fallo en la validación del propio ensayo; la segunda y la tercera porque cada revisión independiente
+obligó a cambiar el notebook y el diagnóstico.
