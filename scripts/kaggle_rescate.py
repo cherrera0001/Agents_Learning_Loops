@@ -17,8 +17,13 @@ Un notebook o un archivo de salida que no se pueda bajar o guardar no detiene el
 ``faltantes.json`` y el resumen lo repite en ``descarga_incompleta``. Un nombre de archivo que no cabe en una
 ruta de Windows se guarda acortado; ``salidas.json`` conserva el nombre que tenía en Kaggle.
 
+Cada archivo de salida ``.zip`` se abre solo para leer su lista de miembros (nada se extrae). Un miembro
+exigido (bajo ``logs/`` o ``traces/``, o ``task_results.jsonl``) de 0 bytes, o un zip ilegible, es un
+faltante; un ``patches/`` o ``test_outputs/`` vacío solo se cuenta. Con ``--sin-red`` la revisión se repite
+y se informa en el resumen y en el código de salida, sin reescribir ``faltantes.json``.
+
 Salida: 0 si se bajó y resumió, 2 si la entrada es inválida o falta el token, 3 si Kaggle no respondió,
-4 si se bajó y resumió pero faltó algún notebook o archivo de salida.
+4 si se bajó y resumió pero faltó algún notebook o archivo de salida, o un zip trae un miembro exigido vacío.
 """
 
 from __future__ import annotations
@@ -255,8 +260,63 @@ def causa_de(exc: Exception) -> str:
     return f"{type(exc).__name__}: respuesta de Kaggle ilegible"
 
 
+CARPETAS_EXIGIDAS = frozenset({"logs", "traces"})
+CARPETAS_OPCIONALES = ("patches", "test_outputs")
+ARCHIVO_EXIGIDO = "task_results.jsonl"
+
+
+def _partes_de(miembro: str) -> tuple[list[str], str]:
+    """Carpetas y nombre de un miembro de zip, solo como texto: nada se toca en disco."""
+    partes = miembro.replace("\\", "/").split("/")
+    return partes[:-1], partes[-1]
+
+
+def _conteo_vacio() -> dict[str, int]:
+    return {
+        "zips": 0,
+        "zips_ilegibles": 0,
+        "miembros_revisados": 0,
+        "miembros_de_0_bytes": 0,
+        "exigidos_de_0_bytes": 0,
+        **{f"{c}_de_0_bytes": 0 for c in CARPETAS_OPCIONALES},
+    }
+
+
+def revisar_zip(ruta: Path, notebook: str, conteo: dict[str, int]) -> list[dict[str, str]]:
+    """Revisa los miembros de un zip de salida sin extraer nada: solo lee ``infolist()``.
+
+    Un miembro exigido (bajo ``logs/`` o ``traces/``, o ``task_results.jsonl``) de 0 bytes es un faltante,
+    y un zip ilegible también. Los de ``patches/`` y ``test_outputs/`` de 0 bytes solo se cuentan. Los zips
+    son datos no confiables: un nombre absoluto o con ``..`` se trata como texto y no causa escritura alguna.
+    """
+    conteo["zips"] += 1
+    try:
+        with zipfile.ZipFile(ruta) as z:
+            miembros = [(i.filename, i.file_size) for i in z.infolist() if not i.is_dir()]
+    except (zipfile.BadZipFile, OSError, ValueError, EOFError, NotImplementedError):
+        conteo["zips_ilegibles"] += 1
+        return [{"notebook": notebook, "archivo": ruta.name, "miembro": "", "causa": "zip ilegible"}]
+    faltantes: list[dict[str, str]] = []
+    for nombre, tamano in miembros:
+        conteo["miembros_revisados"] += 1
+        if tamano != 0:
+            continue
+        conteo["miembros_de_0_bytes"] += 1
+        carpetas, base = _partes_de(nombre)
+        if CARPETAS_EXIGIDAS & set(carpetas) or base == ARCHIVO_EXIGIDO:
+            conteo["exigidos_de_0_bytes"] += 1
+            causa = "miembro exigido de 0 bytes"
+            faltantes.append({"notebook": notebook, "archivo": ruta.name, "miembro": nombre, "causa": causa})
+            continue
+        for opcional in CARPETAS_OPCIONALES:
+            if opcional in carpetas:
+                conteo[f"{opcional}_de_0_bytes"] += 1
+    return faltantes
+
+
 def bajar_notebook(carpeta: Path, consulta: str, token: str) -> list[dict[str, str]]:
-    """Baja un notebook a ``carpeta``. Devuelve los archivos de salida que no se pudieron guardar."""
+    """Baja un notebook a ``carpeta``. Devuelve los archivos de salida que no se pudieron guardar o que
+    traen un miembro exigido vacío."""
     (carpeta / "estado.json").write_bytes(pedir(f"kernels/status?{consulta}", token))
     fuente = json.loads(pedir(f"kernels/pull?{consulta}", token))
     (carpeta / "metadatos.json").write_text(
@@ -279,6 +339,8 @@ def bajar_notebook(carpeta: Path, consulta: str, token: str) -> list[dict[str, s
             faltantes.append({"notebook": carpeta.name, "archivo": nombre, "causa": causa_de(exc)})
             continue
         guardados.append({"archivo": en_disco, "nombre_en_kaggle": nombre})
+        if en_disco.lower().endswith(".zip"):
+            faltantes += revisar_zip(carpeta / en_disco, carpeta.name, _conteo_vacio())
     (carpeta / "salidas.json").write_text(
         json.dumps(guardados, ensure_ascii=False, indent=1), encoding="utf-8"
     )
@@ -349,29 +411,39 @@ def resumir(destino: Path, n: int | None) -> dict[str, Any]:
     usuario_txt = destino / "usuario.txt"
     usuario = usuario_txt.read_text(encoding="utf-8").strip() if usuario_txt.exists() else None
     notebooks = []
+    revision: list[dict[str, str]] = []
     for carpeta in sorted((destino / "notebooks").glob("*")) if (destino / "notebooks").is_dir() else []:
         if not (carpeta / "estado.json").is_file() or not (carpeta / "metadatos.json").is_file():
             continue  # notebook que no se alcanzó a bajar: está en faltantes.json
         estado = json.loads((carpeta / "estado.json").read_text(encoding="utf-8"))
         meta = json.loads((carpeta / "metadatos.json").read_text(encoding="utf-8"))
-        notebooks.append(
-            {
-                "notebook": carpeta.name,
-                "estado": estado.get("status"),
-                "version": meta.get("currentVersionNumber"),
-                "maquina": meta.get("machineShape"),
-                "privado": meta.get("isPrivate"),
-                "lineas_de_log": (carpeta / "log.txt").read_text(encoding="utf-8").count("\n")
-                if (carpeta / "log.txt").is_file()
-                else None,
-                "archivos_de_salida": salidas_de(carpeta),
-            }
-        )
+        entrada = {
+            "notebook": carpeta.name,
+            "estado": estado.get("status"),
+            "version": meta.get("currentVersionNumber"),
+            "maquina": meta.get("machineShape"),
+            "privado": meta.get("isPrivate"),
+            "lineas_de_log": (carpeta / "log.txt").read_text(encoding="utf-8").count("\n")
+            if (carpeta / "log.txt").is_file()
+            else None,
+            "archivos_de_salida": salidas_de(carpeta),
+        }
+        conteo = _conteo_vacio()
+        # Como en la bajada, la extensión no distingue mayúsculas (un `glob` con `.zip` sí, fuera de Windows).
+        for zip_en_disco in sorted(p for p in carpeta.glob("salida__*") if p.name.lower().endswith(".zip")):
+            revision += revisar_zip(zip_en_disco, carpeta.name, conteo)
+        if conteo["zips"]:
+            entrada["revision_de_zips"] = conteo
+        notebooks.append(entrada)
     faltantes = destino / "faltantes.json"
+    en_disco: list[dict[str, str]] = (
+        json.loads(faltantes.read_text(encoding="utf-8")) if faltantes.is_file() else []
+    )
+    # La revisión se rehace aquí también (es lo que hace --sin-red sobre una carpeta vieja) y no se escribe en
+    # disco: lo que ya estaba en faltantes.json no se repite.
+    incompleta = en_disco + [f for f in revision if f not in en_disco]
     return {
-        "descarga_incompleta": json.loads(faltantes.read_text(encoding="utf-8"))
-        if faltantes.is_file()
-        else [],
+        "descarga_incompleta": incompleta,
         "tamanos_de_tabla_compatibles": candidatos,
         "tamano_de_tabla_usado": {"n": n, "origen": origen},
         "envios_propios": [

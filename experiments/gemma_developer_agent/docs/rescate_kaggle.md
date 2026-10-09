@@ -35,6 +35,26 @@ archivo de salida cuyo nombre no cabe en una ruta de Windows se guarda acortado,
 en Kaggle queda en `notebooks/<nombre>/salidas.json`. El 2026-10-06 un nombre así cortó la descarga a
 mitad de la lista y dejó cuatro notebooks sin bajar.
 
+**Los zips se revisan por dentro (#156).** Tras guardar cada archivo de salida `.zip`, el guion lo abre solo
+para leer su lista de miembros y sus tamaños (`infolist()`): no extrae nada, así que un nombre absoluto o con
+`..` no escribe fuera de la carpeta. Un miembro *exigido* de 0 bytes es un faltante: los de `logs/` y
+`traces/` (a cualquier nivel de carpeta) y `task_results.jsonl`. Un zip que no se puede abrir también. Cada
+uno entra en `faltantes.json` con `notebook`, `archivo` (el zip), `miembro` y `causa`, y el guion sale con 4.
+Un `patches/` o `test_outputs/` de 0 bytes es un desenlace legítimo: no es un faltante, pero se cuenta. Lo
+exigido gana: un miembro vacío con `logs/` o `traces/` en su ruta es un faltante aunque cuelgue de
+`patches/` o de `test_outputs/`; ante la duda el guion prefiere un faltante de más a una corrida sin rastro
+dada por completa. Los nombres se comparan tal cual, con sus mayúsculas: `Logs/a.log` no es exigido. El
+tamaño es el que declara el zip; no se lee el contenido. Un zip sin ningún log no es un faltante: solo se
+detectan los vacíos. En estos faltantes `archivo` es el nombre del zip en disco (acortado si hizo falta), y
+en los de un archivo que no se pudo bajar o guardar es su nombre en Kaggle; `salidas.json` cruza los dos. El
+resumen añade a cada notebook con zips `revision_de_zips` (zips, zips ilegibles, miembros revisados, de
+0 bytes, exigidos de 0 bytes, `patches` y `test_outputs` de 0 bytes). El 2026-10-08 cinco corridas pasaron por
+completas con 145 logs por tarea vacíos porque el guion solo miraba que el zip existiera (episodio 065).
+
+**`--sin-red` hace la misma revisión** sobre una carpeta ya bajada y da el mismo código, pero no escribe: no
+reescribe `faltantes.json` de un rescate viejo. Los miembros vacíos salen en `descarga_incompleta` y en
+`revision_de_zips` del resumen, sin duplicar lo que `faltantes.json` ya traía.
+
 **Lo que no puede bajar.** El archivo que Kaggle guarda de cada envío (la API responde 401 a esa ruta) y
 los logs de notebooks ya borrados. De esos solo queda lo que se haya guardado antes.
 
