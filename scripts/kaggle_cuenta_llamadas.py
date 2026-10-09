@@ -21,8 +21,9 @@ Dos salidas con destinos distintos:
 * **Detalle por sesión**: lleva el identificador de la tarea y debe quedar en una carpeta ignorada por git;
   el guion se niega si no lo está.
 
-Salida del proceso: 0 si contó; 2 si la entrada no sirve (sin carpeta o sin zips); 4 si contó pero alguna
-traza o algún zip no se pudo leer (el agregado lo dice en ``sesiones_sin_traza`` y ``zips_ilegibles``).
+Salida del proceso: 0 si contó; 2 si no pudo contar (sin carpeta, o no pudo escribir, o el detalle caería
+en una carpeta versionable); 4 si contó pero alguna traza o algún zip no se pudo leer (el agregado lo dice en
+``sesiones_sin_traza`` y ``zips_ilegibles``); 5 si el rescate no trae ningún zip de trazas (nada que contar).
 
 Definiciones (cada una tiene su prueba en ``tests/test_kaggle_cuenta_llamadas.py``)
 ------------------------------------------------------------------------------------
@@ -133,6 +134,11 @@ TOPE_MIEMBRO_BYTES = 64 * 1024 * 1024
 EXIT_OK = 0
 EXIT_ENTRADA = 2
 EXIT_PARCIAL = 4
+EXIT_NADA_QUE_CONTAR = 5
+
+
+class NadaQueContar(RescateError):
+    """El rescate es válido pero no trae ningún zip de salida de trazas: no hay qué contar."""
 
 
 # ---------------------------------------------------------------------------
@@ -684,7 +690,7 @@ def cuenta_rescate(rescate: Path) -> tuple[dict[str, Any], list[dict[str, Any]],
         raise RescateError("No encuentro la carpeta notebooks/ en el rescate.")
     zips = sorted(notebooks.glob("*/salida__crudo_*.zip"))
     if not zips:
-        raise RescateError("El rescate no trae ningún salida__crudo_*.zip.")
+        raise NadaQueContar("El rescate no trae ningún salida__crudo_*.zip.")
     detalle: list[dict[str, Any]] = []
     problemas = {"zips": len(zips), "zips_ilegibles": 0}
     for ruta in zips:
@@ -727,6 +733,8 @@ def main(argv: list[str] | None = None) -> int:
         "--detalle", type=Path, default=None, help="Dónde escribir el detalle (carpeta ignorada por git)"
     )
     args = p.parse_args(argv)
+    if hasattr(sys.stdout, "reconfigure"):  # la consola de Windows no siempre es UTF-8
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     try:
         agregado, detalle, problemas = cuenta_rescate(args.rescate)
         destino_agregado = args.agregado or args.rescate / "cuenta_llamadas.json"
@@ -736,6 +744,9 @@ def main(argv: list[str] | None = None) -> int:
         destino_detalle.write_text(json.dumps(detalle, ensure_ascii=False, indent=1), encoding="utf-8")
         destino_agregado.parent.mkdir(parents=True, exist_ok=True)
         destino_agregado.write_text(json.dumps(agregado, ensure_ascii=False, indent=1), encoding="utf-8")
+    except NadaQueContar as exc:
+        print(f"NADA QUE CONTAR: {exc}", file=sys.stderr)
+        return EXIT_NADA_QUE_CONTAR
     except (RescateError, OSError) as exc:
         print(f"ENTRADA INVÁLIDA: {exc}", file=sys.stderr)
         return EXIT_ENTRADA

@@ -19,7 +19,9 @@ principal: desde un worktree se busca en el árbol principal). Regla para elegir
 los ``envios.json`` a profundidad 1 y 2; cada uno toma la marca de tiempo del nombre de carpeta más cercano
 con la forma ``AAAA-MM-DDTHHMM[SS]Z``; gana la marca más alta, y entre marcas iguales gana el ``envios.json``
 con fecha de modificación posterior y, si aún empatan, el de ruta mayor. Una carpeta sin marca de tiempo
-no se considera.
+no se considera. Tampoco sirven (y se avisa de ellas) las de marca futura y las incompletas: el rescate
+escribe ``envios.json`` primero y puede morir justo después, así que una lectura vale solo si trae también
+``tabla_publica.zip`` o ``notebooks.json``.
 
 «Sin procesar» quiere decir solo esto: hay un cambio en Kaggle respecto del último rescate. Un rescate
 nuevo lo apaga; que la bitácora y la memoria se actualicen es trabajo del orquestador.
@@ -33,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import subprocess
@@ -41,7 +44,7 @@ import threading
 import time
 import urllib.parse
 from collections.abc import Callable, Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -54,9 +57,13 @@ RAIZ_REPO = Path(__file__).resolve().parent.parent
 RUTA_RESCATES = Path("experiments") / "gemma_developer_agent" / "data" / "rescate_kaggle"
 RUTA_HALLAZGOS = RAIZ_REPO / "experiments" / "gemma_developer_agent" / "hallazgos.json"
 VARIABLE_DE_TOKEN = "KAGGLE_API_TOKEN"
-TOPE_TOTAL_S = 20.0
-TOPE_GIT_S = 5
+# El gancho tiene 30 s (.claude/settings.json). Peor caso: git (3 s) + este tope (15 s) + leer archivos.
+TOPE_TOTAL_S = 15.0
+TOPE_GIT_S = 3
+# Supuesto, no medido: con 20 envíos o más en la lista, la primera página puede no traerlos todos.
+PAGINA_LLENA = 20
 MAX_NOTEBOOKS_A_CONSULTAR = 5
+UMBRAL_DE_EDAD_H = 24
 TOPE_LINEAS_DE_HALLAZGOS = 12
 MARCA_DE_CARPETA = re.compile(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})(\d{2})?Z$")
 Pedir = Callable[[str, str], bytes]
@@ -65,6 +72,15 @@ Pedir = Callable[[str, str], bytes]
 # ---------------------------------------------------------------------------
 # Token
 # ---------------------------------------------------------------------------
+
+
+def token_bien_formado(token: str) -> bool:
+    """Un token sirve si son solo caracteres ASCII imprimibles, sin espacios ni saltos de línea.
+
+    Un valor con un salto de línea interior (por ejemplo un ``kaggle.json`` pegado en la variable) haría que
+    la biblioteca de red citara el valor entero en su mensaje de error; no se usa.
+    """
+    return bool(token) and all(0x21 <= ord(c) <= 0x7E for c in token)
 
 
 def leer_token(entorno: Mapping[str, str], raices: Sequence[Path]) -> str:
@@ -113,12 +129,13 @@ def raiz_del_arbol_principal(raiz_repo: Path) -> Path | None:
 def carpeta_de_rescates(
     raiz_repo: Path, entorno: Mapping[str, str], principal: Path | None = None
 ) -> Path | None:
-    """``KAGGLE_RESCATES`` si existe; si no, la carpeta del árbol actual; si no, la del árbol principal."""
+    """``KAGGLE_RESCATES`` si existe; si no, la carpeta del árbol actual; si no, la del árbol principal.
+
+    ``principal`` lo calcula quien llama (una sola vez: cada llamada a ``git`` gasta tiempo del gancho).
+    """
     puesta = entorno.get("KAGGLE_RESCATES", "").strip()
     candidatas = [Path(puesta)] if puesta else []
     candidatas.append(raiz_repo / RUTA_RESCATES)
-    if principal is None:
-        principal = raiz_del_arbol_principal(raiz_repo)
     if principal is not None:
         candidatas.append(principal / RUTA_RESCATES)
     return next((c for c in candidatas if c.is_dir()), None)
@@ -136,12 +153,20 @@ def marca_de(carpeta: Path) -> datetime | None:
         return None
 
 
-def ultima_lectura(rescates: Path) -> tuple[Path, datetime] | None:
-    """La carpeta del rescate más reciente (con su ``envios.json``) y su marca. Regla en el docstring."""
+def rescate_completo(carpeta: Path) -> bool:
+    """El rescate escribe ``envios.json`` primero y puede morir justo después: una lectura sirve para dar algo
+    por procesado solo si trae también la tabla pública o la lista de notebooks."""
+    return (carpeta / "tabla_publica.zip").is_file() or (carpeta / "notebooks.json").is_file()
+
+
+def buscar_rescates(rescates: Path) -> list[tuple[datetime, float, str, Path]]:
+    """(marca, mtime, ruta, carpeta) de cada ``envios.json`` a profundidad 1 y 2 con marca de tiempo."""
     candidatas: list[tuple[datetime, float, str, Path]] = []
     for archivo in [*rescates.glob("*/envios.json"), *rescates.glob("*/*/envios.json")]:
         carpeta = archivo.parent
-        marca = marca_de(carpeta) or (marca_de(carpeta.parent) if carpeta.parent != rescates else None)
+        marca = marca_de(carpeta)
+        if marca is None and carpeta.parent != rescates:
+            marca = marca_de(carpeta.parent)  # carpeta interior sin marca propia: hereda la de su madre
         if marca is None:
             continue
         try:
@@ -149,10 +174,32 @@ def ultima_lectura(rescates: Path) -> tuple[Path, datetime] | None:
         except OSError:
             continue
         candidatas.append((marca, modificado, str(archivo), carpeta))
-    if not candidatas:
+    return candidatas
+
+
+def ultima_lectura(rescates: Path, ahora: datetime | None = None) -> tuple[Path, datetime] | None:
+    """La carpeta del rescate más reciente que sirve (completo, con marca no futura) y su marca."""
+    validas = [
+        c for c in buscar_rescates(rescates) if rescate_completo(c[3]) and (ahora is None or c[0] <= ahora)
+    ]
+    if not validas:
         return None
-    mejor = max(candidatas, key=lambda c: (c[0], c[1], c[2]))
+    mejor = max(validas, key=lambda c: (c[0], c[1], c[2]))
     return mejor[3], mejor[0]
+
+
+def avisos_de_rescates(rescates: Path, ahora: datetime, marca_elegida: datetime | None) -> list[str]:
+    """Rescates que no se usaron aunque parecían más nuevos: con fecha futura o incompletos."""
+    avisos: list[str] = []
+    for marca, _, _, carpeta in sorted(buscar_rescates(rescates), key=lambda c: c[0], reverse=True):
+        if marca > ahora:
+            avisos.append(f"ignoré {carpeta.name}: su fecha es futura")
+        elif not rescate_completo(carpeta) and (marca_elegida is None or marca >= marca_elegida):
+            avisos.append(
+                f"el rescate {carpeta.name} está incompleto (solo envios.json): "
+                "no lo uso para dar nada por procesado"
+            )
+    return avisos
 
 
 # ---------------------------------------------------------------------------
@@ -161,10 +208,12 @@ def ultima_lectura(rescates: Path) -> tuple[Path, datetime] | None:
 
 
 def _nota(valor: Any) -> float | None:
+    """La nota como número; ``None`` si no hay, no se entiende o no es finita (``nan`` != ``nan``)."""
     try:
-        return round(float(str(valor).strip()), 4) if str(valor).strip() else None
+        numero = float(str(valor).strip()) if str(valor).strip() else None
     except ValueError:
         return None
+    return round(numero, 4) if numero is not None and math.isfinite(numero) else None
 
 
 def resumen_de_envios(envios: Any) -> dict[int, tuple[str, float | None]]:
@@ -175,7 +224,9 @@ def resumen_de_envios(envios: Any) -> dict[int, tuple[str, float | None]]:
     for e in envios:
         if not isinstance(e, dict) or "ref" not in e:
             raise ValueError("un envío sin ref")
-        out[int(e["ref"])] = (str(e.get("status") or "").strip(), _nota(e.get("publicScore")))
+        if not isinstance(e.get("status"), str) or not e["status"].strip():
+            raise ValueError("un envío sin status (¿cambió el nombre del campo?)")
+        out[int(e["ref"])] = (e["status"].strip(), _nota(e.get("publicScore")))
     return out
 
 
@@ -237,15 +288,51 @@ def notebooks_cambiados(guardados: Any, actuales: Any) -> list[str]:
 
 
 ESTADOS = ("medido", "decidido", "aplicado", "descartado")
-PROHIBIDO_EN_HALLAZGOS = re.compile(r"\b[a-z]+_\d{3,5}\b|github\.com|diff --git|/workspace/")
+PROHIBIDO_EN_HALLAZGOS = re.compile(
+    r"\b[a-z]+_\d{3,5}\b"  # identificador de tarea con forma repo_1234
+    r"|\b[\w.-]+__[\w.-]*-\d+\b"  # identificador con forma org__repo-12345
+    r"|(?:[\w.-]+/)+[\w.-]+\.(?:py|js|ts|tsx|jsx|java|go|rs|c|h|cpp|rb|php|sh|toml|yaml|yml)\b"  # ruta
+    r"|github\.com|diff --git|/workspace/"
+)
+CAMPOS_DE_HALLAZGO = frozenset(
+    {
+        "id",
+        "que_se_midio",
+        "primera_vuelta",
+        "primera_fecha",
+        "vueltas_medido",
+        "estado",
+        "decision",
+        "motivo_descarte",
+        "por_que_sigue_abierto",
+    }
+)
+CAMPOS_DE_DECISION = frozenset({"texto", "quien", "vuelta", "fecha"})
+CAMPOS_DEL_REGISTRO = frozenset({"version", "descripcion", "estados", "hallazgos"})
+FECHA_ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 
 def _texto(valor: Any) -> bool:
     return isinstance(valor, str) and bool(valor.strip())
 
 
-def validar_hallazgos(datos: Any) -> list[str]:
+def _fecha_iso(valor: Any) -> date | None:
+    """La fecha de un ``AAAA-MM-DD`` estricto (con ceros), o ``None``."""
+    if not isinstance(valor, str) or not FECHA_ISO.fullmatch(valor):
+        return None
+    try:
+        return date.fromisoformat(valor)
+    except ValueError:
+        return None
+
+
+def _entero(valor: Any) -> bool:
+    return isinstance(valor, int) and not isinstance(valor, bool)
+
+
+def validar_hallazgos(datos: Any, hoy: date | None = None) -> list[str]:
     """Los problemas de formato de un registro de hallazgos; lista vacía si es válido."""
+    hoy = hoy or datetime.now(UTC).date()
     if (
         not isinstance(datos, dict)
         or datos.get("version") != 1
@@ -253,12 +340,16 @@ def validar_hallazgos(datos: Any) -> list[str]:
     ):
         return ["el registro debe ser un objeto con version 1 y la lista `hallazgos`"]
     problemas: list[str] = []
+    if set(datos) - CAMPOS_DEL_REGISTRO:
+        problemas.append(f"campos desconocidos en el registro: {sorted(set(datos) - CAMPOS_DEL_REGISTRO)}")
     ids: set[str] = set()
     for fila in datos["hallazgos"]:
         if not isinstance(fila, dict):
             problemas.append("una fila no es un objeto")
             continue
         nombre = str(fila.get("id"))
+        if set(fila) - CAMPOS_DE_HALLAZGO:
+            problemas.append(f"{nombre}: campos desconocidos {sorted(set(fila) - CAMPOS_DE_HALLAZGO)}")
         if not re.fullmatch(r"[a-z][a-z0-9_]*", nombre) or nombre in ids:
             problemas.append(f"{nombre}: id ausente, mal formado o repetido")
         ids.add(nombre)
@@ -274,10 +365,11 @@ def validar_hallazgos(datos: Any) -> list[str]:
             problemas.append(f"{nombre}: `vueltas_medido` debe ser una lista no vacía de enteros crecientes")
         elif fila.get("primera_vuelta") != vueltas[0]:
             problemas.append(f"{nombre}: `primera_vuelta` no es la primera de `vueltas_medido`")
-        try:
-            datetime.strptime(str(fila.get("primera_fecha")), "%Y-%m-%d")
-        except ValueError:
+        primera = _fecha_iso(fila.get("primera_fecha"))
+        if primera is None:
             problemas.append(f"{nombre}: `primera_fecha` debe ser AAAA-MM-DD")
+        elif primera > hoy:
+            problemas.append(f"{nombre}: `primera_fecha` es futura")
         estado = fila.get("estado")
         if estado not in ESTADOS:
             problemas.append(f"{nombre}: estado desconocido {estado!r}")
@@ -287,10 +379,20 @@ def validar_hallazgos(datos: Any) -> list[str]:
                 isinstance(decision, dict)
                 and _texto(decision.get("texto"))
                 and _texto(decision.get("quien"))
-                and isinstance(decision.get("vuelta"), int)
+                and _entero(decision.get("vuelta"))
                 and _texto(decision.get("fecha"))
             ):
                 problemas.append(f"{nombre}: `{estado}` exige decision con texto, quien, vuelta y fecha")
+            else:
+                if set(decision) - CAMPOS_DE_DECISION:
+                    problemas.append(
+                        f"{nombre}: campos desconocidos en decision "
+                        f"{sorted(set(decision) - CAMPOS_DE_DECISION)}"
+                    )
+                if (fecha := _fecha_iso(decision["fecha"])) is None or fecha > hoy:
+                    problemas.append(f"{nombre}: `decision.fecha` debe ser AAAA-MM-DD y no futura")
+                if _entero(fila.get("primera_vuelta")) and decision["vuelta"] < fila["primera_vuelta"]:
+                    problemas.append(f"{nombre}: `decision.vuelta` es anterior a la primera vuelta")
         elif decision is not None:
             problemas.append(f"{nombre}: solo `decidido` y `aplicado` llevan decision")
         if estado == "descartado" and not _texto(fila.get("motivo_descarte")):
@@ -391,21 +493,44 @@ def consultar(
     carpeta: Path, marca: datetime, token: str, pedir: Pedir, ahora: datetime, limite: float
 ) -> list[str]:
     """Compara la lectura guardada en ``carpeta`` con la API. Lanza si algo no se pudo leer."""
-    guardados_crudo = json.loads((carpeta / "envios.json").read_text(encoding="utf-8"))
-    guardados = resumen_de_envios(guardados_crudo)
+    try:
+        guardados_crudo = json.loads((carpeta / "envios.json").read_text(encoding="utf-8"))
+        guardados = resumen_de_envios(guardados_crudo)
+    except (OSError, ValueError, TypeError) as exc:
+        return [f"no pude leer la lectura guardada ({carpeta.name}/envios.json): {type(exc).__name__}"]
     edad_h = (ahora - marca).total_seconds() / 3600
     lineas = [
         f"última lectura guardada: {carpeta.name} (hace {edad_h:.1f} h"
-        + (", más de un día: corre el rescate" if edad_h > 24 else "")
+        + (f", más de {UMBRAL_DE_EDAD_H} h: corre el rescate" if edad_h > UMBRAL_DE_EDAD_H else "")
         + ")"
     ]
-    actuales_crudo = json.loads(
-        pedir(f"competitions/submissions/list/{kaggle_rescate.COMPETITION_SLUG}?page=1", token)
-    )
-    cambios = comparar_envios(guardados, resumen_de_envios(actuales_crudo))
+    try:
+        actuales_crudo = json.loads(
+            pedir(f"competitions/submissions/list/{kaggle_rescate.COMPETITION_SLUG}?page=1", token)
+        )
+        actuales = resumen_de_envios(actuales_crudo)
+    except (ValueError, TypeError) as exc:
+        return [*lineas, f"no pude leer Kaggle (respuesta de envíos ilegible: {type(exc).__name__})"]
+    cambios = comparar_envios(guardados, actuales)
     lineas += cambios
+    if max(len(actuales), len(guardados)) >= PAGINA_LLENA:
+        lineas.append(
+            f"solo leí la primera página de envíos ({len(actuales)}): "
+            "uno que «ya no aparece» puede estar en otra"
+        )
     usuario = _usuario_de(carpeta, guardados_crudo)
     guardados_nb = carpeta / "notebooks.json"
+    faltas = [
+        texto
+        for texto, falta in (
+            ("usuario.txt y ningún envío trae el usuario", not usuario),
+            ("notebooks.json en la lectura guardada", not guardados_nb.is_file()),
+            ("tiempo (se gastó el tope)", time.monotonic() >= limite),
+        )
+        if falta
+    ]
+    if faltas:
+        lineas.append(f"no comparé los notebooks: falta {', '.join(faltas)}")
     if usuario and guardados_nb.is_file() and time.monotonic() < limite:
         try:
             lista = json.loads(pedir(f"kernels/list?user={urllib.parse.quote(usuario)}&pageSize=100", token))
@@ -452,16 +577,24 @@ def vigia(
     token = ""
     try:
         if principal is None:
-            principal = raiz_del_arbol_principal(raiz_repo)
+            principal = raiz_del_arbol_principal(raiz_repo)  # una sola llamada a git
         raices = [raiz_repo] + ([principal] if principal and principal != raiz_repo else [])
         token = leer_token(entorno, raices)
         carpeta = rescates if rescates is not None else carpeta_de_rescates(raiz_repo, entorno, principal)
-        lectura = ultima_lectura(carpeta) if carpeta is not None else None
+        lectura = ultima_lectura(carpeta, ahora) if carpeta is not None else None
+        if carpeta is not None:
+            salida += avisos_de_rescates(carpeta, ahora, lectura[1] if lectura else None)
         if not token:
             salida.append(f"sin token de Kaggle ({VARIABLE_DE_TOKEN}): no consulté la API")
+        elif not token_bien_formado(token):
+            salida.append(
+                "token mal formado (caracteres de control, espacios o no ASCII): no consulté la API"
+            )
+            token = ""  # no se usa y no hay nada que tapar
         elif lectura is None:
             salida.append(
-                "no hay lectura guardada de un rescate: no tengo con qué comparar. Corre el rescate."
+                "no hay lectura guardada y completa de un rescate: no tengo con qué comparar. "
+                "Corre el rescate."
             )
         else:
             limite = time.monotonic() + tope_s
@@ -479,7 +612,12 @@ def vigia(
                 else [f"Kaggle no respondió en {tope_s:g} s: no sé si hay cambios"]
             )
     except Exception as exc:  # el vigía no debe estorbar el arranque por ningún motivo
-        salida.append(tapar(f"no pude leer Kaggle ({type(exc).__name__}: {exc})", token))
+        # Solo el mensaje de nuestra propia excepción (sin la URL con parámetros ni el valor del token) o,
+        # para cualquier otra, su tipo: la biblioteca de red puede citar el valor de una cabecera.
+        detalle = str(exc) if isinstance(exc, kaggle_rescate.RescateError) else ""
+        salida.append(
+            tapar(f"no pude leer Kaggle ({type(exc).__name__}{': ' + detalle if detalle else ''})", token)
+        )
     try:
         salida += hallazgos_sin_decision(ruta_hallazgos or RUTA_HALLAZGOS)
     except Exception as exc:

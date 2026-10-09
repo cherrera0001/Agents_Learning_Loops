@@ -234,6 +234,8 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
 Tras cada rescate, `python -m scripts.kaggle_rescate_y_cuenta --destino <directorio ignorado>` hace el rescate
 y la cuenta por llamada (`scripts/kaggle_cuenta_llamadas.py`): qué devolvió cada llamada, cuáles se repiten
 y cuántas contaron contra el tope, por sesión (en la carpeta ignorada) y en agregado sin identificadores.
+Los códigos del rescate son 0, 2, 3 y 4 (`scripts/kaggle_rescate.py`); la orden unida los devuelve tal cual y
+añade 6 cuando el rescate salió 0 o 4 pero la cuenta no pudo contar.
 
 Skills: [`concilio-de-experimento`](skills/concilio-de-experimento/SKILL.md) (pasos 1 y 4 a 7) y
 [`corrida-valida`](skills/corrida-valida/SKILL.md) (pasos 2 y 3 y el criterio que sigue).

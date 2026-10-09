@@ -6,7 +6,7 @@ import copy
 import json
 import os
 import time
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -27,12 +27,18 @@ def envio(ref: int, estado: str, nota: str = "") -> dict[str, Any]:
 
 
 def guardar(
-    rescates: Path, nombre: str, envios: list[dict[str, Any]], notebooks: list[dict[str, Any]] | None = None
+    rescates: Path,
+    nombre: str,
+    envios: list[dict[str, Any]],
+    notebooks: list[dict[str, Any]] | None = None,
+    completo: bool = True,
 ) -> Path:
     carpeta = rescates / nombre
     carpeta.mkdir(parents=True)
     (carpeta / "envios.json").write_text(json.dumps(envios), encoding="utf-8")
     (carpeta / "usuario.txt").write_text("yo", encoding="utf-8")
+    if completo:
+        (carpeta / "tabla_publica.zip").write_bytes(b"PK")
     if notebooks is not None:
         (carpeta / "notebooks.json").write_text(json.dumps(notebooks), encoding="utf-8")
     return carpeta
@@ -181,14 +187,27 @@ def test_una_lectura_guardada_ilegible_no_dice_todo_procesado(tmp_path: Path) ->
     carpeta = guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
     (carpeta / "envios.json").write_text("{no es json", encoding="utf-8")
     lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.13")]))
-    assert any(x.startswith("no pude leer Kaggle") for x in lineas)
+    # dice cuál de las dos lecturas falló: la guardada, no Kaggle
+    assert any(x.startswith("no pude leer la lectura guardada") for x in lineas)
+    assert not any("no pude leer Kaggle" in x for x in lineas)
     assert "envíos sin cambios desde esa lectura" not in lineas
 
 
-def test_una_lectura_vieja_se_avisa(tmp_path: Path) -> None:
+def test_una_lectura_vieja_se_avisa_solo_pasadas_24_horas(tmp_path: Path) -> None:
     guardar(tmp_path / "r", "2026-10-06T1923Z", [envio(1, "complete", "0.05")])
     lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.05")]))
-    assert any("más de un día" in x for x in lineas)
+    assert any("más de 24 h" in x for x in lineas)
+    justo = datetime(2026, 10, 6, 19, 23, tzinfo=UTC)
+    sin_aviso = kv.consultar(
+        tmp_path / "r" / "2026-10-06T1923Z", justo, TOKEN, api_falsa([envio(1, "complete", "0.05")]),
+        datetime(2026, 10, 7, 19, 23, tzinfo=UTC), time.monotonic() + 5,
+    )  # fmt: skip
+    assert "hace 24.0 h)" in sin_aviso[0]  # exactamente 24 h: todavía no es «más de»
+    con_aviso = kv.consultar(
+        tmp_path / "r" / "2026-10-06T1923Z", justo, TOKEN, api_falsa([envio(1, "complete", "0.05")]),
+        datetime(2026, 10, 7, 19, 24, tzinfo=UTC), time.monotonic() + 5,
+    )  # fmt: skip
+    assert "más de 24 h" in con_aviso[0]
 
 
 # ---------------------------------------------------------------------------
@@ -292,7 +311,8 @@ def test_el_gancho_esta_declarado_con_un_tope_mayor_que_el_del_guion() -> None:
     ganchos = [h for g in config["hooks"]["SessionStart"] for h in g["hooks"]]
     vigia = [h for h in ganchos if "kaggle_vigia.py" in h["command"]]
     assert len(vigia) == 1
-    assert vigia[0]["timeout"] > kv.TOPE_TOTAL_S
+    # peor caso: una llamada a git + el tope del guion; el gancho no puede matar al vigía antes de que hable
+    assert vigia[0]["timeout"] >= kv.TOPE_TOTAL_S + kv.TOPE_GIT_S + 10
     assert any("session_guard.py" in h["command"] for h in ganchos)  # el otro gancho sigue
 
 
@@ -351,8 +371,8 @@ def test_el_registro_real_es_valido_y_esta_sembrado() -> None:
 
 
 def test_el_registro_no_lleva_datos_de_la_competencia() -> None:
-    texto = HALLAZGOS_REALES.read_text(encoding="utf-8")
-    assert not kv.PROHIBIDO_EN_HALLAZGOS.search(texto)
+    filas = json.loads(HALLAZGOS_REALES.read_text(encoding="utf-8"))["hallazgos"]
+    assert not kv.PROHIBIDO_EN_HALLAZGOS.search(json.dumps(filas, ensure_ascii=False))
     problemas = kv.validar_hallazgos(registro_minimo(que_se_midio="falla en tarea_1234 de github.com/x/y"))
     assert any("identificador" in p for p in problemas)
 
@@ -436,3 +456,249 @@ def test_un_registro_ilegible_se_dice(tmp_path: Path) -> None:
     ruta.write_text("{roto", encoding="utf-8")
     assert "no pude leer el registro de hallazgos" in kv.hallazgos_sin_decision(ruta)[0]
     assert "no pude leer" in kv.hallazgos_sin_decision(tmp_path / "no_existe.json")[0]
+
+
+# ---------------------------------------------------------------------------
+# Revisión: el token con salto de línea, rescates que no sirven, avisos que no deben callarse
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "token",
+    ["KGAT_abc123\ndef456", '{"username":"yo",\n"key":"abc123"}', "con espacio", "tóken", "a\x00b", "a\rb"],
+)
+def test_un_token_mal_formado_no_se_usa_ni_se_imprime(tmp_path: Path, token: str) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+
+    def no_debe_llamarse(ruta: str, tk: str) -> bytes:
+        raise AssertionError("un token mal formado no se manda")
+
+    lineas = kv.vigia(
+        raiz_repo=tmp_path,
+        entorno={"KAGGLE_API_TOKEN": token},
+        pedir=no_debe_llamarse,
+        ahora=AHORA,
+        ruta_hallazgos=tmp_path / "x.json",
+        principal=tmp_path,
+        rescates=tmp_path / "r",
+    )
+    texto = "\n".join(lineas)
+    assert "token mal formado" in texto and "no consulté" in texto
+    for trozo in ("abc123", "def456", "KGAT", "username"):
+        assert trozo not in texto
+
+
+def test_con_el_pedir_real_un_token_con_salto_de_linea_no_llega_a_la_red(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+    llamadas: list[str] = []
+    monkeypatch.setattr(kaggle_rescate.urllib.request, "build_opener", lambda *a: llamadas.append("red"))
+    lineas = kv.vigia(
+        raiz_repo=tmp_path,
+        entorno={"KAGGLE_API_TOKEN": "KGAT_abc123\ndef456"},
+        ahora=AHORA,
+        ruta_hallazgos=tmp_path / "x.json",
+        principal=tmp_path,
+        rescates=tmp_path / "r",
+    )
+    assert llamadas == []
+    assert "abc123" not in "\n".join(lineas) and "def456" not in "\n".join(lineas)
+
+
+def test_una_excepcion_ajena_solo_muestra_su_tipo(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+
+    def revienta(ruta: str, token: str) -> bytes:
+        raise RuntimeError(f"Invalid header value b'Bearer {token[:5]}\\ndef456'")  # cita el valor, recortado
+
+    lineas = correr(tmp_path / "r", revienta)
+    linea = next(x for x in lineas if x.startswith("no pude leer Kaggle"))
+    assert linea == "no pude leer Kaggle (RuntimeError)"
+    assert "Bearer" not in "\n".join(lineas) and TOKEN[:5] not in "\n".join(lineas)
+
+
+def test_un_rescate_que_solo_trae_envios_no_apaga_el_aviso(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+    guardar(tmp_path / "r", "2026-10-09T1342Z", [envio(1, "complete", "0.13")], completo=False)
+    lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.13")]))
+    assert any("2026-10-09T1342Z está incompleto" in x for x in lineas)
+    assert "envío 1 pasó de `error` a `complete` con nota 0,13: sin procesar" in lineas  # contra el completo
+    assert "envíos sin cambios desde esa lectura" not in lineas
+    assert kv.ultima_lectura(tmp_path / "r")[0].name == "2026-10-08T2231Z"  # type: ignore[index]
+
+
+def test_sin_ningun_rescate_completo_no_hay_con_que_comparar(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-09T1342Z", [envio(1, "complete", "0.13")], completo=False)
+    lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.13")]))
+    assert any("no hay lectura guardada y completa" in x for x in lineas)
+    assert "envíos sin cambios desde esa lectura" not in lineas
+
+
+def test_un_rescate_con_la_lista_de_notebooks_pero_sin_tabla_tambien_es_completo(tmp_path: Path) -> None:
+    carpeta = guardar(tmp_path / "r", "2026-10-09T1342Z", [envio(1, "error")], [], completo=False)
+    assert kv.rescate_completo(carpeta)
+    assert kv.ultima_lectura(tmp_path / "r") is not None
+
+
+def test_una_marca_futura_se_descarta_y_se_avisa(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+    guardar(tmp_path / "r", "2099-01-01T0000Z", [envio(1, "complete", "0.99")])
+    lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.13")]))
+    assert "ignoré 2099-01-01T0000Z: su fecha es futura" in lineas
+    assert any("2026-10-08T2231Z (hace 15.5 h" in x for x in lineas)
+    assert not any("hace -" in x for x in lineas)
+    assert "envío 1 pasó de `error` a `complete` con nota 0,13: sin procesar" in lineas
+
+
+def test_la_carpeta_interior_sin_marca_hereda_la_de_su_madre(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "error")])
+    interior = guardar(tmp_path / "r" / "2026-10-09T1342Z", "sin_marca", [envio(1, "complete", "0.13")])
+    elegida = kv.ultima_lectura(tmp_path / "r")
+    assert elegida is not None and elegida[0] == interior
+    assert elegida[1] == datetime(2026, 10, 9, 13, 42, tzinfo=UTC)
+
+
+def test_si_no_se_pueden_comparar_los_notebooks_lo_dice(tmp_path: Path) -> None:
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [envio(1, "complete", "0.05")])  # sin notebooks.json
+    lineas = correr(tmp_path / "r", api_falsa([envio(1, "complete", "0.05")]))
+    assert any(x.startswith("no comparé los notebooks: falta notebooks.json") for x in lineas)
+    # y sin usuario en ningún sitio:
+    carpeta = guardar(tmp_path / "s", "2026-10-08T2231Z", [{"ref": 1, "status": "complete"}], [])
+    (carpeta / "usuario.txt").unlink()
+    lineas = correr(tmp_path / "s", api_falsa([{"ref": 1, "status": "complete"}]))
+    assert any("falta usuario.txt" in x for x in lineas)
+    # con el tope gastado:
+    guardar(tmp_path / "t", "2026-10-08T2231Z", [envio(1, "complete", "0.05")], [])
+    lineas = kv.consultar(
+        tmp_path / "t" / "2026-10-08T2231Z", AHORA, TOKEN, api_falsa([envio(1, "complete", "0.05")]),
+        AHORA, time.monotonic() - 1,
+    )  # fmt: skip
+    assert any("falta" in x and "tiempo" in x for x in lineas if x.startswith("no comparé"))
+
+
+def test_una_pagina_llena_de_envios_se_dice(tmp_path: Path) -> None:
+    llenos = [envio(i, "complete", "0.01") for i in range(kv.PAGINA_LLENA)]
+    guardar(tmp_path / "r", "2026-10-08T2231Z", llenos)
+    lineas = correr(tmp_path / "r", api_falsa(llenos[1:]))
+    assert any(x.startswith("solo leí la primera página de envíos") for x in lineas)
+    assert any(x.startswith("envío 0 estaba en el último rescate") for x in lineas)
+    pocos = [envio(1, "complete", "0.01")]
+    guardar(tmp_path / "s", "2026-10-08T2231Z", pocos)
+    assert not any("primera página" in x for x in correr(tmp_path / "s", api_falsa(pocos)))
+
+
+@pytest.mark.parametrize("campo", ["status", "estado_nuevo"])
+def test_un_envio_sin_status_es_una_respuesta_ilegible(tmp_path: Path, campo: str) -> None:
+    sin_status = {"ref": 1, campo: "complete", "publicScore": "0.1"} if campo != "status" else {"ref": 1}
+    guardar(tmp_path / "r", "2026-10-08T2231Z", [sin_status])
+    lineas = correr(tmp_path / "r", api_falsa([sin_status]))
+    assert any(x.startswith("no pude leer la lectura guardada") for x in lineas)
+    assert "envíos sin cambios desde esa lectura" not in lineas
+    guardar(tmp_path / "s", "2026-10-08T2231Z", [envio(1, "error")])
+    lineas = correr(tmp_path / "s", api_falsa([sin_status]))  # solo la respuesta de la API cambió de forma
+    assert any(x.startswith("no pude leer Kaggle") for x in lineas)
+    assert "envíos sin cambios desde esa lectura" not in lineas
+
+
+def test_una_nota_nan_en_ambos_lados_no_avisa() -> None:
+    assert kv._nota("nan") is None and kv._nota("inf") is None and kv._nota("-inf") is None
+    antes = kv.resumen_de_envios([{"ref": 1, "status": "complete", "publicScore": "nan"}])
+    ahora = kv.resumen_de_envios([{"ref": 1, "status": "complete", "publicScore": "nan"}])
+    assert kv.comparar_envios(antes, ahora) == []
+
+
+def test_git_se_llama_una_sola_vez_aunque_falle(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    llamadas: list[list[str]] = []
+
+    def falso(cmd: list[str], **kw: Any) -> Any:
+        llamadas.append(cmd)
+        raise OSError("sin git")
+
+    monkeypatch.setattr(kv.subprocess, "run", falso)
+    kv.vigia(raiz_repo=tmp_path, entorno={}, ahora=AHORA, ruta_hallazgos=tmp_path / "x.json")
+    assert len(llamadas) == 1
+    assert kv.TOPE_GIT_S + kv.TOPE_TOTAL_S < 20  # holgura real bajo los 30 s del gancho
+
+
+def test_la_salida_del_vigia_se_fuerza_a_utf8(monkeypatch: pytest.MonkeyPatch) -> None:
+    visto: list[tuple[str, str]] = []
+
+    class Consola:
+        def reconfigure(self, encoding: str, errors: str) -> None:
+            visto.append((encoding, errors))
+
+        def write(self, s: str) -> int:
+            return len(s)
+
+        def flush(self) -> None:
+            pass
+
+    monkeypatch.setattr(kv.sys, "stdout", Consola())
+    monkeypatch.setattr(kv, "vigia", lambda **kw: ["VIGÍA KAGGLE"])
+    assert kv.main([]) == 0
+    assert visto == [("utf-8", "replace")]
+
+
+# ---------------------------------------------------------------------------
+# Validador del registro de hallazgos, segunda mano
+# ---------------------------------------------------------------------------
+
+
+def decidido(**cambios: Any) -> dict[str, Any]:
+    decision = {"texto": "se quita", "quien": "concilio", "vuelta": 5, "fecha": "2026-10-09"}
+    decision.update(cambios)
+    return registro_minimo(estado="decidido", decision=decision, por_que_sigue_abierto=None)
+
+
+def test_el_registro_decidido_correcto_pasa() -> None:
+    assert kv.validar_hallazgos(decidido(), hoy=date(2026, 10, 9)) == []
+
+
+@pytest.mark.parametrize(
+    ("cambios", "fragmento"),
+    [
+        ({"fecha": "2026-13-45"}, "decision.fecha"),
+        ({"fecha": "2026-1-5"}, "decision.fecha"),
+        ({"fecha": "ayer"}, "decision.fecha"),
+        ({"fecha": "2099-01-01"}, "decision.fecha"),
+        ({"vuelta": "5"}, "exige decision"),
+        ({"vuelta": True}, "exige decision"),
+        ({"vuelta": 2}, "anterior a la primera vuelta"),
+        ({"quien": ""}, "exige decision"),
+        ({"texto": "  "}, "exige decision"),
+        ({"extra": 1}, "campos desconocidos en decision"),
+    ],
+)
+def test_la_decision_se_valida(cambios: dict[str, Any], fragmento: str) -> None:
+    problemas = kv.validar_hallazgos(decidido(**cambios), hoy=date(2026, 10, 9))
+    assert any(fragmento in p for p in problemas), problemas
+
+
+@pytest.mark.parametrize(
+    ("cambios", "fragmento"),
+    [
+        ({"primera_fecha": "2026-1-5"}, "primera_fecha"),
+        ({"primera_fecha": "2026-02-30"}, "primera_fecha"),
+        ({"primera_fecha": "2099-01-01"}, "es futura"),
+        ({"estdo": "medido"}, "campos desconocidos"),
+        ({"que_se_midio": "falla en pydata__xarray-12345"}, "identificador"),
+        ({"que_se_midio": "falla en repo_1234"}, "identificador"),
+        ({"por_que_sigue_abierto": "ver src/core/models.py"}, "identificador"),
+        ({"que_se_midio": "ver tests/unit/test_x.py"}, "identificador"),
+    ],
+)
+def test_el_formato_rechaza_ademas(cambios: dict[str, Any], fragmento: str) -> None:
+    problemas = kv.validar_hallazgos(registro_minimo(**cambios), hoy=date(2026, 10, 9))
+    assert any(fragmento in p for p in problemas), problemas
+
+
+def test_un_campo_desconocido_en_el_registro_se_rechaza() -> None:
+    datos = registro_minimo()
+    datos["extra"] = 1
+    assert any("campos desconocidos en el registro" in p for p in kv.validar_hallazgos(datos))
+
+
+def test_el_archivo_sembrado_sigue_pasando_el_validador_estricto() -> None:
+    datos = json.loads(HALLAZGOS_REALES.read_text(encoding="utf-8"))
+    assert kv.validar_hallazgos(datos, hoy=date.today()) == []

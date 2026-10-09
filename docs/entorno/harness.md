@@ -99,8 +99,8 @@ Límites, dichos sin rodeos:
 ### Vigía de Kaggle
 
 El mismo `SessionStart` ejecuta un segundo gancho, `python "$CLAUDE_PROJECT_DIR/scripts/kaggle_vigia.py"`
-(tope del gancho: 30 s; tope propio del guion: 20 s). Solo lee: pide por la API los envíos y los notebooks
-propios, los compara con el `envios.json` del rescate más reciente (carpeta ignorada por git; la regla para
+(tope del gancho: 30 s; tope propio del guion: 15 s, más 3 s de la única llamada a `git`). Solo lee: pide por
+la API los envíos y los notebooks propios, los compara con el `envios.json` del rescate más reciente (carpeta ignorada por git; la regla para
 elegirlo está en el docstring del guion) y dice qué cambió y está **sin procesar**: «envío N pasó de `error`
 a `complete` con nota X», «notebook M terminó y no está rescatado». Un rescate nuevo apaga el aviso. También
 imprime los hallazgos de `experiments/gemma_developer_agent/hallazgos.json` que llevan más de una vuelta en
@@ -113,7 +113,9 @@ Límites, dichos sin rodeos:
 - **«Sin procesar» es «cambió desde el último rescate».** No sabe si la bitácora y la memoria ya lo dicen:
   eso lo cierra el orquestador.
 - **Solo cubre Claude Code**, como el guardián. A mano: `python scripts/kaggle_vigia.py`.
-- Lee la primera página de envíos; los notebooks se comparan por `lastRunTime`.
+- Lee la primera página de envíos (avisa si viene llena); los notebooks se comparan por `lastRunTime` y, si no
+  puede compararlos, lo dice. Un rescate que solo trae `envios.json`, o con fecha futura, no se usa y se avisa.
+- **No escribe en disco.** Para quitarlo, borrar el segundo elemento de `SessionStart` en `.claude/settings.json`.
 
 ### Criterios de cierre por tipo de trabajo
 

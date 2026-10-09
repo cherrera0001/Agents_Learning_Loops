@@ -546,8 +546,8 @@ def test_rescate_anidado_y_salida_2_sin_zips(tmp_path: Path) -> None:
     assert kc.main(["--rescate", str(tmp_path)]) == 0  # una sola subcarpeta con notebooks/
     vacio = tmp_path / "vacio"
     (vacio / "notebooks" / "x").mkdir(parents=True)
-    assert kc.main(["--rescate", str(vacio)]) == 2
-    assert kc.main(["--rescate", str(tmp_path / "no_existe")]) == 2
+    assert kc.main(["--rescate", str(vacio)]) == 5  # rescate válido sin trazas: nada que contar
+    assert kc.main(["--rescate", str(tmp_path / "no_existe")]) == 2  # no hay rescate: entrada inválida
 
 
 def test_un_zip_ilegible_da_salida_4(tmp_path: Path) -> None:
@@ -598,3 +598,173 @@ def test_los_zips_se_leen_en_memoria_y_no_se_extraen(tmp_path: Path) -> None:
     antes = sorted(p.name for p in tmp_path.rglob("*"))
     kc.cuenta_rescate(tmp_path)
     assert sorted(p.name for p in tmp_path.rglob("*")) == antes
+
+
+# ---------------------------------------------------------------------------
+# Revisión: contadores del agregado y ramas que no tenían prueba
+# ---------------------------------------------------------------------------
+
+UNA = [paso("read_file", {"filepath": "a.py"}, LEER)]
+
+
+def test_resueltas_que_pasaron_el_limite_cuenta_solo_las_resueltas() -> None:
+    larga = kc.contar_sesion(traza(UNA), resultado(resolved=True, duration_seconds=250.0), None)
+    no_resuelta = kc.contar_sesion(traza(UNA), resultado(resolved=False, duration_seconds=250.0), None)
+    corta = kc.contar_sesion(traza(UNA), resultado(resolved=True, duration_seconds=10.0), None)
+    cortes = kc.agregar([larga, no_resuelta, corta], 1)["cortes"]
+    assert cortes["resueltas_que_pasaron_el_limite"] == 1
+    assert cortes["no_resueltas_sin_marca_que_pasaron_el_limite"] == 1
+    assert cortes["con_marca_del_arnes"] == 0
+
+
+def test_sin_edicion_de_fuente_de_ellas_resueltas() -> None:
+    resuelta = kc.contar_sesion(traza(UNA), resultado(resolved=True), "")
+    no_resuelta = kc.contar_sesion(traza(UNA), resultado(resolved=False), "")
+    con_fuente = kc.contar_sesion(traza(UNA), resultado(resolved=True), parche(("pkg/a.py", False)))
+    bloque = kc.agregar([resuelta, no_resuelta, con_fuente], 1)["sin_edicion_de_fuente"]
+    assert bloque == {"por_el_parche_final": 2, "de_ellas_con_parche_vacio": 2, "de_ellas_resueltas": 1}
+
+
+def test_sesiones_con_lecturas_mal_formadas_no_es_el_total_de_lecturas() -> None:
+    mala = [paso("read_file", {"filepath": f"{i}.py", "mal": 1}, LEER, id_=3 + i) for i in range(3)]
+    con_tres = kc.contar_sesion(traza(mala), resultado(), None)
+    sin_ninguna = kc.contar_sesion(traza(UNA), resultado(), None)
+    bloque = kc.agregar([con_tres, sin_ninguna], 1)["argumento_mal_formado"]
+    assert (bloque["lecturas"], bloque["sesiones_con_lecturas"]) == (3, 1)
+
+
+def test_el_estado_repetido_no_es_un_gasto_sin_avance() -> None:
+    pasos = [
+        paso("get_status", {}, ok(tool_calls_used=1), id_=3),
+        paso("get_status", {}, ok(tool_calls_used=1), id_=4),
+    ]
+    s = kc.contar_sesion(traza(pasos), resultado(), None)
+    assert s["repetida_por_nombre_y_argumentos"] == 1  # sí es repetida por nombre...
+    assert s["sin_avance_sobre_la_traza"] == 0  # ...pero la entrega y el estado no cuentan como sin avance
+
+
+def test_vacia_tambien_si_results_esta_vacio_y_no_hay_count() -> None:
+    assert kc.clase_de(llamada("search_similar_code", {}, ok(query="q", results=[]))) == "vacia"
+    assert kc.clase_de(llamada("search_similar_code", {}, ok(query="q", results=["n"]))) == "con_contenido"
+    assert kc.clase_de(llamada("get_code_subgraph", {}, ok(nodes=[], results=[]))) == "vacia"
+    # fuera de las herramientas de grafo, un resultado vacío no es «vacía»
+    assert kc.clase_de(llamada("read_file", {}, ok(content="", results=[]))) == "con_contenido"
+
+
+def _paso_con_dos(
+    nombres_y_autores: list[tuple[str, str]], obs_nombre: str, obs_autor: str
+) -> dict[str, Any]:
+    return {
+        "source": "agent",
+        "tool_calls": [
+            {"function_name": n, "arguments": {"i": i}, "extra": {"author": a}}
+            for i, (n, a) in enumerate(nombres_y_autores)
+        ],
+        "observation": {"content": ok(r="x"), "extra": {"tool_name": obs_nombre, "author": obs_autor}},
+    }
+
+
+def test_emparejamiento_con_dos_llamadas_del_mismo_nombre_gana_la_del_autor_de_la_observacion() -> None:
+    dos = [("read_file", P), ("read_file", S)]
+    de_s = kc.llamadas_de({"steps": [_paso_con_dos(dos, "read_file", S)]})
+    assert [x["obs"] is not None for x in de_s] == [False, True]
+    de_p = kc.llamadas_de({"steps": [_paso_con_dos(dos, "read_file", P)]})
+    assert [x["obs"] is not None for x in de_p] == [True, False]
+
+
+def test_emparejamiento_sin_desempate_por_autor_gana_la_primera_candidata() -> None:
+    dos = [("read_file", P), ("read_file", P)]
+    ll = kc.llamadas_de({"steps": [_paso_con_dos(dos, "read_file", P)]})
+    assert [x["obs"] is not None for x in ll] == [True, False]
+    # un autor que ninguna tiene: se queda con la primera por nombre
+    ll = kc.llamadas_de({"steps": [_paso_con_dos(dos, "read_file", "otro")]})
+    assert [x["obs"] is not None for x in ll] == [True, False]
+    # un nombre que ninguna tiene: la observación no se asigna
+    ll = kc.llamadas_de({"steps": [_paso_con_dos(dos, "run_command", P)]})
+    assert [x["obs"] for x in ll] == [None, None]
+
+
+def test_new_file_mode_solo_cuenta_en_la_cabecera_del_bloque() -> None:
+    # un archivo existente cuyo texto añadido contiene la frase no es un archivo nuevo
+    texto = (
+        "diff --git a/pkg/a.py b/pkg/a.py\nindex 1..2\n@@ -1 +1 @@\n-x\n+new file mode 100644\n"
+        "diff --git a/pkg/b.py b/pkg/b.py\nnew file mode 100644\nindex 0..2\n@@ -0,0 +1 @@\n+y\n"
+    )
+    assert kc.archivos_del_parche(texto) == [("pkg/a.py", False), ("pkg/b.py", True)]
+    assert kc.fuente_modificada(texto) == ["pkg/a.py"]
+
+
+def test_un_miembro_del_zip_mas_grande_que_el_tope_no_se_lee(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    rescate_de_juguete(tmp_path)
+    monkeypatch.setattr(kc, "TOPE_MIEMBRO_BYTES", 200)  # la traza de juguete pesa más; task_results no
+    agregado, detalle, _ = kc.cuenta_rescate(tmp_path)
+    assert agregado["sesiones"] == 2 and agregado["sesiones_sin_traza"] == 2
+    assert all(d["tiene_traza"] is False and d["registradas_principal"] == 0 for d in detalle)
+    monkeypatch.setattr(kc, "TOPE_MIEMBRO_BYTES", 0)  # ni task_results.jsonl cabe: el zip no se puede leer
+    agregado, _, problemas = kc.cuenta_rescate(tmp_path)
+    assert problemas["zips_ilegibles"] == 2 and agregado["sesiones"] == 0
+
+
+def test_la_salida_de_la_cuenta_se_fuerza_a_utf8(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    rescate_de_juguete(tmp_path)
+    visto: list[tuple[str, str]] = []
+
+    class Consola:
+        def reconfigure(self, encoding: str, errors: str) -> None:
+            visto.append((encoding, errors))
+
+        def write(self, s: str) -> int:
+            return len(s)
+
+        def flush(self) -> None:
+            pass
+
+    monkeypatch.setattr(kc.sys, "stdout", Consola())
+    assert kc.main(["--rescate", str(tmp_path)]) == 0
+    assert visto == [("utf-8", "replace")]
+
+
+# --- la orden unida -------------------------------------------------------------------------------------
+
+
+def test_la_orden_unida_distingue_no_pude_contar_de_nada_que_contar(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    carpeta = rescate_de_juguete(tmp_path / "2026-10-09T1342Z")
+    monkeypatch.setattr(
+        ryc.kaggle_rescate, "main", lambda argv=None: print(json.dumps({"directorio": str(carpeta)})) or 0
+    )
+    # la cuenta sale 2 (no pudo escribir / carpeta versionable): código propio, no el del rescate
+    monkeypatch.setattr(ryc.kaggle_cuenta_llamadas, "main", lambda argv=None: 2)
+    assert ryc.main(["--destino", "x"]) == ryc.EXIT_NO_PUDO_CONTAR == 6
+    assert "no pude contar (salida 2" in capsys.readouterr().err
+    # la cuenta sale 5 (nada que contar): se devuelve el del rescate y se dice que no había trazas
+    monkeypatch.setattr(ryc.kaggle_cuenta_llamadas, "main", lambda argv=None: 5)
+    assert ryc.main(["--destino", "x"]) == 0
+    assert "nada que contar" in capsys.readouterr().err
+    # la cuenta sale 4 (leyó con problemas): 4
+    monkeypatch.setattr(ryc.kaggle_cuenta_llamadas, "main", lambda argv=None: 4)
+    assert ryc.main(["--destino", "x"]) == 4
+
+
+def test_la_orden_unida_muestra_lo_que_el_rescate_imprimio_aunque_el_rescate_lance(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def rescate_que_lanza(argv: list[str] | None = None) -> int:
+        print("llegué a imprimir esto")
+        raise RuntimeError("se cayó")
+
+    monkeypatch.setattr(ryc.kaggle_rescate, "main", rescate_que_lanza)
+    with pytest.raises(RuntimeError):
+        ryc.main(["--destino", "x"])
+    assert "llegué a imprimir esto" in capsys.readouterr().out
+
+
+def test_la_orden_unida_sin_carpeta_en_la_salida_del_rescate(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(ryc.kaggle_rescate, "main", lambda argv=None: print("no es json") or 0)
+    assert ryc.main(["--destino", "x"]) == ryc.EXIT_NO_PUDO_CONTAR
+    assert "no dijo su carpeta" in capsys.readouterr().err

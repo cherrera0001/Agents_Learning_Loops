@@ -64,17 +64,37 @@
     {
       "action": "write_tests",
       "success": true,
-      "note": "95 pruebas nuevas con trazas sintéticas definidas en la prueba; 40 defectos inyectados, 40 detectados una vez añadida la llamada del subagente con contenido y un defecto que quita las dos capas del token a la vez"
+      "note": "95 pruebas nuevas con trazas sintéticas definidas en la prueba; 40 defectos propios inyectados, 40 detectados una vez añadida la llamada del subagente con contenido y un defecto que quita las dos capas del token a la vez (es lo que se creyó entonces: el revisor inyectó 38 defectos distintos y 13 sobrevivían)"
     },
     {
       "action": "run_tests",
       "success": false,
-      "error": "ruff check halló 9 líneas de más de 110 caracteres y una condición Yoda en los archivos nuevos; se acortaron a mano porque el formato no las parte"
+      "error": "ruff check halló 9 líneas de más de 110 caracteres y una condición Yoda en los archivos nuevos; el formato no parte las cadenas largas"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Mismo comando tras acortar las líneas a mano y reescribir la comparación: ruff check, ruff format --check, mypy y export_schema en verde"
     },
     {
       "action": "update_docs",
       "success": true,
       "note": "Regla en CONTRIBUTING.md (paso 8 de «Vuelta de un experimento con modelo»), cita en el paso de cierre de la skill concilio-de-experimento sin reescribir el resto, sección «Vigía de Kaggle» en docs/entorno/harness.md y gancho declarado en .claude/settings.json"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La primera revisión de código pidió cambios. Halló: (1) el vigía imprimía el token con un salto de línea interior, porque la biblioteca de red cita el valor de la cabecera y el vigía imprimía el texto de cualquier excepción; (2) un rescate fallido que solo había escrito envios.json daba «sin cambios» y apagaba el aviso; (3) 13 de los 38 defectos que el revisor inyectó en los contadores y el vigía sobrevivían a mis pruebas (resueltas que pasaron el límite sobre todas, lecturas por sesión, estado en «sin avance», emparejamiento con dos llamadas del mismo nombre, tope de tamaño del zip, umbral de 24 h, la rama «la cuenta sale 2»); (4) más una marca de fecha futura que ganaba para siempre, notebooks no comparados sin decirlo y un validador de hallazgos que dejaba pasar fechas, campos y rutas de código. Mi propia pasada de defectos solo había inyectado los que yo había imaginado"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Corregido en la misma rama: toda excepción ajena imprime solo su tipo y un token con caracteres de control no se usa; un rescate sin tabla ni lista de notebooks no vale como lectura y se avisa; marcas futuras descartadas; el vigía dice qué no pudo comparar; la orden unida distingue «no pude contar» (6) de «nada que contar» (5); tope del guion a 15 s con una sola llamada a git"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Una prueba por cada defecto que sobrevivía y por cada corrección; 30 defectos reinyectados (los 13 que sobrevivían y 17 de las correcciones), 30 detectados con las dos pruebas del archivo; 149 pruebas en total entre los dos archivos"
     }
   ],
   "lessons": [
@@ -83,6 +103,8 @@
     "Un vigía que se engancha al arranque debe tener tope de tiempo en un hilo aparte (el tiempo de espera del socket no cubre la resolución de nombres), salir con 0 ante cualquier error y tapar el token en cada mensaje; una prueba de cada cosa",
     "«Todo procesado» solo es verdad respecto de la lectura guardada: dilo en el aviso, porque que la bitácora y la memoria estén al día es otro hecho que el vigía no ve",
     "Al inyectar defectos, un defecto que deja archivos en el árbol contamina los siguientes: limpia en un finally y revisa git status entre mutantes; y quitar una de dos capas redundantes no se detecta por diseño, así que se inyecta quitando las dos",
+    "Taparle el token a un mensaje de error no basta si el token puede cambiar de forma al citarse (un salto de línea escapado): imprime de una excepción ajena solo su tipo, y rechaza un token con caracteres de control antes de usarlo",
+    "Mis defectos inyectados salen de lo que ya imaginé; un revisor que inyecta los suyos halló 13 huecos de 38: antes de entregar, inyecta también un defecto por cada contador del agregado y por cada rama de una regla de emparejamiento",
     "Una prueba de unión sin doble conteo necesita una llamada que entre solo por una de las clases; si cada llamada de prueba cae en dos clases, quitar una clase no cambia el total y el defecto sobrevive"
   ]
 }
