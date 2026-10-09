@@ -201,7 +201,8 @@ La corrida que se colgó en el #160 (983,7 s de latido sin eventos) sale ahora c
 - haber empezado otra tarea, o haber cerrado sin `corte`, después de decidir no seguir;
 - un evento `tarea_colgada` que no cae dentro de la corrida de ninguna tarea;
 - cualquier evento después del `cierre`. Un segundo `cierre` no cuenta como evento posterior; esa tolerancia
-  es inocua y no responde a ningún caso visto: los 16 registros del #160 traen un solo `cierre`.
+  es inocua y no responde a ningún caso visto: de los 16 registros del #160, 14 traen un solo `cierre` y 2
+  ninguno; ninguno trae dos.
 
 Cinco de estas reglas (la exigencia de `con_tope`, `sigue` no booleano, la segunda seguida, la marca sin
 corte y los eventos tras el cierre) salieron de la revisión del PR #176. Se corrigieron las cinco en vez de
@@ -883,10 +884,12 @@ ensayo**; se conservan las cinco y el motivo de cada una está en su `informe.js
 | `ciclo_sin_arreglo_margen` | 600 s | Cortó y terminó la sesión (fila de arriba) | Esperaba «sigue» |
 
 **El desacuerdo del concilio, con el dato.** Tras vencer el tope y vaciar el mapa, el hilo que giraba en el
-mapa **deja de girar y no sigue con la tarea vieja**: en las cuatro corridas conservadas su CPU dejó de
+mapa **deja de girar y no sigue con la tarea vieja**: en las corridas conservadas su CPU dejó de
 crecer, `agente_fin` anotó `CancelledError` en menos de un segundo y el servidor no recibió ninguna petición
-suya. Lo que tarda es en **terminar**: 0,29, 8,96, 16,89 y 25,31 s, y en una corrida más de 30 s, con la
-máquina cargada. No se midió en qué espera ese rato (hipótesis: el cierre de su bucle de eventos espera a
+suya. Lo que tarda es en **terminar**: 8,96, 16,89 y 25,31 s en las corridas conservadas (0,29 s en la
+primera prueba, que no se conserva), y en una corrida más de 30 s, con la máquina cargada. De esas, solo en
+dos el corte vio el ciclo plantado: en una el hilo terminó en 25,31 s y el notebook siguió; en la otra no
+terminó en 30 s. «Corta y sigue» con el ciclo a la vista tiene, por tanto, un solo caso. No se midió en qué espera ese rato (hipótesis: el cierre de su bucle de eventos espera a
 los hilos que recogen el sandbox). En esa corrida el notebook terminó la sesión, como manda la regla. Un
 hilo en un bucle síncrono que no depende del mapa **no** termina y sigue gastando CPU (15 s de CPU en 15 s
 de margen): ahí el notebook nunca sigue. Las dos posturas quedan cubiertas por la regla: se sigue solo con
@@ -1089,6 +1092,17 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
 
 ### Límites conocidos
 
+- **La pérdida máxima de 1,1 h de cuota se cumple por cuelgue, no por sesión.** Con los parámetros del
+  notebook (sesión de 9 000 s, margen final de 600 s, tope de 900 s, margen de 30 s) una colgada aislada
+  cuesta hasta 930 s (0,26 h) y dos seguidas hasta 1 860 s (0,52 h). Con colgadas alternas caben unas ocho
+  en una sesión y se irían cerca de 7 440 s (unas 2,07 h de las 2,5 h). Es aritmética, no medición.
+- **El tope de 900 s frente a las duraciones reales.** En las 145 filas de tarea de los 12 zips rescatados
+  de las iteraciones 03 a 07: mediana 107 s, percentil 95 de 289 s, máximo 303,6 s; 2 pasan de 300 s y
+  ninguna de 600 s. Esas corridas tenían un tope de agente de 4 minutos: no descartan una tarea legítima
+  más larga con otro tope.
+- **La sonda mide el laboratorio.** Sus 1 500 pasadas por sesión son una corrida en serie en un solo núcleo,
+  no 1 500 ensayos independientes (los bloques de 250 van de 3 a 19 fronteras y suben con el tiempo). No dice
+  nada de la tasa en Kaggle, y la causa del cuelgue original sigue siendo inferida.
 - **No hay tope al total de tareas colgadas, solo a las seguidas.** Una sesión en que se cuelgue una tarea
   de cada dos, y cada hilo termine, sigue hasta el final y gasta hasta 930 s por cada una. `diagnosticar`
   da 7 y las lista. Si hace falta un tope al total lo decide el concilio.
