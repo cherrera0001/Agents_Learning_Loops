@@ -41,8 +41,14 @@ Salida:
        su ``diff_cierre``, falta ``registro_instalado`` o una guardia detuvo el notebook; en ``comprobar``,
        además, una pasada esperada sin carpeta en el rescate o sin registro
     5  sesión muerta desde fuera: el registro no termina en ``cierre``
-Precedencia en ``diagnosticar``: 4 gana a 3, y 3 gana a 5 (un registro no fiable se dice aunque la sesión
-esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre).
+    6  sesión viva y detenida: el registro no termina en ``cierre`` ni anota un corte, y el latido siguió
+       más de ``SILENCIO_DETENIDA_SEGUNDOS`` después del último evento (#164)
+    7  sesión terminada con tareas colgadas: el notebook cortó al menos una tarea por su tope por tarea,
+       comprobó que su hilo había terminado y siguió con las demás (#164)
+Una sesión que el notebook terminó por una tarea colgada (``corte('tarea_colgada')``) sale con 3.
+Precedencia en ``diagnosticar``: 4 gana a 3, y 3 gana a 7, a 6 y a 5 (un registro no fiable se dice aunque la
+sesión esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre). El 7 exige
+``cierre``; el 6 y el 5 son de un registro sin ``cierre`` y los separa el silencio antes del último latido.
 El 0 de ``diagnosticar`` significa «registro fiable y sesión completa», no «todas las tareas completas»: una
 tarea cortada por tiempo o por llamadas no cambia el código; su motivo está en ``agente_fin``.
 Precedencia en ``comprobar``: el código del rescate, si no es 0; si lo es, el de la primera pasada nombrada,
@@ -64,7 +70,7 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
 
-from scripts.kaggle_registro_enganches import ENGANCHE_NO_EXIGIDO
+from scripts.kaggle_registro_enganches import CLASE_TAREA_COLGADA, ENGANCHE_NO_EXIGIDO
 
 SEMILLA_ITERACION_08 = "ALL-kaggle-iteracion-08-2026-10-08"
 UNIVERSO_ESPERADO = 71
@@ -77,6 +83,13 @@ EXIT_ENTRADA = 2
 EXIT_CORTADA = 3
 EXIT_REGISTRO = 4
 EXIT_MUERTA = 5
+EXIT_DETENIDA_VIVA = 6
+EXIT_CON_COLGADAS = 7
+
+# Segundos de latido sin ningún evento a partir de los cuales una sesión sin cierre se llama «viva y
+# detenida» y no «muerta desde fuera»: el tope por tarea del notebook (900 s), su margen tras el corte (30 s)
+# y un latido (30 s). Con menos silencio, el notebook todavía no había tenido ocasión de cortar la tarea.
+SILENCIO_DETENIDA_SEGUNDOS = 960.0
 
 # Texto que el arnés pone en el error de una sesión del agente, y el tope que significa.
 TOPES_DE_TAREA = (
@@ -98,6 +111,7 @@ CORTES_DE_SESION = {
     "tareas": "tope de tiempo del conjunto de tareas (TOPE_SEGUNDOS)",
     "sesion": "tope de sesión del notebook (TOPE_SESION_SEGUNDOS menos el margen)",
     "servidor": "servidor del modelo caído (GET /health falló antes de la tarea)",
+    CLASE_TAREA_COLGADA: "una tarea no volvió dentro del tope por tarea y el notebook terminó la sesión",
 }
 
 
@@ -310,7 +324,14 @@ def ocurrencias_de_tarea(eventos: Iterable[dict[str, Any]]) -> list[dict[str, An
     for e in eventos:
         tipo = e.get("evento")
         if tipo == "tarea_inicio":
-            actual = {"inicio": e, "peticiones": [], "agente": None, "diff": None, "fin": None}
+            actual = {
+                "inicio": e,
+                "peticiones": [],
+                "agente": None,
+                "diff": None,
+                "fin": None,
+                "colgada": None,
+            }
             ocurrencias.append(actual)
         elif actual is None or e.get("tarea") != actual["inicio"].get("tarea"):
             continue
@@ -320,10 +341,31 @@ def ocurrencias_de_tarea(eventos: Iterable[dict[str, Any]]) -> list[dict[str, An
             actual["agente"] = e
         elif tipo == "diff_cierre":
             actual["diff"] = e
+        elif tipo == "tarea_colgada":
+            actual["colgada"] = e
         elif tipo == "tarea_fin":
             actual["fin"] = e
             actual = None
     return ocurrencias
+
+
+def es_colgada(ocurrencia: dict[str, Any]) -> bool:
+    """La corrida de una tarea que el notebook cortó por su tope por tarea."""
+    fin = ocurrencia["fin"]
+    return ocurrencia["colgada"] is not None or (fin is not None and fin.get("clase") == CLASE_TAREA_COLGADA)
+
+
+def silencio_antes_del_ultimo_latido(
+    eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, Any]]
+) -> float | None:
+    """Segundos entre el último evento del registro y el último latido. ``None`` si falta alguna hora."""
+    if not eventos or not latidos:
+        return None
+    hora_evento, hora_latido = eventos[-1].get("hora"), latidos[-1].get("hora")
+    for hora in (hora_evento, hora_latido):
+        if isinstance(hora, bool) or not isinstance(hora, (int, float)):
+            return None
+    return round(float(hora_latido) - float(hora_evento), 1)  # type: ignore[arg-type]
 
 
 def salud_del_registro(
@@ -348,7 +390,8 @@ def salud_del_registro(
             f"el registro tuvo {cierre['errores_del_registro']} errores propios: {cierre.get('ultimo_error')}"
         )
     respondidas = sum(f["como_termino"] not in NO_RESPONDIDAS for f in fichas)
-    if any(o["fin"] is not None for o in ocurrencias) and respondidas == 0:
+    # Una tarea colgada puede no haber llegado a su primera petición: no cuenta como «corrida» para esto.
+    if any(o["fin"] is not None and not es_colgada(o) for o in ocurrencias) and respondidas == 0:
         con_error = sum(f["como_termino"] in ("error", "cancelada") for f in fichas)
         problemas.append(
             f"hay tareas corridas y ninguna petición respondida en toda la sesión ({len(fichas)} iniciadas, "
@@ -356,8 +399,50 @@ def salud_del_registro(
             "servidor nunca respondió"
         )
     # Una tarea terminada sin su motivo de fin o sin su diff: el enganche dice «instalado» y no surte efecto.
+    hay_corte = any(e.get("evento") in ("corte", "guardia") for e in eventos)
+    corte_por_colgada = any(
+        e.get("evento") == "corte" and e.get("cortado_por") == CLASE_TAREA_COLGADA for e in eventos
+    )
     for orden, o in enumerate(ocurrencias, start=1):
+        nombre_de_tarea = o["inicio"].get("tarea")
+        colgada = o["colgada"]
         if o["fin"] is None:
+            # Con el registro cerrado y sin ningún corte, una tarea sin su fila de fin no tiene explicación.
+            if cierre is not None and not hay_corte:
+                problemas.append(
+                    f"la tarea {nombre_de_tarea} (corrida {orden}) empezó, no tiene «tarea_fin» y la sesión "
+                    "se cerró sin anotar ningún corte"
+                )
+            continue
+        if o["fin"].get("con_tope") is False:
+            problemas.append(f"la tarea {nombre_de_tarea} (corrida {orden}) no corrió bajo el tope por tarea")
+        if es_colgada(o):
+            if o["fin"].get("resuelta"):
+                problemas.append(f"la tarea colgada {nombre_de_tarea} (corrida {orden}) figura como resuelta")
+            if o["fin"].get("par_faltante") is not True:
+                problemas.append(
+                    f"la tarea colgada {nombre_de_tarea} (corrida {orden}) no está marcada como par faltante"
+                )
+            if colgada is None:
+                problemas.append(
+                    f"la tarea {nombre_de_tarea} (corrida {orden}) figura como colgada y no trae su evento "
+                    "«tarea_colgada» (pila, hilo y decisión de seguir)"
+                )
+            elif colgada.get("sigue") and colgada.get("hilo_vivo") is not False:
+                problemas.append(
+                    f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook siguió sin "
+                    "comprobar que su hilo había terminado: pudo haber dos tareas a la vez"
+                )
+            elif not colgada.get("sigue") and orden < len(ocurrencias):
+                problemas.append(
+                    f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook no debía seguir "
+                    "y empezó otra tarea"
+                )
+            elif not colgada.get("sigue") and cierre is not None and not corte_por_colgada:
+                problemas.append(
+                    f"tras la tarea colgada {nombre_de_tarea} (corrida {orden}) el notebook no podía seguir "
+                    "y el registro se cerró sin anotar el corte de la sesión"
+                )
             continue
         faltan = [
             nombre
@@ -368,6 +453,15 @@ def salud_del_registro(
             problemas.append(
                 f"la tarea {o['inicio'].get('tarea')} (corrida {orden}) terminó sin {' ni '.join(faltan)}"
             )
+    # Un corte por tarea colgada que no queda dentro de la corrida de ninguna tarea (llegó tras su fila de
+    # fin, o con otro nombre de tarea) no se puede atribuir: la sesión no puede darse por completa.
+    sueltos = sum(e.get("evento") == "tarea_colgada" for e in eventos) - sum(
+        o["colgada"] is not None for o in ocurrencias
+    )
+    if sueltos:
+        problemas.append(
+            f"hay {sueltos} eventos «tarea_colgada» que no pertenecen a la corrida de ninguna tarea"
+        )
     for guardia in (e for e in eventos if e.get("evento") == "guardia"):
         problemas.append(f"la guardia detuvo el notebook {guardia.get('cuando')}: {guardia.get('problemas')}")
     return problemas
@@ -380,6 +474,7 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
     fichas = [_ficha(pares[n]) for n in sorted(pares)]
     por_numero = {f["peticion"]: f for f in fichas}
     cierre = next((e for e in eventos if e.get("evento") == "cierre"), None)
+    instalado = next((e for e in eventos if e.get("evento") == "registro_instalado"), None)
     cortes = [e for e in eventos if e.get("evento") == "corte"]
     ocurrencias = ocurrencias_de_tarea(eventos)
     veces = Counter(o["inicio"].get("tarea") for o in ocurrencias)
@@ -406,7 +501,27 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
                     k: agente.get(k)
                     for k in ("error", "entrego", "parche_caracteres", "llamadas_herramientas")
                 },
-                "tope_que_corto": tope_de_tarea(error_del_agente) or tope_de_tarea(error_de_la_fila),
+                "tope_que_corto": "tope por tarea del notebook (tarea colgada)"
+                if es_colgada(o)
+                else tope_de_tarea(error_del_agente) or tope_de_tarea(error_de_la_fila),
+                "colgada": None
+                if o["colgada"] is None
+                else {
+                    k: o["colgada"].get(k)
+                    for k in (
+                        "tope_s",
+                        "segundos",
+                        "pila",
+                        "pila_bytes",
+                        "mapa_de_hilos",
+                        "cancelacion",
+                        "hilo_vivo",
+                        "segundos_hasta_terminar",
+                        "cpu_del_hilo_s",
+                        "sigue",
+                    )
+                },
+                "mapa_de_hilos_al_empezar": o["inicio"].get("mapa_de_hilos"),
                 "peticiones": len(propias),
                 "no_respondidas": sum(f["como_termino"] in NO_RESPONDIDAS for f in propias),
                 # En vuelo: un inicio sin fin de ningún tipo. Solo puede quedar si la sesión murió.
@@ -421,16 +536,37 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
         )
     ultimo_latido = latidos[-1] if latidos else None
     guardias = [e for e in eventos if e.get("evento") == "guardia"]
+    colgadas = [t["tarea"] for t, o in zip(tareas, ocurrencias, strict=True) if es_colgada(o)]
+    silencio = silencio_antes_del_ultimo_latido(eventos, latidos)
+    # El corte por tarea colgada manda sobre el «fallo» con que la celda de tareas sale después.
+    cortado_por = None
+    if cortes:
+        motivos = [str(c.get("cortado_por")) for c in cortes]
+        cortado_por = CLASE_TAREA_COLGADA if CLASE_TAREA_COLGADA in motivos else motivos[-1]
     if guardias:
         # Una sesión que una guardia detuvo no es «completa» aunque su registro termine en «cierre».
         estado, veredicto = "detenida", f"detenida por una guardia {guardias[-1].get('cuando')}"
-    elif cortes:
-        por = str(cortes[-1].get("cortado_por"))
-        estado, veredicto = "cortada", "cortada por el notebook: " + CORTES_DE_SESION.get(por, por)
+    elif cortado_por is not None:
+        estado = "cortada"
+        veredicto = "cortada por el notebook: " + CORTES_DE_SESION.get(cortado_por, cortado_por)
+    elif cierre is not None and colgadas:
+        estado = "con_colgadas"
+        veredicto = (
+            f"terminada con {len(colgadas)} tareas colgadas ({', '.join(map(str, colgadas))}): el notebook "
+            "las cortó por su tope por tarea, comprobó que su hilo había terminado y siguió"
+        )
     elif cierre is not None:
         estado, veredicto = "completa", "completa: el registro termina en «cierre» y no hay ningún corte"
+    elif silencio is not None and silencio > SILENCIO_DETENIDA_SEGUNDOS:
+        estado = "detenida_viva"
+        veredicto = (
+            f"viva y detenida: el registro no termina en «cierre» y el latido siguió {silencio} s después "
+            f"del último evento (tarea en curso: {ultimo_latido.get('tarea') if ultimo_latido else None})"
+        )
     else:
         estado, veredicto = "muerta", "muerta desde fuera: el registro no termina en «cierre»"
+        if silencio is not None:
+            veredicto += f" ({silencio} s de latido sin eventos antes del último latido)"
     problemas = salud_del_registro(eventos, fichas, ocurrencias)
     if problemas:
         veredicto = "registro no fiable (" + "; ".join(problemas) + "); sesión " + veredicto
@@ -443,7 +579,17 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
             "registro_fiable": not problemas,
             "problemas_del_registro": problemas,
             "cerrada": cierre is not None,
-            "cortado_por": cortes[-1].get("cortado_por") if cortes else None,
+            "cortado_por": cortado_por,
+            # Una tarea cortada por el tope por tarea es un par faltante, no una tarea no resuelta: quien
+            # compare dos pasadas la excluye de la cuenta de discordantes.
+            "tareas_colgadas": colgadas,
+            "pares_faltantes": colgadas,
+            "segundos_de_latido_sin_eventos": silencio,
+            "versiones": None if instalado is None else instalado.get("versiones"),
+            "mapa_de_hilos": None if instalado is None else instalado.get("mapa_de_hilos"),
+            "tareas_que_empezaron_con_un_ciclo_en_el_mapa": sum(
+                bool((o["inicio"].get("mapa_de_hilos") or {}).get("ciclo")) for o in ocurrencias
+            ),
             "ultimo_evento": eventos[-1].get("evento") if eventos else None,
             "ultimo_evento_utc": eventos[-1].get("hora_utc") if eventos else None,
             "ultimo_latido": None
@@ -451,6 +597,22 @@ def diagnosticar(eventos: Sequence[dict[str, Any]], latidos: Sequence[dict[str, 
             else {
                 k: ultimo_latido.get(k)
                 for k in ("hora_utc", "sesion_s", "tarea", "en_vuelo", "servidor_sano", "diff_en_curso")
+            },
+            # Lo que el latido dice de la tarea en curso y de la máquina (#164).
+            "ultimo_latido_de_la_tarea": None
+            if ultimo_latido is None
+            else {
+                k: ultimo_latido.get(k)
+                for k in (
+                    "ultimo_evento",
+                    "segundos_sin_eventos",
+                    "tarea_segundos",
+                    "hilo_de_tarea",
+                    "carga",
+                    "cpus",
+                    "cpus_utilizables",
+                    "hilos_vivos",
+                )
             },
             "latidos": len(latidos),
         },
@@ -478,7 +640,14 @@ def codigo_de(informe: dict[str, Any]) -> int:
     sesion = informe["sesion"]
     if not sesion["registro_fiable"]:
         return EXIT_REGISTRO
-    codigos = {"completa": EXIT_OK, "cortada": EXIT_CORTADA, "muerta": EXIT_MUERTA, "detenida": EXIT_REGISTRO}
+    codigos = {
+        "completa": EXIT_OK,
+        "cortada": EXIT_CORTADA,
+        "muerta": EXIT_MUERTA,
+        "detenida": EXIT_REGISTRO,
+        "detenida_viva": EXIT_DETENIDA_VIVA,
+        "con_colgadas": EXIT_CON_COLGADAS,
+    }
     return codigos[sesion["estado"]]
 
 
