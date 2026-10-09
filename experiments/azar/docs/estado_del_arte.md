@@ -113,5 +113,5 @@ Las clases de esta sección son del orquestador.
 
 Revisiones sistemáticas de auditorías de lotería; reproducciones independientes de Small y Tse; estudios con
 medición física de máquinas de aire o de paletas; ruleta electrónica; sorteos de países distintos del Reino
-Unido y Estados Unidos. Hasta aquí, la lista del investigador. El orquestador añade, porque el encargo no las pedía:
-literatura de mantenimiento predictivo, patentes y documentación de fabricantes.
+Unido y Estados Unidos. Hasta aquí, la lista del investigador. El orquestador añade, porque el encargo no
+las pedía: literatura de mantenimiento predictivo, patentes y documentación de fabricantes.
