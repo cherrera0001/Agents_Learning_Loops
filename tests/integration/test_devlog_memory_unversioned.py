@@ -43,7 +43,10 @@ def test_control_a_tracked_derived_file_is_not_reported_as_ignored():
 
 def _recall(monkeypatch, capsys, memory_path):
     monkeypatch.setattr(devlog, "MEMORY_PATH", memory_path)
-    monkeypatch.setattr(sys, "argv", ["devlog", "recall", "agregar dependencia opcional"])
+    # La consulta toca varias acciones de los episodios reales. Con «agregar dependencia opcional» la única
+    # acción relevante quedaba en 0,01 y un episodio más con `update_docs` la llevaba a 0 (#162).
+    consulta = "documentar el experimento y registrar el episodio"
+    monkeypatch.setattr(sys, "argv", ["devlog", "recall", consulta])
     devlog.main()
     return capsys.readouterr().out
 

@@ -31,4 +31,6 @@ experiments/gemma_developer_agent/conditions/a_linea_base/*
 !experiments/gemma_developer_agent/conditions/a_linea_base/eval_config.yaml
 !experiments/gemma_developer_agent/conditions/a_linea_base/README.md
 experiments/gemma_developer_agent/submissions/*.zip
+# Experimento azar: datos crudos e instrumentos
+experiments/azar/data/
 *.ipynb_checkpoints
