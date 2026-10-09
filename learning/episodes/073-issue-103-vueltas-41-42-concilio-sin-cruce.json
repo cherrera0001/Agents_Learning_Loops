@@ -64,7 +64,7 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "Línea independiente tras la corrección del dueño: un verificador que no leyó la bitácora y un forense del arnés recontaron desde los zips; coinciden entre sí y con el auditor en las 300 búsquedas vacías, en el cuadre de 4 444 llamadas en traza frente a 4 086 contadas y en las 211 ediciones rechazadas"
+      "note": "La regla del #159 la arregló el implementador con la enmienda «y que ningún PR fusionado lo referencie». Aparte, línea independiente tras la corrección del dueño: un verificador que no leyó la bitácora y un forense del arnés recontaron desde los zips; coinciden entre sí y con el concilio en las 300 búsquedas vacías, en el cuadre de 4 444 llamadas en traza frente a 4 086 contadas y en las 211 ediciones rechazadas"
     },
     {
       "action": "update_docs",
