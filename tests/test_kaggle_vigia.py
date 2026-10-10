@@ -360,7 +360,7 @@ def test_el_registro_real_es_valido_y_esta_sembrado() -> None:
     assert estados["subagente_sin_resolver"] == "decidido"
     assert estados["reproductor_antes_de_editar"] == "descartado"
     assert estados["guion_mapa_al_inicio"] == "descartado"
-    # Estado tras el concilio de la vuelta 43: tres pasaron a decidido, dos a descartado y siguen en
+    # Estado tras el concilio de la vuelta 43: cuatro pasaron a decidido, dos a descartado y siguen en
     # `medido` el que espera un dato y los que solo se midieron en una vuelta.
     for decidido in (
         "argumento_mal_formado",
