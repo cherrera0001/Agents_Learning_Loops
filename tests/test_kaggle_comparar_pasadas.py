@@ -17,6 +17,11 @@ ENGANCHES = {
     "latido": "cada 30.0 s",
     "mapa de hilos del núcleo": "instalado",
 }
+TAREAS = ["a_1", "a_2", "a_3", "a_4", "a_5", "a_6"]
+
+
+def _ids(n: int) -> list[str]:
+    return [f"b_{i}" for i in range(1, n + 1)]
 
 
 def _e(tipo: str, tarea: str | None, hora: float, **campos: Any) -> dict[str, Any]:
@@ -42,120 +47,236 @@ def _colgada(nombre: str, hora: float) -> list[dict[str, Any]]:
     ]
 
 
-def _salida(
-    carpeta: Path,
-    tareas: dict[str, str],
-    *,
-    completo: bool = True,
-    cierre: bool = True,
-    prefijo: str = "",
-) -> Path:
-    """Una carpeta de salida con su JSON y su registro. ``tareas``: id -> «r», «n» o «c» (colgada)."""
-    carpeta.mkdir(parents=True)
-    eventos: list[dict[str, Any]] = [
-        _e("registro_instalado", None, T0, enganches=ENGANCHES, versiones={"ipykernel": "x"})
-    ]
-    filas = []
+def _registro(tareas: dict[str, str], cierre: bool = True, marca: str = "") -> str:
+    eventos: list[dict[str, Any]] = [_e("registro_instalado", None, T0, enganches=ENGANCHES, pasada=marca)]
     for numero, (nombre, que) in enumerate(tareas.items(), start=1):
         hora = T0 + 20 * numero
-        if que == "c":
-            eventos += _colgada(nombre, hora)
-            filas.append(
-                {"instance_id": nombre, "resuelta": False, "clase": "tarea_colgada", "par_faltante": True}
-            )
-        else:
-            eventos += _bien(nombre, hora, numero)
-            filas.append(
-                {"instance_id": nombre, "resuelta": que == "r", "clase": "resuelta" if que == "r" else "no"}
-            )
+        eventos += _colgada(nombre, hora) if que == "c" else _bien(nombre, hora, numero)
     if cierre:
         eventos.append(
             _e("cierre", None, T0 + 20 * (len(tareas) + 2), errores_del_registro=0, ultimo_error=None)
         )
-    (carpeta / f"{prefijo}registro_p.jsonl").write_text(
-        "\n".join(json.dumps(e) for e in eventos), encoding="utf-8"
+    return "\n".join(json.dumps(e) for e in eventos)
+
+
+def _salida(
+    carpeta: Path,
+    tareas: dict[str, str],
+    *,
+    completo: bool | None = True,
+    cierre: bool = True,
+    prefijo: str = "",
+    nombre: str = "p",
+    registro_de: dict[str, str] | None = None,
+    corridas: dict[str, Any] | None = None,
+    marcas: dict[str, Any] | None = None,
+) -> Path:
+    """Una carpeta con su JSON y su registro. ``tareas``: id -> «r», «n» o «c» (colgada).
+
+    ``registro_de`` da otras tareas al registro (para probar que se ata a su JSON); ``marcas`` añade campos a
+    cada fila del JSON; ``completo=None`` quita la clave.
+    """
+    carpeta.mkdir(parents=True, exist_ok=True)
+    filas = []
+    for ident, que in tareas.items():
+        if que == "c":
+            filas.append(
+                {"instance_id": ident, "resuelta": False, "clase": "tarea_colgada", "par_faltante": True}
+            )
+        else:
+            filas.append(
+                {"instance_id": ident, "resuelta": que == "r", "clase": "resuelta" if que == "r" else "no"}
+            )
+    for fila in filas:
+        fila.update(marcas or {})
+    (carpeta / f"{prefijo}registro_iteracion_{nombre}.jsonl").write_text(
+        _registro(registro_de if registro_de is not None else tareas, cierre, nombre), encoding="utf-8"
     )
-    pasada = {
-        "completo": completo,
+    pasada: dict[str, Any] = {
         "cortado_por": None,
-        "corridas": {"X1": {"condicion": "A", "cuenta_para_resueltas": True, "tareas": filas}},
+        "corridas": corridas or {"X1": {"condicion": "A", "cuenta_para_resueltas": True, "tareas": filas}},
     }
-    (carpeta / f"{prefijo}iteracion_p.json").write_text(json.dumps(pasada), encoding="utf-8")
+    if completo is not None:
+        pasada["completo"] = completo
+    (carpeta / f"{prefijo}iteracion_{nombre}.json").write_text(json.dumps(pasada), encoding="utf-8")
     return carpeta
 
 
+def _lista(tmp_path: Path, ids: list[str]) -> Path:
+    ruta = tmp_path / "lista.json"
+    ruta.write_text(json.dumps({"lista": ids}), encoding="utf-8")
+    return ruta
+
+
 def _comparar(
-    capsys: pytest.CaptureFixture[str], base: list[Path], otra: list[Path], *extra: str
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+    base: list[Path],
+    otra: list[Path],
+    lista: list[str] | None = TAREAS,
 ) -> tuple[int, dict[str, Any], str]:
     argv = [x for p in base for x in ("--base", str(p))] + [x for p in otra for x in ("--otra", str(p))]
-    codigo = kc.main([*argv, *extra])
+    if lista is not None:
+        argv += ["--lista", str(_lista(tmp_path, lista))]
+    codigo = kc.main(argv)
     fuera = capsys.readouterr()
     return codigo, (json.loads(fuera.out) if fuera.out.strip() else {}), fuera.err
 
 
-TAREAS = ["a_1", "a_2", "a_3", "a_4", "a_5", "a_6"]
+def _dos(tmp_path: Path, a: str, b: str, ids: list[str] = TAREAS, **kw: Any) -> tuple[Path, Path]:
+    return (
+        _salida(tmp_path / "p1", dict(zip(ids, a, strict=True)), nombre="p1"),
+        _salida(tmp_path / "p2", dict(zip(ids, b, strict=True)), nombre="p2", **kw),
+    )
+
+
+# ---------------------------------------------------------------------------
+# La cuenta
+# ---------------------------------------------------------------------------
 
 
 def test_dos_pasadas_completas_cuentan_concordantes_discordantes_y_mcnemar(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     # a_1 R/R, a_2 N/N, a_3 R/N, a_4 R/N, a_5 N/R, a_6 R/R
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rnrrnr", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rnnnrr", strict=True)))
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
+    p1, p2 = _dos(tmp_path, "rnrrnr", "rnnnrr")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == 0 and r["completa"] is True
     assert r["pares"]["excluidos"] == 0 and r["pares"]["que_quedan"] == 6
     assert r["tabla"]["concordantes"] == {"ambas_resueltas": 2, "ninguna_resuelta": 1}
     assert r["tabla"]["discordantes"]["solo_base"] == 2 and r["tabla"]["discordantes"]["solo_otra"] == 1
-    assert r["tabla"]["mcnemar_p_exacto"] == round(mcnemar_exact_p(2, 1), 6)
+    assert r["tabla"]["mcnemar_p_exacto"] == mcnemar_exact_p(2, 1) == 1.0
 
 
-def test_la_tarea_colgada_en_cualquiera_de_las_dos_se_excluye_y_la_orden_no_sale_con_0(
+@pytest.mark.parametrize(
+    ("a", "b", "base", "otra"), [("rrrrrrrr", "nnnnnnnr", 7, 0), ("nnnnnnnn", "rrrrrrrn", 0, 7)]
+)
+def test_mcnemar_da_el_valor_exacto_y_el_sentido(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], a: str, b: str, base: int, otra: int
+) -> None:
+    """Siete a un lado y un par concordante: p = 2 * P(X <= 0) con 7 discordantes = 0,015625."""
+    ids = _ids(8)
+    p1, p2 = _dos(tmp_path, a, b, ids)
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2], ids)
+    d = r["tabla"]["discordantes"]
+    assert codigo == 0 and (d["solo_base"], d["solo_otra"]) == (base, otra)
+    assert r["tabla"]["mcnemar_p_exacto"] == pytest.approx(0.015625)
+
+
+def test_mcnemar_con_siete_y_uno_no_da_uno_y_distingue_el_sentido(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    # La colgada de la pasada 2 es a_2, y la pasada 1 trae la suya como resuelta: se excluye igual.
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rcrrnn", strict=True)))
-    codigo, r, err = _comparar(capsys, [p1], [p2])
+    ids = _ids(8)
+    p1, p2 = _dos(tmp_path, "rrrrrrrn", "nnnnnnnr", ids)
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2], ids)
+    d = r["tabla"]["discordantes"]
+    assert (d["solo_base"], d["solo_otra"]) == (7, 1)
+    assert d["tareas_solo_base"] == ids[:7] and d["tareas_solo_otra"] == [ids[7]]
+    assert r["tabla"]["mcnemar_p_exacto"] == pytest.approx(0.0703125, abs=1e-9)
+
+
+def test_el_p_no_se_redondea_a_cero(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    ids = _ids(30)
+    p1, p2 = _dos(tmp_path, "r" * 30, "n" * 30, ids)
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2], ids)
+    assert 0 < r["tabla"]["mcnemar_p_exacto"] < 1e-6
+
+
+def test_las_discordantes_se_cuentan_por_sentido(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "nnnrrn")
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    d = r["tabla"]["discordantes"]
+    assert (d["solo_base"], d["solo_otra"]) == (3, 2)
+    assert d["tareas_solo_base"] == ["a_1", "a_2", "a_3"] and d["tareas_solo_otra"] == ["a_4", "a_5"]
+    assert r["tabla"]["mcnemar_p_exacto"] == mcnemar_exact_p(3, 2)
+
+
+# ---------------------------------------------------------------------------
+# Tareas colgadas y exclusión
+# ---------------------------------------------------------------------------
+
+
+def test_la_colgada_en_la_otra_pasada_se_excluye_y_la_orden_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # La pasada 1 trae a_2 resuelta: se excluye igual por la colgada de la pasada 2.
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rcrrnn")
+    codigo, r, err = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == kc.EXIT_COLGADAS == 3 and r["completa"] is False
     assert r["pares"]["excluidos"] == 1 and r["pares"]["tareas_excluidas"] == ["a_2"]
     assert r["pares"]["que_quedan"] == 5 and "a_2" not in r["pares"]["tareas_que_quedan"]
-    assert r["tabla"]["discordantes"] == {
-        "solo_base": 0,
-        "solo_otra": 1,
-        "tareas_solo_base": [],
-        "tareas_solo_otra": ["a_4"],
-    }
+    d = r["tabla"]["discordantes"]
+    assert (d["solo_base"], d["solo_otra"], d["tareas_solo_otra"]) == (0, 1, ["a_4"])
     assert "no cuenta como completa" in err and "COMPARACIÓN NO COMPLETA" in err
+    assert r["lados"]["otra"]["resueltas_con_las_excluidas"] == 3
+    assert r["lados"]["base"]["resueltas_en_los_pares_que_quedan"] == 2
 
 
-def test_una_colgada_en_el_otro_sentido_tambien_se_excluye(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rcrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
+def test_la_colgada_de_la_base_tambien_se_excluye(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    p1, p2 = _dos(tmp_path, "rcrnnn", "rrrnnn")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == 3 and r["pares"]["tareas_excluidas"] == ["a_2"]
     assert r["lados"]["base"]["tareas_colgadas"] == ["a_2"] and r["lados"]["otra"]["tareas_colgadas"] == []
 
 
-def test_las_discordantes_se_cuentan_por_sentido(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "nnnrrn", strict=True)))
-    _, r, _ = _comparar(capsys, [p1], [p2])
-    d = r["tabla"]["discordantes"]
-    assert (d["solo_base"], d["solo_otra"]) == (3, 2)
-    assert d["tareas_solo_base"] == ["a_1", "a_2", "a_3"] and d["tareas_solo_otra"] == ["a_4", "a_5"]
-    assert r["tabla"]["mcnemar_p_exacto"] == round(mcnemar_exact_p(3, 2), 6)
+def test_la_exclusion_por_pares_faltantes_del_registro_sin_marca_en_el_json(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    (p2 / "registro_iteracion_p2.jsonl").write_text(_registro(dict(zip(TAREAS, "rcrnnn", strict=True))))
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert r["pares"]["tareas_excluidas"] == ["a_2"] and codigo == 4  # no coinciden: se excluye y se denuncia
+    assert any("no coinciden en las tareas colgadas" in m for m in r["motivos"])
+
+
+def test_clase_tarea_colgada_sin_par_faltante_tambien_excluye(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    archivo = p2 / "iteracion_p2.json"
+    datos = json.loads(archivo.read_text(encoding="utf-8"))
+    datos["corridas"]["X1"]["tareas"][0]["clase"] = "tarea_colgada"
+    archivo.write_text(json.dumps(datos), encoding="utf-8")
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert r["pares"]["tareas_excluidas"] == ["a_1"]
+
+
+def test_un_par_faltante_que_no_es_booleano_es_entrada_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    for valor in ("true", 1, None):
+        p2 = _salida(
+            tmp_path / f"p2_{valor}",
+            dict(zip(TAREAS, "rrrnnn", strict=True)),
+            nombre="p2",
+            marcas={"par_faltante": valor},
+        )
+        codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+        assert codigo == kc.EXIT_ENTRADA and "booleano" in err
+
+
+def test_completo_falso_con_una_colgada_sale_con_4(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rcrnnn", strict=True)), nombre="p2", completo=False)
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("completo: true" in m for m in r["motivos"])
+
+
+# ---------------------------------------------------------------------------
+# Porciones
+# ---------------------------------------------------------------------------
 
 
 def test_un_lado_en_porciones_se_une_y_se_compara_con_la_pasada_entera(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:3], "rnn", strict=True)))
-    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "rrn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [base], [parte1, parte2])
+    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="b")
+    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:3], "rnn", strict=True)), nombre="o1")
+    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "rrn", strict=True)), nombre="o2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [base], [parte1, parte2])
     assert codigo == 0 and r["lados"]["otra"]["tareas"] == 6 and len(r["lados"]["otra"]["salidas"]) == 2
     assert r["pares"]["que_quedan"] == 6
     assert r["tabla"]["discordantes"]["solo_base"] == 2 and r["tabla"]["discordantes"]["solo_otra"] == 2
@@ -164,97 +285,208 @@ def test_un_lado_en_porciones_se_une_y_se_compara_con_la_pasada_entera(
 def test_una_colgada_en_una_porcion_se_excluye_y_se_dice(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:3], "rrr", strict=True)))
-    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "ncn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [base], [parte1, parte2])
+    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="b")
+    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:3], "rrr", strict=True)), nombre="o1")
+    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "ncn", strict=True)), nombre="o2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [base], [parte1, parte2])
     assert codigo == 3 and r["pares"]["tareas_excluidas"] == ["a_5"]
 
 
 def test_una_tarea_en_dos_porciones_del_mismo_lado_es_una_entrada_invalida(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:4], "rrrn", strict=True)))
-    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "nnn", strict=True)))
-    codigo, _, err = _comparar(capsys, [base], [parte1, parte2])
+    base = _salida(tmp_path / "base", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="b")
+    parte1 = _salida(tmp_path / "otra1", dict(zip(TAREAS[:4], "rrrn", strict=True)), nombre="o1")
+    parte2 = _salida(tmp_path / "otra2", dict(zip(TAREAS[3:], "nnn", strict=True)), nombre="o2")
+    codigo, _, err = _comparar(capsys, tmp_path, [base], [parte1, parte2])
     assert codigo == kc.EXIT_ENTRADA and "más de una salida" in err
 
 
-def test_los_huecos_de_cobertura_hacen_la_comparacion_incompleta(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS[:4], "rrrn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
-    assert codigo == kc.EXIT_INCOMPLETA == 4
-    assert r["huecos_de_cobertura"] == {"otra_sin": ["a_5", "a_6"]} and r["pares"]["que_quedan"] == 4
+# ---------------------------------------------------------------------------
+# Cobertura y lista (B5)
+# ---------------------------------------------------------------------------
 
 
-def test_con_lista_cada_lado_debe_cubrirla_exactamente(
+def test_sin_lista_no_sale_con_0_y_lo_dice(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    codigo, r, err = _comparar(capsys, tmp_path, [p1], [p2], lista=None)
+    assert codigo == 4 and r["completa"] is False and "--lista" in err
+    assert r["tabla"]["mcnemar_p_exacto"] == 1.0  # la cuenta se escribe igual
+
+
+def test_un_hueco_identico_en_los_dos_lados_solo_lo_ve_la_lista(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    lista = tmp_path / "lista.json"
-    lista.write_text(json.dumps({"lista": [*TAREAS[:5], "otra_9"]}), encoding="utf-8")
-    codigo, r, _ = _comparar(capsys, [p1], [p2], "--lista", str(lista))
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS[:4], "rrrn", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS[:4], "rrrn", strict=True)), nombre="p2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2], lista=TAREAS)
     assert codigo == 4
-    assert r["huecos_de_cobertura"]["base_sin"] == ["otra_9"] and r["huecos_de_cobertura"]["base_de_mas"] == [
-        "a_6"
-    ]
-    lista.write_text(json.dumps({"lista": TAREAS}), encoding="utf-8")
-    assert _comparar(capsys, [p1], [p2], "--lista", str(lista))[0] == 0
+    assert r["huecos_de_cobertura"] == {"base_sin": ["a_5", "a_6"], "otra_sin": ["a_5", "a_6"]}
+
+
+@pytest.mark.parametrize("lado", ["base", "otra"])
+def test_los_huecos_por_cada_lado_sin_lista(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], lado: str
+) -> None:
+    entera = _salida(tmp_path / "e", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="e")
+    corta = _salida(tmp_path / "c", dict(zip(TAREAS[:4], "rrrn", strict=True)), nombre="c")
+    base, otra = (entera, corta) if lado == "base" else (corta, entera)
+    codigo, r, _ = _comparar(capsys, tmp_path, [base], [otra], lista=None)
+    sin = "otra_sin" if lado == "base" else "base_sin"
+    assert codigo == 4 and r["huecos_de_cobertura"] == {sin: ["a_5", "a_6"]} and r["pares"]["que_quedan"] == 4
+
+
+@pytest.mark.parametrize("lado", ["base", "otra"])
+def test_los_huecos_y_los_sobrantes_por_cada_lado_con_lista(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], lado: str
+) -> None:
+    buena = _salida(tmp_path / "b", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="b")
+    mala = _salida(
+        tmp_path / "m", {**dict(zip(TAREAS[:5], "rrrnn", strict=True)), "extra_9": "r"}, nombre="m"
+    )
+    base, otra = (mala, buena) if lado == "base" else (buena, mala)
+    codigo, r, _ = _comparar(capsys, tmp_path, [base], [otra], lista=TAREAS)
+    assert codigo == 4
+    assert r["huecos_de_cobertura"] == {f"{lado}_sin": ["a_6"], f"{lado}_de_mas": ["extra_9"]}
 
 
 def test_una_lista_rota_o_con_repetidos_es_entrada_invalida(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
     for texto in ("no json", json.dumps({"lista": ["a", "a"]}), json.dumps({"x": 1})):
         lista = tmp_path / "lista.json"
         lista.write_text(texto, encoding="utf-8")
-        assert _comparar(capsys, [p1], [p1], "--lista", str(lista))[0] == kc.EXIT_ENTRADA
+        assert kc.main(["--base", str(p1), "--otra", str(p1), "--lista", str(lista)]) == kc.EXIT_ENTRADA
+        capsys.readouterr()
+
+
+# ---------------------------------------------------------------------------
+# El registro atado a su JSON (B1, B2), la misma salida (B3) y cero pares (B4)
+# ---------------------------------------------------------------------------
+
+
+def test_un_registro_de_otras_tareas_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    otras = dict(zip([f"z_{i}" for i in range(6)], "rrrnnn", strict=True))
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2", registro_de=otras)
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("difieren en 12 tareas" in m for m in r["motivos"])
+
+
+def test_un_registro_con_menos_tareas_que_su_json_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    p2 = _salida(
+        tmp_path / "p2",
+        dict(zip(TAREAS, "rrrnnn", strict=True)),
+        nombre="p2",
+        registro_de=dict(zip(TAREAS[:2], "rr", strict=True)),
+    )
+    assert _comparar(capsys, tmp_path, [p1], [p2])[0] == 4
+
+
+def test_un_registro_con_una_tarea_empezada_dos_veces_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    texto = (p2 / "registro_iteracion_p2.jsonl").read_text(encoding="utf-8")
+    extra = "\n".join(json.dumps(e) for e in _bien("a_1", T0 + 500, 99))
+    (p2 / "registro_iteracion_p2.jsonl").write_text(texto + "\n" + extra, encoding="utf-8")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("repetidas" in m for m in r["motivos"])
+
+
+def test_el_registro_sale_del_nombre_del_json_en_una_carpeta_plana(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Dos pasadas en la misma carpeta: cada JSON toma su registro, no el primero de la carpeta (B2)."""
+    plana = tmp_path / "plana"
+    _salida(plana, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    _salida(plana, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2", cierre=False)
+    codigo, r, _ = _comparar(capsys, tmp_path, [plana / "iteracion_p1.json"], [plana / "iteracion_p2.json"])
+    assert codigo == 4 and any("el registro dice" in m for m in r["motivos"])
+    # Con las dos pasadas bien cerradas, la misma carpeta plana sale con 0.
+    plana2 = tmp_path / "plana2"
+    _salida(plana2, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    _salida(plana2, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2")
+    assert _comparar(capsys, tmp_path, [plana2 / "iteracion_p1.json"], [plana2 / "iteracion_p2.json"])[0] == 0
+
+
+def test_la_colgada_solo_en_el_registro_de_la_segunda_de_una_carpeta_plana_se_excluye(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    plana = tmp_path / "plana"
+    _salida(plana, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    _salida(plana, dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2")
+    (plana / "registro_iteracion_p2.jsonl").write_text(_registro(dict(zip(TAREAS, "rcrnnn", strict=True))))
+    codigo, r, _ = _comparar(capsys, tmp_path, [plana / "iteracion_p1.json"], [plana / "iteracion_p2.json"])
+    assert r["pares"]["tareas_excluidas"] == ["a_2"] and codigo != 0
+
+
+def test_un_json_sin_su_registro_es_entrada_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    (p2 / "registro_iteracion_p2.jsonl").rename(p2 / "registro_iteracion_otro.jsonl")
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == kc.EXIT_ENTRADA and "no existe su registro" in err
+
+
+def test_la_misma_salida_en_los_dos_lados_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p1])
+    assert codigo == 4 and any("misma salida" in m for m in r["motivos"])
+    # Una copia byte a byte en otra ruta tampoco.
+    copia = tmp_path / "copia"
+    copia.mkdir()
+    for archivo in p1.iterdir():
+        (copia / archivo.name).write_bytes(archivo.read_bytes())
+    assert _comparar(capsys, tmp_path, [p1], [copia])[0] == 4
+
+
+def test_cero_pares_tras_excluir_no_sale_con_0(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    p1 = _salida(tmp_path / "p1", {"a_1": "c"}, nombre="p1")
+    p2 = _salida(tmp_path / "p2", {"a_1": "r"}, nombre="p2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2], lista=["a_1"])
+    assert codigo == 4 and r["pares"]["que_quedan"] == 0 and r["tabla"]["mcnemar_p_exacto"] is None
+    assert any("ningún par" in m for m in r["motivos"])
+
+
+# ---------------------------------------------------------------------------
+# El JSON
+# ---------------------------------------------------------------------------
 
 
 def test_una_sesion_sin_cierre_no_es_completa_aunque_el_json_lo_diga(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), cierre=False)
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn", cierre=False)
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == 4 and any("registro dice" in m for m in r["motivos"])
 
 
+@pytest.mark.parametrize("completo", [False, None])
 def test_un_json_que_no_dice_completo_no_es_una_pasada_completa(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], completo: bool | None
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), completo=False)
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1", completo=completo)
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == 4 and any("completo: true" in m for m in r["motivos"])
-
-
-def test_la_marca_solo_en_el_json_o_solo_en_el_registro_se_excluye_y_se_denuncia(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    archivo = next(p2.glob("iteracion_*.json"))
-    datos = json.loads(archivo.read_text(encoding="utf-8"))
-    datos["corridas"]["X1"]["tareas"][0]["par_faltante"] = True
-    archivo.write_text(json.dumps(datos), encoding="utf-8")
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
-    assert r["pares"]["tareas_excluidas"] == ["a_1"]
-    assert codigo == 4 and any("no coinciden en las tareas colgadas" in m for m in r["motivos"])
 
 
 def test_acepta_la_carpeta_del_rescate_con_prefijo_salida_y_el_json_directo(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), prefijo="salida__")
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    codigo, r, _ = _comparar(capsys, [p1], [next(p2.glob("iteracion_*.json"))])
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), prefijo="salida__", nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2 / "iteracion_p2.json"])
     assert codigo == 0 and r["tabla"]["mcnemar_p_exacto"] == 1.0
 
 
@@ -264,15 +496,14 @@ def test_acepta_la_carpeta_del_rescate_con_prefijo_salida_y_el_json_directo(
 def test_una_entrada_ilegible_sale_con_2(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], que: str
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    archivo = next(p2.glob("iteracion_*.json"))
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    archivo = p2 / "iteracion_p2.json"
     if que == "sin_json":
         archivo.unlink()
     elif que == "dos_json":
         (p2 / "iteracion_otra.json").write_text("{}", encoding="utf-8")
     elif que == "sin_registro":
-        next(p2.glob("registro_*.jsonl")).unlink()
+        (p2 / "registro_iteracion_p2.jsonl").unlink()
     elif que == "json_roto":
         archivo.write_text("{", encoding="utf-8")
     elif que == "sin_corridas":
@@ -281,33 +512,66 @@ def test_una_entrada_ilegible_sale_con_2(
         datos = json.loads(archivo.read_text(encoding="utf-8"))
         datos["corridas"]["X1"]["tareas"].append(dict(datos["corridas"]["X1"]["tareas"][0]))
         archivo.write_text(json.dumps(datos), encoding="utf-8")
-    codigo, _, err = _comparar(capsys, [p1], [p2])
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == kc.EXIT_ENTRADA and "ENTRADA INVÁLIDA" in err
 
 
 def test_una_carpeta_que_no_existe_sale_con_2(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    assert _comparar(capsys, [p1], [tmp_path / "no_existe"])[0] == kc.EXIT_ENTRADA
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    assert _comparar(capsys, tmp_path, [p1], [tmp_path / "no_existe"])[0] == kc.EXIT_ENTRADA
 
 
 def test_solo_cuentan_las_corridas_que_cuentan_para_las_resueltas(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)))
-    archivo = next(p2.glob("iteracion_*.json"))
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    archivo = p2 / "iteracion_p2.json"
     datos = json.loads(archivo.read_text(encoding="utf-8"))
     datos["corridas"]["CTRL"] = {
+        "condicion": "A",
         "cuenta_para_resueltas": False,
         "tareas": [{"instance_id": "a_1", "resuelta": True}, {"instance_id": "control_9", "resuelta": True}],
     }
     archivo.write_text(json.dumps(datos), encoding="utf-8")
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
     assert codigo == 0 and r["lados"]["otra"]["tareas"] == 6
 
 
-def test_sin_pares_que_comparar_no_hay_mcnemar(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
-    p1 = _salida(tmp_path / "p1", {"a_1": "c"})
-    p2 = _salida(tmp_path / "p2", {"a_1": "r"})
-    codigo, r, _ = _comparar(capsys, [p1], [p2])
-    assert codigo == 3 and r["pares"]["que_quedan"] == 0 and r["tabla"]["mcnemar_p_exacto"] is None
+def test_dos_corridas_que_cuentan_con_condiciones_distintas_no_se_funden(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    corridas = {
+        "X1": {
+            "condicion": "A",
+            "cuenta_para_resueltas": True,
+            "tareas": [{"instance_id": "a_1", "resuelta": True}],
+        },
+        "X2": {
+            "condicion": "B",
+            "cuenta_para_resueltas": True,
+            "tareas": [{"instance_id": t, "resuelta": True} for t in TAREAS[1:]],
+        },
+    }
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2", corridas=corridas)
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == kc.EXIT_ENTRADA and "condiciones distintas" in err
+
+
+def test_la_salida_se_fuerza_a_utf8(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    llamadas: list[str] = []
+
+    class Falso:
+        def reconfigure(self, **kw: Any) -> None:
+            llamadas.append(kw["encoding"])
+
+        def write(self, texto: str) -> int:
+            return len(texto)
+
+        def flush(self) -> None:
+            pass
+
+    monkeypatch.setattr(kc.sys, "stdout", Falso())
+    monkeypatch.setattr(kc.sys, "stderr", Falso())
+    assert kc.main(["--base", str(tmp_path / "x"), "--otra", str(tmp_path / "y")]) == kc.EXIT_ENTRADA
+    assert llamadas == ["utf-8", "utf-8"]

@@ -1060,7 +1060,7 @@ antes de escribirlo y se conserva por su motivo. El guion:
 
 ```bash
 python -m scripts.kaggle_comparar_pasadas --base <salida de la pasada 1> --otra <salida de la pasada 2> \
-    [--lista <sorteo_60.json>]
+    --lista <sorteo_60.json>
 ```
 
 - Cada lado acepta varias `--base` o `--otra`: una pasada repartida en porciones que juntas cubren la misma
@@ -1071,8 +1071,11 @@ python -m scripts.kaggle_comparar_pasadas --base <salida de la pasada 1> --otra 
   `scripts/kaggle_replicas.py`, no otra).
 - **Una pasada con una tarea colgada no cuenta como completa** (regla del concilio de la vuelta 43): el
   guion escribe la cuenta igual, lo dice y sale con 3. Sale con 4 si la comparación no es completa por otra
-  causa (registro no fiable, sesión cortada o muerta, JSON sin `completo: true`, los dos lados no cubren las
-  mismas tareas o la `--lista`); gana el 4. Con 0 solo si ningún par se excluyó y todo lo anterior está bien.
+  causa: sin `--lista` (sin ella no se puede afirmar que cada lado cubre las tareas que debía, y un hueco
+  idéntico en los dos lados pasaría), registro no fiable o que no cuadra con su JSON (se ata por el nombre
+  y sus tareas empezadas deben ser las del JSON), sesión cortada o muerta, JSON sin `completo: true`,
+  huecos contra la lista, cero pares tras excluir, o la misma salida en los dos lados; gana el 4. Con 0
+  solo si ningún par se excluyó y todo lo anterior está bien. El p de McNemar sale sin redondear.
 - Probado a mano sobre las salidas del ensayo (`ensayo_salida/completa` frente a `pasada_2`: 4, porque la
   segunda trae 3 de las 26 tareas; y `completa` frente a `comprobar_pasadas/caso_9`, con una tarea colgada:
   4, por la sesión cortada, con el par excluido). Las pruebas versionadas usan datos inventados:
@@ -1152,8 +1155,9 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
   en `comprobar` si no se les dice cuántas tareas se esperaban. El notebook armado no puede producirlo,
   porque toda salida temprana del bucle de tareas anota un `corte` (leído en la celda 10; no hay un
   escenario que lo ejercite). Desde el #179 ambas órdenes aceptan `--tareas-esperadas N` y un registro que
-  empezó otro número sale con 4; `scripts.kaggle_comparar_pasadas` además exige `completo: true` en el JSON
-  y que cada lado cubra la lista del sorteo. Sin la opción el límite sigue siendo el de arriba.
+  empezó otro número sale con 4; `scripts.kaggle_comparar_pasadas` además exige `completo: true` en el JSON,
+  ata cada registro a su JSON y solo sale con 0 si se le da `--lista` y cada lado la cubre. Sin la opción
+  el límite sigue siendo el de arriba.
 - **Un cuelgue que no suelte el GIL no lo corta este tope**
   ([arriba](#lo-que-el-164-no-midió-o-no-se-parece-a-kaggle)).
 - **`comprobar` puede dar 4 en vez de 7** cuando la tarea cortada dejó su log por tarea en 0 bytes

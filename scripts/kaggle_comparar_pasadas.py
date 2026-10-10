@@ -20,27 +20,32 @@ Lo que hace, en este orden:
 3. Dice si la comparación está completa. **Una pasada con una tarea colgada no cuenta como completa**: la
    cuenta se escribe igual, pero la orden sale con un código distinto de 0 y el JSON dice por qué.
 
-Una tarea que está en un solo lado es un hueco, no un par: se lista y la comparación no es completa. Con
-``--lista`` (el ``lista`` del acta de ``kaggle_registro sortear``), cada lado debe cubrir exactamente esa
-lista; sin ella, los dos lados deben cubrir las mismas tareas.
+Una tarea que está en un solo lado es un hueco, no un par: se lista y la comparación no es completa.
+``--lista`` (el ``lista`` del acta de ``kaggle_registro sortear``) es lo que permite afirmar que cada lado
+cubre la lista del sorteo: **sin ella la orden no sale con 0** y lo dice (sin ella solo se compara un lado
+con el otro, y un hueco idéntico en los dos pasaría).
 
-Solo mira las corridas del JSON con ``cuenta_para_resueltas: true``. Una tarea repetida dentro de un lado es
-una entrada inválida.
+El registro se ata a su JSON: su nombre se deriva del del JSON (``iteracion_X.json`` y
+``registro_iteracion_X.jsonl``, con o sin el prefijo ``salida__``), y las tareas que empezó deben ser
+exactamente las de las corridas que cuentan. Solo mira las corridas con ``cuenta_para_resueltas: true``; si
+tienen condiciones distintas, una tarea repetida dentro de un lado o un ``par_faltante`` que no es booleano,
+es una entrada inválida.
 
 Salida:
-    0  comparación completa: ninguna tarea excluida, los dos lados cubren las mismas tareas, registros
-       fiables y sesiones completas
-    2  entrada inválida o ilegible (carpeta sin JSON o sin registro, JSON roto, tarea repetida en un lado)
+    0  comparación completa: hay ``--lista``, ninguna tarea excluida, al menos un par que comparar, los dos
+       lados distintos y sin huecos, registros atados a su JSON, fiables y sesiones completas
+    2  entrada inválida o ilegible (carpeta sin JSON o sin su registro, JSON roto, tarea repetida en un lado)
     3  hay tareas colgadas (pares excluidos) y nada más está mal
-    4  la comparación no es completa por otra causa (registro no fiable, sesión cortada o muerta, JSON que
-       dice ``completo: false``, huecos de cobertura, el JSON y el registro no coinciden en las colgadas);
-       gana al 3
+    4  la comparación no es completa por otra causa (sin ``--lista``, registro no fiable o que no cuadra con
+       su JSON, sesión cortada o muerta, JSON sin ``completo: true``, huecos de cobertura, cero pares tras
+       excluir, la misma salida en los dos lados); gana al 3
 No hay ningún código que diga «sin hallazgos» para una comparación con pares excluidos.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -50,9 +55,10 @@ from scripts.kaggle_registro import (
     EXIT_CON_COLGADAS,
     EXIT_OK,
     RegistroError,
-    cargar_salida,
     codigo_de,
     diagnosticar,
+    leer_jsonl,
+    ocurrencias_de_tarea,
 )
 from scripts.kaggle_replicas import mcnemar_exact_p
 
@@ -100,10 +106,17 @@ def _filas_de_la_pasada(archivo: Path) -> tuple[bool | None, dict[str, dict[str,
         raise CompararError(f"{archivo.name}: no trae el objeto «corridas».")
     filas: dict[str, dict[str, Any]] = {}
     contadas = 0
+    condiciones: set[str] = set()
     for nombre, corrida in corridas.items():
         if not isinstance(corrida, dict) or corrida.get("cuenta_para_resueltas") is not True:
             continue
         contadas += 1
+        condiciones.add(str(corrida.get("condicion")))
+        if len(condiciones) > 1:
+            raise CompararError(
+                f"{archivo.name}: las corridas que cuentan tienen condiciones distintas ({sorted(condiciones)}): "
+                "no se funden en una pasada."
+            )
         tareas = corrida.get("tareas")
         if not isinstance(tareas, list):
             raise CompararError(f"{archivo.name}: la corrida {nombre} no trae la lista «tareas».")
@@ -113,6 +126,11 @@ def _filas_de_la_pasada(archivo: Path) -> tuple[bool | None, dict[str, dict[str,
             if not isinstance(fila.get("resuelta"), bool):
                 raise CompararError(
                     f"{archivo.name}: la fila de {fila['instance_id']} no trae «resuelta» booleano."
+                )
+            if not isinstance(fila.get("par_faltante", False), bool):
+                raise CompararError(
+                    f"{archivo.name}: «par_faltante» de {fila['instance_id']} debe ser booleano, no "
+                    f"{type(fila['par_faltante']).__name__}."
                 )
             if fila["instance_id"] in filas:
                 raise CompararError(f"{archivo.name}: la tarea {fila['instance_id']} aparece dos veces.")
@@ -127,18 +145,63 @@ def _es_colgada_en_json(fila: dict[str, Any]) -> bool:
     return fila.get("par_faltante") is True or fila.get("clase") == CLASE_COLGADA
 
 
+def _huella(*archivos: Path | None) -> str:
+    h = hashlib.sha256()
+    for a in archivos:
+        h.update(b"-" if a is None else a.read_bytes())
+        h.update(b"\0")
+    return h.hexdigest()
+
+
+def _registro_de(archivo: Path) -> tuple[Path, Path | None]:
+    """(registro, latido) de un JSON de pasada, con el nombre derivado del suyo: un JSON, un registro."""
+    nombre = archivo.stem
+    prefijo = "salida__" if nombre.startswith("salida__") else ""
+    base = nombre[len(prefijo) :]
+    registro = archivo.with_name(f"{prefijo}registro_{base}.jsonl")
+    if not registro.is_file():
+        raise CompararError(f"{archivo.name}: no existe su registro {registro.name} en la misma carpeta.")
+    latido = archivo.with_name(f"{prefijo}latido_{base}.jsonl")
+    return registro, latido if latido.is_file() else None
+
+
 def leer_salida(ruta: Path) -> dict[str, Any]:
-    """Una salida: sus filas, sus tareas colgadas según el JSON y según el registro, y su estado."""
+    """Una salida: sus filas, sus tareas colgadas según el JSON y según el registro, y su estado.
+
+    El registro se ata a su JSON por el nombre (``iteracion_X.json`` con ``registro_iteracion_X.jsonl``) y las
+    tareas que empezó deben ser exactamente las de las corridas que cuentan.
+    """
     archivo, carpeta = _json_de_la_pasada(ruta)
     completo, filas = _filas_de_la_pasada(archivo)
+    registro, latido = _registro_de(archivo)
+    eventos, ilegibles = leer_jsonl(registro.read_text(encoding="utf-8", errors="replace"))
+    latidos = (
+        leer_jsonl(latido.read_text(encoding="utf-8", errors="replace"))[0] if latido is not None else []
+    )
+    if not eventos:
+        raise CompararError(f"{registro.name}: el registro no tiene ningún evento legible.")
     try:
-        datos = cargar_salida(carpeta)
-        informe = diagnosticar(datos["eventos"], datos["latidos"])
+        informe = diagnosticar(eventos, latidos)
     except RegistroError as exc:
         raise CompararError(f"{carpeta.name}: {exc}") from exc
     sesion = informe["sesion"]
+    empezadas = [str(o["inicio"].get("tarea")) for o in ocurrencias_de_tarea(eventos)]
+    distintas = sorted(set(empezadas) ^ set(filas)) if (len(empezadas) == len(set(empezadas))) else None
     return {
         "salida": carpeta.name,
+        "ruta": str(archivo.resolve()),
+        "huella": _huella(archivo, registro),
+        "tareas_registro_no_cuadran": (
+            f"el registro empezó {len(empezadas)} tareas (hay repetidas) y el JSON trae {len(filas)}"
+            if distintas is None
+            else (
+                f"el registro y el JSON difieren en {len(distintas)} tareas "
+                f"(el registro empezó {len(empezadas)}, el JSON trae {len(filas)})"
+            )
+            if distintas
+            else None
+        ),
+        "lineas_ilegibles": ilegibles,
         "filas": filas,
         "json_completo": completo,
         "colgadas_json": sorted(t for t, f in filas.items() if _es_colgada_en_json(f)),
@@ -188,8 +251,10 @@ def _motivos_del_lado(nombre: str, lado: dict[str, Any]) -> tuple[list[str], lis
             )
         if s["colgadas_json"] != s["colgadas_registro"]:
             otros.append(f"{etiqueta}: el JSON y el registro no coinciden en las tareas colgadas")
-        if s["json_completo"] is not True and not (s["colgadas_json"] or s["colgadas_registro"]):
+        if s["json_completo"] is not True:
             otros.append(f"{etiqueta}: el JSON de la pasada no dice completo: true")
+        if s["tareas_registro_no_cuadran"]:
+            otros.append(f"{etiqueta}: {s['tareas_registro_no_cuadran']}")
         # El 7 es la sesión que terminó con colgadas: ya lo dice el motivo de arriba.
         if s["codigo_registro"] not in (EXIT_OK, EXIT_CON_COLGADAS) or not s["registro_fiable"]:
             otros.append(f"{etiqueta}: el registro dice «{s['veredicto']}» (código {s['codigo_registro']})")
@@ -231,6 +296,21 @@ def comparar(
     colgadas_b, otros_b = _motivos_del_lado("otra", otra)
     motivos_colgadas = [*colgadas_a, *colgadas_b]
     motivos_otros = [*otros_a, *otros_b]
+    mismas = [
+        a["salida"]
+        for a in base["salidas"]
+        for b in otra["salidas"]
+        if a["ruta"] == b["ruta"] or a["huella"] == b["huella"]
+    ]
+    if mismas:
+        motivos_otros.append(f"los dos lados comparten la misma salida ({', '.join(sorted(set(mismas)))})")
+    if lista is None:
+        motivos_otros.append(
+            "no se dio --lista: sin la lista del sorteo no se puede afirmar que cada lado cubre las tareas "
+            "que debía"
+        )
+    if not quedan:
+        motivos_otros.append("no queda ningún par que comparar")
     if huecos:
         motivos_otros.append(
             "las dos pasadas no cubren las mismas tareas: "
@@ -253,7 +333,8 @@ def comparar(
                     for s in lado["salidas"]
                 ],
                 "tareas": len(lado["filas"]),
-                "resueltas": sum(f["resuelta"] for f in lado["filas"].values()),
+                "resueltas_con_las_excluidas": sum(f["resuelta"] for f in lado["filas"].values()),
+                "resueltas_en_los_pares_que_quedan": sum(lado["filas"][t]["resuelta"] for t in quedan),
                 "tareas_colgadas": sorted(_colgadas_del_lado(lado)),
             }
             for nombre, lado in (("base", base), ("otra", otra))
@@ -275,7 +356,8 @@ def comparar(
                 "tareas_solo_base": solo_base,
                 "tareas_solo_otra": solo_otra,
             },
-            "mcnemar_p_exacto": round(mcnemar_exact_p(len(solo_base), len(solo_otra)), 6) if quedan else None,
+            # Sin redondear: con muchos discordantes en un sentido el valor es menor que 1e-6.
+            "mcnemar_p_exacto": mcnemar_exact_p(len(solo_base), len(solo_otra)) if quedan else None,
         },
     }
     return informe, codigo
@@ -296,6 +378,9 @@ def _cargar_lista(ruta: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    for flujo in (sys.stdout, sys.stderr):  # la consola de Windows no siempre es UTF-8
+        if hasattr(flujo, "reconfigure"):
+            flujo.reconfigure(encoding="utf-8", errors="replace")
     p = argparse.ArgumentParser(
         prog="python -m scripts.kaggle_comparar_pasadas", description=__doc__.split("\n")[0]
     )

@@ -54,7 +54,8 @@ tarea cortada por tiempo o por llamadas no cambia el código; su motivo está en
 cuántas tareas se esperaban: un registro truncado tras tareas completas, con un ``cierre`` añadido, sale con
 0. Con ``--tareas-esperadas N`` (en ``diagnosticar`` y en ``comprobar``) un registro que empezó otro número de
 tareas no es fiable y sale con 4. Para comparar dos pasadas, ``scripts.kaggle_comparar_pasadas`` además
-exige el ``completo: true`` del JSON y que cada lado cubra la lista del sorteo.
+exige el ``completo: true`` del JSON, ata cada registro a su JSON y solo sale con 0 si se le da la
+``--lista`` del sorteo y cada lado la cubre.
 Precedencia en ``comprobar``: el código del rescate, si no es 0; si lo es, el de la primera pasada nombrada,
 en el orden en que se nombraron, cuyo código no sea 0; sin ninguna pasada nombrada, 2 si todo lo demás da 0.
 """
