@@ -153,7 +153,12 @@ def compile_with_adk(submission_dir: Path) -> tuple[bool, str]:
 # negarla, y la regla la cuenta como error: el modelo puede intentar llamarla, y detectar negaciones por el
 # lenguaje no es fiable. La regla es estricta a propósito. Quien lo decida kit a kit lo declara con
 # `--permitir-mencion nombre`: ese nombre deja de ser error y sale como `[AVISO]` en cada aparición, de
-# modo que el caso sigue visible en la salida.
+# modo que el caso sigue visible en la salida: un `[AVISO]` por cada línea donde aparece el nombre, y no sale
+# el `[OK]` de ese agente (el permiso no prueba que todas las menciones sean negaciones). El permiso es global
+# y alcanza a todos los agentes. `register` verifica sin él, a propósito (falla seguro).
+#
+# Un subagente declarado en `sub_agents` puede nombrar a quien lo declara (ADK permite transferir al padre),
+# y a sus pares; no a un tío ni a un ancestro más lejano.
 #
 # Qué son «conocidas»: las de HARNESS_TOOLS y los nombres de los subagentes alcanzables desde `agent.yaml`.
 # Un nombre que no es ninguna de las dos no se puede juzgar y no se señala. Un `sub_agents/*.yaml` que
@@ -397,13 +402,10 @@ def _parse_agent_file(path: Path, root: Path) -> AgentSpec:
     return spec
 
 
-def _mentions(text: str, name: str) -> int | None:
-    """Primera línea (desde 1) donde `name` aparece como palabra completa, sin distinguir mayúsculas."""
+def _mention_lines(text: str, name: str) -> list[int]:
+    """Líneas (desde 1) donde `name` aparece como palabra completa, sin distinguir mayúsculas."""
     pattern = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])", re.IGNORECASE)
-    for n, line in enumerate(text.splitlines(), start=1):
-        if pattern.search(line):
-            return n
-    return None
+    return [n for n, line in enumerate(text.splitlines(), start=1) if pattern.search(line)]
 
 
 def _split_names(value: str) -> frozenset[str]:
@@ -480,6 +482,14 @@ def check_tool_references(
                 by_path[o].name.lower() for o in group if o != child and by_path[o].name
             )
 
+    # padres: un subagente de `sub_agents` puede transferir a quien lo declara (solo al padre directo: un
+    # nieto no puede transferir a un tío)
+    parents: dict[Path, set[str]] = {}
+    for spec in specs:
+        if spec.name:
+            for child in spec.sub_agents_only or []:
+                parents.setdefault(child, set()).add(spec.name.lower())
+
     flagged = None if sin_resultados is None else set(sin_resultados)
     if flagged is None:
         messages.append(
@@ -513,24 +523,25 @@ def check_tool_references(
             if sub_path in by_path and by_path[sub_path].name:
                 allowed.add(by_path[sub_path].name.lower())
         allowed |= peers.get(spec.path, set())
+        allowed |= parents.get(spec.path, set())
         absent = sorted(known - allowed - {spec.name.lower()})
         found = 0
         for origin, text in spec.texts or []:
             for n in absent:
-                line = _mentions(text, n)
-                if line is None:
+                lines = _mention_lines(text, n)
+                if not lines:
                     continue
+                found += 1  # una permitida tampoco se da por limpia: no sale el [OK]
                 if n in permitted:
-                    messages.append(
-                        f"[AVISO] Se permite que {origin} de '{label}' nombre '{n}' (línea {line}) sin "
-                        "tenerla "
-                        "en su lista (--permitir-mencion)"
-                    )
+                    for line in lines:  # un [AVISO] por cada línea
+                        messages.append(
+                            f"[AVISO] Se permite que {origin} de '{label}' nombre '{n}' (línea {line}) sin "
+                            "tenerla en su lista (--permitir-mencion)"
+                        )
                     continue
-                found += 1
-                messages.append(
+                messages.append(  # un [ERROR] por herramienta y texto: el de la primera línea
                     f"[ERROR] {origin[0].upper() + origin[1:]} de '{label}' nombra '{n}' "
-                    f"(línea {line}) y esa herramienta no está en su lista de herramientas. Si la "
+                    f"(línea {lines[0]}) y esa herramienta no está en su lista de herramientas. Si la "
                     "menciona para negarla y se acepta ese riesgo, `--permitir-mencion`"
                 )
                 valid = False
@@ -539,7 +550,7 @@ def check_tool_references(
         for tool in sorted(allowed & (flagged or set())):
             ordered = (
                 " y su instrucción la nombra"
-                if any(_mentions(t, tool) is not None for _, t in spec.texts or [])
+                if any(_mention_lines(t, tool) for _, t in spec.texts or [])
                 else ""
             )
             messages.append(
@@ -852,7 +863,11 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     # register
-    p_reg = subparsers.add_parser("register", help="Registra un envío en el registro oficial")
+    p_reg = subparsers.add_parser(
+        "register",
+        help="Registra un envío en el registro oficial (verifica con la regla estricta: sin "
+        "--permitir-mencion ni --sin-resultados; un kit que los necesite no se puede registrar)",
+    )
     p_reg.add_argument("--zip", type=Path, required=True, help="Ruta al ZIP validado")
     p_reg.add_argument("--condition", type=str, required=True, help="Condición experimental (A, B, C, D...)")
     p_reg.add_argument("--notes", type=str, default="", help="Notas descriptivas del envío")
