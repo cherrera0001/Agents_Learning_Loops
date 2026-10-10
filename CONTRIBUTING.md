@@ -197,10 +197,11 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    dos veces, separadas en el tiempo, antes de afirmarlo, y cada lectura se guarda con su hora. Un error
    genérico de la plataforma se anota «sin lectura», se vuelve a leer en el rescate siguiente y no cuenta
    como refutación de una predicción.
-4. **Concilio.** Roles independientes, en paralelo, sobre los mismos archivos. Ninguno modifica el
-   repositorio, la evidencia ni un sistema externo; lo que ejecutan lo ejecutan en local y escriben solo
-   en una carpeta ignorada por git.
-   - Van siempre el analista de datos, el forense del arnés y el auditor del método. Según la pregunta se
+4. **Concilio.** Una primera ronda de roles independientes, en paralelo, sobre los mismos archivos.
+   Ninguno modifica el repositorio, la evidencia ni un sistema externo; lo que ejecutan lo ejecutan en
+   local y escriben solo en una carpeta ignorada por git.
+   - Van siempre el analista de datos, el forense del arnés y el auditor del método (este, después de la
+     revisión cruzada). Según la pregunta se
      suman QA de trayectorias (si se propone cambiar la conducta del agente), el arquitecto de IA (si se
      propone cambiar el modelo, el presupuesto o el cómputo, o adoptar un método ajeno) e inteligencia
      pública (si el experimento se mide en un sistema externo).
@@ -210,8 +211,22 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
      que se le entrega la hipótesis la devuelve confirmada.
    - Cada rol separa lo medido, lo inferido y lo no medido, dice qué refutaría su conclusión y termina con
      la lista de eventos de fallo que no dejaron rastro en ningún archivo.
-   - El orquestador cruza los informes. Cuando llega un hecho nuevo, vuelve a preguntar a cada rol qué
-     afirmación suya se cae. Los desacuerdos se anotan con el dato que los cerraría; no se promedian.
+   - Todos los roles reciben la **misma pregunta**, la del dueño, además de la parte de su oficio, y una
+     duda final: la pregunta que el dueño haría y que ningún documento contesta. El encargo no lleva
+     cifras ni conclusiones del orquestador.
+   - **Revisión cruzada, siempre.** Con los informes en mano, el orquestador arma un expediente sin firmas
+     (sin la línea que nombra el rol ni la ruta de su carpeta) y lo devuelve a cada rol, que conserva su
+     contexto. Cada rol entrega, con formato fijo: qué mide bien cada otro informe, qué refuta con su número,
+     qué se le pasó, qué retira de lo suyo, qué candidatas veta y su orden de las acciones candidatas. Sin
+     esa entrega de cada rol, el orquestador no escribe decisiones.
+   - El auditor del método entra **después** de la revisión cruzada, con los informes y las respuestas a la
+     vista, y vuelve a contar desde los archivos crudos las cifras de las que dependa una decisión.
+   - Los órdenes de los roles no se promedian y los desacuerdos se anotan con el dato que los cerraría. Si
+     todos los roles son el mismo modelo, su acuerdo no es una medición, y la bitácora lo dice.
+   - Cuando llega un hecho nuevo, o una pregunta nueva del dueño, va a todos los roles en la ronda siguiente.
+   - Un rol escribe las predicciones fechadas antes de cualquier subida; no las escribe el orquestador.
+     Rige desde la vuelta 43. El rol propio todavía no existe (issue #165): mientras tanto las escribe un
+     rol del staff que no sea quien arma la corrida, y el pre-registro dice quién.
 5. **Verificación limpia.** Si el relato de la vuelta ya cambió de conclusión, o si la decisión cuesta
    dinero, cuota o un envío, un verificador que no hereda el relato vuelve a medir sus afirmaciones,
    entregadas como frases sin cifras. Es la única excepción al paso 2: hace su propio rescate, con el

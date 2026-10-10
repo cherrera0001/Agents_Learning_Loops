@@ -31,19 +31,29 @@ envío falla sin explicación.
 1. **Antes: recall y rescate.** Ejecuta `devlog recall` con la pregunta de la vuelta desde una rama al
    día con `origin/main`, y baja los datos con la skill [`corrida-valida`](../corrida-valida/SKILL.md).
    Sin rescate demostrado no hay concilio.
-2. **Convoca los roles en paralelo, sobre los mismos archivos.** Ninguno modifica el repositorio, la
-   evidencia ni un sistema externo; ejecutan solo en local. Siempre: analista de
-   datos, forense del arnés y auditor del método. Según la pregunta: QA de trayectorias (si se propone
+2. **Convoca la primera ronda en paralelo, sobre los mismos archivos.** Ninguno modifica el
+   repositorio, la evidencia ni un sistema externo; ejecutan solo en local. Siempre: analista de datos
+   y forense del arnés. El auditor del método va en todas las vueltas, pero entra después de la
+   revisión cruzada (paso 5). Según la pregunta: QA de trayectorias (si se propone
    cambiar la conducta del agente), arquitecto de IA (si se propone cambiar el modelo, el presupuesto o el
    cómputo, o adoptar un método ajeno) e inteligencia pública (si el experimento se mide en un sistema
    externo).
 3. **Da a cada rol los archivos, no tu conclusión.** El encargo dice la pregunta, las rutas, las
    prohibiciones y la carpeta de trabajo. Un rol al que se le entrega la hipótesis la devuelve confirmada.
+   Todos reciben la misma pregunta, la del dueño, además de la parte de su oficio, y una duda final: la
+   pregunta que el dueño haría y que ningún documento contesta. El encargo no lleva cifras.
 4. **Cada rol entrega** lo medido, lo inferido y lo no medido por separado, qué refutaría su conclusión,
    la lista de eventos de fallo que no dejaron rastro y un parecer corto para la bitácora.
-5. **Cruza los informes.** Busca en cada uno la medida que otro dejó «sin verse». Cuando llegue un hecho
-   nuevo, vuelve a preguntar a cada rol qué afirmación suya se cae. Los desacuerdos se anotan con el dato
-   que los cerraría; no se promedian.
+5. **Revisión cruzada, siempre y sin que nadie la pida.** Arma un expediente con los informes sin firma
+   (quita la línea que nombra el rol y la ruta de su carpeta) y reanuda a cada rol con su contexto. Cada uno
+   entrega, con formato fijo y corto: qué mide bien cada otro informe, qué refuta con su número, qué se le
+   pasó, qué retira de lo suyo, qué veta y su orden de las acciones candidatas. Después, y no antes, entra el
+   auditor del método, con todo a la vista, y vuelve a contar las cifras de las que dependa
+   una decisión. No se promedian los órdenes; los desacuerdos se anotan con el dato que los cerraría. Si
+   falta la respuesta cruzada de un rol, no escribas decisiones. Una pregunta nueva del dueño a mitad del
+   concilio, o un hecho nuevo, va a todos los roles, no solo al auditor. Antes de cualquier subida, un
+   rol escribe las predicciones fechadas; no las escribe el orquestador. Mientras no exista un rol
+   propio, las escribe un rol del staff que no sea quien arma la corrida.
 6. **Registra.** El orquestador copia el parecer de cada rol tal cual en la bitácora del experimento,
    junto con lo que cada uno retiró y sus propios fallos de la vuelta. Los roles no escriben en ella.
 7. **Si el relato ya se corrigió a sí mismo**, o si la decisión cuesta dinero, cuota o un envío, encarga
@@ -61,4 +71,5 @@ envío falla sin explicación.
 - No decide por el dueño ni sube, envía o contrata nada.
 - No sustituye la revisión independiente de un PR ([revisor](../../docs/entorno/agentes.md#revisor)).
 - No convierte la suma de opiniones en una medición: un voto unánime sobre un dato sin medir sigue sin
-  medir.
+  medir. Si todos los roles son el mismo modelo, quitar las firmas evita la deferencia al rol y no da la
+  diversidad de varios modelos; la bitácora lo dice.

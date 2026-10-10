@@ -1,0 +1,61 @@
+{
+  "seq": 76,
+  "id": "issue-180-paper-segundo-par-de-envios",
+  "goal": "Añadir al manuscrito, en castellano y en inglés, el segundo par de envíos del mismo archivo (0,08 y 0,13) como nota posterior a la fecha de corte, sin mover la fecha de corte ni regenerar los PDF",
+  "ref": "#180",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "low"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El texto que el orquestador venía usando durante el día decía que los equipos con la misma nota estaban «empatados» y que el reenvío llevaba «dos días puntuado» sin leerse; el validador estadístico mostró que la nota de la tabla está truncada y esos equipos tienen puestos distintos, y que la lectura del 2026-10-08 22:31 UTC aún daba el reenvío en error"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Párrafo nuevo en manuscript_es.md y manuscript_en.md, marcado como posterior al corte, con las dos notas, la fecha de lectura por la API y las mismas cautelas que el par anterior (no es una réplica controlada; la lectura en tareas es propia). Validador estadístico: visto bueno a cada cifra. Redactor: apto sin cambios, las dos versiones dicen lo mismo"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "La revisión encontró dos discrepancias anteriores entre la versión en castellano y la inglesa, ajenas a este párrafo (un recuento de corridas y el encabezado de una sección); quedaron anotadas en el issue #179 en vez de corregirse aquí"
+    },
+    {
+      "action": "merge_pr",
+      "success": true,
+      "note": "PR #181 fusionado, CI 12 de 12 en verde; los PDF quedan con la versión anterior y el PR lo dice"
+    },
+    {
+      "action": "confirm_closure",
+      "success": false,
+      "error": "La tarjeta quedó en Done y Verificada sin el campo «Escaló» y sin episodio que citara el issue; el guardián del tablero lo señaló al abrir la sesión siguiente (reglas 3 y 4)"
+    },
+    {
+      "action": "confirm_closure",
+      "success": true,
+      "note": "En la sesión siguiente se puso «Escaló» = No y se escribió este episodio; el guardián deja de señalar el issue"
+    }
+  ],
+  "lessons": [
+    "Una nota de tabla truncada no permite decir «empatados»: di la nota, el rango de puestos y que la nota está truncada",
+    "Antes de escribir cuánto tiempo llevaba un envío en un estado, busca la lectura fechada más cercana al cambio; el estado de lo remoto se afirma con dos lecturas, no con la última",
+    "Un issue de documentos que el orquestador escribe él mismo también deja episodio y los cinco campos del tablero en el mismo paso del cierre; si se deja para después, lo recuerda el guardián",
+    "Si el modelo previsto era uno menor y el orquestador hizo el trabajo, anótalo como modelo usado distinto del previsto: no es una escalada, pero sí un dato para la matriz de estimación"
+  ]
+}

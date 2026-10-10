@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso (vueltas 3 a 42); donde una cifra no la recalculó el auditor del método, la fila lo dice. El vigía de inicio de sesión imprime los que llevan más de una vuelta en `medido`.",
+  "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso (vueltas 3 a 42) y puesto al día en la vuelta 43; donde una cifra no la recalculó el auditor del método, la fila lo dice. El vigía de inicio de sesión imprime los que llevan más de una vuelta en `medido`.",
   "estados": ["medido", "decidido", "aplicado", "descartado"],
   "hallazgos": [
     {
@@ -53,14 +53,19 @@
     },
     {
       "id": "argumento_mal_formado",
-      "que_se_midio": "Lecturas con el nombre de un argumento mal formado (la variante de edición está en otra fila). Vuelta 32: 344 llamadas, concluido «no separa resueltas de no resueltas». Vuelta 42: 507 de 1 371 lecturas en 44 sesiones, 505 devueltas desde la línea 1, 359 repitiendo la misma petición rota; 497 están en las iteraciones de tope 40 y 10 de 243 en las de tope 60.",
+      "que_se_midio": "Lecturas con el nombre de un argumento mal formado (la variante de edición está en otra fila). Vuelta 32: 344 llamadas, concluido «no separa resueltas de no resueltas». Vuelta 42: 507 de 1 371 lecturas en 44 sesiones, 505 devueltas desde la línea 1, 359 repitiendo la misma petición rota; 497 están en las iteraciones de tope 40 y 10 de 243 en las de tope 60. Vuelta 43: 497 lecturas mal formadas de 1 128 sin razonamiento y 10 de 243 con él (comparación confundida); tras una llamada mal formada, la siguiente también lo es 93 de cada 100 veces. Cifras de un rol; el auditor no las recontó.",
       "primera_vuelta": 32,
       "primera_fecha": "2026-10-06",
-      "vueltas_medido": [32, 42],
-      "estado": "medido",
-      "decision": null,
+      "vueltas_medido": [32, 42, 43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "No lleva kit ni envío propio: arreglarlo vale a lo sumo una tarea de 58. Se vuelve a contar en el brazo que solo enciende el razonamiento.",
+        "quien": "concilio 43, sobre cifras de un rol que el auditor del método no recontó",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Tiene una decisión parcial: la vuelta 42 añadió la fracción de lecturas con clave rota como criterio secundario, gratis. Sin decisión sobre qué hacer con ellas: petición exploratoria posterior; el arnés descarta el argumento sin avisar y solo se puede pedir en la instrucción."
+      "por_que_sigue_abierto": null
     },
     {
       "id": "ediciones_rechazadas_por_esquema",
@@ -91,25 +96,35 @@
     },
     {
       "id": "aviso_de_presupuesto_en_la_llamada_30",
-      "que_se_midio": "El arnés pega el aviso «termina y entrega» a la respuesta cuando quedan 10 llamadas, en la llamada 30 con tope de 40. Vuelta 13: las tareas no resueltas editan en las llamadas 31 a 40. Vueltas 14 a 16 y 19: se probó el tope 20 (el aviso llega tras la llamada 10) y la edición sigue al aviso 4 a 8 llamadas después. Vuelta 42: la última edición de quien no vuelve a ejecutar cae en la llamada 30 a 32 de mediana.",
+      "que_se_midio": "El arnés pega el aviso «termina y entrega» a la respuesta cuando quedan 10 llamadas, en la llamada 30 con tope de 40. Vuelta 13: las tareas no resueltas editan en las llamadas 31 a 40. Vueltas 14 a 16 y 19: se probó el tope 20 (el aviso llega tras la llamada 10) y la edición sigue al aviso 4 a 8 llamadas después. Vuelta 42: la última edición de quien no vuelve a ejecutar cae en la llamada 30 a 32 de mediana. Vuelta 43, recontado por el auditor: de 116 sesiones sin razonamiento, 41 terminan con 39 o 40 llamadas contadas (2 de ellas resueltas), 12 con 40 y 2 con mensaje de corte del arnés; con razonamiento y tope 60, el máximo es 53.",
       "primera_vuelta": 13,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [13, 14, 15, 16, 19, 42],
-      "estado": "medido",
-      "decision": null,
+      "vueltas_medido": [13, 14, 15, 16, 19, 42, 43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "No actuar sobre el aviso ni subir el tope de llamadas: las sesiones que llegan al tope casi nunca resuelven, y con razonamiento ninguna llega a 60.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Tiene una decisión parcial: en la vuelta 19 el tope 20 quedó como diagnóstico y no pasa a candidato. Sobre el aviso mismo no hay decisión; en la vuelta 42 sirvió para retirar la hipótesis «volver a ejecutar ayuda» (la señal sería en buena parte presupuesto agotado)."
+      "por_que_sigue_abierto": null
     },
     {
       "id": "ruido_entre_dos_envios_del_mismo_zip",
-      "que_se_midio": "Dos envíos del mismo zip dan notas distintas. Vuelta 12: 4 y 3 tareas de 58 (sin razonamiento). Vuelta 42: 5 y 8 tareas de 58 (con razonamiento).",
+      "que_se_midio": "Dos envíos del mismo zip dan notas distintas. Vuelta 12: 4 y 3 tareas de 58 (sin razonamiento). Vuelta 42: 5 y 8 tareas de 58 (con razonamiento). Vuelta 43: los dos envíos del zip con razonamiento pasaron por un estado de error antes de puntuar, así que no son dos lecturas limpias. Calculado: con cinco envíos por zip se distinguen unas 4,3 tareas de 58; con diez, 3,0 (aproximación normal con una desviación de 2,4 tareas por envío; cuenta del auditor, reproducida por el analista).",
       "primera_vuelta": 12,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [12, 42],
-      "estado": "medido",
-      "decision": null,
+      "vueltas_medido": [12, 42, 43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Ninguna nota única decide. Comparar dos zips pide al menos cinco envíos por zip, con calendario escrito antes. Los dos envíos finales se eligen por la media de varias lecturas, no por la nota pública máxima.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Se usa en el criterio de decisión válida (repetición de la base en la misma semana); no tiene decisión escrita propia."
+      "por_que_sigue_abierto": null
     },
     {
       "id": "reproductor_antes_de_editar",
@@ -145,14 +160,19 @@
     },
     {
       "id": "sesiones_sin_edicion_de_fuente",
-      "que_se_midio": "Sesiones que no editan código fuente. La primera tabla de sesiones sin edición es la de la vuelta 12. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta. No es lo mismo que «tope agotado sin editar» (vueltas 11, 12, 25 y 32), que mide otra cosa.",
+      "que_se_midio": "Sesiones que no editan código fuente. La primera tabla de sesiones sin edición es la de la vuelta 12. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta. No es lo mismo que «tope agotado sin editar» (vueltas 11, 12, 25 y 32), que mide otra cosa. Vuelta 43, tres definiciones: 37 de 145 con parche vacío (recontado por el auditor), 58 sin código fuente en el parche final (dos roles) y 54 en el recuento de la vuelta 42.",
       "primera_vuelta": 12,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [12, 42],
-      "estado": "medido",
-      "decision": null,
-      "motivo_descarte": null,
-      "por_que_sigue_abierto": "En la vuelta 42 se fijó la definición (por el parche final), no una acción; sin decisión sobre qué hacer con estas sesiones."
+      "vueltas_medido": [12, 42, 43],
+      "estado": "descartado",
+      "decision": {
+        "texto": "No se trata como palanca.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": "Es consecuencia de los bucles y de los topes, no una causa que se pueda atacar: ninguna de esas sesiones resuelve con ninguna de las tres definiciones (concilio 43).",
+      "por_que_sigue_abierto": null
     },
     {
       "id": "potencia_del_diseno",
@@ -188,36 +208,46 @@
     },
     {
       "id": "compactacion_del_contexto",
-      "que_se_midio": "Vuelta 32: la compactación no explica que el agente no encuentre el archivo (quien lo ve, lo ve antes de cualquier compactación). Vuelta 40: el rechazo por contexto ocurrió en el subagente, que no tiene compactación.",
+      "que_se_midio": "Vuelta 32: la compactación no explica que el agente no encuentre el archivo (quien lo ve, lo ve antes de cualquier compactación). Vuelta 40: el rechazo por contexto ocurrió en el subagente, que no tiene compactación. Vuelta 43: 147 compactaciones en 83 de 145 sesiones; el texto literal del enunciado falta en las 1 531 peticiones posteriores a una compactación, y también en 204 de 3 042 sin compactación previa, así que no es exclusivo de ella; sesiones resueltas con compactación 11 de 59 frente a 10 de 57 sin ella, sin razonamiento. Cifras de dos roles, reproducidas por el analista; el auditor no las recontó.",
       "primera_vuelta": 32,
       "primera_fecha": "2026-10-06",
-      "vueltas_medido": [32, 40],
+      "vueltas_medido": [32, 40, 43],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Qué se pierde al compactar el contexto sigue sin medirse (vuelta 42); sin decisión escrita."
+      "por_que_sigue_abierto": "Falta saber cada cuántos turnos compacta la corrida que puntúa (la documentación del arnés dice 5 y el notebook propio usa 15). Es una lectura local de lo público ya bajado; sin ese dato no se puede decir si lo medido en los notebooks propios vale para el envío."
     },
     {
       "id": "minutos_por_tarea_frente_al_presupuesto",
-      "que_se_midio": "Minutos por tarea de la sesión frente a los disponibles. Vuelta 3: 1,62 minutos por tarea de 4 disponibles en dos tareas. Vueltas 11 y 12: minutos por tarea por pasada; en la 11, el razonamiento con 4 minutos resolvió una tarea menos (3 contra 4). Vuelta 37: 5,5 minutos por tarea son unas 11 horas del límite de 12. Vuelta 42: los notebooks públicos que declaran más nota usan de 5 a 8 minutos por tarea; el tope propio es de 4.",
+      "que_se_midio": "Minutos por tarea de la sesión frente a los disponibles. Vuelta 3: 1,62 minutos por tarea de 4 disponibles en dos tareas. Vueltas 11 y 12: minutos por tarea por pasada; en la 11, el razonamiento con 4 minutos resolvió una tarea menos (3 contra 4). Vuelta 37: 5,5 minutos por tarea son unas 11 horas del límite de 12. Vuelta 42: los notebooks públicos que declaran más nota usan de 5 a 8 minutos por tarea; el tope propio es de 4. Vuelta 43, recontado por el auditor: 109,4 s por tarea sin razonamiento y 245,9 s con él (esta última, sobre tareas elegidas). Calculado, no medido, para 120 tareas en serie: 3,65 h y 8,20 h con esas medias; en el peor caso (todas al tope, más un sobrepaso de 25 a 64 s sacado de once tareas cortadas, más una carga del modelo de 1 142 s), de 9,1 a 10,4 h con 4 minutos, de 10,1 a 11,4 h con 4,5 y de 11,1 a 12,4 h con 5, frente a un límite de 12. La frase de la vuelta 42 sobre los notebooks públicos «que declaran más nota» no se pudo verificar: hay seis configuraciones ajenas con nota declarada, una lectura cada una.",
       "primera_vuelta": 3,
       "primera_fecha": "2026-10-04",
-      "vueltas_medido": [3, 11, 12, 37, 42],
-      "estado": "medido",
-      "decision": null,
+      "vueltas_medido": [3, 11, 12, 37, 42, 43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Se mantienen 4 minutos en la base y 4,5 en el kit con razonamiento. Subir a 5 o más queda vetado. Se revisa con la duración que dé el brazo que solo enciende el razonamiento.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Vuelve al concilio: no hay decisión escrita sobre los minutos por tarea frente al presupuesto real de la evaluación."
+      "por_que_sigue_abierto": null
     },
     {
       "id": "sintaxis_rota_por_comillas_escapadas",
-      "que_se_midio": "Parches con sintaxis rota por la edición del agente. Vuelta 32: 6 sesiones (5 por escapes literales al editar); nada comprueba la sintaxis antes de entregar. Vuelta 42: 6 parches con sintaxis rota, y en esos 6 no se ejecutó nada tras la última edición.",
+      "que_se_midio": "Parches con sintaxis rota por la edición del agente. Vuelta 32: 6 sesiones (5 por escapes literales al editar); nada comprueba la sintaxis antes de entregar. Vuelta 42: 6 parches con sintaxis rota, y en esos 6 no se ejecutó nada tras la última edición. Vuelta 43: 4 parches rotos comprobables, todos sin razonamiento; la cifra de 6 de las vueltas 32 y 42 no se reprodujo.",
       "primera_vuelta": 32,
       "primera_fecha": "2026-10-06",
-      "vueltas_medido": [32, 38, 42],
-      "estado": "medido",
-      "decision": null,
-      "motivo_descarte": null,
-      "por_que_sigue_abierto": "El concilio 42 vetó exigir ejecución antes de entregar; sobre una comprobación de sintaxis antes de entregar (el cambio con más apoyo en el informe de trayectorias de la vuelta 42) no hay decisión escrita."
+      "vueltas_medido": [32, 38, 42, 43],
+      "estado": "descartado",
+      "decision": {
+        "texto": "No se trata como palanca ni lleva kit propio.",
+        "quien": "concilio 43, sobre cifras de un rol que el auditor del método no recontó",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": "Techo de 4 sesiones de 116 sin razonamiento y 0 de 20 parches con código fuente con razonamiento (cifra de un rol, cota inferior; concilio 43).",
+      "por_que_sigue_abierto": null
     },
     {
       "id": "gasto_sin_avance",
@@ -251,6 +281,65 @@
       "decision": null,
       "motivo_descarte": null,
       "por_que_sigue_abierto": "Aparece en una sola vuelta; no se puede separar el efecto del tope del del razonamiento sin un brazo que cambie solo uno."
+    },
+    {
+      "id": "verificacion_local_cortada_por_el_tope_de_orden",
+      "que_se_midio": "La verificación del parche en el arnés local usa el mismo tope de segundos por orden que las órdenes del agente. Vuelta 43, recontado por el auditor: 16 de 116 sesiones sin razonamiento terminan la verificación con el código de tiempo agotado, todas en un mismo grupo de repositorio (16 de 26), 3 de ellas sin parche; 0 de 29 con razonamiento. No está medido que la corrida que puntúa aplique ese tope.",
+      "primera_vuelta": 43,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [43],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Falta volver a verificar en local esos parches con un tope de 240 s; no gasta cuota. Cambiar el campo en un envío queda aplazado hasta tener ese dato."
+    },
+    {
+      "id": "holgura_de_una_pasada_del_notebook",
+      "que_se_midio": "Vuelta 43, leído en el notebook armado y recontado por el auditor: la holgura de una pasada de 60 tareas la fija el tope del conjunto de tareas (7 200 s desde que empiezan), no el tope de sesión; calculada con 60 tareas a la media de las pasadas anteriores, queda entre 360 y 1 260 s, y una tarea colgada cuesta hasta 930 s. Es aritmética sobre duraciones medidas, no una pasada medida.",
+      "primera_vuelta": 43,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "No se añade un tope al total de tareas colgadas ni se cambian los márgenes. Regla de lectura: una pasada con una tarea colgada no cuenta como completa.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "limite_de_envios_pendientes",
+      "que_se_midio": "Vuelta 43, leído en el foro bajado el 2026-10-09: el organizador anunció un límite de envíos pendientes, separado del de uno al día; mientras el envío anterior del equipo se sigue puntuando no se puede mandar otro. Hay tres hilos de participantes bloqueados por ello.",
+      "primera_vuelta": 43,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "El vigía de inicio de sesión avisa de que hay un envío sin terminar y guarda la hora de cada cambio de estado.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "la_tabla_publica_guarda_el_maximo",
+      "que_se_midio": "Vuelta 43, tabla pública del 2026-10-09 (2 188 equipos, 9 526 envíos), recontado por tres roles: la tabla guarda la mejor nota de cada equipo y nunca baja. La media de tareas sube de 4,19 con un envío (511 equipos) a cerca de 8 con trece a veinte. No es solo ruido: entre los equipos de un envío la varianza es 6,84 frente a 3,89 de una binomial, con 135 equipos en cero y 122 con 10 o más. La nota final la decide la tabla privada con dos envíos elegidos.",
+      "primera_vuelta": 43,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [43],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Reenviar el mismo zip sube la nota pública esperada y no la privada: los envíos sirven para confirmar entre zips ya hechos y la cuota de los notebooks para elegir al candidato.",
+        "quien": "concilio 43, con el recuento del auditor del método",
+        "vuelta": 43,
+        "fecha": "2026-10-09"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
     }
   ]
 }

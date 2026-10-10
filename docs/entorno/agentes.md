@@ -170,19 +170,23 @@ flowchart LR
     R --> Q["QA de trayectorias"]
     R --> A["Arquitecto de IA"]
     R --> P["Inteligencia pública"]
-    D --> M["Auditor del método<br/>recalcula y veta"]
-    F --> M
-    Q --> M
-    A --> M
-    P --> M
-    M --> O{"Orquestador<br/>cruza y registra"}
+    D --> X["Revisión cruzada<br/>cada rol lee a los demás sin firma,<br/>refuta, retira y ordena"]
+    F --> X
+    Q --> X
+    A --> X
+    P --> X
+    X --> M["Auditor del método<br/>recalcula y veta"]
+    M --> O{"Orquestador<br/>registra"}
     O -->|el relato ya se corrigió<br/>o la decisión cuesta| V["Verificador limpio<br/>rescata y vuelve a medir sin el relato"]
     V --> O
     O --> U["Dueño decide"]
 ```
 
 Analista de datos, forense del arnés y auditor del método van en todas las vueltas. Los otros se
-convocan cuando la pregunta lo pide. El staff no reemplaza al [revisor](#revisor) de un PR ni al
+convocan cuando la pregunta lo pide. Tras la primera ronda, cada rol lee los informes de los demás sin
+firma, refuta, retira lo suyo y ordena las acciones candidatas; el auditor entra después de esa revisión
+cruzada ([procedimiento](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 4). El staff no
+reemplaza al [revisor](#revisor) de un PR ni al
 [staff de texto público](#staff-de-texto-público): el primero revisa un cambio del repositorio y el
 segundo un texto que sale hacia fuera.
 
