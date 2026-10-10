@@ -360,12 +360,18 @@ def test_el_registro_real_es_valido_y_esta_sembrado() -> None:
     assert estados["subagente_sin_resolver"] == "decidido"
     assert estados["reproductor_antes_de_editar"] == "descartado"
     assert estados["guion_mapa_al_inicio"] == "descartado"
-    for medido in (
+    # Estado tras el concilio de la vuelta 43: tres pasaron a decidido, dos a descartado y siguen en
+    # `medido` el que espera un dato y los que solo se midieron en una vuelta.
+    for decidido in (
         "argumento_mal_formado",
-        "salida_truncada_por_la_cabeza",
         "aviso_de_presupuesto_en_la_llamada_30",
         "ruido_entre_dos_envios_del_mismo_zip",
+        "minutos_por_tarea_frente_al_presupuesto",
     ):
+        assert estados[decidido] == "decidido"
+    for descartado in ("sesiones_sin_edicion_de_fuente", "sintaxis_rota_por_comillas_escapadas"):
+        assert estados[descartado] == "descartado"
+    for medido in ("salida_truncada_por_la_cabeza", "compactacion_del_contexto"):
         assert estados[medido] == "medido"
     assert len(estados) >= 9
 
@@ -441,13 +447,15 @@ def test_el_vigia_imprime_los_hallazgos_aunque_no_haya_token(tmp_path: Path) -> 
 def test_con_el_registro_real_el_vigia_nombra_los_que_siguen_en_medido() -> None:
     lineas = kv.hallazgos_sin_decision(HALLAZGOS_REALES)
     nombres = " ".join(lineas)
-    for esperado in (
+    assert "compactacion_del_contexto" in nombres  # medido en tres vueltas y sin decisión
+    for decidido_o_descartado in (
         "argumento_mal_formado",
         "aviso_de_presupuesto_en_la_llamada_30",
         "ruido_entre_dos_envios",
+        "sintaxis_rota",
+        "repeticiones_identicas",
     ):
-        assert esperado in nombres
-    assert "repeticiones_identicas" not in nombres  # decidido
+        assert decidido_o_descartado not in nombres
     assert "salida_truncada_por_la_cabeza" not in nombres  # una sola vuelta
 
 
