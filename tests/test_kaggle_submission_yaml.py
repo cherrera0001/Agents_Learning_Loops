@@ -346,8 +346,9 @@ def test_permitir_mencion_lo_deja_pasar_con_aviso_por_aparicion(tmp_path: Path) 
     assert ok is True, msgs
     assert errors(msgs) == []
     avisos = [m for m in msgs if m.startswith("[AVISO]") and "--permitir-mencion" in m]
-    assert len(avisos) == 1  # una por herramienta y texto: la primera línea
-    assert "línea 1" in avisos[0]
+    assert len(avisos) == 2  # una por cada línea donde aparece el nombre
+    assert "línea 1" in avisos[0] and "línea 2" in avisos[1]
+    assert not any(m.startswith("[OK]") for m in msgs)  # con menciones permitidas no se da por limpio
 
 
 def test_permitir_mencion_solo_exime_a_la_herramienta_nombrada(tmp_path: Path) -> None:
@@ -530,3 +531,99 @@ def test_dos_includes_anidados_y_include_con_extension_no_permitida(tmp_path: Pa
     _write(root / "agent.yaml", "name: a\ninstruction: !include cuerpo.yaml\ntools: [read_file]\n")
     _write(root / "cuerpo.yaml", "!include p.md\n")
     assert_pasa(root)
+
+
+# --- issue #177: el permiso no tapa órdenes, padres, y pruebas que faltaban ----------
+
+TRES_MENCIONES = (
+    "La búsqueda `search_similar_code` no está disponible.\nUsa read_file.\n\n"
+    "Llama a search_similar_code con la consulta.\nLuego search_similar_code otra vez.\n"
+)
+
+
+def test_permitir_mencion_avisa_por_cada_linea_y_no_imprime_ok(tmp_path: Path) -> None:
+    root = kit(
+        tmp_path, "name: a\ninstruction: !include p.md\ntools: [read_file]\n", {"p.md": TRES_MENCIONES}
+    )
+    ok, msgs = check_tool_references(root, permitir_mencion=frozenset({"search_similar_code"}))
+    assert ok is True, msgs
+    avisos = [m for m in msgs if m.startswith("[AVISO]") and "--permitir-mencion" in m]
+    assert [("línea 1" in m, "línea 4" in m, "línea 5" in m) for m in avisos] == [
+        (True, False, False),
+        (False, True, False),
+        (False, False, True),
+    ]
+    assert not any(m.startswith("[OK]") and "'a'" in m for m in msgs)
+
+
+PADRE_Y_TIO = {
+    "sub_agents/padre.yaml": "name: padre\ninstruction: ok\ntools: [read_file]\nsub_agents:\n"
+    "  - config_path: sub_agents/hijo.yaml\n",
+    "sub_agents/tio.yaml": "name: tio\ninstruction: ok\ntools: [read_file]\n",
+}
+RAIZ_PADRE_Y_TIO = (
+    "name: raiz\ninstruction: ok\ntools: [read_file]\nsub_agents:\n"
+    "  - config_path: sub_agents/padre.yaml\n  - config_path: sub_agents/tio.yaml\n"
+)
+
+
+def test_un_hijo_puede_nombrar_al_padre_que_lo_declara(tmp_path: Path) -> None:
+    files = {
+        **PADRE_Y_TIO,
+        "sub_agents/hijo.yaml": "name: hijo\ninstruction: Vuelve a padre.\ntools: [read_file]\n",
+    }
+    assert_pasa(kit(tmp_path, RAIZ_PADRE_Y_TIO, files))
+
+
+def test_un_nieto_no_puede_nombrar_a_un_tio(tmp_path: Path) -> None:
+    files = {
+        **PADRE_Y_TIO,
+        "sub_agents/hijo.yaml": "name: hijo\ninstruction: Pasa a tio.\ntools: [read_file]\n",
+    }
+    ok, msgs = check_tool_references(kit(tmp_path, RAIZ_PADRE_Y_TIO, files))
+    assert ok is False
+    assert "tio" in errors(msgs)[0]
+
+
+def test_validate_submission_dir_pasa_el_permiso(tmp_path: Path) -> None:
+    root = kit(tmp_path, "name: a\ninstruction: !include p.md\ntools: [read_file]\n", {"p.md": NEGATIVA})
+    ok, _ = validate_submission_dir(root)
+    assert ok is False
+    ok, msgs = validate_submission_dir(root, permitir_mencion=frozenset({"search_similar_code"}))
+    assert errors(msgs) == [], msgs
+    assert any(m.startswith("[AVISO]") and "--permitir-mencion" in m for m in msgs)
+
+
+def test_instruction_numerica_sin_name_es_error(tmp_path: Path) -> None:
+    root = kit(tmp_path, "instruction: 5\ntools: [read_file]\n")
+    ok, msgs = check_tool_references(root)
+    assert ok is False
+    assert "sin `instruction` de texto" in errors(msgs)[0]
+
+
+def test_config_path_con_puntos_que_queda_dentro_del_envio_es_error(tmp_path: Path) -> None:
+    # difiere del compilador, que lo aceptaría: la regla lo rechaza por estricta
+    root = kit(
+        tmp_path,
+        'name: a\ninstruction: ok\ntools:\n  - agent_tool:\n      config_path: "sub_agents/../h.yaml"\n',
+        {"h.yaml": "name: h\ninstruction: ok\ntools: [read_file]\n"},
+    )
+    ok, msgs = check_tool_references(root)
+    assert ok is False
+    assert "sale del envío" in errors(msgs)[0]
+
+
+def test_enlaces_simbolicos_son_error(tmp_path: Path) -> None:
+    real = tmp_path / "real.yaml"
+    real.write_text("name: h\ninstruction: ok\ntools: [read_file]\n", encoding="utf-8")
+    root = kit(
+        tmp_path / "kit",
+        "name: a\ninstruction: ok\ntools:\n  - agent_tool:\n      config_path: enlace.yaml\n",
+    )
+    try:
+        (root / "enlace.yaml").symlink_to(real)
+    except (OSError, NotImplementedError):
+        pytest.skip("este sistema no permite crear enlaces simbólicos")
+    ok, msgs = check_tool_references(root)
+    assert ok is False
+    assert "sale del envío" in errors(msgs)[0]
