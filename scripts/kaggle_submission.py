@@ -513,10 +513,19 @@ def check_tool_references(
         messages.append(f"[ERROR] --permitir-mencion nombra '{unknown}', que no es una herramienta conocida")
         valid = False
 
+    harness_names = {t.lower() for t in HARNESS_TOOLS}
+    shadowed = {s.name.lower() for s in specs if s.name and s.name.lower() in harness_names}
     for spec in specs:
         label = spec.name or spec.path.name
         for problem in spec.problems or []:
             messages.append(f"[ERROR] {problem}")
+            valid = False
+        if spec.name.lower() in harness_names:
+            # con ese nombre, la herramienta del arnés pasaría por «nombre de agente permitido»
+            messages.append(
+                f"[ERROR] El agente '{spec.name}' se llama como una herramienta del arnés; ponle otro "
+                f"nombre. Mientras no lo cambies, las menciones a '{spec.name.lower()}' quedan sin comprobar"
+            )
             valid = False
         allowed = {t.lower() for t in spec.tools or []}
         for sub_path in spec.sub_agent_paths or []:
@@ -545,7 +554,13 @@ def check_tool_references(
                     "menciona para negarla y se acepta ese riesgo, `--permitir-mencion`"
                 )
                 valid = False
-        if spec.texts and not found and not spec.problems:
+        unchecked = sorted((allowed | {spec.name.lower()}) & shadowed)
+        if spec.texts and not found and not spec.problems and unchecked:
+            messages.append(
+                f"[AVISO] El texto de '{label}' no se comprobó para {', '.join(unchecked)}: "
+                "un agente se llama como esa herramienta del arnés"
+            )
+        elif spec.texts and not found and not spec.problems:
             messages.append(f"[OK] El texto de '{label}' no nombra herramientas fuera de su lista")
         for tool in sorted(allowed & (flagged or set())):
             ordered = (

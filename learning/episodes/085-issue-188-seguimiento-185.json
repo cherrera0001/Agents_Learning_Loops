@@ -1,0 +1,80 @@
+{
+  "seq": 85,
+  "id": "issue-188-seguimiento-185",
+  "goal": "Seguimiento del PR #185: prueba intermitente de la duración de una petición cancelada (rompió la CI en Windows), dos pruebas de frontera de la regla de parentesco y un subagente con nombre de herramienta del arnés",
+  "ref": "#188",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-12",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "low"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el texto del issue antes de editar: devolvió las lecciones del episodio 080 (#177, misma regla): heredocs largos en Git Bash y contar mensajes al cambiar «primera aparición» por «todas». Ninguna sobre relojes ni sobre nombres de subagente"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "test_una_peticion_cancelada_por_un_tope_de_tiempo...: `fin['segundos']` se mide en scripts/kaggle_registro_enganches.py:366 con time.time() (reloj de pared, resolución de unos 15 ms en Windows), mientras que asyncio.timeout(0.05) lo cuenta el reloj monótono del bucle. Dos relojes con resolución distinta: 0,04 estaba a 10 ms del tope, dentro de la resolución, y en la CI de Windows salió 0,039 y 0,037. La aserción pasó a «float finito, 0 <= segundos < 5»; mantiene lo demás (peticion_fin, cancelada, CancelledError, en_vuelo vacío). Otra aserción con el patrón en los archivos vecinos: tests/test_kaggle_tope_por_tarea.py `segundos >= 0.15` con tope 0,2; el margen es 50 ms, mayor que dos resoluciones de reloj, y no se cambió"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Dos pruebas de frontera del parentesco: un nieto que nombra al abuelo, y un hijo declarado por agent_tool que nombra al padre. Cada una cae con un solo defecto inyectado: con `parents` construido desde sub_agent_paths cae la del agent_tool; con padres transitivos cae la del nieto"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Para inyectar los defectos leí scripts/kaggle_submission.py con Get-Content -Raw de PowerShell 5.1 (sin -Encoding) y lo reescribí con WriteAllText: la lectura en página ANSI estropeó los acentos y 10 pruebas no relacionadas empezaron a fallar y el diff mostraba 200 líneas. Se restauró con git checkout y se reaplicó la regla; las inyecciones se hicieron con un guion de Python que lee y escribe bytes y restaura en un finally"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Decisión del punto 3: es un defecto. Con un agente `name: search_similar_code`, ese nombre entra en `known` (ya está por ser herramienta) y en `allowed` de su hijo (parents), así que la mención pasaba. Cambio mínimo: error si el `name` de cualquier agente del kit es el de una herramienta del arnés. No hay kits registrados con ese nombre (solo drafts/agent.yaml, `draft_exploratory_agent`)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Primera entrega: la prueba intermitente pasó 200 de 200 repeticiones. La suite completa corrió antes de un último cambio de un comentario; tras él solo se repitieron las comprobaciones rápidas y 147 pruebas de los tres archivos tocados"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "El revisor pidió cambios: la aserción `0 <= segundos` dejaba pasar segundos = 0.0 fijo en el código (ninguna prueba caía) y el issue pide duración positiva; con un agente llamado como una herramienta del arnés seguían saliendo [OK] de ese agente y de su hijo junto al [ERROR]; faltaban pruebas de la raíz con ese nombre, de mayúsculas y de las nueve herramientas; y CHANGELOG.md tenía conflicto con main"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Fusionado origin/main (a8e809f) conservando las dos entradas del CHANGELOG. La aserción pasa a `0 < segundos < 5`; con segundos = 0.0 forzado en el código la prueba cae (1 failed). El mensaje de error dice que las menciones a ese nombre quedan sin comprobar y los agentes afectados (el que lleva el nombre y los que lo tienen en su lista o como padre) reciben un [AVISO] «no se comprobó» en vez de [OK]"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas nuevas: raíz llamada como herramienta, `Get_Status` con mayúsculas, las nueve herramientas fijadas con la lista literal (swegemma no está instalado aquí), y sin [OK] para el hijo ni para el agente con ese nombre. Los 12 kits de experiments/gemma_developer_agent/data/envios dan la misma salida byte a byte (mismo hash SHA-256) con el código de main y con el cambio"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la última edición de esta revisión: ruff check, ruff format --check, mypy, export_schema --check y la suite completa con cobertura, y 200 repeticiones de la prueba intermitente (cifras en el comentario del PR)"
+    }
+  ],
+  "lessons": [
+    "Una duración medida con time.time() no es comparable con un tope del reloj monótono del bucle de asyncio: en Windows la resolución es de unos 15 ms. No pongas como mínimo un valor a menos de dos resoluciones del tope; comprueba que sea finita, no negativa y muy inferior a la espera real",
+    "En PowerShell 5.1 no leas ni escribas archivos del repositorio con Get-Content/WriteAllText sin codificación explícita: los acentos se corrompen. Para inyectar un defecto y restaurar, usa un guion de Python que trabaje con bytes",
+    "Un nombre de agente que coincide con el de una herramienta del arnés hace que la herramienta cuente como «nombre de agente permitido»: valida los nombres de agente contra la lista de herramientas"
+  ]
+}
