@@ -114,8 +114,8 @@ def _filas_de_la_pasada(archivo: Path) -> tuple[bool | None, dict[str, dict[str,
         condiciones.add(str(corrida.get("condicion")))
         if len(condiciones) > 1:
             raise CompararError(
-                f"{archivo.name}: las corridas que cuentan tienen condiciones distintas ({sorted(condiciones)}): "
-                "no se funden en una pasada."
+                f"{archivo.name}: las corridas que cuentan tienen condiciones distintas "
+                f"({sorted(condiciones)}): no se funden en una pasada."
             )
         tareas = corrida.get("tareas")
         if not isinstance(tareas, list):

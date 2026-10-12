@@ -4,10 +4,10 @@
   "goal": "Seguimiento de los PR #174 y #176: guion que compara las dos pasadas del notebook de la iteración 08 excluyendo los pares con tarea colgada (condición de lanzamiento), registro de envíos y vigía (cambios de estado con la hora de las dos lecturas, aviso de envío sin terminar), puntos menores del vigía y del registro, y los textos de CONTRIBUTING y del ensayo",
   "ref": "#179",
   "estimate": {
-    "version": 2,
-    "date": "2026-10-10",
-    "size": "M",
-    "points": 3,
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
     "uncertainty": 1,
     "risk": 2,
     "planned_model": "Sonnet 5.5",
@@ -33,7 +33,8 @@
     },
     {
       "action": "edit_module",
-      "success": true,
+      "success": false,
+      "error": "La primera revisión encontró entradas con las que el guion de comparación salía con 0 sin merecerlo: el registro no atado a su JSON, la misma salida en los dos lados, cero pares y una lista de tareas opcional; las pruebas solo usaban pares con p = 1 y no las detectaban",
       "note": "scripts/kaggle_comparar_pasadas.py reutiliza cargar_salida, diagnosticar y codigo_de de kaggle_registro y mcnemar_exact_p de kaggle_replicas; acepta varias salidas por lado, une las colgadas del JSON y del registro, y sale con 3 (colgadas) o 4 (otra incompletitud; gana al 3). Probado a mano sobre completa frente a pasada_2 y a comprobar_pasadas/caso_9: da 4 en los dos, con el par excluido en el segundo"
     },
     {
@@ -72,9 +73,24 @@
       "error": "La primera ejecución de ruff check dio 21 errores E501 y ruff format --check dio 4 archivos por reformatear, en los dos guiones y las dos pruebas nuevas; se corrigieron con ruff format y acortando una línea de docstring"
     },
     {
+      "action": "edit_module",
+      "success": true,
+      "note": "Del segundo árbol (issue-179-b, sin confirmar) se tomaron el vigía (registrar_lectura anota también el cambio que el rescate vio antes que el vigía y guarda la lectura con reemplazo atómico antes de anotar), la comprobación de `estados` en CONTRIBUTING, la v1 de la estimación y sus pruebas; se fusionó origin/main con un conflicto en CHANGELOG.md"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Al inyectar 18 defectos en el guion de comparación, 3 sobrevivían a las pruebas de la primera corrección: par_faltante verdadero sin la clase, varios JSON de pasada en una carpeta y una tarea fuera de la lista presente en los dos lados; se añadieron tres pruebas y no sobrevive ninguno"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Corrí ruff y las pruebas solo sobre los archivos tocados y la CI falló en las ocho tandas anteriores; esta vez corrí la suite completa. ruff check dio además un E501 en una línea que partí mal al corregir la excepción de condiciones distintas"
+    },
+    {
       "action": "run_tests",
       "success": true,
-      "note": "ruff check y ruff format --check en verde; mypy sin problemas; export_schema --check sincronizado; 644 pruebas de los archivos tocados y de los de submission y replicas en verde, sin Docker. La suite completa y la mutación se leen en la CI del PR"
+      "note": "Segunda vuelta (tras la revisión): ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov de la suite completa: 2949 pasadas, 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI."
     }
   ],
   "lessons": [

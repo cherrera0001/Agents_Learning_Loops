@@ -241,6 +241,37 @@ def test_clase_tarea_colgada_sin_par_faltante_tambien_excluye(
     assert r["pares"]["tareas_excluidas"] == ["a_1"]
 
 
+def test_par_faltante_verdadero_sin_la_clase_tambien_excluye(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    archivo = p2 / "iteracion_p2.json"
+    datos = json.loads(archivo.read_text(encoding="utf-8"))
+    datos["corridas"]["X1"]["tareas"][1]["par_faltante"] = True  # su clase sigue siendo «resuelta»
+    archivo.write_text(json.dumps(datos), encoding="utf-8")
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert r["pares"]["tareas_excluidas"] == ["a_2"]
+
+
+def test_varios_json_de_pasada_en_una_carpeta_son_entrada_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    (p2 / "iteracion_otra.json").write_text((p2 / "iteracion_p2.json").read_text(encoding="utf-8"))
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == kc.EXIT_ENTRADA and "un solo JSON" in err
+
+
+def test_una_tarea_fuera_de_la_lista_no_forma_par_aunque_este_en_los_dos_lados(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ids = [*TAREAS, "extra_9"]
+    p1 = _salida(tmp_path / "p1", dict(zip(ids, "rrrnnnr", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(ids, "rrrnnnr", strict=True)), nombre="p2")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2], lista=TAREAS)
+    assert codigo == 4 and r["pares"]["que_quedan"] == 6 and "extra_9" not in r["pares"]["tareas_que_quedan"]
+
+
 def test_un_par_faltante_que_no_es_booleano_es_entrada_invalida(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

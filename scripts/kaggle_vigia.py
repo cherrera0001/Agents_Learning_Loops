@@ -73,7 +73,8 @@ VARIABLE_DE_TOKEN = "KAGGLE_API_TOKEN"
 # El gancho tiene 30 s (.claude/settings.json). Peor caso: git (3 s) + este tope (15 s) + leer archivos.
 TOPE_TOTAL_S = 15.0
 TOPE_GIT_S = 3
-# Supuesto, no medido: con 20 envíos o más en la lista, la primera página puede no traerlos todos.
+# Supuesto, no medido (#179, punto 5: pendiente de una consulta de lectura que cuente cuántos envíos trae
+# la primera página): con 20 envíos o más en la lista, la primera página puede no traerlos todos.
 PAGINA_LLENA = 20
 MAX_NOTEBOOKS_A_CONSULTAR = 5
 UMBRAL_DE_EDAD_H = 24
@@ -352,29 +353,48 @@ def registrar_lectura(
     actuales: dict[int, tuple[str, float | None]],
     ahora: datetime,
 ) -> list[str]:
-    """Guarda cada cambio de estado con la hora de las dos lecturas que lo acotan y la lectura de ahora.
+    """Guarda cada cambio de estado entre dos lecturas seguidas, con su hora, y la lectura de ahora.
 
-    La lectura anterior es la más reciente de dos: el ``envios.json`` del último rescate y la última lectura
-    del propio vigía. Así un cambio queda acotado por dos lecturas seguidas y se anota una sola vez, aunque
-    el rescate no se repita. Escribe solo en ``carpeta`` (la de los rescates, ignorada por git). Si no puede
-    escribir, lo dice en una línea y no lanza.
+    Las lecturas son tres, ordenadas en el tiempo: la anterior del vigía, el ``envios.json`` del último
+    rescate y la de ahora. Se anota el cambio entre cada par seguido, así que un cambio que el rescate vio
+    antes que el vigía también queda (acotado por la lectura del vigía y la del rescate) y ninguno se anota
+    dos veces. Una lectura del vigía anterior al rescate se usa antes de él; una posterior sustituye al
+    rescate como lectura anterior. Una lectura del vigía ilegible o de un reloj adelantado no se usa.
+    Escribe solo en ``carpeta`` (la de los rescates, ignorada por git).
+
+    Primero guarda la última lectura, con un archivo temporal y un reemplazo atómico, y solo después anota
+    los cambios: si la lectura no se puede guardar no se anota nada (el próximo arranque lo anotará una sola
+    vez) y, si falla la anotación, la lectura ya está guardada y el cambio no se duplica (queda sin anotar y
+    se dice). Si no puede escribir, lo dice en una línea y no lanza.
     """
     previa = leer_lectura_del_vigia(carpeta)
-    if previa is not None and marca < previa[0] <= ahora:
+    if previa is not None and previa[0] > ahora:
+        previa = None
+    cambios: list[dict[str, Any]] = []
+    primer_desde, primer_origen = marca, "rescate"
+    if previa is not None and previa[0] > marca:
         desde, base, origen = previa[0], previa[1], "vigia"
+        primer_desde, primer_origen = desde, origen
     else:
         desde, base, origen = marca, guardados, "rescate"
-    cambios = cambios_de_estado(base, actuales, desde, ahora, origen)
+        if previa is not None and previa[0] < marca:
+            # El rescate leyó después que el vigía: el cambio entre las dos también se anota.
+            cambios += cambios_de_estado(previa[1], guardados, previa[0], marca, "vigia")
+            primer_desde, primer_origen = previa[0], "vigia"
+    cambios += cambios_de_estado(base, actuales, desde, ahora, origen)
+    lectura = {
+        "leido_utc": _hora(ahora),
+        "envios": {str(r): list(v) for r, v in sorted(actuales.items())},
+    }
+    destino = carpeta / ARCHIVO_DE_LECTURA
+    temporal = carpeta / (ARCHIVO_DE_LECTURA + ".tmp")
     try:
+        temporal.write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
+        temporal.replace(destino)
         if cambios:
             with (carpeta / ARCHIVO_DE_CAMBIOS).open("a", encoding="utf-8", newline="\n") as archivo:
                 for cambio in cambios:
                     archivo.write(json.dumps(cambio, ensure_ascii=False) + "\n")
-        lectura = {
-            "leido_utc": _hora(ahora),
-            "envios": {str(r): list(v) for r, v in sorted(actuales.items())},
-        }
-        (carpeta / ARCHIVO_DE_LECTURA).write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
     except OSError as exc:
         return [
             f"no pude guardar la lectura del vigía ({type(exc).__name__}): los cambios no quedaron anotados"
@@ -382,8 +402,8 @@ def registrar_lectura(
     if not cambios:
         return []
     return [
-        f"anoté {len(cambios)} cambios de estado en {ARCHIVO_DE_CAMBIOS}: entre la lectura de {_hora(desde)} "
-        f"({origen}) y la de {_hora(ahora)}"
+        f"anoté {len(cambios)} cambios de estado en {ARCHIVO_DE_CAMBIOS}: entre la lectura de "
+        f"{_hora(primer_desde)} ({primer_origen}) y la de {_hora(ahora)}"
     ]
 
 

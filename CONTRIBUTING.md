@@ -249,8 +249,9 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    de que el registro no lleve datos de la competencia:** rechaza texto legítimo (`http_500`, `tope_100`,
    `sha_256`) y deja pasar otras formas (un identificador con un solo guion, uno con mayúscula inicial, un
    `models.py` suelto, una ruta con barras de Windows). Quien escribe un hallazgo lo relee; que el validador
-   calle no lo exime. Además comprueba que la lista `estados` del archivo sea la de los estados válidos y
-   que la fecha de una decisión no sea anterior a la `primera_fecha` del hallazgo.
+   calle no lo exime. Además comprueba que la lista `estados` del archivo sea una lista y no nombre un
+   estado que el validador no conoce (no exige que los traiga todos), y que la fecha de una decisión no sea
+   anterior a la `primera_fecha` del hallazgo.
 
 Tras cada rescate, `python -m scripts.kaggle_rescate_y_cuenta --destino <directorio ignorado>` hace el rescate
 y la cuenta por llamada (`scripts/kaggle_cuenta_llamadas.py`): qué devolvió cada llamada, cuáles se repiten
