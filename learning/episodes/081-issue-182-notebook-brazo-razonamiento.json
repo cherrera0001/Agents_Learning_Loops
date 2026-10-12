@@ -1,0 +1,81 @@
+{
+  "seq": 81,
+  "id": "issue-182-notebook-brazo-razonamiento",
+  "goal": "Retomar el #182: cerrar la documentación del brazo «solo razonamiento» de la iteración 08 (cinco notebooks de doce tareas, ensayo local con modelo falso), corregir la cuenta de horas de cuota (11,1 a 13,3 h), escribir la regla de parada tras la primera porción, registrar el hallazgo del diff del latido y versionar la cuenta y la regla con sus pruebas",
+  "ref": "#182",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-10",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "El implementador anterior armó los cinco notebooks y corrió la batería del ensayo (8 corridas), editó a medias ensayo_nucleo_jupyter.md (solo el párrafo de la tercera capa y una fila de la tabla de piezas) y se detuvo sin informe, sin PR y sin confirmar nada; la bitácora situaba los artefactos en el árbol de trabajo, pero estaban en el checkout principal (data/ está ignorada y no se copia entre árboles). Se retomó desde el diff sin confirmar y desde los archivos del disco, no desde el relato"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "Se leyeron el issue, el diff heredado, CONTRIBUTING.md y el documento antes de lanzar `python -m scripts.devlog recall`, que el encargo pedía como primera orden con el intérprete; se lanzó después de verificar los artefactos y de escribir la cuenta de horas. Las lecciones que devolvió eran de otros módulos y no cambiaron nada, pero el orden estaba mal"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Verificación propia con guiones que recalculan desde los archivos (no copiados del forense): 5 de 5 SHA-256 de notebooks coinciden con armado_razona.json y con RESUMEN.json; 125 de 125 huellas de HUELLAS.txt coinciden en bytes y SHA-256; 8 de 8 corridas pasan; frente a la pasada 1 cada notebook cambia 2+1+3 líneas en las celdas 4, 8 y 10 y nada más; la unión de las porciones es el sorteo (a9fb55f0…); el kit del brazo difiere en la línea 6 de configs/sampling.yaml; las pasadas 1 y 2 y armar.py conservan su SHA-256; los tres scripts versionados que el ensayo ejecutó siguen igual en main. Eso valida el armado en bytes, no la conducta en Kaggle"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Hallazgo del latido: en 4 de 6 sesiones completas un latido guardó un diff en curso de 4 577 548 a 23 817 270 bytes (177, 1 329 y 2 129 archivos borrados en las tres que quedaron en disco); los diffs de cierre miden de 273 a 8 786 bytes; fue 1 o 2 latidos por sesión. Medido solo en local con latido de 2 s; se anotó «no medido en Kaggle» en el documento y se registró en hallazgos.json como medido, con por_que_sigue_abierto"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/kaggle_costo_brazo.py: cuota_horas, proyeccion_del_plan_h y tras_la_primera_porcion (regla del concilio: no se lanzan las otras cuatro si la media pasa de 240 s o la proyección de 24 h). Solo aritmética, sin leer nada. El guion de armado y el del ensayo no se versionaron: leen data/ y se citan por SHA-256, como armar.py"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La primera versión de la prueba de la regla afirmaba que a 240 s y con la carga mayor la proyección pasaba de 24 h y la regla detenía por proyección; no calculé el valor antes de escribir la aserción y salió 22,4 h (con las constantes del plan la media de 240 s detiene siempre antes que las 24 h). La prueba falló en la primera ejecución"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Se añadió el parámetro base_h a tras_la_primera_porcion; la prueba de 22,4 h pasó a fijar que a 240 s la regla deja lanzar, y otra con unas pasadas de base de 14 h fija que la proyección detiene. 8 pruebas en tests/test_kaggle_costo_brazo.py, con la cuenta al tope (11,1 y 13,3 h), el total de 24,5 h y el caso límite estrictamente mayor. El hecho quedó en el documento: la proyección solo manda si las pasadas de base cuestan más de 11,2 h"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Al ejecutar ruff check por primera vez señaló 6 líneas de más de 110 caracteres en scripts/kaggle_costo_brazo.py (comentarios, un docstring y un f-string) y ruff format pedía reformatear dos firmas; la segunda edición del docstring de proyeccion_del_plan_h volvió a pasarse por 2 caracteres. Se acortaron a mano y se formateó"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Sección «Brazo solo razonamiento (#182)» en ensayo_nucleo_jupyter.md: qué se armó, por qué cinco porciones y no tres (tres de 20 darían 11 190 s de peor caso contra 7 200 s), cuenta de horas corregida con su fórmula (11,1 a 13,3 h al tope; 22,3 a 24,5 h con dos pasadas de base de 5,6 h), regla de parada, ensayo, qué valida y qué no, hallazgo marcado «no medido en Kaggle», criterios del issue y ruta real de los artefactos. El criterio del ensayo de cada notebook queda parcial: el corte por tiempo y la tarea colgada solo se forzaron sobre r1, y repetirlos exige Docker"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov completo; el resultado exacto va en el cuerpo del PR"
+    }
+  ],
+  "lessons": [
+    "Al retomar el trabajo de un agente que se detuvo sin informe, cuenta los bytes de sus artefactos con un guion propio y confirma dónde están: la bitácora los situaba en un árbol de trabajo y estaban en el checkout principal",
+    "Calcula el valor antes de escribir la aserción de una regla con dos umbrales: aquí la media de 240 s detiene siempre antes que las 24 h, y una prueba escrita de memoria afirmaba lo contrario",
+    "Un ensayo con modelo falso valida el armado y los códigos del diagnóstico, no la conducta con razonamiento: el modelo falso no devuelve partes de razonamiento, y eso va en «no valida», con su marca «no medido»",
+    "Un criterio que pide la prueba en cada notebook no se da por cumplido si solo se forzaron los cortes sobre uno: déjalo parcial y di qué lo cerraría"
+  ]
+}
