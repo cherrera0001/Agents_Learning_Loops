@@ -1,0 +1,60 @@
+{
+  "seq": 80,
+  "id": "issue-177-permitir-mencion",
+  "goal": "Seguimiento del PR #175: con --permitir-mencion un [AVISO] por cada línea y ningún [OK] del agente con menciones permitidas; un subagente puede nombrar al padre que lo declara; register dice que verifica con la regla estricta; cuatro pruebas que faltaban",
+  "ref": "#177",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 1,
+    "risk": 1,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "low"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue antes de leer el código: sin lecciones sobre esta regla; las que salieron eran de otros módulos"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Al cambiar la búsqueda de la primera línea por todas las líneas, la primera versión emitía un [ERROR] por línea también sin el permiso. La prueba existente «la línea del error es la de la primera aparición» exige un solo error por herramienta y texto; se vio al releer las pruebas antes de ejecutarlas y se dejó el error por herramienta y texto (primera línea) y el [AVISO] por línea solo con el permiso"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "_mention_lines devuelve todas las líneas; una mención permitida cuenta como hallazgo y suprime el [OK] del agente; los padres directos de sub_agents entran en los nombres permitidos de su hijo (no los ancestros más lejanos); register queda con la regla estricta y su ayuda lo dice, sin aceptar el parámetro, porque un kit con menciones permitidas no debe entrar al registro sin que alguien lo decida"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Al añadir las pruebas nuevas con un script de Python lanzado desde un heredoc en Git Bash, los \\n de las cadenas del archivo de pruebas salieron como saltos de línea reales y el archivo no compilaba (SyntaxError). Se truncó lo añadido y se reescribió con la herramienta Write; después ruff señaló una línea de 111 caracteres, que se acortó"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Cambiada la prueba que fijaba «la primera línea» (ahora dos avisos, uno por línea, y sin [OK]). Añadidas siete: tres menciones en las líneas 1, 4 y 5 con tres avisos y sin [OK]; hijo nombra al padre; nieto no nombra a un tío; validate_submission_dir pasa el permiso; instruction: 5 sin name; config_path con .. que queda dentro del envío; enlace simbólico (se omite si el sistema no deja crearlo)"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check y mypy en verde; 60 pruebas de test_kaggle_submission_yaml.py y 116 de los tres archivos tests/test_kaggle_submission*.py en verde; export_schema --check sincronizado. La suite completa y las mutaciones se leen en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Al pasar una comprobación de «primera aparición» a «todas las apariciones», mira qué pruebas existentes cuentan mensajes: el cambio puede multiplicar los errores sin permiso aunque el objetivo fuera solo los avisos",
+    "Un permiso que convierte un error en aviso no puede además dar el visto bueno ([OK]) al mismo texto: el aviso es lo que queda visible",
+    "No generes archivos de Python con cadenas que llevan \\n desde un heredoc en Git Bash: escribe el bloque con la herramienta Write y añádelo"
+  ]
+}
