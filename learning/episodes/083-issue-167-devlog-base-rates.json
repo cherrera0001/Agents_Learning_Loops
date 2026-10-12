@@ -1,0 +1,69 @@
+{
+  "seq": 83,
+  "id": "issue-167-devlog-base-rates",
+  "goal": "devlog base-rates (#167): líneas base de fallo contadas desde los episodios, por acción, por clase de fallo (clasificación por palabras en learning/failure_classes.json, con los pasos sin clase) y por tercios; --hasta y --json; sin tocar recall",
+  "ref": "#167",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue, antes de editar: devolvió acciones con relevancia 0,01 y lecciones de otros módulos (heredoc, import circular, canal léxico sin resultados) más tres issues parecidos (#78, #105, #122) con su fracción de pasos fallidos; la única lección aplicable (ejecutar recall antes de tocar scripts/devlog.py) ya estaba en el encargo. No cambió el diseño."
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/base_rates.py (cuenta, Wilson, clases, tercios, --hasta, --json) y el subcomando en scripts/devlog.py con importación diferida, sin tocar recall; learning/failure_classes.json con las ocho clases del pre-registro. Las expresiones de las clases se escribieron leyendo los 258 errores, así que la fracción sin clase de la salida es un mínimo, no una predicción honesta de lo que dejaría una clasificación escrita sin mirar."
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "15 pruebas con un conjunto fijo de seis episodios escrito en la prueba; --hasta se fija con un episodio sin fallos (seq 5) para distinguir < de <=; el archivo de clases real solo se comprueba en estructura, sin contar episodios reales"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "learning/README.md (sección Líneas base de fallo) y CHANGELOG.md"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2887 pasan, 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente (apto con observaciones) y el recuento del analista encontraron en la primera entrega: el README decía que en los tercios «el último recibe el resto» y el código parte por cantidad (24, 25, 25); _rate redondeaba a 4 decimales y _pct a 1 (64/265 se imprimía 24,1 en vez de 24,2); la salida y el archivo de clases no decían que las expresiones se escribieron leyendo los episodios que clasifican, y el 17,1 % sin clase es una cifra dentro de la muestra (el analista estima 20 a 30 % para episodios nuevos); 85 de 258 pasos casan con varias clases; un seq repetido fundía dos episodios en «en N episodios»; y 4 de 18 defectos inyectados sobrevivían porque el conjunto fijo tenía 6 episodios (múltiplo de 3) y ninguna prueba distinguía episodios de pasos, el orden por acción ni las mayúsculas de load_classes"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "_rate guarda la proporción sin redondear y se redondea una vez al imprimir; matching_classes y la cuenta de pasos con varias clases; aviso (campo caveat de failure_classes.json) en la salida y en el JSON, con la advertencia de no usar la tabla por clase como línea base hasta un segundo lector; un seq repetido sale con 2 y mensaje (se prefirió el error a contar, porque una línea base con episodios fundidos sería silenciosamente falsa); README corregido"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Ocho pruebas nuevas: tercios con 7, 8, 74 y 2 episodios, episodios por clase distintos de pasos, mayúsculas con el archivo real, orden por acción con fallos distintos, redondeo único, pasos con varias clases, seq repetido (función y CLI) y aviso en texto y JSON"
+    }
+  ],
+  "lessons": [
+    "Una clasificación por palabras escrita leyendo los errores que luego clasifica da una fracción sin clase optimista: para predecir sobre ella, congela las expresiones antes de contar",
+    "Un recuento hecho a mano sobre los episodios (203 pasos en 65 episodios) no se puede reproducir sin el commit exacto; al citar un recuento, escribe el commit de los episodios"
+  ]
+}
