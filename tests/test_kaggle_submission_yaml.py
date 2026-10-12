@@ -585,6 +585,55 @@ def test_un_nieto_no_puede_nombrar_a_un_tio(tmp_path: Path) -> None:
     assert "tio" in errors(msgs)[0]
 
 
+def _raiz_con(hijo: str) -> str:
+    return (
+        "name: raiz\ninstruction: ok\ntools: [read_file]\nsub_agents:\n"
+        f"  - config_path: sub_agents/{hijo}.yaml\n"
+    )
+
+
+def test_un_nieto_no_puede_nombrar_al_abuelo(tmp_path: Path) -> None:
+    # frontera de «solo el padre directo»: con padres transitivos, `nieto` podría nombrar a `abuelo`
+    files = {
+        "sub_agents/abuelo.yaml": "name: abuelo\ninstruction: ok\ntools: [read_file]\nsub_agents:\n"
+        "  - config_path: sub_agents/padre.yaml\n",
+        "sub_agents/padre.yaml": "name: padre\ninstruction: ok\ntools: [read_file]\nsub_agents:\n"
+        "  - config_path: sub_agents/nieto.yaml\n",
+        "sub_agents/nieto.yaml": "name: nieto\ninstruction: Vuelve a abuelo.\ntools: [read_file]\n",
+    }
+    raiz = _raiz_con("abuelo")
+    ok, msgs = check_tool_references(kit(tmp_path, raiz, files))
+    assert ok is False
+    assert len(errors(msgs)) == 1 and "'nieto'" in errors(msgs)[0] and "abuelo" in errors(msgs)[0]
+
+
+def test_un_hijo_declarado_por_agent_tool_no_puede_nombrar_al_padre(tmp_path: Path) -> None:
+    # solo `sub_agents` da el permiso de volver al padre; con `agent_tool` el padre lo invoca y el hijo no
+    # transfiere
+    files = {
+        "sub_agents/padre.yaml": "name: padre\ninstruction: ok\ntools:\n  - agent_tool:\n"
+        "      config_path: sub_agents/hijo.yaml\n",
+        "sub_agents/hijo.yaml": "name: hijo\ninstruction: Vuelve a padre.\ntools: [read_file]\n",
+    }
+    raiz = _raiz_con("padre")
+    ok, msgs = check_tool_references(kit(tmp_path, raiz, files))
+    assert ok is False
+    assert len(errors(msgs)) == 1 and "'hijo'" in errors(msgs)[0] and "padre" in errors(msgs)[0]
+
+
+def test_un_subagente_con_nombre_de_herramienta_del_arnes_es_error(tmp_path: Path) -> None:
+    # sin esta regla, el nombre del subagente abría la mención: el hijo escribía «Llama a
+    # search_similar_code.» y recibía [OK]
+    files = {
+        "sub_agents/padre.yaml": "name: search_similar_code\ninstruction: ok\ntools: [read_file]\n"
+        "sub_agents:\n  - config_path: sub_agents/hijo.yaml\n",
+        "sub_agents/hijo.yaml": "name: hijo\ninstruction: Llama a search_similar_code.\ntools: [read_file]\n",
+    }
+    ok, msgs = check_tool_references(kit(tmp_path, _raiz_con("padre"), files))
+    assert ok is False
+    assert any("'search_similar_code' se llama como" in e for e in errors(msgs)), msgs
+
+
 def test_validate_submission_dir_pasa_el_permiso(tmp_path: Path) -> None:
     root = kit(tmp_path, "name: a\ninstruction: !include p.md\ntools: [read_file]\n", {"p.md": NEGATIVA})
     ok, _ = validate_submission_dir(root)

@@ -518,6 +518,12 @@ def check_tool_references(
         for problem in spec.problems or []:
             messages.append(f"[ERROR] {problem}")
             valid = False
+        if spec.name and spec.name.lower() in {t.lower() for t in HARNESS_TOOLS}:
+            # con ese nombre, la herramienta del arnés pasaría por «nombre de agente permitido»
+            messages.append(
+                f"[ERROR] El agente '{spec.name}' se llama como una herramienta del arnés; ponle otro nombre"
+            )
+            valid = False
         allowed = {t.lower() for t in spec.tools or []}
         for sub_path in spec.sub_agent_paths or []:
             if sub_path in by_path and by_path[sub_path].name:
