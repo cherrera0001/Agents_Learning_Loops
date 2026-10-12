@@ -49,7 +49,27 @@
     {
       "action": "run_tests",
       "success": true,
-      "note": "La prueba intermitente pasa 200 de 200 repeticiones seguidas en local. Comprobaciones completas de CONTRIBUTING.md tras la última edición (cifras en el PR)"
+      "note": "Primera entrega: la prueba intermitente pasó 200 de 200 repeticiones. La suite completa corrió antes de un último cambio de un comentario; tras él solo se repitieron las comprobaciones rápidas y 147 pruebas de los tres archivos tocados"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "El revisor pidió cambios: la aserción `0 <= segundos` dejaba pasar segundos = 0.0 fijo en el código (ninguna prueba caía) y el issue pide duración positiva; con un agente llamado como una herramienta del arnés seguían saliendo [OK] de ese agente y de su hijo junto al [ERROR]; faltaban pruebas de la raíz con ese nombre, de mayúsculas y de las nueve herramientas; y CHANGELOG.md tenía conflicto con main"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Fusionado origin/main (a8e809f) conservando las dos entradas del CHANGELOG. La aserción pasa a `0 < segundos < 5`; con segundos = 0.0 forzado en el código la prueba cae (1 failed). El mensaje de error dice que las menciones a ese nombre quedan sin comprobar y los agentes afectados (el que lleva el nombre y los que lo tienen en su lista o como padre) reciben un [AVISO] «no se comprobó» en vez de [OK]"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas nuevas: raíz llamada como herramienta, `Get_Status` con mayúsculas, las nueve herramientas fijadas con la lista literal (swegemma no está instalado aquí), y sin [OK] para el hijo ni para el agente con ese nombre. Los 12 kits de experiments/gemma_developer_agent/data/envios dan la misma salida byte a byte (mismo hash SHA-256) con el código de main y con el cambio"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la última edición de esta revisión: ruff check, ruff format --check, mypy, export_schema --check y la suite completa con cobertura, y 200 repeticiones de la prueba intermitente (cifras en el comentario del PR)"
     }
   ],
   "lessons": [

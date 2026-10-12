@@ -632,6 +632,40 @@ def test_un_subagente_con_nombre_de_herramienta_del_arnes_es_error(tmp_path: Pat
     ok, msgs = check_tool_references(kit(tmp_path, _raiz_con("padre"), files))
     assert ok is False
     assert any("'search_similar_code' se llama como" in e for e in errors(msgs)), msgs
+    assert any("quedan sin comprobar" in e for e in errors(msgs)), msgs
+    # ni el hijo ni el agente con ese nombre reciben [OK]: su texto no se comprobó para esa herramienta
+    assert not any(m.startswith("[OK]") and ("'hijo'" in m or "'search_similar_code'" in m) for m in msgs)
+    # el aviso sale para la raíz (lo lista como subagente), el agente con ese nombre y su hijo
+    assert sum("no se comprobó" in m for m in msgs if m.startswith("[AVISO]")) == 3, msgs
+
+
+def test_la_raiz_con_nombre_de_herramienta_del_arnes_tambien_es_error(tmp_path: Path) -> None:
+    root = kit(tmp_path, "name: read_file\ninstruction: ok\ntools: [write_file]\n")
+    ok, msgs = check_tool_references(root)
+    assert ok is False
+    assert any("'read_file' se llama como" in e for e in errors(msgs)), msgs
+
+
+def test_el_nombre_de_herramienta_del_arnes_se_compara_sin_distinguir_mayusculas(tmp_path: Path) -> None:
+    root = kit(tmp_path, "name: Get_Status\ninstruction: ok\ntools: [read_file]\n")
+    ok, msgs = check_tool_references(root)
+    assert ok is False
+    assert any("'Get_Status' se llama como" in e for e in errors(msgs)), msgs
+
+
+def test_las_nueve_herramientas_del_arnes_son_estas() -> None:
+    # fijada contra la recortada o ampliada sin querer; es la lista que registra `compile_with_adk`
+    assert kaggle_submission.HARNESS_TOOLS == (
+        "run_command",
+        "read_file",
+        "edit_file",
+        "write_file",
+        "get_status",
+        "submit_patch",
+        "get_code_neighbors",
+        "search_similar_code",
+        "get_code_subgraph",
+    )
 
 
 def test_validate_submission_dir_pasa_el_permiso(tmp_path: Path) -> None:
