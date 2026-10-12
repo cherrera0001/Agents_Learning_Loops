@@ -1,0 +1,134 @@
+{
+  "seq": 81,
+  "id": "issue-182-notebook-brazo-razonamiento",
+  "goal": "Retomar el #182: cerrar la documentación del brazo «solo razonamiento» de la iteración 08 (cinco notebooks de doce tareas, ensayo local con modelo falso), corregir la cuenta de horas de cuota, escribir la regla de parada tras la primera porción, registrar el hallazgo del diff del latido y versionar la cuenta y la regla con sus pruebas; corregir tras la revisión de código del PR #190",
+  "ref": "#182",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-10",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "El implementador anterior armó los cinco notebooks y corrió la batería del ensayo (8 corridas), editó a medias ensayo_nucleo_jupyter.md (solo el párrafo de la tercera capa y una fila de la tabla de piezas) y se detuvo sin informe, sin PR y sin confirmar nada; la bitácora situaba los artefactos en el árbol de trabajo, pero estaban en el checkout principal (data/ está ignorada y no se copia entre árboles)"
+    },
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "Se leyeron el issue, el diff heredado, CONTRIBUTING.md y el documento antes de lanzar `python -m scripts.devlog recall`, que el encargo pedía como primera orden con el intérprete; se lanzó después de verificar los artefactos y de escribir la cuenta de horas"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue: las lecciones que devolvió eran de otros módulos y no cambiaron nada del enfoque"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Verificación propia con guiones que recalculan desde los archivos (no copiados del forense): 5 de 5 SHA-256 de notebooks coinciden con armado_razona.json y con RESUMEN.json; 125 de 125 huellas de HUELLAS.txt coinciden en bytes y SHA-256; 8 de 8 corridas pasan; frente a la pasada 1 cada notebook cambia 2+1+3 líneas en las celdas 4, 8 y 10 y nada más; la unión de las porciones es el sorteo (a9fb55f0…); el kit del brazo difiere en la línea 6 de configs/sampling.yaml; las pasadas 1 y 2 y armar.py conservan su SHA-256. Eso valida el armado en bytes, no la conducta en Kaggle"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Hallazgo del latido: en 4 de 6 sesiones completas un latido guardó un diff en curso de 4 577 548 a 23 817 270 bytes (177, 1 329 y 2 129 archivos borrados en las tres que quedaron en disco); los diffs de cierre miden de 273 a 8 786 bytes. Medido solo en local con latido de 2 s; marcado «no medido en Kaggle» y registrado en hallazgos.json como medido, con por_que_sigue_abierto"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/kaggle_costo_brazo.py: cuota_horas, proyeccion_del_plan_h y tras_la_primera_porcion (no se lanzan las otras cuatro si la media pasa de 240 s o la proyección de 24 h). Solo aritmética. El guion de armado y el del ensayo no se versionaron: leen data/ y se citan por SHA-256, como armar.py"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La primera versión de la prueba de la regla afirmaba que a 240 s y con la carga mayor la proyección pasaba de 24 h; no calculé el valor antes de escribir la aserción y salió 22,4 h. La prueba falló en la primera ejecución"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Se añadió el parámetro base_h y la prueba pasó a fijar que a 240 s la regla deja lanzar, y otra con una base de 14 h fija que la proyección detiene"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Al ejecutar ruff check por primera vez señaló 6 líneas de más de 110 caracteres en scripts/kaggle_costo_brazo.py (comentarios, un docstring y un f-string) y ruff format pedía reformatear dos firmas; la segunda edición de un docstring volvió a pasarse por 2 caracteres"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Se acortaron a mano las líneas y se formateó: ruff check y ruff format --check en verde"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La sección del documento y la docstring del guion decían que la proyección solo manda si las pasadas de base cuestan más de 11,2 h, pero la base ya era de 11,2 h; el error venía de comparar contra la proyección sin calcular a qué base o carga cruza las 24 h. Además mezclaba el factor 2,0 del brazo con la base de 5,6 h, que es 2,5 h × 2,25, llamaba «tope» a 304 s (el máximo observado; el tope por tarea es 540 s), no decía que la fórmula omite el tramo entre la carga y la primera tarea ni el cierre, daba 2,0 como medido sin fuente y citaba la decisión del concilio sin dónde está registrada. Lo señaló la revisión de código del PR #190"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido: a 240 s la proyección pasa de 24 h con una carga de más de 1 200 s o una base de más de 11,43 h (con 2,25 en ambos), y con 2 160 s y 12,83 h (con 2,0 en ambos); tabla de totales con el mismo factor en el brazo y en la base (21,1 a 23,3 h y 23,8 a 26,2 h) y se usa el 2,25 para decidir; 304 s es el máximo observado, 540 s el tope por tarea, 19,0 a 21,2 h con todas a 540 s; límites de la fórmula; 2,0 marcado como supuesto sin fuente; decisión del concilio del 2026-10-12 citada como registrada en el issue #182"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "tras_la_primera_porcion devolvía lanzar_el_resto=True con una media NaN (la media de cero filas), con una carga NaN y con una media negativa, porque las comparaciones con NaN son falsas y ninguna rama detenía. Una primera porción sin datos habría autorizado lanzar las otras cuatro; lo señaló la revisión de código"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La regla rechaza una media o una carga no finita o negativa (decisión: no lanzar, con el motivo y proyección NaN); proyeccion_del_plan_h y la regla toman el factor y calculan la base con él (2,5 h × 2 pasadas × factor), con 2,25 por defecto"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Dos mutaciones sobrevivían a las ocho pruebas: ignorar el argumento media_maxima_s y mover el umbral de 240 a 240,05; la prueba de la media solo usaba 240,1 y ninguna pasaba un tope distinto"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "24 pruebas en tests/test_kaggle_costo_brazo.py: 240,01 y 240,001 detienen y 240 no; un tope pasado como argumento se respeta; NaN, infinito y negativos (media y carga) no autorizan; los umbrales de 1 200 s y 11,43 h con 2,25 y de 2 160 s y 12,83 h con 2,0; los totales con el mismo factor"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov completo tras la última edición; el resultado exacto va en el comentario del PR"
+    },
+    {
+      "action": "git_push",
+      "success": false,
+      "error": "El mensaje de commit iba en un here-string de PowerShell con comillas dobles dentro del título; git commit interpretó el resto como rutas (pathspec) y no creó el commit, y el `git push` encadenado en la misma orden subió la rama sin él (quedó igual que main)"
+    },
+    {
+      "action": "git_push",
+      "success": true,
+      "note": "Se escribió el mensaje en un archivo, se hizo el commit con -F y se subió la rama; después se abrió el PR #190 y se subieron las correcciones de la revisión"
+    },
+    {
+      "action": "open_pr",
+      "success": true,
+      "note": "PR #190 con Refs #182: el criterio del ensayo de cada notebook queda parcial (corte y colgada solo en r1, repetirlos exige Docker) y faltan los roles del orquestador"
+    }
+  ],
+  "lessons": [
+    "Al retomar el trabajo de un agente que se detuvo sin informe, cuenta los bytes de sus artefactos con un guion propio y confirma dónde están: la bitácora los situaba en un árbol de trabajo y estaban en el checkout principal",
+    "Calcula el valor antes de escribir una aserción o una frase sobre una regla con dos umbrales: aquí «solo manda con una base de más de 11,2 h» era falso porque la base ya era 11,2 h, y una prueba escrita de memoria afirmaba lo contrario",
+    "En una cuenta de horas usa el mismo factor en cada sumando y di cuál usas para decidir y por qué; un supuesto sin fuente se marca como supuesto, no como medido",
+    "Una regla con comparaciones numéricas debe rechazar NaN y negativos de forma explícita: con NaN todas las comparaciones son falsas y la rama final autoriza",
+    "Un ensayo con modelo falso valida el armado y los códigos del diagnóstico, no la conducta con razonamiento: el modelo falso no devuelve partes de razonamiento, y eso va en «no valida», con su marca «no medido»",
+    "Un criterio que pide la prueba en cada notebook no se da por cumplido si solo se forzaron los cortes sobre uno: déjalo parcial y di qué lo cerraría",
+    "No encadenes `git commit` y `git push` en una orden con el mensaje en un here-string con comillas dobles: si el commit falla, el push sale igual; escribe el mensaje en un archivo y usa -F"
+  ]
+}

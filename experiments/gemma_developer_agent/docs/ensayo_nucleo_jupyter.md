@@ -1,7 +1,8 @@
 # Registro del notebook de la iteración 08 y ensayo bajo un núcleo Jupyter real (#160, #164)
 
 **Nada de esto se subió, se envió ni se corrió en Kaggle, y no se gastó cuota de GPU.** Todo lo que este
-documento mide se midió en esta máquina, en Docker, el 2026-10-09 (UTC), con un modelo falso. Las cifras son
+documento mide se midió en esta máquina, en Docker, el 2026-10-09 (UTC; la batería del #182 acabó a las
+00:15 UTC del 2026-10-10), con un modelo falso. Las cifras son
 de un ensayo local: dicen si el registro explica un corte, no cuántas tareas resuelve el agente.
 
 El documento tiene dos capas. El #160 dejó el registro, el notebook y el ensayo. El #164 añadió al notebook
@@ -9,6 +10,11 @@ un tope por tarea y el vaciado del mapa de hilos del núcleo, y al diagnóstico 
 [su sección](#tope-por-tarea-y-mapa-de-hilos-del-núcleo-164). Donde el #164 cambió algo que el #160
 describía, el texto lo dice. Las cifras de las secciones del #160 son de su batería, que se conserva sin
 tocar en `…/iteracion_08/ensayo_salida_160/`; las del #164 son de una batería nueva, en `ensayo_salida/`.
+
+El #182 añadió una tercera capa sin tocar las otras dos: los cinco notebooks del brazo «solo
+razonamiento», que son el de la pasada 1 con otro zip, otra etiqueta y otra porción de la lista, y su
+ensayo. Está en [su sección](#brazo-solo-razonamiento-182); su batería corrió, también con un modelo falso y
+sin Kaggle, entre las 23:37 UTC del 2026-10-09 y las 00:15 UTC del 2026-10-10.
 
 La vuelta 40 del experimento Kaggle decidió que la iteración 08 no se sube sin tres cosas: el rescate que
 mira bytes (#156), el notebook con su registro y un ensayo local que demuestre que ese registro explica un
@@ -25,6 +31,8 @@ corte. Este documento cubre las dos últimas.
 | El sorteo de tareas y el lector del registro | [`scripts/kaggle_registro.py`](../../../scripts/kaggle_registro.py) | Sí, con `tests/test_kaggle_registro.py` |
 | `armar.py`, el ensayo, el modelo falso, el Dockerfile y los notebooks armados | `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08/` | No: `data/` está ignorada por git |
 | Las salidas del ensayo | `…/iteracion_08/ensayo_salida_160/` (batería del #160) y `…/iteracion_08/ensayo_salida/` (batería del #164) | No; se citan por ruta y SHA-256 ([huellas](#huellas)) |
+| El brazo «solo razonamiento» (#182): su guion de armado, sus cinco notebooks, su ensayo y las salidas | `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08_razona/`, **del checkout principal** | No; se citan por ruta y SHA-256 ([huellas del #182](#huellas-del-182)) |
+| La cuenta de horas de cuota del brazo y la regla de parada tras su primera porción | [`scripts/kaggle_costo_brazo.py`](../../../scripts/kaggle_costo_brazo.py) | Sí, con `tests/test_kaggle_costo_brazo.py` |
 
 **Consecuencia:** el código de las guardias está versionado, pero las líneas del notebook que las llaman
 las escribe `armar.py`, que no lo está. De esas líneas el repositorio solo tiene los SHA-256 que este
@@ -1135,6 +1143,271 @@ doble con el mapa o sin él. No se modificó ninguna prueba del #160. Como en el
 el CI no mide `scripts/`. Las comparaciones con el reloj llevan tolerancia: la primera versión exigía que
 la espera de un tope de 0,3 s durara 0,3 s o más, y en Windows `Thread.join` volvió a los 0,296 s, con la
 CI en rojo.
+
+## Brazo «solo razonamiento» (#182)
+
+**Nada de esto se subió, se envió ni se corrió en Kaggle.** Cada cifra lleva una de tres marcas:
+**medido** (salió de un archivo o de una orden, y se repitió al escribir esto), **inferido** (sale de
+medidas por aritmética o por lectura del código) y **no medido**.
+
+El concilio 43 fijó el uso de la cuota semanal: la base (pasada 1), la base repetida (pasada 2) y un brazo
+que cambia una sola cosa, el razonamiento encendido. El #182 arma los notebooks de ese brazo. No toca los de
+las pasadas 1 y 2, ni sus huellas ([más abajo](#huellas-del-182)).
+
+### Qué se armó
+
+`armar_razona.py` parte del notebook de la pasada 1 ya armado (no de `armar.py`), aplica seis reemplazos de
+línea por porción y se detiene si alguno no casa exactamente una vez. Arma **cinco** notebooks de doce tareas.
+Medido, con un guion propio de esta revisión que lee los cinco `.ipynb` y compara celda por celda con el de
+la pasada 1:
+
+| Celda | Qué cambia respecto de la pasada 1 | Líneas (quitadas, añadidas) |
+|---|---|---|
+| 4 | La condición `A` (zip de la base) pasa a `B` (zip del brazo) y el grupo `sorteo_60` pasa a `sorteo_60_r<k>` (una porción de 12) | 2, 2 |
+| 8 | El nombre de salida `iteracion_08_p1` pasa a `iteracion_08_r<k>` | 1, 1 |
+| 10 | El plan `('A8P1', 'A', 'sorteo_60')` pasa a `('B8R<k>', 'B', 'sorteo_60_r<k>')`, el JSON de resultados y el zip crudo toman el nombre `r<k>` | 3, 3 |
+| 0, 1, 2, 3, 5, 6, 7, 9, 11 | Nada: iguales a la pasada 1, byte a byte (también los campos de celda que no son el texto) | 0, 0 |
+
+Deshaciendo los seis reemplazos se recupera la pasada 1 (lo comprueba `armar_razona.py`); no cambia ningún tope,
+margen, enganche ni guardia.
+
+**El kit.** El zip del brazo (`submission_b_razonamiento.zip`, 3 494 bytes, SHA-256
+`eb0951a506713302392ec9900834d25db5523d617a109ec9db34cbd464da94fd`) trae los mismos miembros y en el mismo
+orden que el de la base (`d8a3e1d3…`). Solo difiere `configs/sampling.yaml`, y en una línea, la 6:
+`  include_thoughts: false` pasa a `  include_thoughts: true`. `eval_config.yaml` es el mismo archivo en los dos
+(60 s por orden, 40 llamadas, 4 minutos, 100 turnos). Medido, repetido para esta revisión.
+
+**La petición que ve el servidor** cambia, en el ensayo, en dos claves y en nada más (medido, en el
+`RESUMEN.json` del ensayo, una sola forma de petición por corrida):
+
+| Notebook | `chat_template_kwargs` | `thinking_token_budget` |
+|---|---|---|
+| Pasada 1 (9 peticiones) | `{"enable_thinking": false}` | no está |
+| Brazo, `r1` (18 peticiones) | `{"enable_thinking": true}` | 4096 |
+
+Los demás parámetros (`temperature` 0,2; `top_p` 0,95; `max_completion_tokens` 8192; el modelo) son iguales.
+
+**Las porciones.** Cada una son 12 tareas consecutivas del sorteo de 60, en su orden: posiciones 1 a 12 (`r1`,
+etiqueta `B8R1`), 13 a 24 (`r2`), 25 a 36 (`r3`), 37 a 48 (`r4`) y 49 a 60 (`r5`). Medido con el guion propio:
+la unión de los cinco grupos son 60 tareas, sin repetir y en el orden del sorteo, con el SHA-256 de la lista
+`a9fb55f0…` (el del apartado [El sorteo](#el-sorteo)).
+
+### Por qué cinco porciones y no tres
+
+Es aritmética sobre los topes que lee del propio notebook, no una medición. Una tarea que no se cuelga puede
+durar, como máximo, el tope de tiempo del agente (240 s) más cinco órdenes de la verificación a su tope (5 × 60 s):
+**540 s**. Una tarea colgada cuesta el tope por tarea más su margen: 900 + 30 = **930 s**. El tope del conjunto de
+tareas es `TOPE_SEGUNDOS` = 7 200 s. El peor caso de una porción de `n` tareas con una colgada es
+930 + (n − 1) × 540:
+
+| Tareas por porción | Porciones | Peor caso con una colgada | ¿Cabe en 7 200 s? |
+|---|---|---|---|
+| 10 | 6 | 5 790 s | Sí |
+| **12** | **5** | **6 870 s** | **Sí** (330 s de holgura) |
+| 13 | — | 7 410 s | No |
+| 15 | 4 | 8 490 s | No |
+| 20 | 3 | 11 190 s | No |
+
+Tres porciones de 20 no caben en el tope del conjunto de tareas aunque solo una se cuelgue; doce es el mayor
+tamaño que cabe. Lo que **no** cubre la aritmética: con **dos** colgadas en una porción el peor caso es 7 260 s y
+no cabe; el criterio del issue pedía una. Una sesión de 9 000 s admite un arranque de hasta 9 000 − 6 870 =
+2 130 s; el mayor medido, en 5 sesiones rescatadas, es 947,6 s (la carga del modelo de la iteración 02, 1 142,4 s,
+no trae su arranque; sumándole lo que el arranque suma a la carga en las otras cinco sesiones que traen ambos, de
+91 a 122 s, daría de 1 233 a 1 264 s: inferido).
+
+### Cuánto cuesta en horas de cuota
+
+Fórmula (la implementa [`scripts/kaggle_costo_brazo.py`](../../../scripts/kaggle_costo_brazo.py)):
+
+```text
+cuota_h = porciones × factor × (tareas × segundos_por_tarea + carga_del_modelo_s) / 3600
+        = 5 × 2 × (12 × 304 + carga) / 3600
+```
+
+Las entradas, cada una con su nombre y su marca:
+
+- **304 s es el máximo observado, no el tope.** Es la tarea más larga de las 250 filas del rescate del
+  2026-10-09 a las 17:41 UTC (303,6 s; medido, `medidas_previas.json`), todas con un tope del agente de 4 o
+  4,5 min. El tope por tarea que permiten los topes del arnés es **540 s**: 240 s del agente más cinco órdenes
+  de la verificación de 60 s cada una (`eval_config.yaml`). El desglose «240 + 64» de los 303,6 s observados
+  (unos 64 s de verificación) es inferido: el archivo no separa las dos partes.
+- **La carga del modelo** va de 363,6 a 1 142,4 s en las sesiones rescatadas (medido, el mismo archivo).
+- **El factor** son horas de cuota por hora de reloj. El **2,0 es un supuesto** de la cuenta del concilio 43,
+  sin fuente versionada que lo mida; el 2,25 es su techo y es el que da las 5,6 h de una pasada de base
+  (9 000 s × 2,25 / 3 600 = 5,6; inferido: la cifra de 5,6 h llegó en el encargo, sin su cuenta). Aquí no se
+  recalculó ninguno.
+
+**Límites de la fórmula.** No cuenta el tramo entre que acaba la carga y empieza la primera tarea (de 91 a 122 s
+en las cinco sesiones rescatadas que traen ambos; sumaría de 0,25 a 0,34 h a las cinco sesiones, inferido) ni el
+cierre de la sesión (empaquetado y parada del servidor; no medido).
+
+| Supuesto por tarea (factor 2,0) | Carga 364 s | Carga 1 142 s |
+|---|---|---|
+| Todas a 304 s (el máximo observado) | **11,1 h** | **13,3 h** |
+| Todas a 540 s (el tope por tarea, sin colgadas) | 19,0 h | 21,2 h |
+| Todas a 246 s (media de la condición I: otro kit, 4,5 min y 60 llamadas, 29 filas) | 9,2 h | 11,4 h |
+| Todas a 304 s, factor 2,25 | 12,5 h | 15,0 h |
+
+**Total con las dos pasadas de base, con el mismo factor en las dos partes** (304 s por tarea; el 5,6 h del
+encargo es 2,5 h de sesión × 2,25):
+
+| Factor en el brazo y en la base | Base (2 pasadas) | Brazo | Total | ¿Pasa de 24 h? |
+|---|---|---|---|---|
+| 2,0 | 10,0 h | 11,1 a 13,3 h | **21,1 a 23,3 h** | No |
+| 2,25 | 11,25 h | 12,5 a 15,0 h | **23,8 a 26,2 h** | Con carga de más de unos 430 s |
+| 2,0 en el brazo y 2,25 en la base (la cuenta del encargo) | 11,2 h | 11,1 a 13,3 h | 22,3 a 24,5 h | Con carga de más de unos 960 s |
+
+La tercera fila mezcla factores y es la que dio el 24,5 h del encargo; no se usa para decidir. **Para decidir se
+usa el 2,25 en ambos**, porque es el techo: la regla protege un gasto, y una cuenta que pasa de 24 h con el
+techo avisa antes que una que solo pasa con el supuesto. Con el 2,0 en ambos el peor caso (23,3 h) queda bajo
+las 24 h. Que el peor caso pase de 24 h depende del factor, que no está medido.
+
+El máximo que permiten los topes del notebook (todas a 540 s y una colgada por porción) es 21,7 h solo para el
+brazo, con factor 2,0 y arranque de 947,6 s (24,4 h con 2,25): es aritmética de topes, no una previsión.
+
+Esto **sustituye** la cuenta de `armado_razona.json` (9,5 a 10,8 h con factor 2,0, y 10,7 a 12,2 con 2,25), que
+usaba la media de 246 s y el arranque medido (472 a 948 s). Con el arranque en lugar de la carga y 304 s, el
+brazo daría 11,4 a 12,8 h (inferido, mismo cálculo).
+
+### Regla de parada tras la primera porción
+
+Decisión del concilio del 2026-10-12, registrada en el issue #182: se lanza `r1` sola y se lee su media.
+**Si la media por tarea pasa de 240 s, o la proyección pasa de 24 h, no se lanzan `r2` a `r5`.** La media es la
+de `duration_seconds` de las 12 filas de `iteracion_08_r1.json`; la carga es la de esa sesión. La proyección
+(definición de este documento) es `5 × factor × (12 × media + carga) / 3600` más las dos pasadas de base con el
+mismo factor, y **se calcula con el factor 2,25 en ambas partes** (base de 11,25 h; [por qué](#cuánto-cuesta-en-horas-de-cuota)).
+«Pasar» es estrictamente mayor. Una media o una carga que no sea un número finito y no negativo (la media de cero
+filas es NaN) no autoriza nada: la regla responde «no lanzar» con el motivo. Las pruebas están en
+`tests/test_kaggle_costo_brazo.py`.
+
+La media de 240 s detiene **antes** que las 24 h casi siempre: a 240 s la proyección es de 21,4 h con la carga
+menor y de 23,8 h con la mayor (1 142 s). La proyección manda sobre la media solo con una carga de más de
+1 200 s, o con unas pasadas de base de más de 11,43 h (a 240 s y con la carga mayor). Con el factor 2,0 en ambas
+partes (base de 10 h) esos umbrales son 2 160 s y 12,83 h; con la base mezclada del encargo (11,2 h), 1 728 s.
+Doce tareas son una muestra pequeña de la media, y el ensayo no dice nada de ella
+([lo que no valida](#qué-valida-el-ensayo-del-brazo-y-qué-no)).
+
+### El ensayo
+
+Misma imagen, mismo núcleo (`ipykernel` 6.29.5), mismo modelo falso y mismo método que los del #160 y el #164
+(`ensayo_nucleo_razona.py`, SHA-256 `223ce994…`; los tres scripts versionados de los que depende tienen el mismo
+SHA-256 que en el `RESUMEN.json` del ensayo, y siguen igual en `main`). **Una sola corrida a la vez**, no en
+paralelo. Ocho corridas entre las 23:37 UTC del 2026-10-09 y las 00:15 UTC del 2026-10-10:
+
+| Corrida | Notebook | Tareas corridas (con snapshot aquí, de 12) | Qué se fuerza | Diagnóstico | Rescate | Comprobar |
+|---|---|---|---|---|---|---|
+| `completa_r1` | `r1` | 6 de 6 | Nada | 0 | 0 | 0 |
+| `completa_r2` | `r2` | 3 de 3 | Nada | 0 | 0 | 0 |
+| `completa_r3` | `r3` | 5 de 5 | Nada | 0 | 0 | 0 |
+| `completa_r4` | `r4` | 6 de 6 | Nada | 0 | 0 | 0 |
+| `completa_r5` | `r5` | 6 de 6 | Nada | 0 | 0 | 0 |
+| `completa_base_p1` | pasada 1 (control) | 3 | Nada: qué ve el servidor con la condición A | 0 | 0 | 0 |
+| `corte_tiempo_r1` | `r1` | 3 de 6 | El modelo retiene una petición más de 4 min | 0 | 0 | 0 |
+| `tarea_colgada_tope_real_r1` | `r1` | 4 de 6 (2 filas) | Bucle síncrono en la tarea 2, con el tope de 900 s y el margen de 30 s del notebook | 3 | 0 | 3 |
+
+Las ocho pasan su validación (medido: `recuento.pasan_su_validacion` = 8 de 8, que incluye el código que debe
+dar cada orden). En la colgada la tarea duró 934,4 s (tope de 900 s más el margen), el notebook terminó la
+sesión y `diagnosticar` dijo «cortada por el notebook: una tarea no volvió dentro del tope por tarea». Con las cinco
+porciones nombradas, `comprobar` sale con 0 sobre las salidas de `completa_r1` a `completa_r5` (y 4 si falta la
+carpeta de `r5`, y 3 si `r1` es la de la tarea colgada).
+
+### Qué valida el ensayo del brazo y qué no
+
+**Valida (medido):**
+
+- Los bytes del armado: los cinco notebooks tienen el SHA-256 que dicen `armado_razona.json` y el
+  `RESUMEN.json` del ensayo, difieren de la pasada 1 solo en las seis líneas, y su unión es el sorteo.
+- Que el notebook que se ensayó es el que se armó (el `RESUMEN.json` trae el SHA-256 de cada notebook corrido).
+- Que bajo un núcleo real los cinco notebooks completan una sesión con el modelo falso, con registro fiable
+  (diagnóstico 0 en las cinco), sin logs por tarea de 0 bytes (0 de 26 archivos en las cinco) y con el servidor
+  viendo `enable_thinking: true` y `thinking_token_budget` 4096 (las siete corridas del brazo; una sola forma de
+  petición en cada una).
+- Que el corte por tiempo del agente y la tarea colgada se ven en el registro, **sobre `r1`**.
+
+**No valida:**
+
+- **La conducta en Kaggle**, ni la de Gemma con razonamiento. El modelo falso no piensa: los mensajes que
+  devuelve no traen partes de razonamiento (`tipos_de_parte_en_los_mensajes` vacío). No se ensayó cómo el arnés
+  guarda o reenvía esas partes, ni si el servidor respeta `thinking_token_budget`. **No medido.**
+- **La duración con razonamiento.** Los tiempos del ensayo (la tarea más larga de una sesión completa, de 27,4 a
+  41,6 s) son del modelo falso. **No medido.**
+- **Una porción entera.** Con los snapshots que hay en esta máquina cada notebook corrió de 3 a 6 de sus 12
+  tareas (26 de 60). Las 12 tareas de una porción no corrieron nunca juntas. **No medido.**
+- **Corte por tiempo y tarea colgada en `r2` a `r5`.** Solo se forzaron sobre `r1`. Los cinco notebooks comparten
+  todo salvo seis líneas (inferido); el criterio del issue pedía las tres pruebas en cada uno y **no está
+  cumplido** (hacerlo exige Docker).
+- **La versión de `ipykernel` de Kaggle.** El ensayo es con la 6.29.5; la de Kaggle no está medida.
+- **Que Kaggle detenga «Run All» en la primera excepción**, ni que conserve los archivos sueltos si mata la
+  sesión.
+- **Dos tareas colgadas en una porción** (no caben en el tope, 7 260 s) y el factor de cuota real del brazo.
+
+### Un latido guardó el árbol a medio montar (no medido en Kaggle)
+
+En 4 de las 6 sesiones completas del ensayo (`r2` a `r5`; no en `r1` ni en la de la pasada 1), un latido guardó un
+diff en curso de 4,6 a 23,8 MB (4 577 548 a 23 817 270 bytes). En las tres sesiones cuyo `diff_en_curso_*.diff`
+quedó en disco hay 177, 1 329 y 2 129 entradas de archivo borrado: es el árbol de la tarea a medio montar, no un
+parche. Los diffs de cierre de esas sesiones miden de 273 a 8 786 bytes. Fue 1 o 2 latidos de 43 a 69 por sesión; el mayor
+hueco entre latidos fue de 3,0 a 4,4 s (mediana de 2,0 a 2,1 s con latido de 2 s). **No se midió en Kaggle**, ni con
+el latido de 30 s del notebook, ni se sabe cuánto tardaría allí el latido que lo toma. Queda en
+`hallazgos.json` como `diff_del_latido_con_el_arbol_a_medio_montar`, en estado `medido`.
+
+### Criterios del issue
+
+| Criterio | Estado |
+|---|---|
+| El kit difiere en una línea (`include_thoughts`), comprobado byte a byte | Cumplido (medido, repetido) |
+| Cada notebook difiere de la pasada 1 solo en zip, etiqueta, nombres de salida y porción; el armado se detiene si no | Cumplido (medido, repetido) |
+| La unión de las porciones es el sorteo, en orden, sin repetir ni omitir | Cumplido (medido, repetido) |
+| Aritmética escrita: cada porción cabe con todas las tareas al tope por tarea (540 s) y una colgada | Cumplido para una colgada ([tabla](#por-qué-cinco-porciones-y-no-tres)); dos no caben |
+| Ensayo local de cada notebook con `diagnosticar` y `comprobar` en el código esperado, salidas por ruta y SHA-256 | **Parcial**: sesión completa en los cinco; corte por tiempo y colgada solo en `r1` |
+| Las huellas de las pasadas 1 y 2 no cambian | Cumplido (medido) |
+| Comprobaciones de `CONTRIBUTING.md` en verde; `revisor-codigo` y analista de datos | Las comprobaciones, en el PR; los dos roles los encarga el orquestador |
+
+### Condiciones de lanzamiento del brazo
+
+Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
+
+1. Este PR fusionado, con la CI en verde, y los dos roles del criterio de cierre.
+2. Orden del dueño, con la orden a la vista. **Espera la orden del dueño.**
+3. Se sube `r1` sola. Tras leerla, la regla de arriba decide si se suben `r2` a `r5`.
+4. Cuota disponible al menos igual a la proyección de ese momento, con el tope de 24 h del dueño.
+5. Ensayo con la versión de `ipykernel` de Kaggle, que no está medida (condición 2 de las del #164).
+6. Leer, en el primer latido de `r1`, el tamaño de `diff_en_curso`: es la primera medida del hallazgo anterior.
+
+### Huellas del #182
+
+Todo bajo `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08_razona/`, **del checkout
+principal** (`F:\Code\Agents Learning Loops`) y ignorado por git. La bitácora anterior los situaba en el árbol de
+trabajo `ALL-wt-brazo-razona`, que no los tiene.
+
+La verificación de esta revisión la hizo un guion propio que recalcula los SHA-256 desde los archivos: **5 de 5**
+notebooks coinciden con `armado_razona.json` y con el `RESUMEN.json` del ensayo, **125 de 125** huellas de
+`ensayo_salida/HUELLAS.txt` coinciden en bytes y SHA-256, y 8 de 8 corridas pasan. Eso valida el armado en bytes y
+el ensayo tal como se guardó; no valida la conducta en Kaggle.
+
+| Archivo | SHA-256 |
+|---|---|
+| `kernel_iteracion_08_r1/iteracion.ipynb` (107 584 bytes) | `8fed0bb7d44f6dce9d6e77c80e0fc7b8ceed2fbcd11d749ae71c4343b292f3ba` |
+| `kernel_iteracion_08_r2/iteracion.ipynb` (107 604) | `22c6297cb5f190b2df992f703b2fdb651c87351a9d335c111414eb0073788440` |
+| `kernel_iteracion_08_r3/iteracion.ipynb` (107 596) | `094f4c22bac6725fcdf070d5841447840d4cd2712a82b5651e49ae5e7604975b` |
+| `kernel_iteracion_08_r4/iteracion.ipynb` (107 593) | `9211b49b5a121429b3461ca8893426c2f7fdf944b0c4bffbf74fa7d6adcf6eed` |
+| `kernel_iteracion_08_r5/iteracion.ipynb` (107 606) | `fb70d56c83175c9c66ccc5fd2d8ebbbadd57922dcd6ef02d2bc1e2e7485f077a` |
+| `armar_razona.py` | `50e8ab02ddb5933f106431053f42f418865abaa4013cd93c263fb861631628fb` |
+| `armado_razona.json` | `577c487c1b9184f4b833b96b5c9bb106ca57ff652046209e1d615521c81f216b` |
+| `ensayo_nucleo_razona.py` | `223ce99488c4a6d2c56b44ff916a9e36cffac1d7854cd76b0477178d84cfe668` |
+| `ensayo_salida/RESUMEN.json` (29 648 bytes) | `5c71907c6af5dc3ce4f082ec5109e4012af718facbf3586418369a37a58b1da7` |
+| `ensayo_salida/HUELLAS.txt` (15 035 bytes, 125 archivos) | `857334f8334f1c9b3ac078a5afe406d7db4eb9c61ec18a0e820ebbe2d9a5a15f` |
+| `../iteracion_08/kernel_iteracion_08_p1/iteracion.ipynb` (sin cambios) | `30aa9b31f776ac522077ef5e93562082ea7bdfdcbd7dbc7e49193b76808714fa` |
+| `../iteracion_08/kernel_iteracion_08_p2/iteracion.ipynb` (sin cambios) | `0351fd806807223f21382457ab2352be761dbaeaf0e57c25de4a1491eec214c5` |
+| `../iteracion_08/armar.py` (sin cambios) | `52a5f85c9144f1da485f4350a4864d85002c4e7abe1cc81a49cbc58353bb379d` |
+
+Repetir el armado y el ensayo, desde ese directorio:
+
+```bash
+python armar_razona.py          # arma los cinco notebooks y se detiene si algo no cuadra
+sh correr_bateria_razona.sh     # ocho corridas en serie, en Docker
+python resumen_razona.py        # RESUMEN.json
+```
 
 ## Cómo repetirlo
 

@@ -1,0 +1,108 @@
+{
+  "seq": 82,
+  "id": "issue-186-guardas-previas",
+  "goal": "Guardas ejecutables previas a una orden de Bash: un gancho PreToolUse que rechaza y cuenta los heredocs que alimentan un intérprete, escriben un archivo fuente o pasan de 60 líneas, y que rechaza una escritura de gh o un git push con una cuenta que no es cherrera0001; documentadas en harness.md y CONTRIBUTING.md",
+  "ref": "#186",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-12",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "publish_comment",
+      "success": false,
+      "error": "Incidente de cuenta del 2026-10-12, previo a este issue: un comentario del PR #185 salió con la cuenta vinculaterritorio porque era la activa del llavero de gh y la orden no fijaba GH_TOKEN. La lección ya estaba escrita (episodios 035 y 045) y no se cumplió"
+    },
+    {
+      "action": "fix_account_incident",
+      "success": true,
+      "note": "Resolución del incidente del PR #185: el orquestador republicó el comentario con la cuenta cherrera0001 y retiró el original. La causa de fondo, que la regla solo era texto, se atiende en este issue con la guarda de cuenta del gancho"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del issue antes de editar: devolvió una sola acción (update_docs, relevancia 0,01) y cinco lecciones de otros módulos (security.txt, rutas del rescate, emparejado de observaciones), más los issues parecidos #171 y #121. Ninguna sobre heredocs ni cuentas: no cambió el diseño. Las lecciones sobre heredocs salieron al buscar a mano en learning/episodes/"
+    },
+    {
+      "action": "gather_cases",
+      "success": true,
+      "note": "Búsqueda de los pasos fallidos cuya nota menciona heredoc: salen 11 (002, 007, 011, 012, 027, 054, 062, 067, 069, 071 y el 080 del #177, posterior al recuento de 10 del issue); 4 por largo y 7 por secuencias de escape. Los episodios guardan la causa, no la orden literal: las pruebas usan paráfrasis"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/guarda_previa.py (solo biblioteca estándar): heredoc real = << con delimitador y línea de cierre, por lo que un << dentro de una cadena o un 1 << n de python -c no cuenta; rechaza si la línea del << ejecuta un intérprete, redirige a un archivo fuente o el cuerpo pasa de 60 líneas (N=60: 6 de 152 cuerpos de commit pasan de 60, 29 pasan de 20). Cuenta: remoto origin del cwd, token declarado en la orden, token literal contra el llavero local o cuenta activa de hosts.yml, todo sin red. Tope propio de 6 s dentro de uno de 10 s del gancho; si falla, deja pasar y lo dice. Registro .claude/guarda_previa.jsonl (ya ignorado por git) y --contar"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "ruff check dejó tres hallazgos tras la primera versión: una línea de 113 caracteres en un mensaje, un if anidado (SIM102) y un noqa BLE001 que no estaba habilitado (RUF100); ruff format reordenó además el archivo de pruebas. Se corrigieron antes de entregar"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_guarda_previa.py, por subproceso con el JSON del gancho por stdin: 11 casos históricos y 4 rechazos más, todos con código 2; 14 órdenes legítimas con código 0 (commit con heredoc, datos cortos, << en cadenas, python -c con desplazamientos, <<<, 60 líneas justas); cuenta con hosts.yml falso y token propio inyectado, sin red, y comprobación de que ningún token sale por stdout, stderr ni registro; fallo y tope simulados; el contador y su lectura"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Sección en docs/entorno/harness.md (reglas, por qué N=60, cómo se decide la cuenta, límites: no alcanza a Codex, no analiza Bash, una sesión abierta no recoge el gancho), sección en CONTRIBUTING.md con la condición de reversión, entrada del CHANGELOG y bloque PreToolUse en .claude/settings.json sin tocar los SessionStart"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Primera versión: ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2951 pasadas y 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR (12 de 12 comprobaciones en verde en el primer push)"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Revisión independiente de la primera cabeza (7d07ddd): cambios requeridos, seis bloqueantes. (1) git push se rechazaba siempre porque se decidía por la cuenta activa de gh y git usa su propio gestor de credenciales; (2) export GH_TOKEN=... && gh ... se rechazaba porque solo se miraba el prefijo de la misma orden; (3) gh project item-list se rechazaba por el prefijo item-; (4) el incidente original se escapaba con texto en castellano: stdin se leía en cp1252 y el registro no podía escribir Á, Í ni comillas tipográficas, y las pruebas usaban text=True y no lo veían; (5) la palabra «intérprete» en la línea del << rechazaba `python -m pytest && git commit -m \"$(cat <<EOF`; (6) con el guion ausente, `python ruta/inexistente.py` salía con 2, el código de rechazo, y bloqueaba toda orden de Bash. Predicciones 38 y 39 ocurrieron; la 40 no. Causa común: se diseñó con casos propios y sin órdenes reales de uso diario en esta máquina, y se eligió el rechazo por código 2"
+    },
+    {
+      "action": "narrow_guard",
+      "success": true,
+      "note": "Resolución de la revisión (decisión del orquestador, condición de reversión aplicada): el rechazo pasa a ser una decisión JSON por stdout con salida 0 y la orden registrada lleva || true; stdin se lee como bytes UTF-8; la guarda de cuenta usa una lista explícita de pares grupo-verbo, no rechaza si la orden menciona GH_TOKEN en cualquier parte y no rechaza nunca git push (solo lo cuenta); «alimenta un intérprete» se decide por la orden simple del <<, con analizador de comillas y $(...); el registro guarda solo hora, regla, veredicto y ejecutable"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas reescritas con entrada y salida en bytes: casos históricos (11), heredocs con intérprete real que se escapaban (17), órdenes legítimas (18) con las que el revisor halló rechazadas, 45 escrituras de gh con cuenta ajena, 29 lecturas, dudosas y de otro repositorio que pasan, git push contado, UTF-8 con Á, Í y comillas tipográficas, avería, tope y entrada rota con salida 0, la orden de settings.json con guion ausente, ruta inexistente y guion que falla al importarse, y el contador"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Segunda revisión (00b14a5): los seis bloqueantes resueltos, pero quedaban cuatro defectos. (1) La guarda de cuenta buscaba `gh auth token --user X` en toda la orden, cuerpos incluidos: `gh pr comment --body \"no uses gh auth token --user vinculaterritorio\"` daba deny, que es justo el texto con que este proyecto documenta la regla; (2) con entrada que no es JSON o con BOM el gancho salía con 0 sin decisión y sin aviso, contra el criterio «deja pasar y lo dice»; (3) harness.md decía que el heredoc en minúsculas sin cierre se registraba como pasa-dudoso y el código no lo registra; (4) faltaban pruebas de `<<-`, de la regla «intérprete = ejecutable» y del host de hosts.yml. Además el conflicto de CHANGELOG.md con main. Causa: se había buscado el nombre de la cuenta como texto y no como orden"
+    },
+    {
+      "action": "fix_second_review",
+      "success": true,
+      "note": "Resolución: `gh auth token --user X` se busca solo en las órdenes simples analizadas (incluidas las de $(...) y comillas invertidas), nunca en valores de --body/--title/-m ni en cuerpos de heredoc; la entrada se decodifica con utf-8-sig y toda avería de lectura avisa por systemMessage sin decisión; harness.md dice que el heredoc en minúsculas sin cierre no se toma por heredoc y pasa sin contarse; pruebas nuevas; CHANGELOG fusionado conservando ambos lados. Por indicación del orquestador tras leer la documentación oficial de ganchos: el gancho fija \"shell\": \"bash\" y usa ${CLAUDE_PROJECT_DIR}; la documentación dice que falla abierto por diseño, que corre en subagentes y worktrees (el remoto se lee del cwd de la entrada) y que una sesión abierta puede recogerlo sin reiniciar"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la revisión, con la suite completa después de la última edición: ruff check y ruff format --check sin hallazgos, mypy sin problemas, export_schema --check sincronizado, pytest --cov 3014 pasadas y 9 omitidas con cobertura 98,72 %"
+    }
+  ],
+  "lessons": [
+    "Una regla escrita no frenó once heredocs ni tres cambios de cuenta; lo que sí la hace cumplir es una comprobación ejecutable previa a la orden, con registro de cuántas veces actuó",
+    "Antes de fijar un umbral de líneas, mide qué órdenes legítimas lo cruzan: aquí el contenido (intérprete o archivo fuente) explica la mayoría de los fallos y el largo solo cuatro",
+    "Un gancho que bloquea debe fallar abierto: con un tope propio menor que el del gancho y, si algo falla, dejar pasar la orden diciéndolo y contándolo",
+    "Un gancho que rechaza debe poder fallar solo hacia «dejar pasar»: el rechazo se da como decisión con salida 0 y la orden registrada se blinda con || true, porque el código 2 de un guion ausente bloquea todo",
+    "Prueba un gancho con las órdenes reales de uso diario (exports, pytest &&, rutas con espacios, texto en castellano) y con entrada en bytes: las pruebas con text=True ocultaron el fallo de codificación del incidente que originó el issue",
+    "Una escritura en GitHub con la cuenta del llavero activo se evita fijando GH_TOKEN en la propia orden con gh auth token --user cherrera0001, nunca con gh auth switch"
+  ]
+}
