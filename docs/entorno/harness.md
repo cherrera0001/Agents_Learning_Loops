@@ -117,6 +117,82 @@ Límites, dichos sin rodeos:
   puede compararlos, lo dice. Un rescate que solo trae `envios.json`, o con fecha futura, no se usa y se avisa.
 - **No escribe en disco.** Para quitarlo, borrar el segundo elemento de `SessionStart` en `.claude/settings.json`.
 
+### Guardas previas a una orden de Bash
+
+Un gancho `PreToolUse` con `matcher: "Bash"` (`.claude/settings.json`, junto a los `SessionStart`, que no
+toca) ejecuta `python "${CLAUDE_PROJECT_DIR}/scripts/guarda_previa.py" || true` con `"shell": "bash"` antes de
+cada orden (en Windows un gancho `command` usa Git Bash si está instalado y, si no, PowerShell, donde `|| true` y
+el marcador no valdrían; por eso el shell se fija en la definición). Corre también dentro de los subagentes y en
+los worktrees: allí `${CLAUDE_PROJECT_DIR}` sigue siendo la raíz original y el remoto `origin` se lee del
+campo `cwd` de la entrada del gancho (el worktree), no de la raíz del proyecto. Recibe por
+stdin (bytes, UTF-8) el JSON de Claude Code (`tool_name`, `tool_input.command`, `cwd`). **Rechaza escribiendo
+por stdout la decisión** `hookSpecificOutput.permissionDecision = "deny"` con su motivo, y **siempre sale con
+0**: ninguna avería puede bloquear una orden (el código 2 es el de rechazo de Claude Code, y el `|| true` de la
+orden registrada impide que salga ni siquiera si el guion no existe o falla al importarse). El gancho se
+estrechó tras la revisión del PR #191: rechaza solo lo que puede decidir con seguridad y cuenta lo demás.
+
+**Regla final, en cinco líneas.**
+
+1. Rechaza un heredoc cuya **orden simple** (la que queda entre `&& || ; |` o un salto de línea) ejecuta un
+   intérprete: `python`, `python3.12`, `py`, `ipython`, `node`, `bash`, `sh`, `perl`, `ruby`, `pwsh`, `uv run
+   python`; también `cat <<EOF | python -`. El nombre sale del ejecutable, sin asignaciones de entorno,
+   comillas ni ruta (vale una ruta citada con espacios). Si el heredoc es de `cat` dentro de un `git commit`,
+   no se rechaza.
+2. Rechaza un heredoc que redirige o usa `tee` hacia un archivo fuente (`.py`, `.js`, `.ts`, `.sh`, `.ps1`...)
+   o cuyo cuerpo pasa de **60** líneas; el mensaje distingue `git commit -F archivo` de `gh ... --body-file`.
+3. Rechaza una escritura de `gh` (lista explícita de pares grupo-verbo, abajo) en este repositorio (remoto
+   `origin` del directorio de trabajo; ni `-R/--repo` ni una ruta `repos/otro/...` nombran otro; sin `cd` ni
+   `git -C` en la orden) si **la orden no menciona `GH_TOKEN` en ninguna parte** y la cuenta activa de
+   `hosts.yml` (sección `github.com`) no es `cherrera0001`, o si la orden contiene `gh auth token --user X` con
+   `X` distinto de `cherrera0001`.
+4. **`git push` nunca se rechaza**: se cuenta como «push visto» (git usa su propio gestor de credenciales con el
+   usuario `cherrera0001`, no la cuenta activa de `gh`).
+5. Todo lo dudoso pasa y se cuenta (`pasa-dudoso`): token literal, `GH_TOKEN` en el entorno del gancho, `cd` o
+   `git -C` en la orden, remoto o `hosts.yml` ilegibles. Un `<<` en minúsculas y sin línea de cierre no se toma
+   por heredoc: pasa sin contarse.
+
+Pares de escritura que mira la guarda de cuenta: `pr create|comment|merge|edit|close|reopen|review|ready`,
+`issue create|comment|edit|close|reopen|pin|unpin|delete|transfer`, `release create|edit|delete|upload`,
+`label create|edit|delete`, `project item-add|item-edit|item-delete|item-archive|item-create|field-create|
+field-delete|edit|close|delete`, `workflow run|enable|disable`, `run cancel|rerun|delete`, `repo
+edit|delete|rename|archive`, `secret set|delete`, `variable set|delete` y `api` con `-X/--method` distinto de GET
+o con `-f/-F/--field/--raw-field/--input` (una consulta GraphQL sin `mutation` es lectura). `project item-list`,
+`pr view`, `issue list`, `run view|list`, `pr checks` y `api` GET pasan.
+
+**Por qué estas reglas y este N.** De los 11 pasos fallidos por heredoc que hay en `learning/episodes/` (los
+10 del recuento del issue más el del #177), 4 son por largo («unexpected EOF») y 7 por secuencias de escape o un
+guion a medias; casi todos alimentaban a Python o escribían un archivo de código (los episodios guardan la
+causa, no la orden literal, y las pruebas usan paráfrasis). Por eso mira el contenido y no solo la longitud. El
+N=60 sale de los commits del repositorio: 29 de 152 cuerpos pasan de 20 líneas y 6 pasan de 60 (casi todos
+fusiones automáticas).
+
+**Registro y recuento.** Cada rechazo, cada «pasa-dudoso», cada «push visto» y cada falla suma una línea a
+`.claude/guarda_previa.jsonl` (ignorado por git) con solo la hora, la regla, el veredicto y el nombre del
+ejecutable: **nunca texto de la orden** ni un token. `python -m scripts.guarda_previa --contar` imprime el total
+por veredicto y el desglose por regla. Es lo que se lee para la condición de reversión del issue #186 (2 o más
+pasos fallidos por heredoc en 15 episodios, o más de una orden legítima frenada: el gancho pasa a solo contar).
+
+Límites, dichos sin rodeos:
+
+- **Falla abierto por diseño: es un guardarraíl que atrapa el descuido, no un control de seguridad.** En un
+  `PreToolUse`, el código 0 aplica el JSON (el `deny` con su motivo se muestra al modelo), el 2 bloquea, cualquier
+  otro código es un error no bloqueante y la llamada continúa, y un gancho que agota su `timeout` tampoco bloquea.
+  Cualquier avería del gancho deja pasar la orden. Tope propio de **6 s** (el del gancho en `settings.json` es de
+  10 s). Si el guion falla, recibe una entrada que no es JSON o pasa del tope, sale con 0 sin decisión, avisa por
+  `systemMessage` y lo cuenta como `falla`. Acepta un BOM al inicio de la entrada.
+- **No cubre la herramienta PowerShell**: el `matcher` es solo `Bash`. Una orden por PowerShell no pasa por
+  ninguna de las dos guardas.
+- **`git push` solo se cuenta**, no se frena.
+- **Solo cubre Claude Code.** Codex, Cursor y agy no leen los ganchos de `.claude`: para ellos la regla sigue
+  siendo solo texto.
+- **Una sesión ya abierta puede recoger el gancho sin reiniciar** (las ediciones de ganchos en los archivos de
+  ajustes se recogen normalmente con el observador de archivos); compruébalo en `/hooks`.
+- **`gh auth token --user X` solo cuenta como orden**, simple o dentro de `$(...)` o de comillas invertidas; el
+  texto de un `--body`, de un `--title`, de un `-m` o de un cuerpo de heredoc que lo menciona no se mira.
+- **No es un analizador completo de Bash.** Una orden armada con variables (`"$PY" - <<EOF`) no se ve. Prefiere
+  el falso negativo al falso positivo.
+- Para quitarlo: borrar el bloque `PreToolUse` de `.claude/settings.json`.
+
 ### Criterios de cierre por tipo de trabajo
 
 Cada issue declara su *Tipo de cierre* y su *Evidencia requerida* en la plantilla
