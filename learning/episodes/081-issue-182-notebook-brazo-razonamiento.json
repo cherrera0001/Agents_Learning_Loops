@@ -69,13 +69,19 @@
     {
       "action": "run_tests",
       "success": true,
-      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov completo; el resultado exacto va en el cuerpo del PR"
+      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov completo (2880 pasadas, 9 omitidas, cobertura 98,72 %); el resultado exacto va en el cuerpo del PR"
+    },
+    {
+      "action": "git_push",
+      "success": false,
+      "error": "El mensaje de commit iba en un here-string de PowerShell con comillas dobles dentro del título; git commit interpretó el resto como rutas (pathspec) y no creó el commit, y el `git push` encadenado en la misma orden subió la rama sin él (quedó igual que main). No hubo daño: se escribió el mensaje en un archivo, se hizo el commit con -F y se volvió a subir"
     }
   ],
   "lessons": [
     "Al retomar el trabajo de un agente que se detuvo sin informe, cuenta los bytes de sus artefactos con un guion propio y confirma dónde están: la bitácora los situaba en un árbol de trabajo y estaban en el checkout principal",
     "Calcula el valor antes de escribir la aserción de una regla con dos umbrales: aquí la media de 240 s detiene siempre antes que las 24 h, y una prueba escrita de memoria afirmaba lo contrario",
     "Un ensayo con modelo falso valida el armado y los códigos del diagnóstico, no la conducta con razonamiento: el modelo falso no devuelve partes de razonamiento, y eso va en «no valida», con su marca «no medido»",
+    "No encadenes `git commit` y `git push` en una orden con el mensaje en un here-string con comillas dobles: si el commit falla, el push sale igual; escribe el mensaje en un archivo y usa -F",
     "Un criterio que pide la prueba en cada notebook no se da por cumplido si solo se forzaron los cortes sobre uno: déjalo parcial y di qué lo cerraría"
   ]
 }
