@@ -45,15 +45,19 @@ ARNES_ENSAYADO: dict[str, str] = {
     "adk_eval_core": "0.1.0",
     "google_adk": "1.36.1",
 }
-# SHA-256 esperado de cada rueda del arnés (concilio 46, #182): las publicadas en el conjunto el 2026-10-12 a
-# las 19:51 UTC. La versión no basta: ese día ``swegemma-0.2.11`` cambió de contenido sin cambiar de versión, y
-# la guarda de versiones no lo vio. Son las que el notebook exige antes de cargar el modelo, no «las que hay
-# hoy en Kaggle»: cambiarlas exige leer el diff de fuentes y repetir el ensayo con las ruedas reales.
+# SHA-256 esperado de cada rueda del arnés (concilio 46, #182): las publicadas en el conjunto el 2026-10-12
+# a las 19:51 UTC. La versión no basta: ese día ``swegemma-0.2.11`` cambió de contenido sin cambiar de
+# versión, y la guarda de versiones no lo vio. Son las que el notebook exige antes de cargar el modelo, no
+# «las que hay hoy en Kaggle»: cambiarlas exige leer el diff de fuentes y repetir el ensayo con las ruedas
+# reales. Ese ensayo (en Docker) NO se había corrido con estas ruedas al escribir esto: ver el PR del #182.
 RUEDAS_ESPERADAS_SHA256: dict[str, str] = {
-    "adk_eval_core-0.1.0-py3-none-any.whl": "e614e1b2fe8d886a634871e4c57f9887e1cc66e8c27300f8503a43c6e3ca82f3",
-    "adk_submission-0.2.13-py3-none-any.whl": "f156f0bd84580ccb9334726d114d7a5481f16d3a6e2887cc4d276ced0ef8d99d",
-    "google_adk-1.36.1-py3-none-any.whl": "1a2f6868c509e3151fb0de3575a7d18b45c338be86f420924dad74e7193631a0",
-    "swegemma-0.2.11-py3-none-any.whl": "9ad876581f3acde8ec3c369858f0834e2b9f41a3cffce3ca42f09cb090aea9d3",
+    f"{dist}-py3-none-any.whl": huella
+    for dist, huella in (
+        ("adk_eval_core-0.1.0", "e614e1b2fe8d886a634871e4c57f9887e1cc66e8c27300f8503a43c6e3ca82f3"),
+        ("adk_submission-0.2.13", "f156f0bd84580ccb9334726d114d7a5481f16d3a6e2887cc4d276ced0ef8d99d"),
+        ("google_adk-1.36.1", "1a2f6868c509e3151fb0de3575a7d18b45c338be86f420924dad74e7193631a0"),
+        ("swegemma-0.2.11", "9ad876581f3acde8ec3c369858f0834e2b9f41a3cffce3ca42f09cb090aea9d3"),
+    )
 }
 # Paquete de Python que instala cada rueda del arnés (para la comprobación de imports).
 PAQUETES_DEL_ARNES: dict[str, str] = {
@@ -211,7 +215,7 @@ def sha256_de(ruta: Path) -> str:
 
 
 def diferencias_de_sha256(carpeta: Path, esperadas: Mapping[str, str]) -> list[str]:
-    """Una frase, con los dos valores, por cada rueda esperada que en ``carpeta`` falta o tiene otro SHA-256."""
+    """Una frase, con los dos valores, por cada rueda esperada que en ``carpeta`` falta o difiere."""
     out = []
     for nombre, esperado in esperadas.items():
         ruta = carpeta / nombre

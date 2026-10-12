@@ -86,7 +86,7 @@ EXIT_INVALID = 2
 class Hallazgo:
     ok: bool
     texto: str
-    # Un aviso no impide subir (``ok`` sigue en True) pero no se imprime como «OK»: dice lo que no se comprobó.
+    # Un aviso no impide subir (``ok`` sigue en True) pero no se imprime como «OK»: dice qué no se comprobó.
     aviso: bool = False
 
 
@@ -458,8 +458,8 @@ def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None
         if not distintas:
             out.append(
                 _bien(
-                    f"Las {len(sha_del_notebook)} ruedas del arnés de --ruedas tienen el sha256 que la guarda "
-                    "del notebook espera."
+                    f"Las {len(sha_del_notebook)} ruedas del arnés de --ruedas tienen el sha256 que la "
+                    "guarda del notebook espera."
                 )
             )
     informe = kaggle_arnes.comprobar_imports(celdas, fuentes)

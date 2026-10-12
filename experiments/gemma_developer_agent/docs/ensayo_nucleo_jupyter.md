@@ -1751,6 +1751,103 @@ orquestador las copia y las comprueba antes de subir):
 Lo que el paso 0 no repitió: el corte por tiempo sobre `s2` y los demás escenarios. Subir `s2` lo decide el
 dueño, con las mismas [condiciones](#condiciones-de-lanzamiento-del-sondeo) que el sondeo.
 
+### Guarda por SHA-256 y notebook de 60 tareas (concilio 46, #182)
+
+Nada de este apartado se subió a Kaggle. **El ensayo en Docker de este apartado no se corrió**: el
+2026-10-12, al hacerlo, Docker no estaba disponible. Lo que sigue dice qué se comprobó sin Docker y qué no.
+
+**Qué pasó.** `s2` corrió el 2026-10-12 desde las 13:57 UTC. A las 19:51 UTC el conjunto público se volvió a
+publicar con las mismas versiones: las 41 ruedas cambiaron de fecha, `swegemma-0.2.11` pasó de 119 520 a
+119 670 bytes y `vllm-0.19.1` de 433 132 506 a 433 132 704. Ninguna guarda lo dijo: la celda 2 comparaba
+cadenas de versión, el chequeo previo comparaba tamaños y el vigía comparaba con el listado del último
+rescate, que se hizo después y ya era el nuevo. De las cuatro ruedas del arnés, tres tienen otro SHA-256 y
+**dos de ellas pesan lo mismo que antes** (`adk_eval_core` y `adk_submission`): el tamaño no las distingue.
+
+**Qué se compara ahora.**
+
+| Guarda | Qué añade | Qué no hace |
+|---|---|---|
+| Celda 2 del notebook (`kaggle_arnes.celda_de_versiones(..., sha256=...)`) | Calcula el SHA-256 de cada `.whl` del directorio de ruedas y lo deja en `versiones_arnes_<salida>.json` (`sha256`, `sha256_esperadas`, `sha256_distintas`). Si una de las cuatro esperadas difiere, falta o no hay directorio, imprime los dos valores y **se detiene antes de cargar el modelo** | Compara el archivo del que `pip` instaló en la celda anterior, no lo que quedó en `site-packages`. De las 37 ruedas que no son del arnés (`vllm` entre ellas) guarda la huella y no la compara: no hay valor esperado |
+| `kaggle_preflight comprobar --ruedas` | Si la guarda del notebook trae los SHA-256, exige que sean los de `RUEDAS_ESPERADAS_SHA256` y que las `.whl` de `--ruedas` los tengan; dice los dos valores cuando no | A un notebook cuya guarda solo compara versiones (los armados antes) le da un `[AVISO]` y **no le niega la orden de subida**: negarla exigía cambiar al menos seis pruebas existentes del #195, y queda como decisión abierta |
+| `kaggle_vigia` | Con el listado que ya pide, y sin otra petición, lo compara con lo que vio la última sesión rescatada (el `ruedas` de su archivo de versiones) y con su hora de arranque (`notebooks.json`): ruedas que salen, entran o pesan otra cosa, y cuántas tienen fecha posterior a la sesión | El listado de Kaggle no trae huellas: el vigía no compara SHA-256. Calla si ninguna sesión del rescate dejó archivo de versiones |
+
+`RUEDAS_ESPERADAS_SHA256` (`scripts/kaggle_arnes.py`) son las cuatro huellas de
+`arnes_2026-10-12_1951/sha256_ruedas_1951.txt`; el armado comprueba que la constante, ese archivo y los bytes
+de las ruedas bajadas coinciden.
+
+**El notebook.** `kernel_iteracion_08_a0_p1` (`cs4all/iteracion-08-a0-p1`) es el de `s2` (`e8a5604c…`, el que
+corrió) con 8 líneas que salen y 33 que entran, y `armar_a0_p1.py` se detiene si deshaciéndolas no recupera
+`s2` byte a byte:
+
+| Celda | Salen | Entran | Qué cambia |
+|---|---|---|---|
+| 2 | 1 | 26 | El nombre del archivo de versiones (`…_a0_p1.json`) y las 25 líneas de la guarda por SHA-256 |
+| 4 | 1 | 1 | `GRUPOS`: de las 12 primeras tareas del sorteo (`sorteo_60_s2`) a las 60 (`sorteo_60`); la línea es, byte a byte, la del notebook `p1`. `CONDICIONES` no cambia: es el zip `A0` (`01a6d82f…`), comprobado miembro a miembro |
+| 8 | 1 | 1 | El nombre de salida (`iteracion_08_a0_p1`) |
+| 10 | 5 | 5 | El plan (`('A0P1', 'A0', 'sorteo_60')`), los nombres del resultado y del zip, y dos topes: `TOPE_SESION_SEGUNDOS` de 150 a 160 minutos y `TOPE_SEGUNDOS` de 7 200 a 8 400 |
+
+Las otras ocho celdas son las de `s2`. `kernel-metadata.json` solo cambia de `id` y de título.
+
+**Los dos topes.** El dictamen del concilio 46 fija para esta corrida un tope de sesión de 9 600 s, y las
+definiciones del pre-registro (sección 20 de `experiments/azar/preregistro/prediccion_de_fallos.md`) leen
+«cabe en 9 600 s». Con los topes de `s2` y `p1` (sesión 9 000 s, tareas 7 200 s) la tarea 60 solo empieza si
+las 59 anteriores promedian 122,0 s o menos; `s2` midió 101,0 s con un intervalo que llega a 130,1. Con los
+nuevos, 142,4 s (no los 150 s que dice el dictamen: esa cuenta no resta el margen final de 10 minutos, que no
+se tocó). El chequeo previo va con `--tope-min 160`. Si el orquestador prefiere los topes de `s2`, son dos
+constantes de `armar_a0_p1.py`.
+
+**La verificación pasa de 60 s a 300 s, y el notebook no lo cambia.** El cambio de `swegemma` (leído en el
+diff de fuentes) añade `verification_timeout_seconds`, con 300 s por defecto, y la verificación de la fase 2
+deja de usar `timeout_seconds` (60 s en el kit). El notebook sigue pasando solo `timeout_seconds`: con las
+ruedas nuevas la verificación corre con 300 s, que es el valor que, según transmitió el orquestador, el
+organizador dice que usa el puntuador (este documento no lo leyó en su fuente).
+No se pasa el campo nuevo para no medir con un tope que el puntuador no usa. Consecuencias: una tarea puede
+durar hasta 240 s más en su peor caso (agente 240 s más verificación 300 s, 540 s, dentro del margen final
+de 600 s), y `s1` y `s2` no son comparables en esto con la corrida nueva; en ellas ninguna verificación pasó
+de 4,0 s (cifra del forense, no recontada aquí).
+
+**Lo comprobado sin Docker.**
+
+| Comprobación | Resultado |
+|---|---|
+| La guarda de la celda 2 del notebook armado, ejecutada contra las cuatro ruedas de las 19:51 (`probar_guarda_del_notebook.py`) | `sha256_distintas` vacío, 4 ruedas con huella |
+| Control: la misma guarda contra las ruedas con que corrieron `s1` y `s2` | 3 distintas (`adk_eval_core`, `adk_submission`, `swegemma`), con los dos valores en la salida y en el archivo |
+| `kaggle_preflight comprobar kernel_iteracion_08_a0_p1 --tope-min 160 --ruedas <las de las 19:51> --listado <rescate 2026-10-12T2051Z>` | Código 0: 16 imports comprobados, tamaños y SHA-256 como se espera |
+| Control: lo mismo con las ruedas anteriores | Código 2, 4 fallos: 1 de tamaño (`swegemma`) y 3 de SHA-256 |
+| El chequeo previo sobre `s2` | Código 0 con el `[AVISO]` |
+| `avisos_desde_la_ultima_sesion` sobre el rescate `2026-10-12T2051Z` y su propio listado | Avisa: `iteracion-08-s2`, 3 cambios (los bytes de `swegemma` y de `vllm`, y 41 de 41 ruedas con fecha posterior) |
+
+En esas dos ejecuciones de la guarda fuera de Docker el arnés no está instalado, así que la guarda de
+versiones se detiene siempre: lo que se leyó es el archivo que deja antes de detenerse. No es un ensayo del
+notebook.
+
+**Lo que no se ensayó, y por qué.** Docker no respondía (`failed to connect to the docker API`), y las
+ruedas del arnés son código ajeno que no se instala en el entorno del repositorio. Quedó sin correr:
+
+- la prueba de la petición con las ruedas de las 19:51 y el servidor falso (que el kit `A0` siga saliendo con
+  `enable_thinking: false` y sin presupuesto en todas, y el kit de base con `true`);
+- el ensayo del notebook de 60 tareas bajo núcleo Jupyter: sesión completa y tarea colgada;
+- el control con las ruedas anteriores dentro del ensayo (la celda 2 debe detenerlo);
+- que el cambio de `swegemma` no rompe nada al ejecutarse: solo se leyó el diff y se comprobaron los imports
+  como texto.
+
+`correr_paso0_1951.sh` y `resumen_paso0_1951.py` están escritos para esas corridas y **no se han ejecutado
+nunca**. Hasta que corran, las huellas de `RUEDAS_ESPERADAS_SHA256` son «las publicadas a las 19:51», no «las
+ensayadas».
+
+Huellas, en el árbol de trabajo del agente
+(`.claude/worktrees/agent-a0a0d5a3887c12502/experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/issue_182_2026-10-12_ruedas_1951/`,
+ignorado por git; el orquestador lo copia y las comprueba):
+
+| Archivo | Bytes | SHA-256 |
+|---|---|---|
+| `kernel_iteracion_08_a0_p1/iteracion.ipynb` | 114 902 | `1a4b1c7fb04f1d37d71c231fee794f5f95cab94a52e08521a3e0436fbb8727df` |
+| `kernel_iteracion_08_a0_p1/kernel-metadata.json` | 660 | `0a50f95e83fed680359434e790292df33a5cb1dfda2b368962f894e19b44c16a` |
+| `armar_a0_p1.py` | — | `d0f74b926f6ed1ddbbf540f73bfd62f2fd4dd9c30e66f2c3b607f1c071c84e93` |
+
+Las salidas de las comprobaciones están en `salidas/` de esa carpeta. La repetición (`a0_p2`) se arma con
+`armar_a0_p1.py --pasada 2`: no se armó.
+
 ### El ensayo rearmado
 
 Siete corridas, una tras otra, con la imagen de `ipykernel` 6.17.1 y **con las ruedas reales** (el modo de

@@ -179,15 +179,20 @@ PAQUETES = {
 }
 
 
-def ruedas_de_relleno(carpeta: Path, relleno: str = "") -> dict[str, str]:
-    """Las cuatro ruedas del arnés con las versiones ensayadas; devuelve nombre -> SHA-256."""
+def ruedas_de_relleno(carpeta: Path, cambio: tuple[str, str] | None = None) -> dict[str, str]:
+    """Las cuatro ruedas del arnés con las versiones ensayadas; devuelve nombre -> SHA-256.
+
+    ``cambio`` sustituye un texto por otro dentro de los archivos (del mismo largo: la rueda pesa lo mismo).
+    """
     carpeta.mkdir(parents=True, exist_ok=True)
     huellas = {}
     for dist, version in ka.ARNES_ENSAYADO.items():
         ruta = carpeta / f"{dist}-{version}-py3-none-any.whl"
         with zipfile.ZipFile(ruta, "w") as z:
             for nombre, texto in PAQUETES[dist].items():
-                z.writestr(zipfile.ZipInfo(nombre, (2026, 10, 12, 0, 0, 0)), texto + relleno)
+                z.writestr(
+                    zipfile.ZipInfo(nombre, (2026, 10, 12, 0, 0, 0)), texto.replace(*(cambio or ("", "")))
+                )
         huellas[ruta.name] = ka.sha256_de(ruta)
     return huellas
 
@@ -247,11 +252,10 @@ def test_una_rueda_con_otro_contenido_y_el_mismo_tamano_no_pasa_y_se_dicen_los_d
     ruedas = tmp_path / "ruedas"
     nombre = "swegemma-0.2.11-py3-none-any.whl"
     assert fallos(nb, ruedas) == []  # control: antes de tocarla, pasa
-    datos = bytearray((ruedas / nombre).read_bytes())
-    posicion = datos.index(b"x = 1")
-    datos[posicion : posicion + 5] = b"x = 2"  # mismo tamaño, mismo nombre, misma versión
-    (ruedas / nombre).write_bytes(bytes(datos))
-    assert (ruedas / nombre).stat().st_size == len(datos)
+    antes = (ruedas / nombre).stat().st_size
+    ruedas_de_relleno(ruedas, ("    pass\n", "    1234\n"))  # solo cambia swegemma/config.py
+    datos = (ruedas / nombre).read_bytes()
+    assert len(datos) == antes  # mismo tamaño, mismo nombre, misma versión: solo la huella lo ve
     assert kp.main(["comprobar", str(nb), "--tope-min", "75", "--ruedas", str(ruedas)]) == kp.EXIT_INVALID
     captura = capsys.readouterr()
     assert "Se puede subir" not in captura.out and "NO SUBIR: 1 comprobaciones fallan" in captura.err
@@ -292,7 +296,7 @@ def test_una_rueda_esperada_que_falta_en_la_carpeta_o_una_carpeta_de_fuentes_no_
 def test_un_notebook_con_la_guarda_de_solo_versiones_recibe_un_aviso_y_no_un_ok(
     tmp_path: Path, esperadas: dict[str, str], capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Los notebooks armados antes del concilio 46: el chequeo no puede decir que correrán con estas ruedas."""
+    """Los notebooks armados antes del concilio 46: el chequeo no dice que correrán con estas ruedas."""
     nb = directorio(tmp_path, ka.celda_de_versiones("/kaggle/working/v.json"))
     hallazgos = kp.comprobar_para_subir(nb, 75, tmp_path / "ruedas", None)
     (aviso,) = [h for h in hallazgos if h.aviso]
@@ -382,14 +386,14 @@ def vistas(**bytes_de: int) -> dict[str, int]:
 
 
 def test_el_caso_del_concilio_46_el_rescate_ya_trae_el_listado_nuevo_y_el_vigia_avisa(tmp_path: Path) -> None:
-    """La sesión corrió a las 13:57 con unas ruedas; a las 19:51 se publicaron otras; el rescate es de las 20:51."""
+    """La sesión corrió a las 13:57; a las 19:51 se publicaron otras ruedas; el rescate es de las 20:51."""
     nuevo = listado(DESPUES, swegemma=250)
     rescate(tmp_path / "r", nuevo, {"iteracion-08-s2": ("2026-10-12T13:57:31.263Z", vistas())})
     (linea,) = de_ruedas(tmp_path / "r", nuevo)  # contra el rescate nada cambió: sin esto, callaba
     assert linea.startswith(
         "EL CONJUNTO DE RUEDAS DEL ARNÉS YA NO ES EL DE LA ÚLTIMA SESIÓN "
-        "(iteracion-08-s2, 2026-10-12T13:57:31Z; 2 cambios: swegemma-0.2.11-py3-none-any.whl: bytes 100 -> 250; "
-        "4 de 4 ruedas con fecha posterior a la sesión (la última, 2026-10-12T19:51:41Z))"
+        "(iteracion-08-s2, 2026-10-12T13:57:31Z; 2 cambios: swegemma-0.2.11-py3-none-any.whl: "
+        "bytes 100 -> 250; 4 de 4 ruedas con fecha posterior a la sesión (la última, 2026-10-12T19:51:41Z))"
     )
     assert "lo que midió esa sesión es de otro arnés" in linea and "compara su sha256" in linea
 
