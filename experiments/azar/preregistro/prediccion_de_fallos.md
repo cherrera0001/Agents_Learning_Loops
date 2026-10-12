@@ -522,3 +522,81 @@ clase no, hasta validarla con un segundo lector, como dice su propia salida.
 
 Siguen abiertas, con plazo al 2026-10-23, las ocho de las secciones 10 a 12 que la sección 15 dejó sin marcar
 (7, 8, 9, 10, 17, 18, 19 y 20); la 11 queda sin plazo, porque su hecho no existió. La 41 vence el 2026-11-11.
+
+## 20. Predicciones y definiciones del concilio 46 (issue #182), fijadas antes de la corrida de 60 tareas
+
+**Qué se predice.** Una corrida de 60 tareas del sorteo con el kit `A0` sin razonar, sobre las ruedas del
+arnés publicadas el 2026-10-12 a las 19:51 UTC, y su repetición con el mismo zip y las mismas ruedas. Al
+escribir esto no existe ninguna de las dos: no se ha subido nada.
+
+**Quién las escribió.** El analista de datos y el forense del arnés, cada uno en su informe, los dos fechados
+el 2026-10-12 a las 21:19 UTC. No las escribió el orquestador ni quien arma la corrida. El orquestador solo
+las copió aquí y numeró las del forense, que venían como F1 a F8. Los originales están en el expediente sin
+versionar del concilio (`.scratch/concilio_memoria/fase2/concilio_46/analista/definiciones_y_predicciones.md`
+y `forense/paso2_ruedas.md`).
+
+**Hueco de numeración.** Las predicciones 48 a 51 se escribieron en la bitácora del caso el 2026-10-12, antes
+del sondeo de 12 tareas, y no llegaron a este archivo. No se copian aquí porque sus desenlaces ya se conocen:
+añadirlas ahora sería escribirlas después. Queda dicho que existen y que este archivo no las contiene.
+
+### 20.1 Definiciones (analista de datos, copiadas tal cual)
+
+> **Tarea válida.** Tiene tarea_fin; ninguna de sus peticiones pide razonar ni carece del dato; no está entre las colgadas del cierre. Adopto la del auditor con una precisión: la tarea con rechazo por contexto (peticion_fin con motivo error y ContextWindowExceeded) es válida y se marca con_rechazo; el acierto se informa con y sin ellas. **Corrida válida:** termina en cierre, el sha256 de las cuatro ruedas es el esperado y hay al menos 55 tareas válidas.
+>
+> **Corte.** Dos reglas, porque forense contó 0 y QA 3: corte duro = agente_fin con entrego falso o error no nulo (clases: tiempo, turnos, contexto, otro; s2: 0, s1: 7 de tiempo). Tope de llamadas = llamadas_herramientas >= 39 de 40 (s2: 3; s1: 2).
+>
+> **Discordante.** Entre dos pasadas con el mismo zip y ruedas: denominador, tareas válidas en las dos; numerador, las de ellas con resuelta distinto. No se reponen tareas.
+>
+> **Unidad.** Todo costo y tope va en horas de cuota = segundos de sesión del log de Kaggle / 3600 x 2,01. El reloj se nombra reloj. El tope de 9 600 s son 5,4 h de cuota.
+
+### 20.2 La puerta para comparar después con el kit que razona (analista de datos, copiada tal cual)
+
+> Con n válidas en ambas y d discordantes: **pasa** si d <= floor(0,20 n) (n = 60: 12 o menos; n = 55 a 59: 11 o menos). **No se sabe** si d llega hasta el último valor con límite inferior del IC95 exacto <= 0,20 (n = 60: 13 a 18; n = 57 a 59: 12 a 18; n = 55 o 56: 12 a 17). **No pasa** por encima (n = 60: 19 o más). Con n < 55 no se lee. En «no se sabe» no se corre el paso 4 ni se declara alto el ruido.
+
+Es la regla del concilio 45 («solo si la discordancia es 20 % o menos») escrita como condición sobre el
+conteo. `s1` y `s2` son las dos corridas de 12 tareas del 2026-10-12, con las ruedas del 2026-10-09.
+
+### 20.3 Predicciones del analista de datos (copiadas tal cual)
+
+| # | Predicción y criterio que la marca | Probabilidad | Línea base |
+|---|---|---|---|
+| 52 | Pasada 1: media de segundos de tarea_fin sobre las válidas entre 80 y 135 | 0,80 | s2: 101,0 en 12 |
+| 53 | Pasada 1: media sobre 150 s | 0,07 | máximo de s2: 157,6 |
+| 54 | Pasada 1: resueltas entre 7 y 18 de 60 | 0,80 | s2: 3 de 12 |
+| 55 | Pasada 1: en las 12 tareas de s2, resueltas entre 2 y 4 | 0,65 | s2: 3; s1: 4 |
+| 56 | Pasada 1: al menos una tarea con_rechazo; y de 1 a 9 | 0,85; 0,80 | s2: 1 de 12 |
+| 57 | Pasada 1: tareas_colgadas > 0 en el cierre | 0,08 | 0 de 24 |
+| 58 | Pasada 1: al menos un corte duro | 0,30 | s2: 0 de 12 |
+| 59 | Pasada 1: tope de llamadas en 7 a 24 tareas | 0,80 | s2: 3 de 12 |
+| 60 | Pasada 1: cuota entre 3,0 y 4,6 h; la sesión cabe en 9 600 s | 0,80; 0,92 | s2: 0,98 h por 12 |
+| 61 | Repetición: discordancia entre 0,08 y 0,28 | 0,80 | sin dato propio |
+| 62 | Repetición: la puerta pasa (12 o menos de 60) | 0,60 | ninguna |
+| 63 | Repetición: diferencia absoluta de resueltas entre pasadas <= 3 | 0,70 | ninguna |
+| 64 | Cambia el sha256 de alguna rueda entre las dos subidas | 0,30 | dos cambios en el caso |
+| 65 | Al menos un 500 de SaveKernel antes de cada subida exitosa | 0,45 | 2 en 3 intentos |
+
+El costo de la 60 se lee de `uvx kaggle quota`, con dos decimales, antes y después. Las predicciones 56 y 60
+llevan dos afirmaciones cada una, con su probabilidad: se marcan por separado.
+
+### 20.4 Predicciones del forense del arnés (copiadas tal cual; la numeración 66 a 73 es de este archivo)
+
+| # | Predicción | Probabilidad | Ocurre si |
+|---|---|---|---|
+| 66 | Al menos un rechazo por ventana de contexto | 0,85 | algún `peticion_fin` con `error` = `ContextWindowExceededError` |
+| 67 | Tres o más rechazos | 0,55 | ídem, 3 o más |
+| 68 | Alguna tarea colgada | 0,07 | `tareas_colgadas` > 0 en `cierre`, o evento `corte` |
+| 69 | Algún agente cortado por tiempo | 0,35 | algún `agente_fin` con «exceeded session timeout» |
+| 70 | Diez o más tareas con llamadas agotadas | 0,80 | `tarea_fin` con clase `llamadas_agotadas_*`, 10 o más |
+| 71 | El primer intento de subida falla | 0,25 | la primera orden `kernels push` no devuelve «successfully pushed» |
+| 72 | Alguna verificación dura 60 s o más | 0,05 | `tarea_fin` − `agente_fin` ≥ 60 s en alguna tarea |
+| 73 | Sesión completa | 0,85 | registro con `cierre` y 60 `tarea_fin` |
+
+Las del forense se marcan con el registro de la primera corrida de 60. Las dos listas se escribieron sin que
+un rol viera la del otro, y varias hablan del mismo hecho con criterios distintos (56 y 66; 57 y 68; 59 y 70;
+65 y 71): se marcan todas, cada una con su criterio.
+
+### 20.5 Qué no cubren
+
+Ninguna predicción dice cuál kit acierta más: esta corrida no compara kits. Ninguna cubre la nota del envío.
+Las probabilidades son juicio de cada rol; solo las que citan una línea base la tienen medida, y esa línea
+base son 12 tareas.
