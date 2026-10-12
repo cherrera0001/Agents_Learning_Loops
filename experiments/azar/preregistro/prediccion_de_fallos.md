@@ -595,7 +595,47 @@ Las del forense se marcan con el registro de la primera corrida de 60. Las dos l
 un rol viera la del otro, y varias hablan del mismo hecho con criterios distintos (56 y 66; 57 y 68; 59 y 70;
 65 y 71): se marcan todas, cada una con su criterio.
 
-### 20.5 Qué no cubren
+### 20.5 Precisiones de los autores, tras la revisión del PR #200 (copiadas tal cual)
+
+Un revisor independiente señaló criterios que no se podían aplicar sin juicio. Lo copiado en 20.1 a 20.4 no se
+editó. Cada autor precisó lo suyo en una nota fechada el 2026-10-12 a las 21:24 UTC, todavía sin ningún dato
+de la corrida, y sin cambiar ninguna probabilidad ni umbral. Donde una nota y una cita difieren, manda la nota.
+Los nombres de campo son los de `registro_iteracion_08_s2.jsonl`.
+
+**Analista de datos** (definiciones, puerta y predicciones 52 a 65):
+
+> **P2, «corte».** Son tres objetos, no una definición doble. Corte duro (mi 58): agente_fin con entrego falso o error no nulo. Tope de llamadas (mi 59): tarea_fin.llamadas_herramientas >= 39. El evento corte del registro (scripts/kaggle_registro.py:457 y 567, con cortado_por) es otro, del notebook, y mi 57 usa cierre.tareas_colgadas. En s2: 0 eventos corte, 0 corte duro.
+>
+> **P3, 65.** No está en el registro. Se marca contra el texto guardado de la salida de cada uvx kaggle kernels push (bitácora del caso o archivo de la corrida). Ocurre si en cada una de las dos subidas hay al menos un intento con «500» y «SaveKernel» antes del primer «successfully pushed» de esa subida. Sin salida guardada o sin repetición: no evaluable. Es la lectura literal de «cada».
+>
+> **P5.** sha256 esperados (sha256_ruedas_1951.txt, recontados): adk_eval_core e614e1b2fe8d886a634871e4c57f9887e1cc66e8c27300f8503a43c6e3ca82f3; adk_submission f156f0bd84580ccb9334726d114d7a5481f16d3a6e2887cc4d276ced0ef8d99d; google_adk 1a2f6868c509e3151fb0de3575a7d18b45c338be86f420924dad74e7193631a0; swegemma 9ad876581f3acde8ec3c369858f0834e2b9f41a3cffce3ca42f09cb090aea9d3. «Las 12 de s2» (55): las 12 con tarea_inicio en registro_iteracion_08_s2.jsonl, campo tarea; no las listo (regla de no dar identificadores).
+>
+> **P6, puerta.** No pasa por encima del tramo «no se sabe» (puerta.py, copia puerta.txt): n = 55 o 56, d >= 18; n = 57 a 59, d >= 19; n = 60, d >= 19.
+>
+> **P7.** Todo conteo absoluto (54, 56, 59, 63) es sobre las tareas válidas, sin reescalar; con menos de 55 válidas en la pasada, no evaluable. La 62 usa la puerta: d <= floor(0,20 n), es decir 12 con n = 60 y 11 con 55 a 59.
+>
+> **P8.** El factor 2,01 es medido, no supuesto: s1, 1,71 h / 3 064 s (2,009); s2, 0,99 h / 1 770,5 s (2,013, lectura del orquestador). La fuente única para marcar la 60 es la diferencia de horas usadas de uvx kaggle quota, con dos decimales, leída justo antes del push y tras el estado complete; la fórmula solo pronostica. Si corre otra sesión de GPU entre las dos lecturas: no evaluable. «Cabe en 9 600 s»: cierre.sesion_s <= 9600.
+>
+> **Menores, 56.** Se divide: 56a, al menos una tarea con rechazo (0,85); 56b, el número de tareas (no de peticiones) con rechazo está entre 1 y 9 (0,80). Con_rechazo no es campo: tarea con alguna peticion_fin con motivo == error y la cadena ContextWindowExceeded contenida en error o en detalle. No uso igualdad literal.
+
+**Forense del arnés** (predicciones 66 a 73):
+
+> - **66 y 67 (punto 1): no se sostiene.** El campo que nombré existe con igualdad literal: `s2`, línea 1478 del registro, `peticion_fin` con `"motivo": "error"` y `"error": "ContextWindowExceededError"`. La línea 175 del preregistro describe otro objeto, el error de la tarea. Regla: número de eventos `peticion_fin` cuyo campo `error` es exactamente esa cadena; 66 ocurre con 1 o más, 67 con 3 o más. Cuenta peticiones, no tareas.
+> - **68 (punto 2): mal planteada, se evalúa literal.** Ocurre si `cierre.tareas_colgadas` > 0 (celda 8, línea 924) o si hay algún evento con `evento` = `corte`, con cualquier `cortado_por`. Eso incluye el corte de sesión `corte('tareas')` (celda 10, líneas 397 a 399), que no es una tarea colgada: el criterio es más ancho que el título, y no lo estrecho porque me favorecería. No es el «corte» de las definiciones del analista (`agente_fin`). Sin `cierre` y sin evento `corte`: no ocurrió.
+> - **70 (punto 4): se sostiene para `origin/main`, no para el registro.** La clase la arma el notebook por concatenación (celda 10, líneas 85 y 86) y está en `s2` (3 filas). Regla: `tarea_fin` cuyo `clase` empieza por `llamadas_agotadas`; ocurre con 10 o más. Aviso: salta con 39 llamadas o más (tope menos 1) y se evalúa antes que el corte por tiempo.
+> - **71 (punto 3):** no está en el registro. Se marca contra la entrada de la subida en `BITACORA_MEJORA.md`: la salida literal de la primera orden `kernels push`. Si la bitácora no copia esa salida, **no evaluable**.
+> - **72:** `tarea_fin.hora` − `agente_fin.hora` de la misma `tarea`, 60 s o más en alguna. Línea base: máximo 4,0 s en `s2` y 3,9 s en `s1` (`paso2_ordenes.txt`, orden 8). Tareas sin `agente_fin`: no cuentan.
+> - **73:** exactamente un evento `cierre` y 60 eventos `tarea_fin`. No es el estado «completa» de la herramienta (`kaggle_registro.py:649`), que además exige ausencia de cortes.
+
+**Lo que queda dicho por el orquestador, no por los autores.** La 56 y la 66 hablan del mismo hecho con
+reglas distintas (una cuenta tareas y busca la cadena contenida; la otra cuenta peticiones con igualdad
+exacta): no se unifican, cada una se marca con la suya. Para que la 65 y la 71 sean evaluables, la bitácora
+del caso tiene que copiar la salida literal de cada orden `kernels push`. El guion `puerta.py` del analista no
+está en el repositorio: las cifras de la puerta se rehacen con la regla escrita en 20.2 y en la nota P6 (el
+revisor del PR las recalculó por su cuenta y coinciden). Del original del analista quedó fuera de 20.2 una
+frase, «Retiro mi "IC95 bajo 25 %"», que se refiere a una versión anterior de la puerta que nunca se fijó.
+
+### 20.6 Qué no cubren
 
 Ninguna predicción dice cuál kit acierta más: esta corrida no compara kits. Ninguna cubre la nota del envío.
 Las probabilidades son juicio de cada rol; solo las que citan una línea base la tienen medida, y esa línea
