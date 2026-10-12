@@ -45,6 +45,21 @@
       "action": "run_tests",
       "success": true,
       "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2887 pasan, 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión independiente (apto con observaciones) y el recuento del analista encontraron en la primera entrega: el README decía que en los tercios «el último recibe el resto» y el código parte por cantidad (24, 25, 25); _rate redondeaba a 4 decimales y _pct a 1 (64/265 se imprimía 24,1 en vez de 24,2); la salida y el archivo de clases no decían que las expresiones se escribieron leyendo los episodios que clasifican, y el 17,1 % sin clase es una cifra dentro de la muestra (el analista estima 20 a 30 % para episodios nuevos); 85 de 258 pasos casan con varias clases; un seq repetido fundía dos episodios en «en N episodios»; y 4 de 18 defectos inyectados sobrevivían porque el conjunto fijo tenía 6 episodios (múltiplo de 3) y ninguna prueba distinguía episodios de pasos, el orden por acción ni las mayúsculas de load_classes"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "_rate guarda la proporción sin redondear y se redondea una vez al imprimir; matching_classes y la cuenta de pasos con varias clases; aviso (campo caveat de failure_classes.json) en la salida y en el JSON, con la advertencia de no usar la tabla por clase como línea base hasta un segundo lector; un seq repetido sale con 2 y mensaje (se prefirió el error a contar, porque una línea base con episodios fundidos sería silenciosamente falsa); README corregido"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Ocho pruebas nuevas: tercios con 7, 8, 74 y 2 episodios, episodios por clase distintos de pasos, mayúsculas con el archivo real, orden por acción con fallos distintos, redondeo único, pasos con varias clases, seq repetido (función y CLI) y aviso en texto y JSON"
     }
   ],
   "lessons": [

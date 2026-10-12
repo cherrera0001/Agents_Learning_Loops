@@ -2,6 +2,7 @@
   "version": 1,
   "source": "experiments/azar/preregistro/prediccion_de_fallos.md, secciones 3 y 8.5",
   "rule": "Cada paso fallido cae en la primera clase, en este orden, cuyo patrón (expresión regular sin distinguir mayúsculas) casa con su error o su note. Una clasificación por palabras es una cota, no una cifra: la sección 8.5 del pre-registro estimó 60 a 70 % de acierto en una muestra revisada a mano.",
+  "caveat": "Las expresiones se escribieron leyendo los mismos episodios que clasifican, así que la fracción «sin clase» (17,1 % con 74 episodios) es una cifra dentro de la muestra; el analista de datos estima 20 a 30 % para episodios nuevos (30,1 % con solo los patrones anteriores al episodio 52; 19,5 % en versión rodante). Un paso puede casar con varias clases y decide el orden del archivo (85 de 258). La tabla por clase NO debe usarse como línea base de predicciones hasta validarla con un segundo lector; la tabla por acción sí.",
   "classes": [
     {
       "name": "Entorno",

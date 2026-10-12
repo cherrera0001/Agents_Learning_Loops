@@ -187,7 +187,9 @@ def test_cli_json_and_hasta_match_compute(
     with pytest.raises(SystemExit) as exit_info:
         devlog.main()
     assert exit_info.value.code == 0
-    assert json.loads(capsys.readouterr().out) == _compute(hasta=5)
+    out = json.loads(capsys.readouterr().out)
+    assert out.pop("class_caveat") == ""  # el archivo de prueba no lleva aviso
+    assert out == _compute(hasta=5)
 
 
 def test_cli_reports_unreadable_classes_with_exit_two(
@@ -219,3 +221,92 @@ def test_versioned_classification_file_is_well_formed() -> None:
     classes = base_rates.load_classes()
     assert [n for n, _ in classes] == names
     assert all(patterns for _, patterns in classes)
+
+
+def test_load_classes_ignores_case_with_the_real_file() -> None:
+    classes = base_rates.load_classes()
+    assert all(p.flags & re.IGNORECASE for _, patterns in classes for p in patterns)
+    assert base_rates.classify(_step("edit_module", False, "HEREDOC LARGO"), classes) == "Entorno"
+    assert base_rates.classify(_step("edit_module", False, "Heredoc largo"), classes) == "Entorno"
+
+
+def test_thirds_when_the_count_is_not_a_multiple_of_three() -> None:
+    def sizes(n: int) -> list[int]:
+        eps = [_ep(i, _step("edit_module", True)) for i in range(1, n + 1)]
+        groups = base_rates.thirds(eps)
+        assert [e["seq"] for g in groups for e in g] == list(range(1, n + 1))  # nada se pierde
+        return [len(g) for g in groups]
+
+    assert sizes(7) == [2, 2, 3]
+    assert sizes(8) == [2, 3, 3]
+    assert sizes(74) == [24, 25, 25]
+    assert sizes(2) == [0, 1, 1]
+    result = _compute(episodes=[_ep(i, _step("edit_module", i % 2 == 0)) for i in range(1, 8)])
+    assert [(t["episodes"], t["total"], t["failed"]) for t in result["by_third"]] == [
+        (2, 2, 1),
+        (2, 2, 1),
+        (3, 3, 2),
+    ]
+
+
+def test_episodes_per_class_is_not_the_number_of_steps() -> None:
+    eps = [
+        _ep(1, _step("edit_module", False, "heredoc"), _step("write_tests", False, "otro heredoc")),
+        _ep(2, _step("edit_module", False, "heredoc")),
+    ]
+    entorno = next(c for c in _compute(episodes=eps)["by_class"] if c["class"] == "Entorno")
+    assert (entorno["failed"], entorno["episodes"]) == (3, 2)
+
+
+def test_by_action_is_ordered_by_decreasing_failures() -> None:
+    steps = [_step("z_a", False)] * 3 + [_step("m_c", False)] * 2 + [_step("a_b", False)]
+    result = _compute(episodes=[_ep(1, *steps)])
+    assert [(r["action"], r["failed"]) for r in result["by_action"]] == [
+        ("z_a", 3),
+        ("m_c", 2),
+        ("a_b", 1),
+    ]
+
+
+def test_rates_are_rounded_once_when_printed() -> None:
+    rate = base_rates._rate(64, 265)
+    assert rate["rate"] == 64 / 265
+    assert base_rates._pct(rate["rate"]) == "24.2%"
+    assert base_rates._pct(None) == "-"
+
+
+def test_steps_matching_several_classes_are_counted() -> None:
+    eps = [_ep(1, _step("a", False, "heredoc que afirmó"), _step("b", False, "heredoc"))]
+    result = _compute(episodes=eps)
+    assert result["failed_matching_several_classes"] == 1
+    assert "1 de 2 pasos fallidos casan con más de una clase" in base_rates.format_report(result)
+
+
+def test_repeated_seq_is_an_error_not_a_merged_count(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    classes_file: Path,
+) -> None:
+    dup = [*EPISODES, _ep(5, _step("edit_module", False, "heredoc"))]
+    with pytest.raises(ValueError, match=r"seq repetido.*\[5\]"):
+        _compute(episodes=dup)
+    assert _compute(hasta=5, episodes=dup)["episodes"] == 3  # el repetido queda fuera del corte
+    monkeypatch.setattr(devlog, "load_episodes", lambda *_a, **_k: dup)
+    monkeypatch.setattr("sys.argv", ["devlog", "base-rates", "--clases", str(classes_file)])
+    with pytest.raises(SystemExit) as exit_info:
+        devlog.main()
+    assert exit_info.value.code == 2
+    captured = capsys.readouterr()
+    assert "seq repetido" in captured.err and captured.out == ""
+
+
+def test_class_table_carries_the_caveat_from_the_versioned_file(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    caveat = base_rates.load_caveat()
+    assert "segundo lector" in caveat and "17,1" in caveat and "la tabla por acción sí" in caveat.lower()
+    assert base_rates.run_base_rates(EPISODES) == 0
+    out = capsys.readouterr().out
+    assert "AVISO: " + caveat in out
+    assert base_rates.run_base_rates(EPISODES, as_json=True) == 0
+    assert json.loads(capsys.readouterr().out)["class_caveat"] == caveat

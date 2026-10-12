@@ -51,8 +51,8 @@ def _rate(failed: int, total: int) -> dict[str, Any]:
     return {
         "failed": failed,
         "total": total,
-        "rate": None if total == 0 else round(failed / total, 4),
-        "ci95": None if ci is None else [round(ci[0], 4), round(ci[1], 4)],
+        "rate": None if total == 0 else failed / total,
+        "ci95": None if ci is None else [ci[0], ci[1]],
     }
 
 
@@ -65,16 +65,26 @@ def load_classes(path: Path = CLASSES_PATH) -> list[tuple[str, list[re.Pattern[s
     return classes
 
 
+def load_caveat(path: Path = CLASSES_PATH) -> str:
+    """Aviso sobre el uso de la tabla por clase, escrito en el archivo de clases."""
+    return str(json.loads(path.read_text("utf-8")).get("caveat", ""))
+
+
 def step_text(step: Mapping[str, Any]) -> str:
     return "\n".join(str(step[k]) for k in ("error", "note") if step.get(k))
 
 
-def classify(step: Mapping[str, Any], classes: Sequence[tuple[str, Sequence[re.Pattern[str]]]]) -> str | None:
+def matching_classes(
+    step: Mapping[str, Any], classes: Sequence[tuple[str, Sequence[re.Pattern[str]]]]
+) -> list[str]:
+    """Todas las clases cuyo patrón casa con el paso, en el orden del archivo."""
     text = step_text(step)
-    for name, patterns in classes:
-        if any(p.search(text) for p in patterns):
-            return name
-    return None
+    return [name for name, patterns in classes if any(p.search(text) for p in patterns)]
+
+
+def classify(step: Mapping[str, Any], classes: Sequence[tuple[str, Sequence[re.Pattern[str]]]]) -> str | None:
+    matched = matching_classes(step, classes)
+    return matched[0] if matched else None
 
 
 def select(episodes: Sequence[Mapping[str, Any]], hasta: int | None) -> list[Mapping[str, Any]]:
@@ -82,6 +92,11 @@ def select(episodes: Sequence[Mapping[str, Any]], hasta: int | None) -> list[Map
     chosen = sorted(episodes, key=lambda e: e["seq"])
     if hasta is not None:
         chosen = [e for e in chosen if e["seq"] < hasta]
+    seqs = Counter(e["seq"] for e in chosen)
+    repeated = sorted(seq for seq, n in seqs.items() if n > 1)
+    if repeated:
+        # Sale con error en vez de contar: «en N episodios» fundiría dos episodios con el mismo seq.
+        raise ValueError(f"seq repetido en los episodios: {repeated}")
     return chosen
 
 
@@ -112,11 +127,14 @@ def compute(
     class_steps: Counter[str] = Counter()
     class_episodes: dict[str, set[int]] = {name: set() for name, _ in classes}
     unclassified = 0
+    several = 0
     for e in chosen:
         for s in e["steps"]:
             if s["success"]:
                 continue
-            name = classify(s, classes)
+            matched = matching_classes(s, classes)
+            several += len(matched) > 1
+            name = matched[0] if matched else None
             if name is None:
                 unclassified += 1
             else:
@@ -153,6 +171,7 @@ def compute(
         "by_action": by_action,
         "by_class": by_class,
         "unclassified": _rate(unclassified, len(failed_steps)),
+        "failed_matching_several_classes": several,
         "by_third": by_third,
         "not_countable": NOT_COUNTABLE,
     }
@@ -188,6 +207,12 @@ def format_report(result: Mapping[str, Any]) -> str:
     lines.append(
         f"  {'sin clase':<44} {u['failed']:>3} / {u['total']:<3} {_pct(u['rate']):>7}  {_ci(u['ci95'])}"
     )
+    lines.append(
+        f"  {result['failed_matching_several_classes']} de {result['failed_steps']} pasos fallidos casan "
+        "con más de una clase; decide el orden del archivo."
+    )
+    if result.get("class_caveat"):
+        lines.append(f"  AVISO: {result['class_caveat']}")
     lines += ["", "Por tercios de la historia (pasos fallidos / pasos):"]
     for t in result["by_third"]:
         span = "-" if t["seq_from"] is None else f"{t['seq_from']}-{t['seq_to']}"
@@ -205,13 +230,19 @@ def run_base_rates(
     as_json: bool = False,
     classes_path: Path = CLASSES_PATH,
 ) -> int:
-    """Imprime las tres tablas (o JSON). Salida 0; 2 si el archivo de clases no se puede leer."""
+    """Imprime las tres tablas (o JSON). Salida 0; 2 si el archivo de clases no se puede leer o hay
+    episodios con el mismo ``seq``."""
     try:
         classes = load_classes(classes_path)
     except (OSError, ValueError, KeyError, TypeError, re.error) as exc:
         print(f"error: no se pudo leer la clasificación {classes_path}: {exc}", file=sys.stderr)
         return 2
-    result = compute(episodes, classes, hasta)
+    try:
+        result = compute(episodes, classes, hasta)
+        result["class_caveat"] = load_caveat(classes_path)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     if as_json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:

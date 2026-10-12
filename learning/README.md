@@ -173,10 +173,20 @@ python -m scripts.devlog base-rates --hasta 80     # solo episodios con seq < 80
   clases del pre-registro del experimento «azar», secciones 3 y 8.5). Cada paso fallido cae en la **primera**
   clase, en el orden del archivo, cuyo patrón (expresión regular sin distinguir mayúsculas) casa con su
   `error` o su `note`. La salida da cuántos pasos fallidos no caben en ninguna («sin clase») y en cuántos
-  episodios aparece cada clase. Es una clasificación por palabras: sus cuentas son cotas, no cifras (la
-  sección 8.5 estimó 60 a 70 % de acierto en una muestra revisada a mano). `--clases <archivo>` usa otra.
-- **Por tercios:** los episodios ordenados por `seq`, partidos en tres grupos consecutivos del mismo tamaño
-  (el último recibe el resto), para ver si la tasa cambia.
+  episodios aparece cada clase. `--clases <archivo>` usa otra. Es una clasificación por palabras, con estas
+  salvedades (también en el campo `caveat` del archivo y en la salida):
+  - las expresiones se escribieron leyendo los mismos episodios que clasifican, así que la fracción
+    «sin clase» (17,1 % con 74 episodios) es una cifra dentro de la muestra; el analista de datos estima
+    20 a 30 % para episodios nuevos (30,1 % con solo los patrones anteriores al episodio 52; 19,5 % en
+    versión rodante);
+  - un paso puede casar con varias clases y decide el orden del archivo (85 de 258 pasos fallidos; la salida
+    da la cuenta);
+  - **la tabla por clase no debe usarse como línea base de predicciones hasta validarla con un segundo
+    lector.** La tabla por acción sí.
+- **Por tercios:** los episodios ordenados por `seq`, partidos por cantidad: el grupo `i` (0, 1, 2) toma las
+  posiciones `i·n//3` a `(i+1)·n//3` de los `n` episodios (con 74, grupos de 24, 25 y 25), así que un episodio
+  más mueve las fronteras. Sirve para ver si la tasa cambia. Dos episodios con el mismo `seq` hacen que la
+  orden salga con 2 y lo diga, en vez de contarlos juntos.
 - **Qué no cuenta:** la CI, los veredictos de revisión y todo hecho que un episodio no registre; la salida lo
   dice. Para una línea base «antes de predecir» sobre un issue `N`, usa `--hasta N`.
 
