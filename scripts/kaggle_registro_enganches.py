@@ -96,6 +96,54 @@ def caracteres_de(x: Any) -> int:
     return len(str(x))
 
 
+def _campo(x: Any, nombre: str) -> Any:
+    """``x[nombre]`` o ``x.nombre``, según sea un diccionario o un objeto; ``None`` si no está."""
+    return x.get(nombre) if isinstance(x, dict) else getattr(x, nombre, None)
+
+
+def razonamiento_pedido(opciones: Any) -> dict[str, Any]:
+    """Qué pide la petición sobre el razonamiento (#195): solo un booleano y un número, nunca texto.
+
+    ``adk_submission`` 0.2.13 cambió cuándo se enciende, sin cambiar ningún nombre: lo único que lo deja
+    medido en una corrida real es anotar lo que lleva cada petición. Los parámetros viajan en
+    ``extra_body`` o sueltos, según la versión del cliente; se miran los dos sitios. Nunca lanza.
+    """
+    try:
+        sitios = [opciones, _campo(opciones, "extra_body")]
+        pide, presupuesto = None, None
+        for sitio in sitios:
+            plantilla = _campo(sitio, "chat_template_kwargs") if sitio is not None else None
+            valor = _campo(plantilla, "enable_thinking") if plantilla is not None else None
+            if isinstance(valor, bool) and pide is None:
+                pide = valor
+            tope = _campo(sitio, "thinking_token_budget") if sitio is not None else None
+            if isinstance(tope, (int, float)) and not isinstance(tope, bool) and presupuesto is None:
+                presupuesto = int(tope)
+        return {"pide_razonar": pide, "presupuesto_razonamiento": presupuesto}
+    except Exception:
+        return {"pide_razonar": None, "presupuesto_razonamiento": None}
+
+
+def razonamiento_recibido(eleccion: Any, uso: Any) -> dict[str, int]:
+    """Cuánto razonamiento trajo la respuesta (#195): tokens, si el servidor los cuenta, y caracteres.
+
+    Solo números. Sin dato no añade la clave: «no informado» no es cero. Nunca lanza.
+    """
+    datos: dict[str, int] = {}
+    try:
+        detalle = _campo(uso, "completion_tokens_details") if uso is not None else None
+        tokens = _campo(detalle, "reasoning_tokens") if detalle is not None else None
+        if isinstance(tokens, int) and not isinstance(tokens, bool):
+            datos["reasoning_tokens"] = tokens
+        mensaje = _campo(eleccion, "message") if eleccion is not None else None
+        pensado = _campo(mensaje, "reasoning_content") if mensaje is not None else None
+        if isinstance(pensado, str):
+            datos["caracteres_razonamiento"] = len(pensado)
+    except Exception:
+        pass
+    return datos
+
+
 def inicio_de_sesion() -> float:
     """Hora de arranque de este proceso según /proc (Linux); si no se puede leer, ahora."""
     try:
@@ -347,6 +395,7 @@ class Registro:
                 "caracteres_entrada": caracteres_de(mensajes),
                 "con_herramientas": bool(herramientas),
                 "stream": bool(opciones.get("stream")),
+                **razonamiento_pedido(opciones),
             }
         except Exception as exc:
             self._anotar_error(exc)
@@ -380,6 +429,7 @@ class Registro:
                     valor = getattr(uso, campo, None)
                     if valor is not None:
                         datos[campo] = valor
+                datos.update(razonamiento_recibido(eleccion, uso))
         except Exception as exc:
             self._anotar_error(exc)
             datos.setdefault("motivo", "sin_motivo")

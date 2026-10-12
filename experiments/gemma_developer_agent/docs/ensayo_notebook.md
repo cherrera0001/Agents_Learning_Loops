@@ -138,6 +138,13 @@ localiza el único directorio con ruedas sin esperar ni reintentar, que el noteb
 y que hay tope de ejecución. Sale con 2 y no imprime la orden si algo falla. No comprueba que el modelo
 cargue: eso exige GPU.
 
+Desde el 2026-10-12 (#195), un notebook que importa el arnés necesita además `--ruedas <carpeta>`, con las
+`.whl` del arnés bajadas del conjunto público de ruedas (o sus fuentes extraídas), y admite `--listado
+<archivo>`, el `listado_ruedas.json` del último rescate. Sin `--ruedas` no dice «Se puede subir». Con ella
+comprueba que las versiones son las ensayadas y que cada import del notebook existe en esas ruedas, leídas
+como texto. Detalle y límites en
+[`ensayo_nucleo_jupyter.md`](ensayo_nucleo_jupyter.md#arnés-0211-y-guardas-de-versiones-195).
+
 1. Lee el plan en tu máquina, sin Kaggle. Las rutas pueden ser inventadas: `--plan` solo imprime.
 
    ```bash

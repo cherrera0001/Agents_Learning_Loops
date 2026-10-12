@@ -9,8 +9,17 @@ La guardia no solo se lee: **se ejecuta** contra un árbol que reproduce la estr
 /kaggle/input. Los datos de la competencia traen su propia carpeta ``wheels/`` con ``.whl``, así que
 una guardia que busca «el único directorio con ruedas» encuentra dos y se detiene en toda sesión real.
 
+Desde el 2026-10-12 (#195) compara además el arnés: un notebook que importa ``swegemma``,
+``adk_submission``, ``adk_eval_core`` o ``google.adk`` no se da por bueno sin ``--ruedas``, la carpeta con
+las ``.whl`` bajadas del conjunto público (o sus fuentes extraídas). Con ella comprueba que sus versiones
+son las ensayadas (``scripts/kaggle_arnes.py``) y, leyendo el código como texto, que cada import del notebook
+existe en ellas. ``--listado`` añade el listado del conjunto (el ``listado_ruedas.json`` del último rescate o
+la salida de ``kaggle datasets files``): versiones y tamaños. No ve un cambio de conducta del arnés que
+conserve nombres y firmas.
+
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
+    python -m scripts.kaggle_preflight comprobar <dir> --tope-min 75 --ruedas <carpeta> [--listado <archivo>]
 
 ``<directorio>`` es el que recibe ``kaggle kernels push -p``: contiene ``kernel-metadata.json`` y el
 notebook. Con todo en orden imprime la orden exacta de subida y sale con 0; con algún fallo sale con 2 y
@@ -28,6 +37,8 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from scripts import kaggle_arnes
 
 COMPETITION_SLUG = "gemma-4-developer-agent"
 WHEELHOUSE = "metric/gemma-4-developer-agent-wheelhouse"
@@ -315,8 +326,105 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
     return out
 
 
+def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None) -> list[Hallazgo]:
+    """Las ruedas del arnés contra las versiones con que se ensayó, y los imports del notebook contra ellas.
+
+    El 2026-10-12 una corrida falló a los 106 s porque el conjunto público de ruedas había cambiado y una
+    celda importaba un módulo que ya no existía (#195). Un notebook que importa el arnés no se da por bueno
+    sin ``--ruedas`` (las ``.whl`` bajadas o sus fuentes extraídas): sin ellas no hay con qué comparar, y
+    se dice qué falta. No ejecuta ni instala nada: lee los nombres de archivo y el código como texto.
+
+    No ve un cambio de conducta del arnés que conserve nombres y firmas: eso exige leer el diff de fuentes.
+    """
+    if not kaggle_arnes.usa_el_arnes(celdas) and ruedas is None and listado is None:
+        return [_bien("El notebook no importa el arnés: no hay versiones de ruedas que comparar.")]
+    ensayado = kaggle_arnes.ARNES_ENSAYADO
+    out: list[Hallazgo] = []
+    esperado = kaggle_arnes.esperado_en_el_notebook(celdas)
+    if esperado is None:
+        out.append(
+            _mal(
+                "El notebook importa el arnés y no trae la guarda de versiones: debe escribir las versiones "
+                "instaladas en un archivo de salida y detenerse si no son las ensayadas (el armado la pone "
+                "con scripts/kaggle_arnes.py)."
+            )
+        )
+    elif esperado != ensayado:
+        out.append(_mal(f"La guarda del notebook espera {esperado} y se ensayó con {ensayado}."))
+    else:
+        out.append(_bien("El notebook se detiene si las versiones del arnés no son las ensayadas."))
+
+    entradas: list[dict[str, Any]] = []
+    if listado is not None:
+        try:
+            entradas = kaggle_arnes.leer_listado(listado.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeDecodeError, ValueError) as exc:
+            out.append(_mal(f"No se pudo leer el listado de ruedas: {type(exc).__name__}"))
+        else:
+            diferencias = kaggle_arnes.diferencias_con_lo_ensayado(
+                kaggle_arnes.versiones_de(str(e["nombre"]) for e in entradas)
+            )
+            fechas = sorted(str(e["fecha"]) for e in entradas if e.get("fecha"))
+            out += [_mal(f"El conjunto de ruedas cambió respecto de lo ensayado: {d}.") for d in diferencias]
+            if not diferencias:
+                out.append(
+                    _bien(
+                        f"El listado del conjunto de ruedas ({len(entradas)} archivos, el más reciente del "
+                        f"{fechas[-1] if fechas else 'sin fecha'}) trae las versiones ensayadas."
+                    )
+                )
+    if ruedas is None:
+        if listado is None:
+            out.append(
+                _mal(
+                    "No se compararon las versiones del conjunto de ruedas con las ensayadas: falta "
+                    "--listado <listado_ruedas.json del último rescate, o la salida de `kaggle datasets "
+                    f"files {WHEELHOUSE}`> o --ruedas <carpeta>."
+                )
+            )
+        out.append(
+            _mal(
+                "No se comprobaron los imports del notebook contra las ruedas reales: falta --ruedas "
+                "<carpeta con las .whl del arnés bajadas del conjunto, o con sus fuentes extraídas>."
+            )
+        )
+        return out
+    fuentes = kaggle_arnes.leer_fuentes(ruedas)
+    diferencias = kaggle_arnes.diferencias_con_lo_ensayado(fuentes.versiones)
+    out += [_mal(f"Las ruedas de --ruedas no son las ensayadas: {d}.") for d in diferencias]
+    if not diferencias:
+        out.append(_bien(f"Las ruedas de --ruedas son las ensayadas: {dict(sorted(ensayado.items()))}."))
+    if entradas:
+        por_nombre = {str(e["nombre"]): e.get("bytes") for e in entradas}
+        del_arnes = {kaggle_arnes.normalizar_dist(dist) for dist in ensayado}
+        distintas = []
+        for rueda in sorted(ruedas.glob("*.whl")):
+            par = kaggle_arnes.version_de_rueda(rueda.name)
+            if par is not None and par[0] in del_arnes and por_nombre.get(rueda.name) != rueda.stat().st_size:
+                distintas.append(rueda.name)
+        out.append(
+            _mal(f"Ruedas de --ruedas que no están en el listado con ese tamaño: {', '.join(distintas)}.")
+            if distintas
+            else _bien("Las ruedas del arnés de --ruedas tienen el tamaño que dice el listado.")
+        )
+    informe = kaggle_arnes.comprobar_imports(celdas, fuentes)
+    out += [_mal(f"Import que no existe en las ruedas: {texto}.") for texto in informe.rotos]
+    out += [_mal(f"Import sin fuente con que comprobarlo: {texto}.") for texto in informe.sin_fuente]
+    if informe.ok:
+        out.append(
+            _bien(
+                f"Los {informe.comprobados} imports del arnés que hace el notebook existen en las ruedas "
+                "(leídas como texto, sin ejecutar)."
+            )
+        )
+    elif not informe.rotos and not informe.sin_fuente:
+        out.append(_mal("No se encontró ningún import del arnés que comprobar contra las ruedas."))
+    return out
+
+
 def comprobar(directorio: Path, tope_min: int) -> list[Hallazgo]:
-    """Todos los hallazgos del directorio; ninguno ``ok=False`` significa que se puede subir."""
+    """Los hallazgos del directorio solo (metadatos, celdas, guardia). No mira el arnés: para decidir una
+    subida se usa ``comprobar_para_subir``, que añade ``comprobar_arnes``."""
     out: list[Hallazgo] = []
     out.append(
         _bien(f"Tope de ejecución: {tope_min} min.")
@@ -339,6 +447,30 @@ def comprobar(directorio: Path, tope_min: int) -> list[Hallazgo]:
     return out + comprobar_notebook(notebook, meta)
 
 
+def comprobar_arnes_del_directorio(
+    directorio: Path, ruedas: Path | None, listado: Path | None
+) -> list[Hallazgo]:
+    """``comprobar_arnes`` sobre el notebook del directorio. Si no se puede leer, no añade nada: eso ya es
+    un fallo de ``comprobar``."""
+    try:
+        meta = json.loads((directorio / "kernel-metadata.json").read_text(encoding="utf-8"))
+        notebook = json.loads((directorio / meta["code_file"]).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError):
+        return []
+    return comprobar_arnes(kaggle_arnes.celdas_de_codigo(notebook), ruedas, listado)
+
+
+def comprobar_para_subir(
+    directorio: Path, tope_min: int, ruedas: Path | None = None, listado: Path | None = None
+) -> list[Hallazgo]:
+    """Lo que decide la orden de subida: el directorio (``comprobar``) y el arnés (``comprobar_arnes``).
+
+    Ninguno ``ok=False`` significa que se puede subir. Un notebook que importa el arnés no pasa sin
+    ``ruedas``.
+    """
+    return comprobar(directorio, tope_min) + comprobar_arnes_del_directorio(directorio, ruedas, listado)
+
+
 def orden_de_subida(directorio: Path, meta: dict[str, Any], tope_min: int) -> str:
     orden = f'kaggle kernels push -p "{directorio}" -t {tope_min * 60}'
     if meta.get("enable_gpu") is True:
@@ -354,9 +486,21 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("comprobar", help="Comprueba un directorio de notebook antes de subirlo.")
     p.add_argument("directorio", type=Path, help="Directorio con kernel-metadata.json y el notebook.")
     p.add_argument("--tope-min", type=int, required=True, help="Tope de ejecución en minutos.")
+    p.add_argument(
+        "--ruedas",
+        type=Path,
+        default=None,
+        help="Carpeta con las .whl del arnés bajadas del conjunto de ruedas, o con sus fuentes extraídas.",
+    )
+    p.add_argument(
+        "--listado",
+        type=Path,
+        default=None,
+        help="Listado del conjunto de ruedas: listado_ruedas.json del rescate o la salida de la CLI.",
+    )
     args = parser.parse_args(argv)
 
-    hallazgos = comprobar(args.directorio, args.tope_min)
+    hallazgos = comprobar_para_subir(args.directorio, args.tope_min, args.ruedas, args.listado)
     for h in hallazgos:
         print(f"[{'OK' if h.ok else 'FALLA'}] {h.texto}")
     fallos = sum(1 for h in hallazgos if not h.ok)

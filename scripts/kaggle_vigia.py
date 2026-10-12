@@ -39,6 +39,12 @@ vez y con el intervalo más corto que hay. Si no puede escribir, lo dice y sigue
 «Sin procesar» quiere decir solo esto: hay un cambio en Kaggle respecto del último rescate. Un rescate
 nuevo lo apaga; que la bitácora y la memoria se actualicen es trabajo del orquestador.
 
+**Avisa si cambió el conjunto público de ruedas del arnés** (#195): si el último rescate guardó su
+``listado_ruedas.json``, pide el listado actual (una petición, dentro del mismo tope) y lo compara con él
+(archivos que entran, salen o cambian de tamaño o de fecha) y con las versiones con que se ensayó
+(``scripts/kaggle_arnes.py``). Calla si nada cambió, y no pide nada si el rescate no trae listado. El
+2026-10-12 una corrida falló a los 106 s por un cambio de tres días antes que nadie vio.
+
 Además imprime los hallazgos de ``experiments/gemma_developer_agent/hallazgos.json`` que llevan más de una
 vuelta en estado ``medido`` (regla de ``CONTRIBUTING.md``: un hallazgo medido no puede aparecer en dos
 vueltas sin una decisión escrita). Eso no necesita red ni token.
@@ -64,7 +70,7 @@ from typing import Any
 if __package__ in (None, ""):  # ejecutado como archivo, como lo llama el gancho
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts import kaggle_rescate
+from scripts import kaggle_arnes, kaggle_rescate
 
 RAIZ_REPO = Path(__file__).resolve().parent.parent
 RUTA_RESCATES = Path("experiments") / "gemma_developer_agent" / "data" / "rescate_kaggle"
@@ -77,6 +83,7 @@ TOPE_GIT_S = 3
 # la primera página): con 20 envíos o más en la lista, la primera página puede no traerlos todos.
 PAGINA_LLENA = 20
 MAX_NOTEBOOKS_A_CONSULTAR = 5
+MAX_CAMBIOS_DE_RUEDAS = 6
 UMBRAL_DE_EDAD_H = 24
 TOPE_LINEAS_DE_HALLAZGOS = 12
 MARCA_DE_CARPETA = re.compile(r"^(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})(\d{2})?Z$")
@@ -751,7 +758,60 @@ def consultar(
             lineas.append(f"… y {len(cambiados) - MAX_NOTEBOOKS_A_CONSULTAR} notebooks más sin rescatar")
     if not cambios:
         lineas.append("envíos sin cambios desde esa lectura")
-    return lineas
+    return lineas + avisos_de_ruedas(carpeta, token, pedir, limite)
+
+
+def avisos_de_ruedas(carpeta: Path, token: str, pedir: Pedir, limite: float) -> list[str]:
+    """Avisa si el conjunto de ruedas del arnés cambió respecto del último rescate o de lo ensayado (#195).
+
+    Solo pide algo si el último rescate guardó su ``listado_ruedas.json``: entonces hace una sola petición
+    (una página del listado), y solo si queda tiempo del tope. Un rescate anterior al #195 no lo trae: ahí
+    no hay con qué comparar, no se pide nada y no se dice nada (el rescate siguiente lo guarda, y el propio
+    rescate avisa por stderr si no pudo). Calla también si el conjunto es el del último rescate y sus
+    versiones son las ensayadas. Nunca lanza.
+    """
+    try:
+        archivo = carpeta / kaggle_rescate.ARCHIVO_LISTADO
+        if not archivo.is_file():
+            return []
+        datos = json.loads(archivo.read_text(encoding="utf-8"))
+        if not isinstance(datos, dict) or not isinstance(datos.get("archivos"), list):
+            return [
+                f"el rescate {carpeta.name} no pudo guardar el listado de ruedas del arnés: corre el rescate"
+            ]
+        guardado = [kaggle_arnes.entrada_de(x) for x in datos["archivos"] if isinstance(x, dict)]
+        if time.monotonic() >= limite:
+            return ["no comparé el conjunto de ruedas del arnés: se gastó el tope"]
+        try:
+            actual = kaggle_rescate.pedir_listado_de_ruedas(token, pedir, max_paginas=1)
+        except Exception as exc:
+            return [f"no pude leer el conjunto de ruedas del arnés ({type(exc).__name__}): no sé si cambió"]
+        lineas = []
+        versiones = kaggle_arnes.versiones_de(str(e["nombre"]) for e in actual)
+        diferencias = kaggle_arnes.diferencias_con_lo_ensayado(versiones)
+        if diferencias:
+            lineas.append(
+                "EL CONJUNTO DE RUEDAS DEL ARNÉS NO ES EL ENSAYADO ("
+                + "; ".join(diferencias)
+                + "): no subas un notebook sin repetir el ensayo con las ruedas reales"
+            )
+        cambios = kaggle_arnes.cambios_del_listado(guardado, actual)
+        if cambios:
+            resto = (
+                f" … y {len(cambios) - MAX_CAMBIOS_DE_RUEDAS} más"
+                if len(cambios) > MAX_CAMBIOS_DE_RUEDAS
+                else ""
+            )
+            lineas.append(
+                f"EL CONJUNTO DE RUEDAS DEL ARNÉS CAMBIÓ desde el rescate {carpeta.name} "
+                f"({len(cambios)} cambios: "
+                + "; ".join(cambios[:MAX_CAMBIOS_DE_RUEDAS])
+                + resto
+                + "): baja las ruedas, lee el diff de fuentes y repite el ensayo antes de subir"
+            )
+        return lineas
+    except Exception as exc:  # el vigía no estorba por un aviso auxiliar
+        return [f"no pude comparar el conjunto de ruedas del arnés ({type(exc).__name__})"]
 
 
 def vigia(

@@ -351,6 +351,49 @@
       "decision": null,
       "motivo_descarte": null,
       "por_que_sigue_abierto": "Medido una sola vez y solo en local. Falta saber si ocurre en Kaggle, cuánto tarda el latido que lo toma y si cabe en la copia de /kaggle/working; se lee en el primer latido de la primera porción del brazo."
+    },
+    {
+      "id": "el_conjunto_de_ruedas_cambio_y_nadie_lo_comparaba",
+      "que_se_midio": "2026-10-12: la primera pasada de la iteración 08 falló en Kaggle a los 106 s, con 0,07 h de cuota. El conjunto público de ruedas del arnés se había actualizado el 2026-10-09 a las 14:43 UTC (41 ruedas; cambian dos: swegemma de 0.2.7 a 0.2.11 y adk-submission de 0.2.12 a 0.2.13) y la celda del servidor importaba un módulo que la versión nueva eliminó. Leídos sin ejecutar, de los 16 imports del arnés que hace ese notebook 1 no existe en las ruedas nuevas y los 16 existen en las anteriores. El ensayo local no lo vio: corría con el arnés anterior guardado en su imagen. Reproducido en local el mismo día: el notebook que falló, sin rearmar y con las ruedas nuevas, se detiene en la misma celda con el mismo error.",
+      "primera_vuelta": 45,
+      "primera_fecha": "2026-10-12",
+      "vueltas_medido": [45],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Cuatro guardas, en el issue 195: el chequeo previo compara las versiones de las ruedas con las ensayadas y lee los imports del notebook contra las ruedas bajadas, y no deja subir sin ellas; la celda de instalación escribe las versiones en un archivo de salida y se detiene si no son las ensayadas; el rescate guarda el listado del conjunto; el vigía de inicio avisa si cambió. El ensayo local pasa a correr con las ruedas reales.",
+        "quien": "orquestador, con el informe del forense del arnés",
+        "vuelta": 45,
+        "fecha": "2026-10-12"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "con_el_arnes_nuevo_el_kit_de_base_razona",
+      "que_se_midio": "2026-10-12, prueba local sin GPU con las ruedas reales y un servidor falso que guarda cada petición (núcleo Jupyter con la versión de ipykernel medida en Kaggle, 2 tareas y 6 peticiones por corrida, 6 corridas). Kit de base (presupuesto de razonamiento 4096, pensamientos no incluidos): con adk-submission 0.2.12 las 6 peticiones piden no razonar y no llevan presupuesto; con 0.2.13 las 6 piden razonar con presupuesto 4096. Los dos kits con pensamientos incluidos piden razonar con 4096 en las dos versiones. Con 0.2.13 lo que distingue a la base del brazo es si el pensamiento vuelve en el historial: 0 de 6 peticiones en la base, 4 de 6 en el brazo. Los demás parámetros de muestreo son iguales en las 6 corridas. No medido: qué hace el modelo real con el razonamiento encendido, las peticiones del subagente (el modelo falso no lo llama) y qué versión del arnés usa el puntuador. La imagen local lleva otra versión del cliente del modelo que la de Kaggle.",
+      "primera_vuelta": 45,
+      "primera_fecha": "2026-10-12",
+      "vueltas_medido": [45],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Lo primero que se sube no es la pasada de 60 tareas sino un sondeo de 12 con el kit de base, para medir segundos por tarea, cortes y tokens de razonamiento con el arnés nuevo. Se rediseña en porciones si la media pasa de 120 s por tarea; se detiene el plan y se vuelve al concilio si pasa de 270 s o si más de la mitad de las tareas se corta por tiempo. Las sesiones corridas con el arnés anterior dejan de ser línea de base de una corrida con el nuevo. El diseño de después del sondeo lo decide el concilio con su dato.",
+        "quien": "concilio 45",
+        "vuelta": 45,
+        "fecha": "2026-10-12"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "el_arnes_nuevo_quita_del_parche_pruebas_y_configuracion",
+      "que_se_midio": "2026-10-12, leído por el forense del arnés en el código de swegemma 0.2.11 y no medido en una corrida: el arnés quita ahora del parche los archivos de prueba y de configuración, al entregar, en el respaldo y al verificar, y al verificar restaura solo los archivos rastreados. El diff del árbol al cierre que guarda el registro del notebook deja de ser comparable con el parche del agente. En el mismo cambio: un error de herramienta vuelve al modelo como respuesta, una sesión que revienta ya no pierde el parche en disco, y el mensaje inicial trae un árbol del espacio de trabajo de 200 líneas. Los topes y la compactación no cambian.",
+      "primera_vuelta": 45,
+      "primera_fecha": "2026-10-12",
+      "vueltas_medido": [45],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Fuera del alcance del issue 195, que solo lo documenta. Falta medirlo en la primera corrida con el arnés nuevo: cuántas tareas tienen un diff al cierre distinto del parche, y decidir si la comparación entre pasadas debe usar el parche filtrado."
     }
   ]
 }

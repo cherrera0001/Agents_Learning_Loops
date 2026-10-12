@@ -259,22 +259,37 @@ HERRAMIENTAS_ARNES: tuple[str, ...] = (
 )
 # Programa que compila el envio en un proceso aparte. Sale con 0 si compila, 3 si el arnes no se
 # puede importar y 4 si la compilacion lanza. Su salida va al volcado crudo.
+# El registro de modelos se arma con los modelos que declara el propio envio, como hace el arnes en su
+# linea de ordenes: swegemma 0.2.11 elimino `setup_gemma_model_registry` (#195) y este programa ya no
+# depende de el. `ModelRegistry` y `discover_declared_models` existen en adk_submission 0.2.12 y 0.2.13.
 PROGRAMA_COMPILAR = (
     "import sys\n"
     "from pathlib import Path\n"
     "try:\n"
-    "    from adk_submission import ToolRegistry, compile_submission\n"
-    "    from swegemma.models import setup_gemma_model_registry\n"
+    "    from adk_submission import ModelRegistry, ToolRegistry, compile_submission\n"
+    "    from adk_submission import discover_declared_models\n"
     "except Exception:\n"
     "    sys.exit(3)\n"
+    "try:\n"
+    "    from google.adk.models.lite_llm import LiteLlm\n"
+    "except Exception:\n"
+    "    LiteLlm = None\n"
     "tools = ToolRegistry()\n"
     f"for nombre in {HERRAMIENTAS_ARNES!r}:\n"
     "    tools.register(nombre, lambda **kwargs: None)\n"
     "try:\n"
+    "    modelos = ModelRegistry()\n"
+    "    for declarado in sorted(discover_declared_models(Path(sys.argv[1]))):\n"
+    "        limpio = declarado.strip()\n"
+    "        con_prefijo = limpio.startswith(('openai/', 'hosted_vllm/', 'custom/'))\n"
+    "        destino = limpio if con_prefijo else 'openai/' + limpio\n"
+    "        if LiteLlm is not None:\n"
+    "            destino = LiteLlm(model=destino, api_base='http://localhost:8000/v1', api_key='EMPTY')\n"
+    "        modelos.register(limpio, destino)\n"
     "    compile_submission(\n"
     "        submission_dir=Path(sys.argv[1]),\n"
     "        tool_registry=tools,\n"
-    "        model_registry=setup_gemma_model_registry(),\n"
+    "        model_registry=modelos,\n"
     "    )\n"
     "except Exception:\n"
     "    import traceback\n"
