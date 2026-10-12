@@ -1,0 +1,120 @@
+{
+  "seq": 86,
+  "id": "issue-103-vuelta-44-concilio-de-memoria-y-aplicacion-del-dictamen",
+  "goal": "Vuelta 44 del experimento Kaggle: concilio de investigación sobre memoria para agentes (dos tandas), medición con los episodios del propio repositorio y aplicación del dictamen en seis PR con revisor independiente, sin subir ni enviar nada a Kaggle",
+  "ref": "#103",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "",
+    "planned_effort": ""
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 8
+  },
+  "steps": [
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Heredoc largo en Git Bash para escribir el cuaderno del concilio: «unexpected EOF while looking for matching quote». No se escribió nada y un proceso de Codex arrancó sin su encargo. La lección ya estaba en la memoria (episodios 2, 7, 62, 71 y otros) y no se consultó recall antes: se guardó, no se recuperó. Es el caso que originó el issue #186"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Los archivos del concilio se escribieron con la herramienta de edición, no con heredocs"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Concilio de investigación sobre memoria para agentes en 12 ciclos, con Codex como segundo investigador (codex exec, solo lectura) y cuatro roles de revisión; salida auditada por el auditor del método. Sin código. No está versionado (vive en una carpeta ignorada)"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El resumen de evidencia que se repartió al concilio tenía dos resultados propios mal leídos: se atribuyó al placebo de H7 un «daño por mera exposición» que docs/results/failure-transfer.md contradice (el contenido importa), y se citó «+6/18» de docs/results/diagnostic-baseline.md como efecto del diagnóstico sin memoria cuando es el de la memoria con diagnóstico común (el del diagnóstico va de 6/18 a 12/18, descriptivo)"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Codex y el auditor contrastaron cada cita con su archivo y lo encontraron; correcciones escritas. El resumen de evidencia que se reparte a un concilio lo contrasta alguien que no vota"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Se presentó tres veces como coincidencia independiente algo que el orquestador había escrito en el material que el otro investigador leyó (la síntesis de evidencia, el eje de las candidatas y el voto). Además, el recuento de órdenes finales tenía un error: una candidata figuraba en 4 de 6 y estaba en 5 de 6"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "El auditor leyó el encargo que se le dio a Codex, destapó las tres coincidencias y corrigió el recuento. La salida dice que los votos no son independientes"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Medición exploratoria (un corpus, episodios dependientes, recall reconstruido con el código de hoy), publicada en https://github.com/cherrera0001/Agents_Learning_Loops/issues/103#issuecomment-6118099669. Sobre 73 episodios en main 72ca143, 63 evaluables (memoria solo con los anteriores): el ranking de devlog recall no se separa del azar (AUC medio 0,550 en 61 episodios; permutación p = 0,055) y la tasa base de fallo por acción lo supera (0,646; diferencia pareada −0,095, IC −0,165 a −0,022; prueba de signos p = 0,076). 21 de 75 lecciones automáticas son «si X falla, usar X» (120 de 295 por posición mostrada). Solo 11 de 63 episodios con recall_memory dicen que lo recuperado cambió una decisión (un evaluador, sobre autoinforme). Dictamen de la segunda tanda: https://github.com/cherrera0001/Agents_Learning_Loops/issues/182#issuecomment-6117006015"
+    },
+    {
+      "action": "open_pr",
+      "success": false,
+      "error": "Un implementador comentó el PR #185 con la cuenta vinculaterritorio (la activa del llavero) porque el encargo no fijaba la cuenta de GitHub. Ya consta en el episodio 082; aquí va como fallo del orquestador al delegar"
+    },
+    {
+      "action": "open_pr",
+      "success": true,
+      "note": "Comentario republicado con cherrera0001 y original retirado; desde entonces la cuenta va fijada en cada encargo que escribe. Seis PR fusionados (#185, #189, #190, #191, #192 y #193), cada uno con revisor independiente; el #184 (#179) sigue abierto (gh pr view 184: OPEN, sin mergedAt). outcome.prs cuenta los siete PR de la vuelta más este"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Se afirmó que una sesión abierta no recoge un gancho nuevo y que los ganchos no alcanzan a los subagentes; la documentación oficial dice lo contrario y la prueba en vivo del gancho del #186 lo confirmó"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido en docs/entorno/harness.md dentro del PR #191. El gancho rechazó python - <<'EOF' en sesión real y lo contó (comentario del issue #186)"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "De siete PR revisados en la vuelta, cuatro recibieron «cambios requeridos» en su primera revisión (#184, #190, #191, #193); seis están fusionados (#185, #189, #190, #191, #192, #193) y el #184 sigue abierto. En el #191 la primera versión del gancho rechazaba todos los git push: lo encontró el revisor con una batería de órdenes legítimas, no el implementador"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "Se dio el cierre del #177 por confirmable antes de mirar la CI de main: falló por una prueba intermitente (assert 0.039 >= 0.04 en Windows). Consta una caída de la CI de main en 33f07be (https://github.com/cherrera0001/Agents_Learning_Loops/issues/188#issuecomment-6116755897); una segunda caída en la CI del PR #190 la dice el orquestador y no pude comprobarla"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Prueba de reloj estable en el PR #193 (#188); relanzada la CI y cierre del #177 confirmado después"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "Las predicciones 38 a 47 se sellaron solo en comentarios de issue y no en experiments/azar/preregistro/prediccion_de_fallos.md, que el #167 exige: su cierre quedó sin confirmar"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Este PR añade las secciones 16 a 19 del pre-registro con el texto sellado de cada comentario, una nota de desviación y los desenlaces (tres de nueve marcadas ocurrieron; la 41 sigue abierta), y este episodio. Con nueve predicciones no se habla de calibración"
+    }
+  ],
+  "lessons": [
+    "Una lección que se repite se vuelve comprobación ejecutable en el punto de uso: el texto recuperado no evitó cinco repeticiones del heredoc posteriores a la regla escrita (comentario del issue #103 citado en el paso de la medición) y la orden de la skill sí evitó los choques de seq",
+    "Antes de llamar independiente a una coincidencia, mira qué leyó el otro: si leyó algo que tú escribiste, no es independiente",
+    "El resumen de evidencia de un concilio se contrasta cita por cita con su archivo antes de repartirlo, y lo contrasta alguien que no vota",
+    "Un gancho que rechaza necesita, antes de fusionarse, una batería de órdenes legítimas escrita por quien no lo implementó: la primera versión rechazaba todos los git push",
+    "Varios PR en paralelo que añaden una línea a CHANGELOG.md chocan casi siempre (3 de 4 en esta vuelta): fusiona main justo antes de cada merge o resuelve conservando los dos lados",
+    "Fija la cuenta de GitHub en el encargo de cada agente que escribe y audita el autor de cada comentario",
+    "Las predicciones se sellan en el archivo versionado que el issue exige, no solo en un comentario: lo que vive en un comentario deja el cierre sin confirmar",
+    "Mira la CI de main antes de dar un cierre por confirmable: una prueba intermitente puede estar rota ahí sin que el PR lo muestre"
+  ]
+}
