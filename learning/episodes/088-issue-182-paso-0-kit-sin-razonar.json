@@ -1,0 +1,55 @@
+{
+  "seq": 88,
+  "id": "issue-182-paso-0-kit-sin-razonar",
+  "goal": "Paso 0 del concilio 45 tras el sondeo s1: preparar, sin subir nada, un kit idéntico al de base con el razonamiento apagado, su notebook de 12 tareas, la prueba de que la petición sale sin razonar y una regla de validez comprobable en la salida real",
+  "ref": "#182",
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el texto del encargo, desde una rama nueva sobre origin/main ya con el #196. Devolvió las lecciones del episodio 087, y dos se aplicaron tal cual: ejecutar el camino real contra un servidor falso y leer la petición (no fiarse de que `thinking_budget: 0` apaga el razonamiento por leer el código), y trabajar en una copia dentro del árbol de trabajo sin rodear el bloqueo de escritura. El encargo no traía «Estimación v1»: este episodio no lleva bloque `estimate`"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "El kit A0 se arma con un guion que copia los miembros del zip de base en su orden, con sus fechas y permisos, y cambia una línea de un miembro; comprueba miembro a miembro que los otros cinco son idénticos. El notebook s2 parte del de s1 ya armado y con su SHA-256 comprobado (el que corrió en Kaggle), no de un rearmado: siete reemplazos de línea, y se detiene si deshaciéndolos no recupera s1 byte a byte. Así no se tocó el guion que arma las porciones del brazo ni cambiaron sus huellas"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Prueba con las ruedas reales y servidor falso, cuatro corridas de 2 tareas (A0 y base, arnés nuevo y anterior). A0 con adk_submission 0.2.13: enable_thinking false y sin thinking_token_budget en 6 de 6 peticiones; temperature, top_p y max_completion_tokens iguales a la base, comparados campo a campo por un guion. Con presupuesto 0 la clave del presupuesto no viaja con valor 0: no viaja. Ensayo de s2: sesión completa (6 de sus 12 tareas tienen copia local) y tarea colgada, 2 de 2 pasan, 0 peticiones piden razonar. Chequeo previo con ruedas y listado: 0"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La regla «una sola petición que pida razonar invalida la corrida» ya se podía leer en el diagnóstico (el recuento existe desde el #195), pero leerla a ojo en un JSON no es una comprobación: `--sin-razonar` la convierte en un código de salida (8). Una petición sin el dato también invalida: sin el parámetro decide el servidor. La opción es nueva y sin ella ninguna salida cambia, así que no hubo que tocar pruebas existentes"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Un caso de la prueba parametrizada (una tarea sin ninguna petición) asumía que el diagnóstico sin la regla sale con 0: no, un registro sin peticiones no es fiable y ya sale con 4, así que el control previo de la propia prueba falló. El caso se sacó de la parametrización y se prueba sobre la función de la regla, con el recuento a cero"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En la nota del envío del 2026-10-12 del registro de envíos escribí «con orden del dueño»: no lo sé, el encargo solo daba la referencia, la hora y el zip. Se quitó antes del commit; la nota dice que los datos son los que dio el orquestador y que este registro no leyó Kaggle"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la última edición: ruff check, ruff format --check, mypy, export_schema --check y la suite completa con cobertura (cifras en el PR). mutation_check, en la CI"
+    }
+  ],
+  "lessons": [
+    "Para cambiar una sola variable de un experimento, parte del artefacto que ya corrió (comprobando su huella) y aplica reemplazos que se puedan deshacer hasta recuperarlo byte a byte; no lo rearmes desde más atrás",
+    "Una regla de validez que hay que leer a ojo en un JSON no se aplica: conviértela en un código de salida, y decide de antemano qué pasa con el dato ausente (aquí, ausente también invalida)",
+    "En un registro de hechos externos escribe solo lo que te dieron o leíste, y di de quién viene: no añadas quién lo ordenó ni por qué si no lo sabes"
+  ]
+}
