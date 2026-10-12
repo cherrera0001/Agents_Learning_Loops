@@ -1,6 +1,6 @@
 # Pre-registro · Predicado de alcance por diagnóstico, en tareas escritas a ciegas (#198)
 
-**Registro**: el commit que introduce este archivo, hecho **antes** de que exista ninguna de las tareas del
+**Registro**: el último commit de este archivo en el PR #199 (ver la nota de versión al final), hecho **antes** de que exista ninguna de las tareas del
 banco nuevo y antes de encargar su escritura. Cambiar este documento después de que el banco exista lo
 invalida en ese punto, y toda desviación se reporta como tal en el informe de resultados.
 
@@ -108,7 +108,10 @@ Una tarea es válida si se cumplen las cuatro:
 4. con el defecto y cada uno de los otros dos operadores, no pasa **con ninguna** de las seis semillas. Que
    `change` no encuentre dónde aplicar (devuelve `None`) cuenta como no pasar.
 
-Si el resultado de 3 o de 4 cambia según la semilla, la tarea es inválida. Un par es válido si lo son sus dos
+Casos límite: si `change` lanza una excepción (por ejemplo, porque el defecto deja un archivo que no se puede
+analizar), cuenta como no pasar; con el operador sellado eso hace inválida la tarea. En la condición 3 el
+operador sellado tiene que modificar el mismo archivo que el defecto: si hace pasar los tests tocando otro, la
+tarea es inválida. Si el resultado de 3 o de 4 cambia según la semilla, la tarea es inválida. Un par es válido si lo son sus dos
 tareas y el tipo que resulta (mismo operador o distinto) es el que el autor selló. Los pares inválidos se
 excluyen y se listan con su motivo. **No se reemplazan.**
 
@@ -137,7 +140,8 @@ cuántos pares válidos quedan de cada tipo; no de una prueba aplicada después.
 
 Por qué cero errores: la referencia es marcar al azar como «admitidos» tantos pares como pares de mismo
 operador hay. Acertarlos todos tiene probabilidad 1/70 con cuatro y cuatro y 1/35 con cuatro y tres. Con un
-solo par mal marcado ya no baja de 0,05 (con cuatro y cuatro, la prueba exacta unilateral da 1/14). No hay
+solo par de mismo operador sin admitir, o uno de operador distinto admitido, ya no baja de 0,05 (con cuatro y
+cuatro, la prueba exacta unilateral da 1/14). Un par mixto es un error aunque esa prueba no lo vea. No hay
 veredicto intermedio ni «casi».
 
 Como dato descriptivo, y sin efecto en el veredicto, se informa también la prueba exacta de Fisher sobre la
@@ -170,8 +174,9 @@ Toda desviación se anota en el informe con su motivo. Son desviaciones, entre o
 reglas o su huella; añadir, quitar o corregir tareas; cambiar la regla de validez; evaluar `D` antes de cerrar
 la validez; que el autor haya leído algo fuera de su carpeta aislada.
 
-**Nota de versión.** Este archivo tuvo dos commits antes de que existiera el banco: el primero (`f99c3e6`) y
-una corrección tras la revisión independiente del PR #199, que cambió la definición del estadístico (era una
+**Nota de versión.** Este archivo tuvo tres commits antes de que existiera el banco, y el vinculante es el
+último: el primero (`f99c3e6`), una corrección tras la revisión independiente del PR #199 (`6e5bb22`) y un
+ajuste tras la segunda revisión (casos límite de la validez y redacción). La corrección cambió la definición del estadístico (era una
 prueba de Fisher que no coincidía con la definición de acierto), cerró la regla de validez (semillas, qué es
 aplicar un operador, qué es pasar), precisó quién escribe el banco y corrigió una cifra (17/70 por 1/14). El
 predicado de la sección 3 y su huella no cambiaron.

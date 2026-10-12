@@ -52,6 +52,16 @@
       "note": "Síntesis con lo que el concilio no entregó dicho sin suavizar. El encargo pedía resultados numéricos y una simulación Monte Carlo; no se corrió ninguna, por decisión de diseño: la ronda 4 vetó la especificación del simulador (quince confusores, una prueba nula con efecto real de +0,20 y dos predicciones de control que fallarían con código correcto). Las únicas cuentas numéricas fueron cálculos locales de los roles; las de las rondas 4 y 5 no dejaron archivo en la carpeta del concilio y no se pueden reproducir"
     },
     {
+      "action": "update_docs",
+      "success": false,
+      "error": "El orquestador no guardó en la carpeta del concilio los prompts de los seis subagentes ni pidió a los roles el guion de sus cuentas: el auditor no pudo comprobar qué leyó cada uno, y las cuentas de las rondas 4 y 5 quedaron sin poder reproducirse. Además dejó el cuaderno atrasado mientras corrían las rondas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cuaderno puesto al día con el dictamen del auditor, las correcciones a sus propias entradas y los doce fallos del orquestador. Para el paso siguiente se guardaron el encargo exacto del autor del banco y el borrador que traía el dueño, con el motivo de cada diferencia; el encargo exige al autor un manifiesto con lo que leyó y ejecutó"
+    },
+    {
       "action": "estimate_issue",
       "success": true,
       "note": "Issue #198 con Estimación v1 (XL, 8 puntos, I3, R3, Opus 5.5 xhigh, ancla #46) y etiqueta de talla; el gestor de proyecto rellenó los campos del tablero y los leyó de vuelta. El banco lo escribirá Codex, porque quien congela el predicado no puede escribir las tareas"
