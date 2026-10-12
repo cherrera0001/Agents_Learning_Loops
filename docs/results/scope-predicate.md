@@ -15,7 +15,8 @@ no fijó; la lectura del orquestador es que no (ver *Qué significa y qué no*).
 1. El pre-registro quedó fijado en el commit `87e6032` del PR #199, tras tres pasadas de un revisor
    independiente, antes de encargar el banco.
 2. Según el encargo y el manifiesto (en el expediente sin versionar, ver *Material*), el banco se encargó a
-   una ejecución nueva de Codex, sin contexto del concilio, en una carpeta que solo contenía el protocolo, `src/experiments/agent.py`, la aplicación y `benchmark/public/`.
+   una ejecución nueva de Codex, sin contexto del concilio, en una carpeta que solo contenía el protocolo,
+   `src/experiments/agent.py`, la aplicación y `benchmark/public/`.
 3. El autor leyó los tres operadores y la aplicación, contó dónde puede actuar cada operador y **se detuvo
    sin escribir ninguna tarea**, como su encargo le permitía si no existían dieciséis defectos distintos. No
    ejecutó tests ni operadores. Dejó un manifiesto con lo que leyó y lo que ejecutó.
@@ -44,8 +45,8 @@ EXP-06 con otro defecto.
   el defecto. Lectura del orquestador, que el pre-registro no fijó: por eso dos tareas del mismo sitio no
   deberían contarse como unidades independientes.
 - **Con seis sitios caben tres pares que no compartan ninguno.** En tres mezclas: los tres de mismo
-  operador, los tres de operador distinto, o uno de mismo y dos de distinto. Con tres pares la separación perfecta tiene
-  probabilidad de 1/3 o más por azar, así que ninguna de esas mezclas alcanza un veredicto distinto de
+  operador, los tres de operador distinto, o uno de mismo y dos de distinto. Con tres pares la separación
+  perfecta tiene probabilidad de 1/3 o más por azar, así que ninguna de esas mezclas alcanza un veredicto distinto de
   INSUFICIENTE.
 - **Sobre el predicado: nada.** Sigue siendo un candidato respaldado por tres tareas cuyas reglas se
   escribieron conociéndolas ([#58](diagnostic-baseline.md)).
