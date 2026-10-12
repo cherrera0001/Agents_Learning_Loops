@@ -291,20 +291,25 @@ salvo que el encargo lo pida: lee su resultado en el CI del PR.
 ## Guardas previas a una orden de Bash
 
 Un gancho `PreToolUse` de Claude Code (`.claude/settings.json`, guion `scripts/guarda_previa.py`) revisa cada
-orden de Bash antes de ejecutarla y **rechaza** (no avisa) dos cosas que el texto no logró hacer cumplir:
+orden de la herramienta Bash antes de ejecutarla. **Rechaza** (no avisa) solo lo que puede decidir con
+seguridad, escribiendo la decisión por stdout y saliendo siempre con 0, y **cuenta** lo demás:
 
-- **Un heredoc que alimenta un intérprete** (`python -`, `node`, `bash`...), que escribe un archivo fuente
-  (`cat > x.py <<EOF`) o cuyo cuerpo pasa de 60 líneas. En su lugar: escribe el archivo con la herramienta de
-  edición y ejecútalo. Siguen pasando el mensaje de commit con heredoc y el heredoc corto de texto plano.
-- **Una escritura en GitHub con la cuenta equivocada**: `gh pr|issue create|comment|edit|close|merge|review`,
-  `gh api` con `-X POST|PATCH|PUT|DELETE` o `-f/-F`, `gh project item-*`, `gh release *` o `git push`, en este
-  repositorio, cuando la cuenta efectiva no es `cherrera0001`. Forma correcta:
-  `GH_TOKEN="$(gh auth token --user cherrera0001)" gh ...`. Las lecturas no se frenan.
+- **Un heredoc que alimenta un intérprete** (la orden simple del `<<` es `python`, `node`, `bash`...), que
+  escribe un archivo fuente (`cat > x.py <<EOF`) o cuyo cuerpo pasa de 60 líneas. En su lugar: escribe el
+  archivo con la herramienta de edición y ejecútalo. Siguen pasando el mensaje de commit con heredoc
+  (también tras `pytest &&`) y el heredoc corto de texto plano.
+- **Una escritura de `gh` con la cuenta equivocada**: un par grupo-verbo de escritura (`pr comment`, `issue
+  create`, `api -X POST`...) en este repositorio, sin `GH_TOKEN` en la orden y con una cuenta activa que no es
+  `cherrera0001`, o con `gh auth token --user` de otra cuenta. Forma correcta:
+  `GH_TOKEN="$(gh auth token --user cherrera0001)" gh ...`. Las lecturas no se frenan. **`git push` solo se
+  cuenta** («push visto»), no se rechaza.
 
-Cada rechazo se cuenta en `.claude/guarda_previa.jsonl` (ignorado por git); `python -m scripts.guarda_previa
---contar` lo lee. **Condición de reversión** (issue #186): si en los 15 episodios siguientes a la fusión hay
-2 o más pasos fallidos por heredoc, o más de 1 orden legítima frenada, el gancho pasa a solo contar. Los
-ganchos no alcanzan a Codex ni a otros agentes. Detalle y límites: [`docs/entorno/harness.md`](docs/entorno/harness.md).
+El registro `.claude/guarda_previa.jsonl` (ignorado por git; solo hora, regla, veredicto y ejecutable, nunca
+texto de órdenes) se lee con `python -m scripts.guarda_previa --contar`. **Condición de reversión** (issue
+#186): si en los 15 episodios siguientes a la fusión hay 2 o más pasos fallidos por heredoc, o más de 1 orden
+legítima frenada, el gancho pasa a solo contar. **No cubre la herramienta PowerShell** ni a Codex u otros
+agentes, y una sesión ya abierta no recoge el gancho. Detalle y límites:
+[`docs/entorno/harness.md`](docs/entorno/harness.md).
 
 ## Tests
 

@@ -24,7 +24,12 @@
     {
       "action": "publish_comment",
       "success": false,
-      "error": "Incidente de cuenta del 2026-10-12, previo a este issue: un comentario del PR #185 salió con la cuenta vinculaterritorio porque era la activa del llavero de gh y la orden no fijaba GH_TOKEN. Resolución: el orquestador republicó el comentario con cherrera0001 y retiró el original. La lección ya estaba escrita (episodios 035 y 045) y no se cumplió: por eso este issue la convierte en la guarda de cuenta del gancho"
+      "error": "Incidente de cuenta del 2026-10-12, previo a este issue: un comentario del PR #185 salió con la cuenta vinculaterritorio porque era la activa del llavero de gh y la orden no fijaba GH_TOKEN. La lección ya estaba escrita (episodios 035 y 045) y no se cumplió"
+    },
+    {
+      "action": "fix_account_incident",
+      "success": true,
+      "note": "Resolución del incidente del PR #185: el orquestador republicó el comentario con la cuenta cherrera0001 y retiró el original. La causa de fondo, que la regla solo era texto, se atiende en este issue con la guarda de cuenta del gancho"
     },
     {
       "action": "recall_memory",
@@ -59,13 +64,35 @@
     {
       "action": "run_tests",
       "success": true,
-      "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2951 pasadas y 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR"
+      "note": "Primera versión: ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2951 pasadas y 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR (12 de 12 comprobaciones en verde en el primer push)"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Revisión independiente de la primera cabeza (7d07ddd): cambios requeridos, seis bloqueantes. (1) git push se rechazaba siempre porque se decidía por la cuenta activa de gh y git usa su propio gestor de credenciales; (2) export GH_TOKEN=... && gh ... se rechazaba porque solo se miraba el prefijo de la misma orden; (3) gh project item-list se rechazaba por el prefijo item-; (4) el incidente original se escapaba con texto en castellano: stdin se leía en cp1252 y el registro no podía escribir Á, Í ni comillas tipográficas, y las pruebas usaban text=True y no lo veían; (5) la palabra «intérprete» en la línea del << rechazaba `python -m pytest && git commit -m \"$(cat <<EOF`; (6) con el guion ausente, `python ruta/inexistente.py` salía con 2, el código de rechazo, y bloqueaba toda orden de Bash. Predicciones 38 y 39 ocurrieron; la 40 no. Causa común: se diseñó con casos propios y sin órdenes reales de uso diario en esta máquina, y se eligió el rechazo por código 2"
+    },
+    {
+      "action": "narrow_guard",
+      "success": true,
+      "note": "Resolución de la revisión (decisión del orquestador, condición de reversión aplicada): el rechazo pasa a ser una decisión JSON por stdout con salida 0 y la orden registrada lleva || true; stdin se lee como bytes UTF-8; la guarda de cuenta usa una lista explícita de pares grupo-verbo, no rechaza si la orden menciona GH_TOKEN en cualquier parte y no rechaza nunca git push (solo lo cuenta); «alimenta un intérprete» se decide por la orden simple del <<, con analizador de comillas y $(...); el registro guarda solo hora, regla, veredicto y ejecutable"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas reescritas con entrada y salida en bytes: casos históricos (11), heredocs con intérprete real que se escapaban (17), órdenes legítimas (18) con las que el revisor halló rechazadas, 45 escrituras de gh con cuenta ajena, 29 lecturas, dudosas y de otro repositorio que pasan, git push contado, UTF-8 con Á, Í y comillas tipográficas, avería, tope y entrada rota con salida 0, la orden de settings.json con guion ausente, ruta inexistente y guion que falla al importarse, y el contador"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la revisión, con la suite completa después de la última edición: ruff check y ruff format --check sin hallazgos, mypy sin problemas, export_schema --check sincronizado, pytest --cov 3014 pasadas y 9 omitidas con cobertura 98,72 %"
     }
   ],
   "lessons": [
     "Una regla escrita no frenó once heredocs ni tres cambios de cuenta; lo que sí la hace cumplir es una comprobación ejecutable previa a la orden, con registro de cuántas veces actuó",
     "Antes de fijar un umbral de líneas, mide qué órdenes legítimas lo cruzan: aquí el contenido (intérprete o archivo fuente) explica la mayoría de los fallos y el largo solo cuatro",
     "Un gancho que bloquea debe fallar abierto: con un tope propio menor que el del gancho y, si algo falla, dejar pasar la orden diciéndolo y contándolo",
+    "Un gancho que rechaza debe poder fallar solo hacia «dejar pasar»: el rechazo se da como decisión con salida 0 y la orden registrada se blinda con || true, porque el código 2 de un guion ausente bloquea todo",
+    "Prueba un gancho con las órdenes reales de uso diario (exports, pytest &&, rutas con espacios, texto en castellano) y con entrada en bytes: las pruebas con text=True ocultaron el fallo de codificación del incidente que originó el issue",
     "Una escritura en GitHub con la cuenta del llavero activo se evita fijando GH_TOKEN en la propia orden con gh auth token --user cherrera0001, nunca con gh auth switch"
   ]
 }

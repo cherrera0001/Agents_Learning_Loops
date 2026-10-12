@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guarda_previa.py\"",
+            "command": "python \"$CLAUDE_PROJECT_DIR/scripts/guarda_previa.py\" || true",
             "timeout": 10
           }
         ]
