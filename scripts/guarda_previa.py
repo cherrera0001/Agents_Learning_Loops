@@ -90,7 +90,6 @@ _REDIRECCION_FUENTE = re.compile(
 )
 _OPERADOR_HEREDOC = re.compile(r"<<(-?)[ \t]*(?:'([^'\n]+)'|\"([^\"\n]+)\"|\\?(\w[\w.-]*))")
 _ASIGNACION = re.compile(r"^[A-Za-z_]\w*=")
-_USUARIO_TOKEN = re.compile(r"gh\s+auth\s+token\b[^|;&)\n]*?(?:--user|-u)[ =]+[\"']?([A-Za-z0-9][\w-]*)")
 _TOKEN_LITERAL = re.compile(r"(?:GH|GITHUB)_TOKEN=[\"']?(?![\"']?[$(`])[A-Za-z0-9_]{8,}")
 
 MENSAJE_HEREDOC = (
@@ -472,6 +471,8 @@ class Observacion:
     escrituras: list[tuple[str, list[str]]] = field(default_factory=list)
     push: bool = False
     cambia_directorio: bool = False
+    # Cuentas de ``gh auth token --user X`` que son una orden (simple o dentro de ``$(...)``), no texto.
+    usuarios_token: list[str] = field(default_factory=list)
 
 
 def observar(orden: str) -> Observacion:
@@ -480,6 +481,10 @@ def observar(orden: str) -> Observacion:
     for s in segmentos:
         nombre, args = ejecutable(s.texto)
         if nombre == "gh":
+            if args[:2] == ["auth", "token"]:
+                usuario = _opcion(args, "--user", "-u")
+                if usuario:
+                    obs.usuarios_token.append(usuario)
             descripcion = es_escritura_gh(args)
             if descripcion:
                 obs.escrituras.append((descripcion, args))
@@ -581,13 +586,13 @@ def evaluar_cuenta(orden: str, cwd: str, entorno: Mapping[str, str]) -> Veredict
     descripcion = escrituras[0][0]
     if obs.cambia_directorio:
         return Veredicto(VEREDICTO_DUDOSO, "cuenta:cambia_directorio", "gh")
-    for m in _USUARIO_TOKEN.finditer(orden):
-        if m.group(1).lower() != CUENTA:
+    for usuario in obs.usuarios_token:
+        if usuario.lower() != CUENTA:
             return Veredicto(
                 VEREDICTO_RECHAZO,
                 "cuenta:token_ajeno",
                 "gh",
-                f"{descripcion} con el token de la cuenta {m.group(1)}",
+                f"{descripcion} con el token de la cuenta {usuario}",
             )
     if "GH_TOKEN" in orden or "GITHUB_TOKEN" in orden:
         if _TOKEN_LITERAL.search(orden):
@@ -704,16 +709,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     if "--contar" in (sys.argv[1:] if argv is None else argv):
         return contar(entorno, sys.stdout)
 
-    resultado: list[str | None] = []
+    resultado: list[tuple[str | None, str]] = []
 
     def trabajar() -> None:
         try:
-            texto = sys.stdin.buffer.read().decode("utf-8", errors="replace")
-            evento = json.loads(texto) if texto.strip() else {}
-            resultado.append(decidir(evento if isinstance(evento, dict) else {}, entorno))
+            # ``utf-8-sig`` acepta una entrada con BOM.
+            texto = sys.stdin.buffer.read().decode("utf-8-sig", errors="replace")
+            evento = json.loads(texto)
+            if not isinstance(evento, dict):
+                raise TypeError("entrada que no es un objeto JSON")
+            resultado.append((decidir(evento, entorno), ""))
         except Exception as error:
-            registrar(entorno, VEREDICTO_FALLA, type(error).__name__)
-            resultado.append(None)
+            nombre = type(error).__name__
+            registrar(entorno, VEREDICTO_FALLA, nombre)
+            resultado.append(
+                (None, f"guarda previa: no pude leer o decidir ({nombre}); dejo pasar la orden.")
+            )
 
     hilo = threading.Thread(target=trabajar, daemon=True)
     hilo.start()
@@ -724,7 +735,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         registrar(entorno, VEREDICTO_FALLA, "tope")
         aviso = f"guarda previa: paso de {TOPE_SEGUNDOS:g} s; dejo pasar la orden."
     elif resultado:
-        motivo = resultado[0]
+        motivo, aviso = resultado[0]
     else:
         aviso = "guarda previa: fallo; dejo pasar la orden."
     try:

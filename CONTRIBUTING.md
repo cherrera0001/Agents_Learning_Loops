@@ -308,7 +308,8 @@ El registro `.claude/guarda_previa.jsonl` (ignorado por git; solo hora, regla, v
 texto de órdenes) se lee con `python -m scripts.guarda_previa --contar`. **Condición de reversión** (issue
 #186): si en los 15 episodios siguientes a la fusión hay 2 o más pasos fallidos por heredoc, o más de 1 orden
 legítima frenada, el gancho pasa a solo contar. **No cubre la herramienta PowerShell** ni a Codex u otros
-agentes, y una sesión ya abierta no recoge el gancho. Detalle y límites:
+agentes; falla abierto (cualquier avería deja pasar la orden: atrapa el descuido, no es un control de
+seguridad); una sesión ya abierta puede recogerlo sin reiniciar (compruébalo en `/hooks`). Detalle y límites:
 [`docs/entorno/harness.md`](docs/entorno/harness.md).
 
 ## Tests

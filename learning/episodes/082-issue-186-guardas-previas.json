@@ -82,6 +82,16 @@
       "note": "Pruebas reescritas con entrada y salida en bytes: casos históricos (11), heredocs con intérprete real que se escapaban (17), órdenes legítimas (18) con las que el revisor halló rechazadas, 45 escrituras de gh con cuenta ajena, 29 lecturas, dudosas y de otro repositorio que pasan, git push contado, UTF-8 con Á, Í y comillas tipográficas, avería, tope y entrada rota con salida 0, la orden de settings.json con guion ausente, ruta inexistente y guion que falla al importarse, y el contador"
     },
     {
+      "action": "review_code",
+      "success": false,
+      "error": "Segunda revisión (00b14a5): los seis bloqueantes resueltos, pero quedaban cuatro defectos. (1) La guarda de cuenta buscaba `gh auth token --user X` en toda la orden, cuerpos incluidos: `gh pr comment --body \"no uses gh auth token --user vinculaterritorio\"` daba deny, que es justo el texto con que este proyecto documenta la regla; (2) con entrada que no es JSON o con BOM el gancho salía con 0 sin decisión y sin aviso, contra el criterio «deja pasar y lo dice»; (3) harness.md decía que el heredoc en minúsculas sin cierre se registraba como pasa-dudoso y el código no lo registra; (4) faltaban pruebas de `<<-`, de la regla «intérprete = ejecutable» y del host de hosts.yml. Además el conflicto de CHANGELOG.md con main. Causa: se había buscado el nombre de la cuenta como texto y no como orden"
+    },
+    {
+      "action": "fix_second_review",
+      "success": true,
+      "note": "Resolución: `gh auth token --user X` se busca solo en las órdenes simples analizadas (incluidas las de $(...) y comillas invertidas), nunca en valores de --body/--title/-m ni en cuerpos de heredoc; la entrada se decodifica con utf-8-sig y toda avería de lectura avisa por systemMessage sin decisión; harness.md dice que el heredoc en minúsculas sin cierre no se toma por heredoc y pasa sin contarse; pruebas nuevas; CHANGELOG fusionado conservando ambos lados. Por indicación del orquestador tras leer la documentación oficial de ganchos: el gancho fija \"shell\": \"bash\" y usa ${CLAUDE_PROJECT_DIR}; la documentación dice que falla abierto por diseño, que corre en subagentes y worktrees (el remoto se lee del cwd de la entrada) y que una sesión abierta puede recogerlo sin reiniciar"
+    },
+    {
       "action": "run_tests",
       "success": true,
       "note": "Tras la revisión, con la suite completa después de la última edición: ruff check y ruff format --check sin hallazgos, mypy sin problemas, export_schema --check sincronizado, pytest --cov 3014 pasadas y 9 omitidas con cobertura 98,72 %"

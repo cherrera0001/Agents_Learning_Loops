@@ -120,7 +120,11 @@ Límites, dichos sin rodeos:
 ### Guardas previas a una orden de Bash
 
 Un gancho `PreToolUse` con `matcher: "Bash"` (`.claude/settings.json`, junto a los `SessionStart`, que no
-toca) ejecuta `python "$CLAUDE_PROJECT_DIR/scripts/guarda_previa.py" || true` antes de cada orden. Recibe por
+toca) ejecuta `python "${CLAUDE_PROJECT_DIR}/scripts/guarda_previa.py" || true` con `"shell": "bash"` antes de
+cada orden (en Windows un gancho `command` usa Git Bash si está instalado y, si no, PowerShell, donde `|| true` y
+el marcador no valdrían; por eso el shell se fija en la definición). Corre también dentro de los subagentes y en
+los worktrees: allí `${CLAUDE_PROJECT_DIR}` sigue siendo la raíz original y el remoto `origin` se lee del
+campo `cwd` de la entrada del gancho (el worktree), no de la raíz del proyecto. Recibe por
 stdin (bytes, UTF-8) el JSON de Claude Code (`tool_name`, `tool_input.command`, `cwd`). **Rechaza escribiendo
 por stdout la decisión** `hookSpecificOutput.permissionDecision = "deny"` con su motivo, y **siempre sale con
 0**: ninguna avería puede bloquear una orden (el código 2 es el de rechazo de Claude Code, y el `|| true` de la
@@ -144,7 +148,8 @@ estrechó tras la revisión del PR #191: rechaza solo lo que puede decidir con s
 4. **`git push` nunca se rechaza**: se cuenta como «push visto» (git usa su propio gestor de credenciales con el
    usuario `cherrera0001`, no la cuenta activa de `gh`).
 5. Todo lo dudoso pasa y se cuenta (`pasa-dudoso`): token literal, `GH_TOKEN` en el entorno del gancho, `cd` o
-   `git -C` en la orden, remoto o `hosts.yml` ilegibles, heredoc sin cierre y con delimitador en minúsculas.
+   `git -C` en la orden, remoto o `hosts.yml` ilegibles. Un `<<` en minúsculas y sin línea de cierre no se toma
+   por heredoc: pasa sin contarse.
 
 Pares de escritura que mira la guarda de cuenta: `pr create|comment|merge|edit|close|reopen|review|ready`,
 `issue create|comment|edit|close|reopen|pin|unpin|delete|transfer`, `release create|edit|delete|upload`,
@@ -169,14 +174,21 @@ pasos fallidos por heredoc en 15 episodios, o más de una orden legítima frenad
 
 Límites, dichos sin rodeos:
 
-- **Nunca bloquea por avería.** Tope propio de **6 s** (el del gancho en `settings.json` es de 10 s). Si el guion
-  falla, no entiende la entrada o pasa del tope, sale con 0 sin decisión y lo cuenta como `falla`.
+- **Falla abierto por diseño: es un guardarraíl que atrapa el descuido, no un control de seguridad.** En un
+  `PreToolUse`, el código 0 aplica el JSON (el `deny` con su motivo se muestra al modelo), el 2 bloquea, cualquier
+  otro código es un error no bloqueante y la llamada continúa, y un gancho que agota su `timeout` tampoco bloquea.
+  Cualquier avería del gancho deja pasar la orden. Tope propio de **6 s** (el del gancho en `settings.json` es de
+  10 s). Si el guion falla, recibe una entrada que no es JSON o pasa del tope, sale con 0 sin decisión, avisa por
+  `systemMessage` y lo cuenta como `falla`. Acepta un BOM al inicio de la entrada.
 - **No cubre la herramienta PowerShell**: el `matcher` es solo `Bash`. Una orden por PowerShell no pasa por
   ninguna de las dos guardas.
 - **`git push` solo se cuenta**, no se frena.
 - **Solo cubre Claude Code.** Codex, Cursor y agy no leen los ganchos de `.claude`: para ellos la regla sigue
   siendo solo texto.
-- **Una sesión ya abierta no recoge el gancho**: se lee al abrirla.
+- **Una sesión ya abierta puede recoger el gancho sin reiniciar** (las ediciones de ganchos en los archivos de
+  ajustes se recogen normalmente con el observador de archivos); compruébalo en `/hooks`.
+- **`gh auth token --user X` solo cuenta como orden**, simple o dentro de `$(...)` o de comillas invertidas; el
+  texto de un `--body`, de un `--title`, de un `-m` o de un cuerpo de heredoc que lo menciona no se mira.
 - **No es un analizador completo de Bash.** Una orden armada con variables (`"$PY" - <<EOF`) no se ve. Prefiere
   el falso negativo al falso positivo.
 - Para quitarlo: borrar el bloque `PreToolUse` de `.claude/settings.json`.

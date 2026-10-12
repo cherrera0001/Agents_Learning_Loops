@@ -132,6 +132,10 @@ LEGITIMAS = {
     "palabra_python_en_mensaje": _ordenes(
         "git commit -m \"usa python en el CI\" -F - <<'EOF'", "cuerpo corto", "EOF"
     ),
+    # El intérprete es el ejecutable de la orden simple, no cualquier palabra de ella.
+    "python_como_argumento": _ordenes("cat python bash node <<EOF > palabras.txt", "uno", "EOF"),
+    "python_en_nombre_de_archivo": _ordenes("cat notas-python.txt <<EOF > salida.txt", "uno", "EOF"),
+    "menos_menos_corto": _ordenes("cat <<-EOF > a.txt", "\tuno", "\tEOF"),
     "pytest": "python -m pytest tests -q",
     "lectura_gh": "gh pr view 5 --json state",
     "heredoc_de_60_lineas": _ordenes("cat > lista.txt <<'EOF'", *_relleno(60), "EOF"),
@@ -264,6 +268,11 @@ def test_un_heredoc_de_61_lineas_se_rechaza_por_largo_y_el_mensaje_distingue_el_
     assert "--body-file" in cuerpo
     assert "--body-file" not in commit
     assert [x["regla"] for x in _registro(tmp_path)] == ["heredoc:largo"] * 3
+
+
+def test_un_heredoc_con_menos_menos_largo_se_rechaza_por_largo(tmp_path: Path) -> None:
+    orden = _ordenes("cat <<-EOF > a.txt", *["\t" + x for x in _relleno(61)], "\tEOF")
+    assert _motivo(_gancho(_evento(orden, tmp_path), _entorno(tmp_path))) is not None
 
 
 def test_el_mensaje_de_rechazo_dice_que_hacer_en_su_lugar(tmp_path: Path) -> None:
@@ -420,6 +429,16 @@ def test_git_push_nunca_se_rechaza_y_se_cuenta_como_push_visto(tmp_path: Path, r
     assert [x["veredicto"] for x in registro] == ["push-visto"] * len(ordenes)
 
 
+def test_el_repositorio_se_decide_por_el_cwd_de_la_entrada_y_no_por_la_raiz_del_proyecto(
+    tmp_path: Path, repo: Path, otro_repo: Path
+) -> None:
+    orden = "gh pr comment 1 --body x"
+    # Un worktree de este repositorio con la raíz del proyecto en otro sitio: manda `cwd`.
+    entorno = _entorno(tmp_path, HOSTS_AJENO, CLAUDE_PROJECT_DIR=str(otro_repo))
+    assert _motivo(_gancho(_evento(orden, repo), entorno)) is not None
+    assert _motivo(_gancho(_evento(orden, otro_repo), {**entorno, "CLAUDE_PROJECT_DIR": str(repo)})) is None
+
+
 def test_en_otro_repositorio_no_se_frena_ni_se_cuenta(tmp_path: Path, otro_repo: Path) -> None:
     proc = _gancho(_evento("gh pr comment 1 --body x", otro_repo), _entorno(tmp_path, HOSTS_AJENO))
     assert _motivo(proc) is None
@@ -436,6 +455,39 @@ def test_token_de_otra_cuenta_en_la_orden_se_rechaza_aunque_la_activa_sea_propia
         motivo = _motivo(_gancho(_evento(orden, repo), _entorno(tmp_path, HOSTS_PROPIO)))
         assert motivo is not None, orden
         assert "vinculaterritorio" in motivo
+
+
+TEXTO_DE_DOCUMENTACION = [
+    'gh pr comment 191 --body "no uses gh auth token --user vinculaterritorio"',
+    "gh pr comment 191 --body 'no uses gh auth token --user vinculaterritorio'",
+    'gh pr create --title "gh auth token --user vinculaterritorio" --body x',
+    _ordenes(
+        "gh pr comment 191 --body-file - <<'EOF'", "no uses gh auth token --user vinculaterritorio", "EOF"
+    ),
+    _ordenes(
+        "gh pr comment 191 --body \"$(cat <<'EOF'",
+        "no uses gh auth token --user vinculaterritorio",
+        "EOF",
+        ')"',
+    ),
+    "echo 'gh auth token --user vinculaterritorio'; gh pr comment 191 --body x",
+]
+
+
+@pytest.mark.parametrize("orden", TEXTO_DE_DOCUMENTACION)
+def test_el_texto_que_menciona_gh_auth_token_no_cuenta_como_orden(
+    orden: str, tmp_path: Path, repo: Path
+) -> None:
+    assert _motivo(_gancho(_evento(orden, repo), _entorno(tmp_path, HOSTS_PROPIO))) is None, orden
+
+
+def test_el_caso_real_con_token_ajeno_sigue_rechazandose(tmp_path: Path, repo: Path) -> None:
+    for orden in (
+        'GH_TOKEN="$(gh auth token --user vinculaterritorio)" gh pr comment 191 --body "texto"',
+        "gh pr comment 191 --body x && X=`gh auth token --user vinculaterritorio`",
+        'X="$(gh auth token -u vinculaterritorio)"; gh pr comment 191 --body "texto"',
+    ):
+        assert _motivo(_gancho(_evento(orden, repo), _entorno(tmp_path, HOSTS_PROPIO))) is not None, orden
 
 
 def test_token_literal_pasa_se_cuenta_como_dudoso_y_no_se_imprime(tmp_path: Path, repo: Path) -> None:
@@ -477,11 +529,18 @@ def test_si_no_se_puede_saber_la_cuenta_deja_pasar_y_lo_cuenta(tmp_path: Path, r
 # ---------------------------------------------------------------- seguridad del gancho y registro
 
 
-def test_entrada_rota_sale_con_0_sin_decision_y_se_cuenta(tmp_path: Path) -> None:
-    for entrada in (b"esto no es json", b"\xff\xfe\x00 roto", b"[1, 2]", b"null"):
+def test_entrada_rota_sale_con_0_sin_decision_lo_dice_y_se_cuenta(tmp_path: Path) -> None:
+    for entrada in (b"esto no es json", b"\xff\xfe\x00 roto", b"[1, 2]", b"null", b""):
         proc = _gancho(entrada, _entorno(tmp_path))
         assert proc.returncode == 0
         assert _motivo(proc) is None
+        assert "dejo pasar" in json.loads(proc.stdout.decode("utf-8"))["systemMessage"]
+    assert {x["veredicto"] for x in _registro(tmp_path)} == {"falla"}
+
+
+def test_una_entrada_con_bom_se_lee_igual(tmp_path: Path) -> None:
+    entrada = b"\xef\xbb\xbf" + _evento(CASOS_HISTORICOS["012-parche-graph"], tmp_path)
+    assert _motivo(_gancho(entrada, _entorno(tmp_path))) is not None
 
 
 def test_si_decidir_lanza_una_excepcion_sale_con_0_sin_decision(tmp_path: Path) -> None:
@@ -550,6 +609,9 @@ def test_la_orden_registrada_no_puede_devolver_2(tmp_path: Path) -> None:
     comando = _comando_del_gancho()
     assert "guarda_previa.py" in comando
     assert comando.rstrip().endswith("|| true")
+    assert '"${CLAUDE_PROJECT_DIR}/' in comando
+    ajustes = json.loads((RAIZ / ".claude" / "settings.json").read_text(encoding="utf-8"))
+    assert ajustes["hooks"]["PreToolUse"][0]["hooks"][0]["shell"] == "bash"
     bash = _bash()
     if bash is None:
         pytest.skip("no hay bash para ejecutar la orden del gancho")
