@@ -1,0 +1,64 @@
+{
+  "seq": 84,
+  "id": "issue-187-recall-sin-misma-accion",
+  "goal": "fix(devlog): recall no muestra las lecciones automáticas «fallback» cuyo remedio es la misma acción que falló (#187): filtro en scripts/devlog.py antes del corte de -n, contador de omitidas, sin tocar la biblioteca ni rebuild",
+  "ref": "#187",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-12",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue, antes de editar: devolvió cinco lecciones (recall desde rama al día, «no encontrado» con presupuesto, una «avoid» de recall_memory, una «fallback» de otra acción review_code a edit_module y registrar el fallo en la acción que lo causó) y los issues parecidos #167, #162 y #103. Ninguna lección de misma acción salió en esta consulta, así que no cambió el diseño; la del registro del fallo en su acción se aplicó al escribir este episodio."
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/devlog.py: is_same_action_fallback (identificador lesson:fallback:<falló>:<resolvió> con los dos iguales, más los nombres completos de la etiqueta porque el slug recorta a 40), _lesson_nodes y visible_lessons (filtra antes del corte y cuenta las omitidas que habrían ocupado una de las n posiciones); recall imprime el contador. Sin tocar src/ ni rebuild."
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La primera versión de test_the_fixed_episodes_generate_both_kinds_of_fallback recorría mg.nodes() como si devolviera identificadores y mg.node(n) falló con TypeError (unhashable Node): mg.nodes() devuelve objetos Node, no ids"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/integration/test_devlog_recall_same_action.py con dos episodios fijos: la lección de misma acción desaparece, la de otra acción, la avoid y la nota permanecen, la lista se rellena con la siguiente, el contador, el orden igual al de la biblioteca menos la omitida, el slug truncado a 40 que no oculta una acción distinta, rebuild determinista y que conserva la lección en el grafo guardado, y la CLI"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": ".scratch/replica187.py (fuera del repositorio): réplica sobre los 75 episodios de main, 65 con al menos 10 anteriores. 124 de 305 posiciones de misma acción, 21 de 75 lecciones fallback, 0 lecciones de otra acción retiradas, 4 réplicas con menos de cinco lecciones (el límite de reversión es más de 4), y el heredoc baja de 5 a 1 de 9 episodios con repetición con mi criterio (heredoc|unexpected EOF en el top 5)."
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "learning/README.md, skills/recall-antes-de-issue/SKILL.md y CHANGELOG.md con la regla, los números medidos y el efecto sobre el heredoc"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy, export_schema --check y pytest --cov completo; resultados exactos en el PR. La mutación se lee en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Un filtro sobre la salida de recall va antes del corte de -n, no después: si no, la lista muestra menos de n lecciones y no sube la siguiente",
+    "Una lección degenerada puede ser, por accidente, el único camino por el que llega un recordatorio útil: mide su efecto sobre un caso conocido antes de filtrarla y di el coste en el PR"
+  ]
+}
