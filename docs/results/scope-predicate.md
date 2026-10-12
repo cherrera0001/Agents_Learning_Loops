@@ -46,8 +46,8 @@ EXP-06 con otro defecto.
   deberían contarse como unidades independientes.
 - **Con seis sitios caben tres pares que no compartan ninguno.** En tres mezclas: los tres de mismo
   operador, los tres de operador distinto, o uno de mismo y dos de distinto. Con tres pares la separación
-  perfecta tiene probabilidad de 1/3 o más por azar, así que ninguna de esas mezclas alcanza un veredicto distinto de
-  INSUFICIENTE.
+  perfecta tiene probabilidad de 1/3 o más por azar, así que ninguna de esas mezclas alcanza un veredicto
+  distinto de INSUFICIENTE.
 - **Sobre el predicado: nada.** Sigue siendo un candidato respaldado por tres tareas cuyas reglas se
   escribieron conociéndolas ([#58](diagnostic-baseline.md)).
 - **Sobre los resultados ya publicados: no cambian.** Son conteos exactos sobre esas nueve tareas y así se
