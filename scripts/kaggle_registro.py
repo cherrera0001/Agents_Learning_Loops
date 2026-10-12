@@ -314,7 +314,31 @@ def _ficha(par: dict[str, Any]) -> dict[str, Any]:
         "segundos": None if fin is None else fin.get("segundos"),
         "error": None if fin is None else fin.get("error"),
         "retrollamadas": dict(par["retrollamadas"]),
+        # #195: lo que la petición pidió y trajo de razonamiento, solo números. None: no quedó anotado.
+        "pide_razonar": inicio.get("pide_razonar"),
+        **{campo: None if fin is None else fin.get(campo) for campo in CAMPOS_DE_TOKENS},
     }
+
+
+CAMPOS_DE_TOKENS = ("prompt_tokens", "completion_tokens", "reasoning_tokens", "caracteres_razonamiento")
+
+
+def razonamiento_de_la_tarea(propias: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    """Lo que un sondeo viene a medir (#195): cuántas peticiones de la tarea pidieron razonar y cuánto costó.
+
+    Cada suma va con el número de peticiones que informaron ese campo: una suma de pocas no es el total, y
+    ``None`` quiere decir que ninguna lo informó (no que fue cero).
+    """
+    datos: dict[str, Any] = {
+        "peticiones_que_piden_razonar": sum(f.get("pide_razonar") is True for f in propias),
+        "peticiones_que_piden_no_razonar": sum(f.get("pide_razonar") is False for f in propias),
+        "peticiones_sin_el_dato": sum(f.get("pide_razonar") is None for f in propias),
+    }
+    for campo in CAMPOS_DE_TOKENS:
+        valores = [f[campo] for f in propias if isinstance(f.get(campo), int)]
+        datos[campo] = sum(valores) if valores else None
+        datos[f"peticiones_con_{campo}"] = len(valores)
+    return datos
 
 
 # «No respondida»: no terminó con una respuesta del modelo. «En vuelo» es solo la que no tiene fin.
@@ -580,6 +604,7 @@ def diagnosticar(
                 },
                 "mapa_de_hilos_al_empezar": o["inicio"].get("mapa_de_hilos"),
                 "peticiones": len(propias),
+                "razonamiento": razonamiento_de_la_tarea(propias),
                 "no_respondidas": sum(f["como_termino"] in NO_RESPONDIDAS for f in propias),
                 # En vuelo: un inicio sin fin de ningún tipo. Solo puede quedar si la sesión murió.
                 "peticion_en_vuelo": sin_fin[-1] if sin_fin else None,
@@ -679,6 +704,8 @@ def diagnosticar(
             "motivos": dict(Counter(f["como_termino"] for f in fichas)),
             "no_respondidas": no_respondidas,
         },
+        # #195: el total de la sesión; el de cada tarea va en su ficha.
+        "razonamiento": razonamiento_de_la_tarea(fichas),
         "enganches": {
             "envoltorio_inicios": len(fichas),
             "envoltorio_fines": sum(f["como_termino"] != "sin fin" for f in fichas),

@@ -88,17 +88,39 @@ def find_declared_adapters(yaml_content: str) -> list[str]:
     return adapters
 
 
+def declared_model_registry(submission_dir: Path) -> object:
+    """Registro con los modelos que declara el propio envío, sin funciones de ``swegemma``.
+
+    Es lo que hace el arnés en su línea de órdenes desde ``swegemma`` 0.2.11, que eliminó
+    ``setup_gemma_model_registry``. ``ModelRegistry`` y ``discover_declared_models`` existen en
+    ``adk_submission`` 0.2.12 y 0.2.13. Si falta ``adk_submission`` lanza ``ImportError``.
+    """
+    from adk_submission import ModelRegistry, discover_declared_models  # type: ignore[import-not-found]
+
+    models = ModelRegistry()
+    for declared in sorted(discover_declared_models(submission_dir)):
+        name = declared.strip()
+        prefixed = name.startswith(("openai/", "hosted_vllm/", "custom/"))
+        models.register(name, name if prefixed else f"openai/{name}")
+    return models
+
+
 def compile_with_adk(submission_dir: Path) -> tuple[bool, str]:
     """Compila la submission con adk-submission oficial; sin el compilador instalado, falla."""
     try:
         from adk_submission import ToolRegistry, compile_submission  # type: ignore[import-not-found]
-        from swegemma.models import setup_gemma_model_registry  # type: ignore[import-not-found]
 
         tools = ToolRegistry()
         for tool_name in HARNESS_TOOLS:
             tools.register(tool_name, lambda **kwargs: None)
 
-        models = setup_gemma_model_registry()
+        try:
+            # swegemma hasta 0.2.7. La 0.2.11 eliminó esta función (#195).
+            from swegemma.models import setup_gemma_model_registry  # type: ignore[import-not-found]
+
+            models = setup_gemma_model_registry()
+        except ImportError:
+            models = declared_model_registry(submission_dir)
         agent = compile_submission(
             submission_dir=submission_dir,
             tool_registry=tools,

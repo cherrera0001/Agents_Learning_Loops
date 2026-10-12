@@ -16,6 +16,12 @@ razonamiento», que son el de la pasada 1 con otro zip, otra etiqueta y otra por
 ensayo. Está en [su sección](#brazo-solo-razonamiento-182); su batería corrió, también con un modelo falso y
 sin Kaggle, entre las 23:37 UTC del 2026-10-09 y las 00:15 UTC del 2026-10-10.
 
+El #195 añadió una cuarta capa el 2026-10-12, después de que la primera corrida real fallara a los 106 s
+porque el arnés había cambiado de versión: los notebooks se rearmaron, **sus huellas de las secciones
+anteriores ya no son las vigentes**, y el ensayo corre ahora con las ruedas reales del arnés. Está en
+[su sección](#arnés-0211-y-guardas-de-versiones-195), que además fija la versión de `ipykernel` medida en
+Kaggle (6.17.1).
+
 La vuelta 40 del experimento Kaggle decidió que la iteración 08 no se sube sin tres cosas: el rescate que
 mira bytes (#156), el notebook con su registro y un ensayo local que demuestre que ese registro explica un
 corte. Este documento cubre las dos últimas.
@@ -33,6 +39,8 @@ corte. Este documento cubre las dos últimas.
 | Las salidas del ensayo | `…/iteracion_08/ensayo_salida_160/` (batería del #160) y `…/iteracion_08/ensayo_salida/` (batería del #164) | No; se citan por ruta y SHA-256 ([huellas](#huellas)) |
 | El brazo «solo razonamiento» (#182): su guion de armado, sus cinco notebooks, su ensayo y las salidas | `experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/iteracion_08_razona/`, **del checkout principal** | No; se citan por ruta y SHA-256 ([huellas del #182](#huellas-del-182)) |
 | La cuenta de horas de cuota del brazo y la regla de parada tras su primera porción | [`scripts/kaggle_costo_brazo.py`](../../../scripts/kaggle_costo_brazo.py) | Sí, con `tests/test_kaggle_costo_brazo.py` |
+| Las versiones del arnés con que se ensayó, el texto de la guarda de versiones y del modelo declarado que el notebook lleva, y la comprobación de imports contra las ruedas (#195) | [`scripts/kaggle_arnes.py`](../../../scripts/kaggle_arnes.py) | Sí, con `tests/test_kaggle_arnes.py` |
+| El notebook del sondeo `s1`, los notebooks rearmados y las salidas de la prueba con las ruedas reales y del ensayo del #195 | `…/iteracion_08/` y `…/iteracion_08_razona/` | No; se citan por ruta y SHA-256 ([huellas del #195](#huellas-del-195)) |
 
 **Consecuencia:** el código de las guardias está versionado, pero las líneas del notebook que las llaman
 las escribe `armar.py`, que no lo está. De esas líneas el repositorio solo tiene los SHA-256 que este
@@ -1034,7 +1042,9 @@ costo del registro medido en el #160 no se volvió a medir con el código nuevo.
 
 ### Lo que el #164 no midió o no se parece a Kaggle
 
-- **La versión de `ipykernel` de Kaggle**, y por tanto si el mapa existe allí.
+- **La versión de `ipykernel` de Kaggle**, y por tanto si el mapa existe allí. *Medida después, el
+  2026-10-12, por una sonda sin GPU: 6.17.1, sin el mapa
+  ([sección del #195](#arnés-0211-y-guardas-de-versiones-195)).*
 - **El cuelgue por la carrera natural en el ensayo completo.** No se buscó: la carrera se midió en la sonda,
   sin el arnés. En el ensayo, sin el arreglo, la tarea solo se cuelga con el ciclo plantado a mano.
 - **Qué rompe un ciclo solo.** En una corrida (`ciclo_sin_arreglo_anillo`) el ciclo
@@ -1121,7 +1131,8 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
 
 1. PR del #164 fusionado, con la CI en verde.
 2. Ensayo repetido con la versión de `ipykernel` de Kaggle, que **no está medida**
-   ([versiones](#versiones-de-ipykernel)).
+   ([versiones](#versiones-de-ipykernel)). *Cumplida el 2026-10-12: la sonda midió 6.17.1 y el ensayo se
+   repitió con ella ([sección del #195](#arnés-0211-y-guardas-de-versiones-195)).*
 3. Exclusión de los pares faltantes resuelta: un análisis de la pasada 1 contra la pasada 2 que excluya
    las tareas de `pares_faltantes` de cualquiera de las dos y diga cuántas excluyó
    ([arriba](#nadie-consume-todavía-la-marca-de-par-faltante)). Cumplida por
@@ -1385,7 +1396,8 @@ carpeta de `r5`, y 3 si `r1` es la de la tarea colgada).
 - **Corte por tiempo y tarea colgada en `r2` a `r5`.** Solo se forzaron sobre `r1`. Los cinco notebooks comparten
   todo salvo seis líneas (inferido); el criterio del issue pedía las tres pruebas en cada uno y **no está
   cumplido** (hacerlo exige Docker).
-- **La versión de `ipykernel` de Kaggle.** El ensayo es con la 6.29.5; la de Kaggle no está medida.
+- **La versión de `ipykernel` de Kaggle.** El ensayo es con la 6.29.5; la de Kaggle no está medida. *Medida
+  el 2026-10-12: 6.17.1; el ensayo del #195 usa esa.*
 - **Que Kaggle detenga «Run All» en la primera excepción**, ni que conserve los archivos sueltos si mata la
   sesión.
 - **Dos tareas colgadas en una porción** (no caben en el tope, 7 260 s) y el factor de cuota real del brazo.
@@ -1421,6 +1433,7 @@ Ninguna está cumplida al escribir esto. Subir a Kaggle lo decide el dueño.
 3. Se sube `r1` sola. Tras leerla, la regla de arriba decide si se suben `r2` a `r5`.
 4. Cuota disponible al menos igual a la proyección de ese momento, con el tope de 24 h del dueño.
 5. Ensayo con la versión de `ipykernel` de Kaggle, que no está medida (condición 2 de las del #164).
+   *Medida el 2026-10-12 (6.17.1) y ensayada con ella en el #195, sobre los notebooks rearmados.*
 6. Leer, en el primer latido de `r1`, el tamaño de `diff_en_curso`: es la primera medida del hallazgo anterior.
 
 ### Huellas del #182
@@ -1458,6 +1471,333 @@ sh correr_bateria_razona.sh     # ocho corridas en serie, en Docker
 python resumen_razona.py        # RESUMEN.json
 ```
 
+## Arnés 0.2.11 y guardas de versiones (#195)
+
+**Nada de esta sección se subió ni se envió a Kaggle, y no se usó su token.** Lo que mide se midió en esta
+máquina, en Docker, el 2026-10-12, con un servidor de modelo falso. Lo único medido en Kaggle que cita son
+dos lecturas del orquestador de ese mismo día: el log de la corrida que falló y la sonda sin GPU de versiones.
+
+### Qué pasó
+
+El 2026-10-12 la pasada 1 (`kernel_iteracion_08_p1`, SHA-256 `30aa9b31…`) corrió por primera vez en Kaggle y
+falló a los 106 s, con 0,07 h de cuota. El conjunto público de ruedas del arnés
+(`metric/gemma-4-developer-agent-wheelhouse`, 41 ruedas) se había actualizado el 2026-10-09 a las 14:43 UTC:
+
+| Rueda | Con la que se armó y ensayó | La del conjunto desde el 2026-10-09 |
+|---|---|---|
+| `swegemma` | 0.2.7 | 0.2.11 |
+| `adk_submission` | 0.2.12 | 0.2.13 |
+| `adk_eval_core` | 0.1.0 | 0.1.0 |
+| `google_adk` | 1.36.1 | 1.36.1 |
+
+La celda 7 importaba `swegemma.models.discovery`, que la 0.2.11 eliminó. **Tres cosas lo dejaron pasar:**
+
+1. El ensayo local corría con el arnés **anterior**, copiado dentro de la imagen de Docker (`/arnes`): no
+   era un doble, pero tampoco era el que Kaggle instala.
+2. El chequeo previo no comparaba versiones de ruedas. Su única mención de una versión (`swegemma-0.2.7`)
+   es el nombre de un archivo de relleno para ejecutar la guardia.
+3. La celda de instalación imprimía las versiones y nadie las comparaba con nada.
+
+El mismo día la sonda sin GPU del orquestador midió en Kaggle Python 3.12.13, **`ipykernel` 6.17.1** (sin
+el mapa `_thread_to_parent`), `ipython` 7.34.0, `jupyter_client` 7.4.9, `nbclient` 0.5.13, `papermill`
+2.7.0, `rich` 13.9.4 y `litellm` 1.82.4. La versión de `ipykernel`, que las secciones anteriores daban por
+no medida, **es 6.17.1**, y es la de todo el ensayo de esta sección.
+
+### La prueba con las ruedas reales
+
+El ensayo ganó un modo (`ARNES_REAL=1`, que `correr_ensayo_nucleo.sh` activa con `RUEDAS=<carpeta>`):
+
+- las tres ruedas del arnés se instalan **dentro del contenedor**, sin red (`--network none`) y sin
+  dependencias, en `/arnes_real`. Son código ajeno: no se instalan en el entorno del repositorio;
+- **la celda 7 corre tal cual** (el modelo declarado, `VllmConfig`, `VllmServer`,
+  `create_model_registry`) entre un preámbulo y un cierre que cambian solo lo que exige GPU: `torch` es un
+  módulo falso sin CUDA y `VllmServer.start` no lanza vLLM (apunta su log al del servidor falso y deja un
+  proceso inerte para que `stop()` haga lo de siempre). El servidor falso escucha en el puerto de
+  `VllmConfig`;
+- las celdas 3, 6 y 8 a 11 corren tal cual, como antes; `Evaluator`, `EvalConfig`, el registro de modelos y
+  el agente son los reales. Las celdas 0, 1, 2 y 5 siguen siendo dobles, y el doble ejecuta tal cual la
+  guarda de versiones que el armado pone al final de la celda 2;
+- el servidor falso guarda de cada petición todo lo que no son mensajes ni herramientas. Si la petición
+  pide razonar, la respuesta trae un pensamiento con una marca y 17 tokens de razonamiento, y se cuenta en
+  cuántas peticiones posteriores vuelve la marca.
+
+El arnés anterior no tiene `.whl` en esta máquina. La mitad «anterior» de la prueba usa el de la imagen
+(`ARNES_REAL=1` sin `RUEDAS`), que `diff -r` da por idéntico a las fuentes extraídas de `swegemma` 0.2.7,
+`adk_submission` 0.2.12 y `adk_eval_core` 0.1.0 (100 archivos `.py`, ninguna diferencia).
+
+Resultado: siete corridas de 2 tareas (6 peticiones cada una, 3 por tarea), sobre el notebook rearmado de la
+pasada 1 con el kit indicado en la celda 4.
+
+| Kit (zip) | `sampling.yaml` | Arnés | `enable_thinking` | `thinking_token_budget` | El pensamiento vuelve al historial | Excepción |
+|---|---|---|---|---|---|---|
+| Base, `submission_a_ajustado.zip` | `thinking_budget: 4096`, `include_thoughts: false` | 0.2.7 / 0.2.12 | `false` en 6 de 6 | ausente en 6 de 6 | 0 de 6 | No |
+| Base, `submission_a_ajustado.zip` | lo mismo | **0.2.11 / 0.2.13** | **`true` en 6 de 6** | **4096 en 6 de 6** | 0 de 6 | No |
+| `submission_i_razona.zip` | `thinking_budget: 4096`, `include_thoughts: true` | 0.2.7 / 0.2.12 | `true` en 6 de 6 | 4096 en 6 de 6 | 4 de 6 | No |
+| `submission_i_razona.zip` | lo mismo | 0.2.11 / 0.2.13 | `true` en 6 de 6 | 4096 en 6 de 6 | 4 de 6 | No |
+| `submission_b_razonamiento.zip` (el del brazo) | `thinking_budget: 4096`, `include_thoughts: true` | 0.2.7 / 0.2.12 | `true` en 6 de 6 | 4096 en 6 de 6 | 4 de 6 | No |
+| `submission_b_razonamiento.zip` | lo mismo | 0.2.11 / 0.2.13 | `true` en 6 de 6 | 4096 en 6 de 6 | 4 de 6 | No |
+| Base, **con el notebook que falló**, sin rearmar | — | 0.2.11 / 0.2.13 | 0 peticiones | — | — | **`ModuleNotFoundError` en la celda 7** |
+
+Los demás parámetros de la petición son iguales en las seis corridas que llegan a pedir: `temperature` 0,2,
+`top_p` 0,95 y `max_completion_tokens` 8 192. Las 36 peticiones son del agente principal. `i_razona` trae
+además otro `eval_config.yaml` (4,5 min y 60 llamadas); `b_razonamiento` difiere de la base en una sola
+línea.
+
+Lo que dice:
+
+- **Con `adk_submission` 0.2.13 el kit de base razona.** Su `sampling.yaml` (`thinking_budget: 4096`,
+  `include_thoughts: false`) daba `enable_thinking: false` con la 0.2.12 y da `enable_thinking: true` con
+  `thinking_token_budget: 4096` con la 0.2.13. La causa está en `adk_submission/resolvers/generation.py`:
+  antes `include_thoughts: false` apagaba el razonamiento; ahora manda el presupuesto y esa clave solo quita
+  los pensamientos del historial y de la respuesta.
+- **Los kits con `include_thoughts: true` no cambian** entre versiones.
+- **Con la 0.2.13, la base y el brazo se distinguen solo en si el pensamiento vuelve al historial:** 0 de 6
+  peticiones en la base, 4 de 6 en los otros dos (las 2 que faltan son la primera petición de cada tarea).
+- **No hay otra rotura dura en lo que la prueba cubre.** Arreglado el import, las seis corridas terminan
+  todas las celdas y pasan la validación del ensayo: enganches instalados, cada petición con su fin, diff al
+  cierre, logs por tarea y zip. El envoltorio de `LiteLLMClient.acompletion` del registro convive con el
+  parche nuevo de `LiteLlm.generate_content_async`: el registro cuenta las mismas peticiones que el servidor.
+- **La prueba puede fallar.** El control (séptima fila) es el notebook que falló, sin rearmar, con las ruedas
+  nuevas: se detiene en la celda 7 con `ModuleNotFoundError`, como en Kaggle.
+
+Predicciones del issue, escritas antes de empezar: la 48 (otra rotura dura además del import, 0,15) **no
+ocurrió**; la 49 (la petición del kit de base lleva el razonamiento encendido, 0,90) **ocurrió**.
+
+**Lo que esta prueba no mide:**
+
+- qué hace el modelo real con el razonamiento encendido: ni segundos por tarea, ni tokens, ni cortes. Para
+  eso es el [sondeo](#el-sondeo-de-12-tareas-s1);
+- las peticiones del subagente: el modelo falso nunca lo llama (0 peticiones de subagente);
+- la imagen no es la de Kaggle: `litellm` 1.104.0 (Kaggle 1.82.4), `google-genai` 2.28.0 (conjunto de ruedas
+  2.11.0), `rich` 15.0.0 (13.9.4), `ipython` 9.17.1 (7.34.0), `jupyter_client` 8.10.0 (7.4.9), `nbclient`
+  0.10.2 (0.5.13) y Python 3.12.15 (3.12.13). En qué campo viajan los parámetros de razonamiento depende del
+  cliente: el registro mira los dos sitios (`extra_body` y sueltos), y aquí solo se ejercitó uno;
+- `google_adk` 1.36.1 es el de la imagen, no la rueda del conjunto: misma versión, bytes no comparados;
+- los argumentos con que se lanzaría vLLM, las celdas 0, 1 y 5, y la instalación real de las 41 ruedas;
+- qué versión del arnés usa el puntuador de la competencia, y desde cuándo.
+
+### Qué cambió en el notebook
+
+`armar.py` aplica dos cambios más, y el texto de los dos sale de
+[`scripts/kaggle_arnes.py`](../../../scripts/kaggle_arnes.py), versionado y con pruebas:
+
+| Celda | Cambio | Líneas respecto de la 07 (quitadas, añadidas) |
+|---|---|---|
+| 2 | Al final: escribe las versiones instaladas del arnés, las esperadas y el listado del directorio de ruedas con sus bytes en `/kaggle/working/versiones_arnes_<salida>.json`, y **se detiene antes de la GPU** si alguna no es la esperada | 0, 30 |
+| 7 | `validate_single_declared_model` se sustituye por `adk_submission.discover_declared_models`, con la misma normalización que hacía `swegemma` 0.2.7 (minúsculas, sin prefijo de proveedor) y exigiendo exactamente un modelo | 2, 11 |
+
+La celda 7 deja de ser igual a la de la iteración 07; las celdas 0, 1, 3, 5, 6 y 9 lo siguen siendo, byte a
+byte. Nada cambia en el agente, en sus topes ni en la condición. La pasada 2 sigue siendo la pasada 1 con la
+etiqueta y los nombres cambiados: ahora difieren también en una línea de la celda 2 (el nombre del archivo
+de versiones).
+
+El kit es un parámetro del armado (`KIT`, por defecto `a_ajustado`; también `i_razona` y `b_razonamiento`),
+y con otro kit los notebooks salen con otro nombre de carpeta y otra etiqueta. **Qué kits se comparan, si el
+de base ahora razona, no lo decide este guion: lo decide el concilio.**
+
+El registro (celda 8) anota además, por petición y solo con números: si pide razonar, con qué presupuesto,
+y los tokens y los caracteres de razonamiento de la respuesta cuando el servidor los informa.
+`diagnosticar` los suma por tarea y para la sesión (`razonamiento`), con el número de peticiones que
+informaron cada campo: una suma de pocas no es el total, y `None` quiere decir que ninguna lo informó. No
+guarda texto del pensamiento ni de la tarea.
+
+Fuera del notebook, `scripts/kaggle_ensayo.py` y `scripts/kaggle_submission.py` compilaban el envío con
+`swegemma.models.setup_gemma_model_registry`, que la 0.2.11 también eliminó. Ahora arman el registro con los
+modelos que declara el propio envío (`discover_declared_models`), como hace el arnés en su línea de órdenes.
+El programa de compilación de `kaggle_ensayo`, ejecutado dentro del contenedor contra el kit de base, sale
+con 0 con el arnés anterior y con el nuevo (y con el nuevo, también contra `i_razona`).
+
+### El sondeo de 12 tareas (`s1`)
+
+Con el kit de base razonando, el concilio 45 (2026-10-12) estima que 60 tareas piden de 12 600 a 18 240 s
+contra el tope de 7 200 s de la pasada (la cifra es suya, no de este ensayo). Decidió que **lo primero que se sube no es la pasada 1, sino un sondeo**: la
+primera porción del sorteo (posiciones 1 a 12, la misma lista que `r1`) con el kit de base
+(`submission_a_ajustado.zip`, `d8a3e1d3…`), para medir segundos por tarea, cortes y tokens de razonamiento
+con `swegemma` 0.2.11.
+
+`armar_razona.py` lo arma junto a las porciones del brazo, con el mismo procedimiento: parte de la pasada 1
+ya armada y se detiene si un reemplazo no casa exactamente una vez.
+
+| Notebook | Condición | Salida y etiqueta | Líneas distintas de la pasada 1 | Líneas distintas de `r1` |
+|---|---|---|---|---|
+| `kernel_iteracion_08_s1` (`cs4all/iteracion-08-s1`) | A, el zip de la base | `iteracion_08_s1`, `A8S1`, grupo `sorteo_60_s1` | celda 2: 1; celda 4: 1 (`GRUPOS`); celda 8: 1; celda 10: 3 | celda 2: 1; celda 4: 2 (`CONDICIONES` y `GRUPOS`); celda 8: 1; celda 10: 3 |
+
+Frente a `r1` cambian la condición y los nombres, y nada más: ninguna constante, tope, margen, enganche ni
+guardia. El armado lo comprueba deshaciendo los reemplazos. Es privado, sin internet, con `NvidiaL4` y la
+misma imagen fijada. Las cinco porciones del brazo se rearmaron también (llevan la celda 2 y la 7 nuevas).
+
+**Regla de lectura del sondeo, decidida por el concilio 45:**
+
+- se rediseña en porciones si la media pasa de **120 s por tarea**;
+- se detiene el plan y se vuelve al concilio si la media pasa de **270 s** o si **más de la mitad de las
+  tareas** se corta por tiempo;
+- costo estimado: **2,2 a 2,7 h de cuota** (12 × 304 s más la carga, por 2; con el techo de 2,25, un octavo
+  más).
+
+**La pasada 1 de 60 tareas en una sesión no es el paso siguiente.** El diseño de después del sondeo lo
+decide el concilio con su dato.
+
+### El ensayo rearmado
+
+Siete corridas, una tras otra, con la imagen de `ipykernel` 6.17.1 y **con las ruedas reales** (el modo de
+arriba): la pasada 1, la pasada 2, el sondeo y una porción del brazo. Las tareas son las del grupo de cada
+notebook que tienen copia local: 26 de las 60 del sorteo, y 6 de las 12 de la primera porción.
+
+| Corrida | Notebook | Qué fuerza | Tareas | Filas | Peticiones | Piden razonar | El pensamiento vuelve | `diagnosticar` | Resultado |
+|---|---|---|---|---|---|---|---|---|---|
+| `completa_p1` | pasada 1 | Nada | 26 | 25 resueltas, 1 con parche que no pasa | 78 | 78 | 0 | 0 | pasa |
+| `tarea_colgada_p1` | pasada 1 | Bucle síncrono en la tarea 2, tope de 90 s | 4 | 1 resuelta, 1 colgada | 3 | 3 | 0 | 3 | pasa |
+| `pasada_2_p2` | pasada 2 | Nada | 3 | 2 resueltas, 1 que no pasa | 9 | 9 | 0 | 0 | pasa |
+| `completa_s1` | **sondeo** | Nada | 6 | 5 resueltas, 1 que no pasa | 18 | 18 | 0 | 0 | pasa |
+| `tarea_colgada_s1` | **sondeo** | Bucle síncrono en la tarea 2, tope de 90 s | 4 | 1 resuelta, 1 colgada | 3 | 3 | 0 | 3 | pasa |
+| `corte_tiempo_s1` | **sondeo** | Una petición retenida más que el tope de tiempo del agente (4 min) | 3 | 2 resueltas, 1 que no pasa | 8 | 8 | 0 | 0 | pasa |
+| `completa_r1` | porción 1 del brazo | Nada | 3 | 2 resueltas, 1 que no pasa | 9 | 9 | 6 | 0 | pasa |
+
+«Pasa» es que la validación del ensayo no encuentra ningún problema; lee solo los archivos que quedan en
+`/kaggle/working` y el zip. «Resuelta» no dice nada del agente: el modelo falso aplica el parche de
+referencia. Lo que estas siete corridas muestran:
+
+- **El notebook rearmado corre entero con el arnés 0.2.11**, en la pasada 1, en la 2, en el sondeo y en el
+  brazo: 45 filas de tarea en total, ninguna excepción fuera de las dos forzadas.
+- **La tarea colgada se corta igual que antes**: el tope por tarea la corta, el hilo no termina, el notebook
+  cierra el registro y termina con la excepción (`diagnosticar` sale con 3), con el arnés nuevo y sin el
+  mapa de hilos (`ipykernel` 6.17.1 no lo tiene).
+- **El corte por tiempo del agente se registra igual**: la tarea queda con su tope, su petición cancelada y
+  su diff al cierre, y la sesión sigue.
+- **El sondeo deja sus propios nombres**: todo lo que queda en la salida lleva `iteracion_08_s1` y la
+  etiqueta `A8S1`. Desde este cambio el ensayo lo exige para cualquier notebook, no solo para la pasada 2.
+- **La guarda de versiones corre y deja su archivo** (`versiones_arnes_<salida>.json`, sin versiones
+  distintas) en las siete.
+- **El registro cuenta el razonamiento como el servidor.** En las siete, las peticiones que el registro
+  anota con `pide_razonar` son las que el servidor vio con `enable_thinking: true`; en las seis sin petición
+  cancelada suma los 40 tokens de salida y los 17 de razonamiento que el servidor falso da por petición (en
+  `completa_p1`: 3 120 y 1 326 en 78 peticiones). En `corte_tiempo_s1` suma 119 de razonamiento en 7
+  peticiones y el servidor dio 136 en 8: la petición cancelada no llegó a entregar su respuesta. En el sondeo real, estas sumas por tarea
+  son la medida que se busca; que vLLM informe los tokens de razonamiento en ese campo **no está medido**
+  (si no lo hace, queda `None` y los caracteres de razonamiento, que salen de la respuesta).
+
+Lo que este ensayo **no** repitió con el arnés nuevo: los escenarios del #160 y del #164 que no están en la
+tabla (control sin parche, parche global, con y sin enganches, corte por llamadas, cortes de sesión,
+servidor caído, las tres guardias, los dos del ciclo plantado, que además no aplican sin el mapa de hilos) y
+la batería de defectos inyectados. Sus resultados de las secciones anteriores son con el arnés anterior y con
+los notebooks de antes de rearmar. El rescate sobre la salida del ensayo y `comprobar` con las pasadas
+nombradas tampoco se repitieron.
+
+### Qué comprueba ahora cada guarda, y qué no
+
+| Guarda | Qué comprueba | Cuándo |
+|---|---|---|
+| `kaggle_preflight comprobar --ruedas <carpeta> [--listado <archivo>]` | Que la guarda de versiones del notebook espera las versiones ensayadas; que las ruedas de la carpeta (y las del listado) son las ensayadas; que las ruedas del arnés de la carpeta pesan lo que dice el listado; y que cada import del arnés que hace el notebook existe en ellas: el módulo, y el nombre (definido, reexportado, submódulo o servido por `__getattr__` y definido en el paquete) | Antes de subir. **Sin `--ruedas`, un notebook que importa el arnés no recibe «Se puede subir»** y la salida dice qué falta |
+| Celda 2 del notebook | Que las versiones **instaladas** en la sesión son las esperadas; las deja en un archivo de salida aunque se detenga | En Kaggle, antes de la GPU |
+| `kaggle_rescate` | Guarda `listado_ruedas.json` (nombre, bytes y fecha de cada archivo del conjunto) y avisa por stderr si las versiones no son las ensayadas. Si Kaggle no lo entrega, el archivo dice el error y el código de salida no cambia | En cada rescate |
+| `kaggle_vigia` | Si el último rescate guardó el listado, pide el actual y avisa de lo que entra, sale o cambia de tamaño o de fecha, y de versiones que no son las ensayadas. Una petición más, dentro del mismo tope | Al iniciar la sesión |
+
+Las versiones «ensayadas» son una constante versionada (`ARNES_ENSAYADO` de `scripts/kaggle_arnes.py`).
+Cambiarla exige repetir la prueba con las ruedas reales; no es «lo que hay hoy en Kaggle».
+
+Contra las ruedas reales, el chequeo previo da 16 imports del arnés comprobados y ninguno roto en el
+notebook rearmado; en el notebook que falló, 1 de 16 roto (el de la celda 7) contra las ruedas nuevas y
+ninguno contra las fuentes anteriores.
+
+**Lo que ninguna de estas guardas ve:**
+
+- **Un cambio de conducta que conserva nombres y firmas.** El del razonamiento es exactamente eso: ningún
+  import se rompe, ninguna firma cambia, y el kit de base pasa a medir otra cosa. Las guardas avisan de que
+  la versión cambió; saber **qué** cambió exige leer el diff de fuentes y repetir la prueba con las ruedas
+  reales mirando la petición. Eso es un paso manual en cada cambio de versión.
+- Lo que el código resuelve al ejecutarse: accesos por atributo (`server_instance.create_model_registry`),
+  los nombres que los enganches buscan con `getattr` (eso lo cubre `exigir_enganches`, ya en Kaggle) y los
+  `from x import *` dentro del arnés.
+- Las 37 ruedas que no son del arnés (`vllm`, `transformers`…): el vigía avisa si cambian de tamaño o de
+  fecha, pero nada comprueba su conducta.
+- Un cambio hecho entre el chequeo previo y la sesión: lo cubre solo la celda 2, ya en Kaggle (unos
+  segundos de sesión, sin GPU cargada).
+- El vigía no pide el listado si el último rescate es anterior a este cambio y no lo trae; el rescate
+  siguiente lo guarda. **La ruta de la API que entrega el listado (`datasets/list/<dueño>/<conjunto>`) y la
+  forma de su respuesta no se han probado contra Kaggle**: las pruebas usan respuestas simuladas, y este
+  trabajo no usó el token. Si la forma real es otra, el rescate lo dirá en su aviso y en el archivo.
+- El filtro nuevo del arnés sobre el parche (quita archivos de prueba y de configuración): cambia qué
+  significa el diff al cierre. Queda como hallazgo abierto en `hallazgos.json`; no se corrige aquí.
+
+### Condiciones de lanzamiento del sondeo
+
+Subir a Kaggle lo decide el dueño.
+
+1. Este PR fusionado, con la CI en verde, y los informes del revisor de código y del analista de datos.
+2. El notebook del sondeo copiado a la carpeta de instrumentos del árbol principal y comprobado allí su
+   SHA-256 contra el de [las huellas](#huellas-del-195).
+3. `kaggle_preflight comprobar <carpeta del sondeo> --tope-min <minutos> --ruedas <carpeta> --listado
+   <listado>` con salida 0, con las ruedas y el listado bajados **ese día**.
+4. Orden del dueño, con la orden a la vista.
+
+### Huellas del #195
+
+**Dónde están.** La herramienta de edición del agente que hizo este trabajo no escribe fuera de su árbol de
+trabajo, así que los instrumentos se copiaron a la misma ruta ignorada **de ese árbol**
+(`.claude/worktrees/agent-a411f1bd6ca2d4296/experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/`)
+y ahí se rearmó y se ensayó. La carpeta de instrumentos del checkout principal conserva los notebooks de
+antes (`30aa9b31…` es todavía su pasada 1) más una copia de respaldo, `iteracion_08/antes_195/`. **Antes de
+subir nada, el orquestador copia las carpetas al checkout principal y comprueba estos SHA-256.** Un árbol de
+trabajo se borra al terminar: lo que no se copie se pierde, salvo estas huellas.
+
+Notebooks (rearmados con `scripts/kaggle_arnes.py` `ed18e1a0…` y `scripts/kaggle_registro_enganches.py`
+`8fdaa24e…`):
+
+| Archivo | Bytes | SHA-256 |
+|---|---|---|
+| `iteracion_08_razona/kernel_iteracion_08_s1/iteracion.ipynb` (**el sondeo**) | 112 261 | `9ea5149a58ed77611487fe996f7f62325c5b994e65ddc00bf534218a9a1325e1` |
+| `iteracion_08_razona/kernel_iteracion_08_s1/kernel-metadata.json` | — | `6e6195dd87eac0fa14badd0138dddef5f000308fcea20e3a3f6b429b7a24dd2b` |
+| `iteracion_08/kernel_iteracion_08_p1/iteracion.ipynb` | 112 974 | `24b394df77b0807c96018307b75bf9b3ae94ce819b8f3ee11c3f7164de8f9883` |
+| `iteracion_08/kernel_iteracion_08_p2/iteracion.ipynb` | 112 974 | `8d1bb986c3ce8651523c850eeea3d86b126f5398555ce239992b5187dbde69cf` |
+| `iteracion_08_razona/kernel_iteracion_08_r1/iteracion.ipynb` | 112 261 | `5f2ef79f88ab65de753403e2370894dacefdc0f19e70b2af18fd95ecfbea4db8` |
+| `iteracion_08_razona/kernel_iteracion_08_r2/iteracion.ipynb` | 112 281 | `ae6eb78b0f457b8b906012431184ac06173ca47987718967c30b89f224ab3600` |
+| `iteracion_08_razona/kernel_iteracion_08_r3/iteracion.ipynb` | 112 273 | `29fd29b71bf0b1d8e50255115c2fd0b30f298db5e56d419b1a7883598b1864ba` |
+| `iteracion_08_razona/kernel_iteracion_08_r4/iteracion.ipynb` | 112 270 | `076a0524fe80641a525f28483efc7136a5e9b772ad3319b96ff95cf255af0766` |
+| `iteracion_08_razona/kernel_iteracion_08_r5/iteracion.ipynb` | 112 283 | `54880c09ddbd920912fc5aa2eb31bcb9f58a415eedb30756117eff6e030cdd84` |
+| `iteracion_08/notebook_que_fallo_2026-10-12/iteracion.ipynb` (copia del que falló, sin cambios) | 108 297 | `30aa9b31f776ac522077ef5e93562082ea7bdfdcbd7dbc7e49193b76808714fa` |
+
+Los notebooks armados con otro kit (`kernel_iteracion_08_i_razona_p1` y `_p2`, `kernel_iteracion_08_b_razonamiento_p1`
+y `_p2`) y las cuatro variantes de ensayo se rearmaron también; sus huellas están en `RESUMEN.json`. No se
+ensayaron: muestran que el armado admite otro kit, no que ese diseño esté decidido.
+
+Instrumentos y salidas, bajo `iteracion_08/` salvo donde se dice:
+
+| Archivo | SHA-256 |
+|---|---|
+| `armar.py` | `4e9cbeb982c0073d57878f7b67f4e84d20e5c7d6d0f79979feac5cbb3c135ef2` |
+| `armado.json` | `a528a4b5e9ba42fea94102835f2efd8e0d76c7ba6553905db158a5e1908db4a9` |
+| `../iteracion_08_razona/armar_razona.py` | `45970566ae48322b4c6b41d1965470d8465f56160debfa1b855773c59b67271c` |
+| `../iteracion_08_razona/armado_razona.json` | `125f5a7a681fe0770711312608648ab37774189a9fb998f06daa1f063187c585` |
+| `ensayo_nucleo.py` (última versión; cada `informe.json` trae la suya) | `e46129d48994775be5c87d7bee41a62d1f8fc35c5305f63ba0082c3f5979f41a` |
+| `correr_ensayo_nucleo.sh` | `eed70df3008e74952791c51d497a5beab6c08fe2b566e05694b05b821464ca26` |
+| `ensayo_salida_195/RESUMEN.json` (7 de 7 pasan) | `2233ed071c45ba993e6212adaf7f0c2af17f2623becccdceb30fc6bf5e831140` |
+| `ensayo_salida_195/HUELLAS.txt` (95 archivos) | `febf73b2e18584eba8700e0ce94bf8af5bef642d48fa000528325b61e566928d` |
+| `ensayo_salida_195/completa_s1/informe.json` | `3b1708878ca368a6884614601811e360d071f692eb70c16c5af9434fb215df6b` |
+| `ensayo_salida_195/completa_s1/working/crudo_iteracion_08_s1_A8S1.zip` | `a2da2bd898722f27831059bc64207f0f897511693048dc1759719fdaf0946e30` |
+| `ensayo_salida_195/tarea_colgada_s1/informe.json` | `07112d9cf9487c2537365e1238365a0004d74b27d89427f43b664578c8f0cc56` |
+| `ensayo_salida_195/tarea_colgada_s1/working/pila_tarea_colgada_iteracion_08_s1.txt` | `b6078221fd590927a4fd8349572fd34dd374767aebfd195afd534c2e7ab77c84` |
+| `ensayo_salida_195/corte_tiempo_s1/informe.json` | `7d11f657579402bebd572eb5d56336e25699314c6b9f98dfc0a703fbcf0e87ee` |
+| `ensayo_salida_195/completa_p1/informe.json` | `e0b522e7e0cdbb82fadbc7db2ebdc4d7c50e6a146be170ee5aaa10c2cdb2f0fb` |
+| `ensayo_salida_195/completa_p1/working/crudo_iteracion_08_p1_A8P1.zip` | `739b32fbfb3552e4b02ea4f8b7e53f5715df4bc99d39e2b6c1797426028a0764` |
+| `ensayo_salida_195/tarea_colgada_p1/informe.json` | `75b1d308e27120cbdc269dfddd962130dfc57ae3759cef48c3b33b5d5d3a6144` |
+| `ensayo_salida_195/pasada_2_p2/informe.json` | `772cfe8fa766e8bede004121548808ecf2f115d6a183402e285c65e608dd492e` |
+| `ensayo_salida_195/completa_r1/informe.json` | `f04583f3df5dddc2b28ee6960c1f9e9879ba7210fb2022b0965eb4c6ede88acd` |
+| `prueba_ruedas/RESUMEN.json` (6 de 7 pasan: la que no pasa es el control) | `5e00732c92bdb7aa1beaa0047515c5ff1ed7bd2fa4b8ac41fb06e61f501c6121` |
+| `prueba_ruedas/HUELLAS.txt` (82 archivos) | `4fd8223339686db30ce8c546a460b6648a2efdd19223f8d755cb755bb748872e` |
+| `prueba_ruedas/completa_ruedas_0.2.11_kit_a/informe.json` | `dd51c6654fed65489bdc53936e2933cc781fece020f8c53a542f9d024ad8fd97` |
+| `prueba_ruedas/completa_arnes_0.2.7_kit_a/informe.json` | `617a25a61d2e5efa08b19523682eb8b4a21221995f2a07efe780abbfaf634daf` |
+| `prueba_ruedas/completa_ruedas_0.2.11_notebook_que_fallo/informe.json` | `d156a3c5eb166e41590cec88372c83d14b3e52f9bcf591cf663c7ef8f2c6871a` |
+
+La prueba con las ruedas reales corrió dos veces: una al principio, con el primer rearmado, y otra al final,
+sobre el notebook definitivo de la pasada 1 (`24b394df…`). Las dos dan la misma tabla; las huellas son de la
+segunda, salvo el control, que se repitió una vez más tras corregir un fallo del propio ensayo (ante un
+notebook que no llega a escribir su resultado, la validación nueva de nombres lanzaba en vez de anotar el
+problema). El armado se volvió a correr al final y `armado.json` y `armado_razona.json` salieron idénticos.
+
+Las ruedas reales están en la carpeta de instrumentos del checkout principal (`arnes_2026-10-12/ruedas/`),
+con el listado del conjunto que guardó el orquestador (`listado_ruedas_2026-10-12.txt`, 41 ruedas y un
+archivo más). No se versionan.
+
 ## Cómo repetirlo
 
 ```bash
@@ -1490,6 +1830,31 @@ python <instrumentos>/iteracion_08/tabla_164.py
 python <instrumentos>/iteracion_08/adversas_164.py <árbol del repositorio>
 python <instrumentos>/iteracion_08/defectos_inyectados_164.py <copia del árbol>
 ```
+
+Lo que añade el #195 (`<ruedas>` es la carpeta con las `.whl` del arnés bajadas del conjunto público):
+
+```bash
+# Armado: la base, otro kit, y las porciones del brazo con el sondeo. INSTRUMENTOS solo hace falta si se
+# arma desde una copia del árbol que no tiene los notebooks de las iteraciones 04 y 07 ni la carpeta envios
+python <instrumentos>/iteracion_08/armar.py
+KIT=i_razona python <instrumentos>/iteracion_08/armar.py
+python <instrumentos>/iteracion_08_razona/armar_razona.py
+# La prueba con las ruedas reales: tres kits por dos versiones del arnés, y el control con el notebook que falló
+sh <instrumentos>/iteracion_08/correr_prueba_ruedas.sh <ruedas> <carpeta de salida> <carpeta del notebook que falló>
+# El ensayo rearmado: pasada 1, pasada 2, sondeo y una porción del brazo, con ipykernel 6.17.1 y las ruedas reales
+sh <instrumentos>/iteracion_08/correr_todo_195.sh <ruedas> <instrumentos>/iteracion_08/ensayo_salida_195
+# Una corrida suelta con las ruedas reales, sobre el sondeo
+RUEDAS=<ruedas> IMAGEN=aal-ensayo-nucleo:ipykernel-6.17.1 VARIANTE=/instr_razona/kernel_iteracion_08_s1 SUFIJO=_s1 \
+  sh <instrumentos>/iteracion_08/correr_ensayo_nucleo.sh completa
+# Resumen y huellas de las dos carpetas de salida
+python <instrumentos>/iteracion_08/resumen_195.py <árbol del repositorio>
+# El chequeo previo, con las ruedas y el listado
+python -m scripts.kaggle_preflight comprobar <instrumentos>/iteracion_08_razona/kernel_iteracion_08_s1 --tope-min <minutos> \
+  --ruedas <ruedas> --listado <listado del conjunto>
+```
+
+`correr_todo_195.sh` no borra nada ni vuelve a armar: escribe en la carpeta de salida que se le da, y las
+baterías del #160 y del #164 quedan donde estaban.
 
 Tres avisos de esta batería:
 

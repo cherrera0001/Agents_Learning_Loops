@@ -1,0 +1,128 @@
+{
+  "seq": 87,
+  "id": "issue-195-arnes-0211-y-guardas-de-ruedas",
+  "goal": "El arnés 0.2.11 rompió el notebook de la iteración 08 en Kaggle a los 106 s: probarlo en local con las ruedas reales, arreglar el notebook, hacer que el chequeo previo, el rescate y el vigía comparen las ruedas con las ensayadas, y rearmar y ensayar (con el sondeo de 12 tareas que decidió el concilio 45)",
+  "ref": "#195",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-12",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 3,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue antes de leer el código. Devolvió cinco lecciones; una aplicaba: «un listado recursivo de las salidas del ensayo vuelca cientos de líneas al contexto: filtra y cuenta antes de imprimir». Por ella las salidas del ensayo se leyeron con guiones que imprimen solo conteos. Issues parecidos: #164 (12 pasos fallidos de 31) y #179 (11 de 17). Ninguna lección hablaba de versiones de dependencias ajenas"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "`devlog base-rates` antes de editar: run_experiment falla en 14 de 22 pasos (63,6 %), write_code en 25 de 54 (46,3 %), write_tests en 42 de 99 (42,4 %), edit_module en 42 de 125 (33,6 %); la clase de fallo más frecuente es «Entorno» (71 de 292). Cambió el orden de trabajo en una cosa: la prueba con las ruedas reales (run_experiment, la de mayor tasa) se hizo primero y con una sola corrida antes de lanzar la matriz, y las pruebas existentes se corrieron después de cada edición de un guion en vez de al final. No evitó los fallos de abajo"
+    },
+    {
+      "action": "read_docs",
+      "success": false,
+      "error": "Leí el issue y sus comentarios en una sola orden de PowerShell con dos filtros jq separados por coma dentro de comillas simples: gh recibió «---, .body» como una bandera y volcó su ayuda entera. Los comentarios (las predicciones 48 a 51) se leyeron en una segunda orden con un solo filtro"
+    },
+    {
+      "action": "gh_project_update",
+      "success": false,
+      "error": "La consulta GraphQL para hallar la tarjeta llevaba cadenas entre comillas dobles dentro de comillas simples de PowerShell 5.1, que se las quita al pasar el argumento: «Argument 'owner' has an invalid value». La tarjeta se halló con `gh project item-list` y se movió a In Progress con `gh project item-edit`"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Una orden de Docker de solo lectura (listar /arnes dentro de la imagen) llevaba la palabra «git» en un `which docker git`: el aislamiento del árbol de trabajo la rechazó porque no puede demostrar que una orden con git se queda en este árbol. Lo mismo con un bucle `for` de bash sobre los zips. Se repitieron sin esa palabra y con órdenes sueltas"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "La imagen del ensayo no simulaba el arnés: lo traía copiado en /arnes por PYTHONPATH, y `diff -r` contra las fuentes extraídas de swegemma 0.2.7, adk_submission 0.2.12 y adk_eval_core 0.1.0 no da ninguna diferencia (100 archivos .py). Por eso el ensayo no vio el cambio, y por eso la mitad «arnés anterior» de la prueba se pudo medir aunque no haya .whl de 0.2.7"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "El encargo pedía editar armar.py y escribir RESULTADO.json en carpetas ignoradas del checkout principal. La herramienta de edición lo rechazó: este agente está aislado en su árbol de trabajo. Antes de saberlo ya había copiado con PowerShell un respaldo (`antes_195/`, 25 archivos) dentro de la carpeta de instrumentos del checkout principal. No se rodeó el bloqueo: los instrumentos se copiaron a la misma ruta ignorada de este árbol, se editaron ahí, y armar.py y armar_razona.py ganaron una variable INSTRUMENTOS para leer del árbol principal sin escribir en él. Consecuencia: los notebooks rearmados y RESULTADO.json quedan en este árbol y el orquestador tiene que copiarlos; se le avisó por mensaje en cuanto hubo resultado"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Prueba con las ruedas reales, lo primero: el ensayo bajo núcleo Jupyter (ipykernel 6.17.1) ganó un modo que instala las tres ruedas dentro del contenedor, sin red, y corre la celda 7 tal cual salvo torch y VllmServer.start. Siete corridas de 2 tareas. Kit de base: enable_thinking false y sin presupuesto con adk_submission 0.2.12 (6 de 6 peticiones); true con thinking_token_budget 4096 con 0.2.13 (6 de 6). Kits con include_thoughts true: true y 4096 en las dos versiones. Ninguna otra rotura dura. Control: el notebook que falló, con las ruedas nuevas, se detiene en la celda 7 con ModuleNotFoundError. Predicción 49 ocurrió; la 48 no"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/kaggle_arnes.py: versiones ensayadas, texto de la guarda de versiones y del sustituto de validate_single_declared_model (con la normalización que hacía swegemma 0.2.7), lectura del listado y comprobación de imports contra las ruedas con ast, sin importarlas. Un nombre servido por `__getattr__` cuenta solo si algún módulo del paquete lo define: así VllmServer no da un falso positivo y un nombre que solo está bajo TYPE_CHECKING o en `__all__` sí falla"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Primera versión del chequeo previo: tres pruebas existentes cayeron por tres decisiones mías. (1) Conté una celda que no compila como «usa el arnés»: la prueba de la celda con error de sintaxis pasó de 1 fallo a 4. (2) Metí la comprobación del arnés dentro de `comprobar()`: una prueba existente arma un notebook que importa VllmServer y espera cero fallos de esa función. (3) El vigía pedía el listado siempre: una prueba exige que solo pida la lista de envíos. Sin tocar ninguna prueba: una celda que no compila no cuenta (ya es un fallo propio); `comprobar()` conserva su contrato y la orden usa `comprobar_para_subir()`, que añade el arnés; y el vigía solo pide el listado si el último rescate lo guardó"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Rescate: guarda listado_ruedas.json en `main`, no en `bajar()`, y cualquier fallo queda en el archivo y en un aviso por stderr sin cambiar el código de salida. Motivo: las pruebas existentes de `bajar()` usan dobles que lanzan StopIteration ante una ruta desconocida y exigen `faltantes == []`. La ruta `datasets/list/<dueño>/<conjunto>` y la forma de su respuesta no se probaron contra Kaggle: este trabajo no usó el token"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Armado con KIT=i_razona: se detuvo en una aserción que exigía que la celda 4 cambiara en dos líneas respecto de la iteración 07. Con ese kit cambia una: es el que ya llevaba la 07. La aserción admite ahora una sola línea cuando el kit no es el de base"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "Para que el sondeo mida el razonamiento añadí al diagnóstico un bloque `razonamiento` dentro de `peticiones`: una prueba existente compara ese diccionario entero y cayó. Se movió a una clave nueva de primer nivel y a la ficha de cada tarea"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Quise añadir una sección al archivo de pruebas con `cat >> archivo <<'EOF'`: la guarda previa del #186 lo rechazó (un heredoc que escribe un archivo fuente). Era lo que la guarda existe para frenar; se añadió con la herramienta de edición"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_kaggle_arnes.py: ruedas de relleno escritas en la propia prueba (zips con un módulo que se elimina y un nombre servido por __getattr__). Cada guarda tiene su control: el notebook que falló contra las ruedas nuevas (1 import roto) y contra unas con el módulo (0); quitar un módulo rompe el rearmado; sin --ruedas no sale «Se puede subir»; versiones distintas en la carpeta o en el listado; el vigía calla sin cambios, avisa con ellos y no pide nada sin listado; el programa de compilación corre en otro proceso contra un adk_submission de relleno"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Rearmado y ensayo con ipykernel 6.17.1 y las ruedas reales: pasada 1 (26 tareas con copia local), pasada 2, sondeo s1 (6 de sus 12), tarea colgada en la pasada 1 y en el sondeo, corte por tiempo en el sondeo y una porción del brazo. 7 de 7 pasan. El registro cuenta las mismas peticiones que piden razonar que el servidor falso, y suma sus tokens. El chequeo previo nuevo da 16 imports del arnés comprobados y ninguno roto contra las ruedas reales; en el notebook que falló, 1 de 16"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "En el documento del ensayo escribí «131 tareas-fila en total» de memoria; el recuento desde RESUMEN.json da 45 filas. También «en las cinco sin corte»: son seis las corridas sin petición cancelada. Se corrigieron con un guion que imprime las cifras desde el archivo, antes del commit"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Al repetir la prueba con las ruedas reales sobre el notebook definitivo, el control (el notebook que falló) dejó de escribir su informe: la validación de nombres que yo había añadido al ensayo indexaba un resultado que ese notebook no llega a escribir, y lanzaba TypeError. El ensayo salía con 1 igual, así que el guion de la batería lo dio por bueno («se espera distinto de 0»); lo delató el resumen, que contó 6 corridas en vez de 7. Se corrigió la validación y se repitió solo el control"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Tras la última edición: ruff check y ruff format --check sin hallazgos (334 archivos), mypy sin problemas en 15 archivos, export_schema --check sincronizado, pytest --cov 3267 pasan y 9 se omiten, cobertura 98,72 %. mutation_check no se lanzó en local: se lee en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Un ensayo «con el arnés real» que lleva el arnés copiado dentro de su imagen ensaya esa copia, no lo que la plataforma instala hoy: fija la versión con que ensayaste en una constante versionada y compárala con las ruedas reales antes de subir y otra vez dentro de la sesión, antes de gastar cómputo",
+    "Una guarda de versiones y una comprobación de imports no ven un cambio de conducta que conserva nombres y firmas (aquí, que un presupuesto de razonamiento pase a encenderlo). En cada cambio de versión de una dependencia ajena, además del diff de fuentes, ejecuta el camino real contra un servidor falso y lee la petición que sale",
+    "Si una herramienta rechaza escribir fuera del árbol de trabajo, no lo rodees con otra herramienta: trabaja en una copia dentro del árbol, parametriza los guiones para leer del sitio original y avisa enseguida a quien espera el archivo de dónde quedó",
+    "Antes de añadir una comprobación a una función que ya tiene pruebas, mira qué contrato fijan esas pruebas (qué devuelve con una entrada mínima, qué peticiones hace): si lo nuevo no cabe en ese contrato, ponlo en una función que la envuelva y haz que la orden use la envoltura",
+    "Las cifras de un documento se imprimen desde el archivo de resultados con un guion, no se escriben de memoria mientras corre la batería",
+    "Un control que «debe fallar» no se comprueba por su código de salida: comprueba que falló por el motivo esperado y que dejó su informe, porque un fallo del propio instrumento sale con el mismo código"
+  ]
+}

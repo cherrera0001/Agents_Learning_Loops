@@ -22,6 +22,11 @@ exigido (bajo ``logs/`` o ``traces/``, o ``task_results.jsonl``) de 0 bytes, o u
 faltante; un ``patches/`` o ``test_outputs/`` vacío solo se cuenta. Con ``--sin-red`` la revisión se repite
 y se informa en el resumen y en el código de salida, sin reescribir ``faltantes.json``.
 
+Además guarda en ``listado_ruedas.json`` el listado del conjunto público de ruedas del arnés (nombre, bytes
+y fecha de cada archivo) y avisa por stderr si sus versiones no son las ensayadas (``kaggle_arnes.py``).
+Es un paso auxiliar: si falla, el archivo y el resumen dicen el error y el código de salida no cambia; el
+vigía de inicio de sesión avisa de un rescate sin listado.
+
 Salida: 0 si se bajó y resumió, 2 si la entrada es inválida o falta el token, 3 si Kaggle no respondió,
 4 si se bajó y resumió pero faltó algún notebook o archivo de salida, o un zip trae un miembro exigido vacío.
 """
@@ -49,9 +54,16 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from scripts import kaggle_arnes
+
 API = "https://www.kaggle.com/api/v1"
 HOSTS_CON_TOKEN = frozenset({urllib.parse.urlsplit(API).hostname, "www.kaggle.com", "api.kaggle.com"})
 COMPETITION_SLUG = "gemma-4-developer-agent"
+# Conjunto público con las ruedas del arnés. Su listado se guarda en cada rescate (#195).
+WHEELHOUSE = "metric/gemma-4-developer-agent-wheelhouse"
+ARCHIVO_LISTADO = "listado_ruedas.json"
+PAGINA_DEL_LISTADO = 200
+MAX_PAGINAS_DEL_LISTADO = 10
 TOPE_S = 120
 # Windows rechaza rutas de 260 caracteres o más si no se activó el soporte de rutas largas.
 TOPE_RUTA = 240
@@ -347,6 +359,84 @@ def bajar_notebook(carpeta: Path, consulta: str, token: str) -> list[dict[str, s
     return faltantes
 
 
+def pedir_listado_de_ruedas(
+    token: str, pedir_con: Any = None, max_paginas: int = MAX_PAGINAS_DEL_LISTADO
+) -> list[dict[str, Any]]:
+    """Archivos del conjunto público de ruedas del arnés: nombre, bytes y fecha, página a página.
+
+    ``pedir_con`` es la función que hace la petición (por defecto ``pedir``); el vigía pasa la suya, con tope.
+    """
+    entradas: list[dict[str, Any]] = []
+    pagina = ""
+    for _ in range(max_paginas):
+        consulta = f"pageSize={PAGINA_DEL_LISTADO}" + (
+            f"&pageToken={urllib.parse.quote(pagina)}" if pagina else ""
+        )
+        datos = json.loads((pedir_con or pedir)(f"datasets/list/{WHEELHOUSE}?{consulta}", token))
+        crudas = datos.get("datasetFiles", datos.get("files")) if isinstance(datos, dict) else datos
+        if not isinstance(crudas, list):
+            raise RescateError("El listado del conjunto de ruedas no trae una lista de archivos.")
+        entradas += [kaggle_arnes.entrada_de(x) for x in crudas if isinstance(x, dict)]
+        pagina = str(datos.get("nextPageToken") or "") if isinstance(datos, dict) else ""
+        if not pagina:
+            break
+    if not any(e["nombre"] for e in entradas):
+        raise RescateError("El listado del conjunto de ruedas llegó vacío.")
+    return sorted(entradas, key=lambda e: str(e["nombre"]))
+
+
+def resumen_del_listado(datos: Any) -> dict[str, Any]:
+    """Lo que el resumen dice del listado guardado: conteos, versiones del arnés y si son las ensayadas."""
+    if not isinstance(datos, dict) or not isinstance(datos.get("archivos"), list):
+        error = datos.get("error") if isinstance(datos, dict) else None
+        return {"guardado": False, "error": str(error or "listado ilegible")}
+    entradas = [kaggle_arnes.entrada_de(x) for x in datos["archivos"] if isinstance(x, dict)]
+    versiones = kaggle_arnes.versiones_de(str(e["nombre"]) for e in entradas)
+    fechas = sorted(str(e["fecha"]) for e in entradas if e.get("fecha"))
+    return {
+        "guardado": True,
+        "archivos": len(entradas),
+        "fecha_mas_reciente": fechas[-1] if fechas else None,
+        "arnes": {d: versiones.get(kaggle_arnes.normalizar_dist(d), []) for d in kaggle_arnes.ARNES_ENSAYADO},
+        "difiere_de_lo_ensayado": kaggle_arnes.diferencias_con_lo_ensayado(versiones),
+    }
+
+
+def guardar_listado_de_ruedas(carpeta: Path, token: str) -> dict[str, Any]:
+    """Guarda en ``listado_ruedas.json`` el listado del conjunto de ruedas (#195). Nunca detiene el rescate.
+
+    El 2026-10-12 una corrida falló porque el conjunto había cambiado tres días antes y nada lo había
+    guardado. Si Kaggle no lo entrega, el archivo dice el error (sin la dirección ni el token), el resumen
+    lo repite y el vigía avisa de que el rescate no trae listado.
+    """
+    datos: dict[str, Any] = {
+        "conjunto": WHEELHOUSE,
+        "leido_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+    try:
+        datos["archivos"] = pedir_listado_de_ruedas(token)
+    except Exception as exc:  # paso auxiliar: cualquier fallo se anota y el rescate sigue
+        datos["error"] = causa_de(exc)
+    try:
+        (carpeta / ARCHIVO_LISTADO).write_text(
+            json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8"
+        )
+    except OSError as exc:
+        return {"guardado": False, "error": causa_de(exc)}
+    return resumen_del_listado(datos)
+
+
+def leer_listado_guardado(carpeta: Path) -> dict[str, Any] | None:
+    """El resumen del ``listado_ruedas.json`` de un rescate ya hecho; ``None`` si ese rescate no lo trae."""
+    archivo = carpeta / ARCHIVO_LISTADO
+    if not archivo.is_file():
+        return None
+    try:
+        return resumen_del_listado(json.loads(archivo.read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        return {"guardado": False, "error": "listado ilegible"}
+
+
 def _escribir_faltantes(destino: Path, faltantes: list[dict[str, str]]) -> None:
     """Se escribe tras cada notebook: una bajada que muere a medias no queda como completa."""
     texto = json.dumps(faltantes, ensure_ascii=False, indent=1)
@@ -482,14 +572,23 @@ def main(argv: list[str] | None = None) -> int:
             except RescateError as exc:
                 print(f"KAGGLE NO RESPONDIÓ: {exc}", file=sys.stderr)
                 return EXIT_RED
+            ruedas = guardar_listado_de_ruedas(carpeta, token)
         else:
             carpeta = args.destino
+            ruedas = leer_listado_guardado(carpeta)
         if not (carpeta / "envios.json").is_file() or not (carpeta / "tabla_publica.zip").is_file():
             raise RescateError("En el directorio no hay envios.json y tabla_publica.zip.")
         resumen = resumir(carpeta, args.tareas_tabla)
     except RescateError as exc:
         print(f"ENTRADA INVÁLIDA: {exc}", file=sys.stderr)
         return EXIT_ENTRADA
+    if ruedas is None or not ruedas.get("guardado"):
+        motivo = "este rescate no lo trae" if ruedas is None else ruedas.get("error")
+        print(f"AVISO: sin listado del conjunto de ruedas ({motivo}).", file=sys.stderr)
+    elif ruedas.get("difiere_de_lo_ensayado"):
+        cambios = "; ".join(ruedas["difiere_de_lo_ensayado"])
+        print(f"AVISO: EL CONJUNTO DE RUEDAS NO ES EL ENSAYADO: {cambios}.", file=sys.stderr)
+    resumen = {"listado_de_ruedas": ruedas, **resumen}
     print(json.dumps({"directorio": str(carpeta), **resumen}, ensure_ascii=False, indent=2))
     return EXIT_PARCIAL if resumen["descarga_incompleta"] else EXIT_OK
 
