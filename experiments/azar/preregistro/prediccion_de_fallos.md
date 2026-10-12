@@ -404,3 +404,119 @@ no en el PR. La otra, la 11, porque el hecho que predecía no llegó a existir. 
 publiquen como comentario del PR, las predicciones sobre lo que dice un informe no se pueden cerrar; desde
 el PR #183 se publican. Plazo de las ocho que siguen abiertas: 2026-10-23. La 11 no tiene plazo que la
 cierre: su hecho no existió.
+
+## 16. Predicciones del issue #186
+
+**Nota de desviación (vale para las secciones 16, 17 y 18).** Estas diez predicciones (38 a 47) se escribieron
+el 2026-10-12 como comentario del issue correspondiente, antes de lanzar al implementador, y no en este
+archivo. La sección 6 pide fecha y commit; aquí no hay commit anterior al trabajo, y las secciones 10 a 13
+decían «la fecha que vale es la del commit que añade esta sección». Para estas, la fecha que vale es la del
+comentario, y el commit que las trae al archivo es el de este PR, posterior a los desenlaces. Lo que prueba
+que son anteriores al trabajo (medido con `gh`):
+
+| Issue | Comentario con las predicciones | Creado (UTC) | Editado después | Primer commit del PR | Fecha del primer commit (UTC) |
+|---|---|---|---|---|---|
+| #186 | [issuecomment-6116755436](https://github.com/cherrera0001/Agents_Learning_Loops/issues/186#issuecomment-6116755436) | 2026-10-12 02:38:31 | no (`updated_at` igual a `created_at`) | PR #191, `7d07ddd` | 2026-10-12 02:52:41 |
+| #167 | [issuecomment-6116755654](https://github.com/cherrera0001/Agents_Learning_Loops/issues/167#issuecomment-6116755654) | 2026-10-12 02:38:32 | no | PR #189, `e150177` | 2026-10-12 02:50:07 |
+| #187 | [issuecomment-6117136102](https://github.com/cherrera0001/Agents_Learning_Loops/issues/187#issuecomment-6117136102) | 2026-10-12 03:20:19 | no | PR #192, `6f075e3` | 2026-10-12 03:36:05 |
+
+Que el comentario sea anterior al primer commit del PR no prueba que el implementador no los viera: eso no
+consta. Otras tres desviaciones, también declaradas y no corregidas después:
+
+- **Líneas base «sin contar».** La sección 8.1 dice que una línea base la cuenta un guion antes de predecir.
+  La orden que las cuenta (`python -m scripts.devlog base-rates`, issue #167) se fusionó en esta misma vuelta,
+  con el PR #189 a las 03:20:07 UTC, después de sellar las predicciones 38 a 44. Por eso seis de esas siete
+  (todas menos la 41, que trae una cuenta a mano) dicen «sin contar». La 45 y la 47 traen una cifra «de esta
+  tanda», contada a mano sobre cinco o cuatro PR, no con la orden.
+- **Clases omitidas sin decirlo.** La sección 8.4 pide que quien predice diga qué clases de la sección 3 dejó
+  fuera y por qué. Los comentarios no lo dicen y no se añade ahora, porque sería escribir después del hecho.
+- **Plazo.** Ninguna de las diez fija una fecha. Por la regla de 8.4, una predicción sin plazo vence a los 30
+  días: la 41, la única abierta, vence el 2026-11-11 (30 días desde el 2026-10-12).
+
+El texto que sigue es el del comentario del issue, copiado tal cual.
+
+> **Predicciones fechadas antes de empezar (orquestador, 2026-10-12 UTC), según `experiments/azar/preregistro/prediccion_de_fallos.md`.** Selladas aquí antes de lanzar al implementador; el desenlace se marca al cerrar. Línea base: «sin contar» donde no hay recuento (#167 es lo que permitirá contarla).
+>
+> | # | Fallo que se predice | Probabilidad | Línea base | Cómo se marca |
+> |---|---|---|---|---|
+> | 38 | La primera revisión de código pide cambios antes de fusionar | 0,70 | sin contar (PR #184: sí; PR #185: no) | veredicto del `revisor-codigo` sobre la primera cabeza |
+> | 39 | El revisor encuentra al menos una orden legítima que el gancho rechaza | 0,50 | sin contar | caso reproducible citado en la revisión |
+> | 40 | La CI sale en rojo en el primer push | 0,30 | sin contar | `gh pr checks` sobre la primera cabeza |
+> | 41 | En los 15 episodios siguientes a la fusión aparece un paso fallido por heredoc | 0,35 | 10 de 73 episodios (0,14 por episodio; 5 tras la regla escrita) | pasos fallidos de los episodios |
+>
+> Decisión del concilio que origina el issue: dictamen del auditor del método del 2026-10-12 (candidatas C4 y C6). Condición de reversión: 2 o más pasos fallidos por heredoc en 15 episodios, o más de 1 orden legítima frenada: el gancho pasa a solo contar.
+
+El issue #186 añade una guarda previa a una orden de Bash (`scripts/guarda_previa.py`) que rechaza heredocs que
+alimentan un intérprete o escriben un archivo fuente, y escrituras de `gh` sin `GH_TOKEN` en la orden.
+
+## 17. Predicciones del issue #167
+
+Comentario del issue, copiado tal cual (enlace y hora en la tabla de la sección 16).
+
+> **Predicciones fechadas antes de empezar (orquestador, 2026-10-12 UTC), según `experiments/azar/preregistro/prediccion_de_fallos.md`.** Selladas aquí antes de lanzar al implementador; el desenlace se marca al cerrar.
+>
+> | # | Fallo que se predice | Probabilidad | Línea base | Cómo se marca |
+> |---|---|---|---|---|
+> | 42 | La primera revisión de código pide cambios antes de fusionar | 0,50 | sin contar | veredicto del `revisor-codigo` sobre la primera cabeza |
+> | 43 | El recuento de la orden difiere del recuento a mano del analista de datos para el PR #163 en al menos una celda | 0,45 | sin contar | comparación publicada en el PR |
+> | 44 | Más del 30 % de los pasos fallidos queda sin clase con la clasificación por palabras | 0,55 | sin contar | salida de la orden sobre los episodios reales |
+>
+> Contexto del 2026-10-12: una medición exploratoria sobre 61 episodios (un corpus, episodios dependientes, código de hoy) dio que la tasa base de fallo por acción anticipa qué acción falla mejor que el ranking de `recall` (AUC medio 0,646 frente a 0,550; diferencia pareada −0,095, IC −0,165 a −0,022; prueba de signos p = 0,076). El concilio decidió hacer este issue **tal como está**: la orden solo cuenta y añade; no sustituye el ranking ni entra en la skill de recall. Condición escrita por el auditor: si en los 20 episodios siguientes la tasa base no supera a `recall`, no entra en la skill.
+
+El issue #167 añade `python -m scripts.devlog base-rates`. El #167 pedía además que las predicciones estuvieran
+en este archivo: no lo estaban cuando se cerró, y por eso su cierre quedó sin confirmar. Este PR es esa parte.
+
+## 18. Predicciones del issue #187
+
+Comentario del issue, copiado tal cual (enlace y hora en la tabla de la sección 16).
+
+> **Predicciones fechadas antes de empezar (orquestador, 2026-10-12 UTC).** Selladas antes de lanzar al implementador; el desenlace se marca al cerrar.
+>
+> | # | Fallo que se predice | Probabilidad | Línea base (`devlog base-rates`, 74 episodios) | Cómo se marca |
+> |---|---|---|---|---|
+> | 45 | La primera revisión de código pide cambios antes de fusionar | 0,55 | hoy, 3 de 5 primeras revisiones de esta tanda pidieron cambios (#184, #190, #191 sí; #185, #189 no) | veredicto del `revisor-codigo` sobre la primera cabeza |
+> | 46 | El filtro retira alguna lección cuyo remedio es otra acción (el error que revierte el cambio) | 0,15 | sin contar | réplica sobre los episodios reales publicada en el PR |
+> | 47 | El PR entra en conflicto con `main` por `CHANGELOG.md` antes de fusionarse | 0,60 | hoy, 3 de 4 PR en paralelo chocaron ahí | `gh pr view --json mergeable` |
+>
+> Orden de fusión decidido por el concilio: después del #186 (PR #191), porque este filtro quita el único recordatorio del heredoc que hoy llega, por accidente, a través de una lección degenerada.
+
+El issue #187 hace que `devlog recall` omita las lecciones «fallback» cuyo remedio es la misma acción que
+falló. Nota sobre el encabezado de la tabla: dice «`devlog base-rates`, 74 episodios», pero las cifras de las
+filas 45 y 47 son recuentos a mano sobre los PR de la tanda; la orden cuenta pasos por acción, no veredictos ni
+conflictos.
+
+## 19. Desenlaces registrados el 2026-10-12 (issues #186, #167 y #187)
+
+Los registra la sesión que escribe este PR, a partir de lo que consta en los PR fusionados. Sigue sin existir
+el rol que marca (issue #165): esta tabla no es una marca independiente. A diferencia de las secciones 14 y 15,
+el resumen de cada informe de revisión está publicado como comentario del PR; pero ese comentario lo escribió el
+orquestador («resumen fiel de los informes», dice él mismo), no el revisor, y el informe íntegro no está
+publicado. Se marca con esos comentarios y se dice que son resúmenes. Fusiones, medidas con `gh pr view`:
+PR #189 (`mergedAt` 2026-10-12T03:20:07Z), PR #191 (2026-10-12T04:18:07Z) y PR #192 (2026-10-12T04:35:21Z).
+
+| # | Probabilidad | Línea base | Desenlace | Qué lo prueba |
+|---|---|---|---|---|
+| 38 | 0,70 | sin contar | Ocurrió | PR #191, primer comentario de revisión (2026-10-12 03:19 UTC): `revisor-codigo` sobre `7d07ddd`, «cambios requeridos»; el comentario de respuesta (03:32 UTC) habla de seis bloqueantes |
+| 39 | 0,50 | sin contar | Ocurrió | Mismo comentario: el gancho frenaba órdenes legítimas de uso diario; el comentario del 04:18 UTC cuenta, en la primera revisión, 8 falsos rechazos de 46 órdenes de heredoc y 7 de 36 de cuenta, y 0 de 46 y 1 de 36 tras los cambios |
+| 40 | 0,30 | sin contar | No ocurrió | Mismo primer comentario: 12 de 12 comprobaciones sobre `7d07ddd` |
+| 41 | 0,35 | 10 de 73 episodios | **Abierta** | Se marca tras el episodio 15 posterior a la fusión del PR #191 (`ddc9e88`, 2026-10-12T04:18:07Z). Vence el 2026-11-11 si antes no se llega a 15 episodios |
+| 42 | 0,50 | sin contar | No ocurrió | [PR #189, comentario de las 03:01 UTC](https://github.com/cherrera0001/Agents_Learning_Loops/pull/189#issuecomment-6116964635): primera revisión sobre `e150177`, «apto con observaciones», sin bloqueantes |
+| 43 | 0,45 | sin contar | Ocurrió, con una salvedad | Mismo comentario, recuento del analista de datos: 203 pasos fallidos en el pre-registro (sección 8.5) frente a 214 en el recuento del analista sobre 65 episodios, y 68 frente a 81 sin clase. El analista dice que los 11 de diferencia «no son un error de conteo» sino otro conjunto de 65 episodios; los «68 sin clase» sí difieren porque entonces había siete clases. Se marca «ocurrió» porque la predicción decía «difiere en al menos una celda», no por qué difiere |
+| 44 | 0,55 | sin contar | No ocurrió | Mismo comentario: 17,1 % sin clase (44 de 258 pasos fallidos, por la orden sobre los episodios reales). Es una cifra dentro de la muestra: el analista estima 20 a 30 % para episodios nuevos, y 30,1 % con solo los patrones anteriores al episodio 52 |
+| 45 | 0,55 | 3 de 5 (a mano) | No ocurrió | PR #192, comentario de las 03:49 UTC: primera revisión sobre `6f075e3`, «apto con observaciones», sin bloqueantes |
+| 46 | 0,15 | sin contar | No ocurrió | Mismo comentario: réplica propia del revisor sobre 75 episodios (`a32357e`); el resumen del analista dice que no empeora nada. La cifra «0 lecciones de otra acción retiradas» consta en `learning/README.md` (réplica del implementador sobre 65 episodios) |
+| 47 | 0,60 | 3 de 4 (a mano) | No ocurrió | PR #192, comentario de las 04:35 UTC: `main` (`ddc9e88`) fusionado en la rama sin conflicto (`1409343`), 12 de 12 comprobaciones |
+
+Cuenta, sin puntuación: de las diez, nueve tienen desenlace y una (la 41) sigue abierta. De las nueve, tres
+ocurrieron (38, 39 y 43) y seis no. La suma de las probabilidades de las nueve es 4,45, así que se esperaban
+unas 4,5 ocurrencias y hubo 3. Con nueve predicciones en tres issues no se puede hablar de calibración: la
+convención de la sección 8.4 pide cien en veinte, y 4,45 contra 3 es un recuento, no una lectura.
+
+Qué se midió y qué no: lo medido es el desenlace de cada hecho en los PR citados. No se midió si predecir
+cambió el desenlace (sección 8.6), ni si la línea base habría acertado más: en siete de las diez dice «sin
+contar» porque la orden que las cuenta se fusionó en esta misma vuelta. Desde ahora la tabla por acción de
+`python -m scripts.devlog base-rates` sirve como línea base (con `--hasta N` para un issue `N`); la tabla por
+clase no, hasta validarla con un segundo lector, como dice su propia salida.
+
+Siguen abiertas, con plazo al 2026-10-23, las ocho de las secciones 10 a 12 que la sección 15 dejó sin marcar
+(7, 8, 9, 10, 17, 18, 19 y 20); la 11 queda sin plazo, porque su hecho no existió. La 41 vence el 2026-11-11.
