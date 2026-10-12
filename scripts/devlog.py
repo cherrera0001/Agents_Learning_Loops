@@ -12,6 +12,7 @@ Uso::
     python -m scripts.devlog rebuild
     python -m scripts.devlog board --since 76        # chequeo de solo lectura (ver board_check)
     python -m scripts.devlog pilot --since 76        # lectura del piloto (ver pilot_metrics)
+    python -m scripts.devlog base-rates [--hasta 80] [--json]   # líneas base de fallo (ver base_rates)
 """
 
 from __future__ import annotations
@@ -149,6 +150,53 @@ def similar_issues(
     return [_issue_line(mg, goal, a, cards) for a, goal in ranked[: max(top, 0)]]
 
 
+_FALLBACK_PREFIX = "concept:lesson:fallback:"
+_FALLBACK_LABEL = re.compile(r"Si '(?P<failed>.*)' falla con '.*', usar '(?P<used>[^']*)'\Z", re.DOTALL)
+
+
+def is_same_action_fallback(node_id: str, label: str) -> bool:
+    """¿Es una lección automática «fallback» cuyo remedio es la misma acción que falló? (#187)
+
+    El consolidador anota el primer éxito tras un fallo como remedio aunque sea la misma acción
+    («Si 'X' falla con '...', usar 'X'»): no recomienda nada. Se identifica por el identificador del
+    nodo, ``concept:lesson:fallback:<falló>:<resolvió>`` (los ``_slug`` no contienen ``:``), con los dos
+    nombres iguales. Como el ``_slug`` recorta a 40 caracteres, dos acciones distintas con el mismo
+    comienzo darían el mismo identificador; por eso se exige también que los nombres completos de la
+    etiqueta coincidan. Las lecciones «avoid» y las redactadas a mano nunca cumplen esto.
+    """
+    if not node_id.startswith(_FALLBACK_PREFIX):
+        return False
+    failed, _, used = node_id.removeprefix(_FALLBACK_PREFIX).partition(":")
+    if not failed or failed != used:
+        return False
+    match = _FALLBACK_LABEL.match(label)
+    return match is not None and match["failed"] == match["used"]
+
+
+def _lesson_nodes(mg: MemoryGraph, activation: Mapping[str, float]) -> list[tuple[str, str]]:
+    """``(id, etiqueta)`` de las lecciones activadas, en el orden de ``RetrievalResult.lessons``."""
+    return [
+        (n, mg.node(n).label)
+        for n, _ in sorted(activation.items(), key=lambda kv: -kv[1])
+        if mg.has_node(n)
+        and mg.node(n).type == NodeType.CONCEPT
+        and mg.node(n).metadata.get("kind") == "lesson"
+    ]
+
+
+def visible_lessons(mg: MemoryGraph, activation: Mapping[str, float], top: int) -> tuple[list[str], int]:
+    """Las ``top`` primeras lecciones sin las de misma acción, y cuántas se omitieron.
+
+    El filtro va antes del corte: al quitar una degenerada sube la siguiente. El contador cuenta las
+    omitidas que estaban entre las ``top`` primeras de la lista sin filtrar (las posiciones que
+    ocupaban). Solo cambia lo que se muestra: el grafo guardado no se toca.
+    """
+    ranked = _lesson_nodes(mg, activation)
+    shown = [label for node_id, label in ranked if not is_same_action_fallback(node_id, label)][:top]
+    omitted = sum(1 for node_id, label in ranked[: max(top, 0)] if is_same_action_fallback(node_id, label))
+    return shown, omitted
+
+
 def recall(
     mg: MemoryGraph,
     query: str,
@@ -159,6 +207,7 @@ def recall(
 ) -> str:
     actions = [mg.node(n).label for n in mg.nodes_of_type(NodeType.ACTION)]
     result = Retriever(mg, embedder=embedder).retrieve(query, actions)
+    lessons, omitted = visible_lessons(mg, result.activation, top_lessons)
     lines = [f"RETRIEVE: {query!r}", "", "Acciones (score = relevancia · valencia):"]
     lines += [
         f"  {s.score:+.3f}  {s.action}  (rel={s.relevance:.2f}, val={s.valence:+.2f})"
@@ -166,7 +215,11 @@ def recall(
         if s.relevance > 0
     ] or ["  (sin experiencia relacionada)"]
     lines += ["", "Lecciones:"]
-    lines += [f"  - {lesson}" for lesson in result.lessons[:top_lessons]] or ["  (ninguna)"]
+    lines += [f"  - {lesson}" for lesson in lessons] or ["  (ninguna)"]
+    lines.append(
+        f"  (omitidas por la regla de misma acción: {omitted}; son lecciones automáticas "
+        "«Si 'X' falla…, usar 'X'» que no recomiendan otra acción)"
+    )
     lines += ["", "Issues parecidos (cómo se estimaron y cómo salieron):"]
     lines += similar_issues(mg, result.activation, top_issues, cards) or ["  (ninguno)"]
     return "\n".join(lines)
@@ -215,6 +268,13 @@ def main() -> None:
     from scripts.pilot_metrics import add_arguments, parse_map
 
     add_arguments(p_pilot)
+    p_base = sub.add_parser(
+        "base-rates",
+        help="solo lectura: líneas base de fallo contadas desde los episodios (por acción, clase y tercio)",
+    )
+    from scripts.base_rates import add_arguments as add_base_rates_arguments
+
+    add_base_rates_arguments(p_base)
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):  # UTF-8 también al redirigir en Windows
         sys.stdout.reconfigure(encoding="utf-8")
@@ -225,6 +285,12 @@ def main() -> None:
         from scripts.board_check import run_board
 
         sys.exit(run_board(since=args.since, snapshot=args.snapshot, episodes=load_episodes()))
+    if args.cmd == "base-rates":
+        from scripts.base_rates import run_base_rates
+
+        sys.exit(
+            run_base_rates(load_episodes(), hasta=args.hasta, as_json=args.json, classes_path=args.clases)
+        )
     if args.cmd == "pilot":
         from scripts.pilot_metrics import run_pilot
 

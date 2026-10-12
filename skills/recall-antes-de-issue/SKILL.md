@@ -42,5 +42,12 @@ Antes de escribir código para un issue, al empezar el trabajo del rol **impleme
    antes de empezar: puede cambiar la estimación. Con una instantánea del tablero a mano, añade
    `--snapshot <directorio>` para ver también su estado y su verificación.
 
+5. La salida dice cuántas lecciones omitió por la regla de misma acción (#187). `recall` no muestra las
+   lecciones automáticas «Si 'X' falla con '…', usar 'X'», cuyo remedio es la misma acción que falló:
+   no recomiendan nada (21 de las 75 lecciones «fallback» lo son; 124 de 305 posiciones mostradas en una
+   réplica sobre 65 episodios). Se conservan las que recomiendan otra acción, las «avoid» y las redactadas
+   a mano. Una lección que recordabas de un `recall` anterior puede haber dejado de salir: el grafo no
+   cambió, solo la lista mostrada. Detalle en [`learning/README.md`](../../learning/README.md).
+
 Esta skill no escribe nada: `recall` reconstruye el grafo en memoria desde `learning/episodes/` y no lee
 `learning/dev_memory.json`, que no se versiona y puede no existir en tu checkout.

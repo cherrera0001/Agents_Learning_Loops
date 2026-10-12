@@ -300,6 +300,30 @@ python -m scripts.mutation_check            # cada propiedad detecta su defecto 
 `mutation_check` tarda más de diez minutos. Un subagente implementador o revisor no la lanza en local
 salvo que el encargo lo pida: lee su resultado en el CI del PR.
 
+## Guardas previas a una orden de Bash
+
+Un gancho `PreToolUse` de Claude Code (`.claude/settings.json`, guion `scripts/guarda_previa.py`) revisa cada
+orden de la herramienta Bash antes de ejecutarla. **Rechaza** (no avisa) solo lo que puede decidir con
+seguridad, escribiendo la decisión por stdout y saliendo siempre con 0, y **cuenta** lo demás:
+
+- **Un heredoc que alimenta un intérprete** (la orden simple del `<<` es `python`, `node`, `bash`...), que
+  escribe un archivo fuente (`cat > x.py <<EOF`) o cuyo cuerpo pasa de 60 líneas. En su lugar: escribe el
+  archivo con la herramienta de edición y ejecútalo. Siguen pasando el mensaje de commit con heredoc
+  (también tras `pytest &&`) y el heredoc corto de texto plano.
+- **Una escritura de `gh` con la cuenta equivocada**: un par grupo-verbo de escritura (`pr comment`, `issue
+  create`, `api -X POST`...) en este repositorio, sin `GH_TOKEN` en la orden y con una cuenta activa que no es
+  `cherrera0001`, o con `gh auth token --user` de otra cuenta. Forma correcta:
+  `GH_TOKEN="$(gh auth token --user cherrera0001)" gh ...`. Las lecturas no se frenan. **`git push` solo se
+  cuenta** («push visto»), no se rechaza.
+
+El registro `.claude/guarda_previa.jsonl` (ignorado por git; solo hora, regla, veredicto y ejecutable, nunca
+texto de órdenes) se lee con `python -m scripts.guarda_previa --contar`. **Condición de reversión** (issue
+#186): si en los 15 episodios siguientes a la fusión hay 2 o más pasos fallidos por heredoc, o más de 1 orden
+legítima frenada, el gancho pasa a solo contar. **No cubre la herramienta PowerShell** ni a Codex u otros
+agentes; falla abierto (cualquier avería deja pasar la orden: atrapa el descuido, no es un control de
+seguridad); una sesión ya abierta puede recogerlo sin reiniciar (compruébalo en `/hooks`). Detalle y límites:
+[`docs/entorno/harness.md`](docs/entorno/harness.md).
+
 ## Tests
 
 | Carpeta | Qué contiene | Ejecutar |

@@ -47,6 +47,21 @@ los PR #61 y #57 chocaron en él. El dueño eligió (2026-10-03) dejar de versio
   52 consultas, 5 dieron otra lista de lecciones al cargar el archivo; por ejemplo,
   `"conflicto de merge entre PR paralelos en CI"`. La respuesta de `recall` es la de referencia. El defecto
   de orden está en el paquete de memoria y queda fuera de #96.
+- **`recall` omite las lecciones «fallback» de misma acción** ([#187](https://github.com/cherrera0001/Agents_Learning_Loops/issues/187)).
+  El consolidador anota como remedio de un fallo el primer éxito posterior aunque sea la misma acción
+  («Si 'X' falla con '…', usar 'X'»), y esa lección no recomienda nada. `recall` no la muestra: se
+  identifica por el identificador del nodo `lesson:fallback:<falló>:<resolvió>` con los dos nombres iguales
+  (y los nombres completos de la etiqueta también iguales, porque el identificador recorta a 40 caracteres).
+  El filtro va **antes** del corte de `-n`: al quitar una, sube la siguiente, y la salida dice cuántas
+  omitió (las que habrían ocupado una de las `n` posiciones). Se conservan las «fallback» que recomiendan
+  otra acción, las «avoid» y las redactadas a mano. Solo cambia lo que `recall` muestra: `rebuild` y el
+  grafo guardado no cambian, y la consolidación de la biblioteca tampoco (corregirla puede mover la
+  referencia del Experimento 1 y está aplazado). Medido el 2026-10-12: 21 de las 75 lecciones «fallback»
+  son de misma acción; en una réplica sobre 65 episodios (cada uno con al menos 10 anteriores, consulta =
+  su `goal`) salen 124 de 305 posiciones mostradas, ninguna lección de otra acción desaparece y 4 réplicas
+  quedan con menos de cinco lecciones. Efecto conocido: la lección del heredoc, que llegaba por una
+  lección degenerada, se recupera en 1 de 9 episodios donde ese fallo se repitió (antes 5 de 9 con el
+  mismo criterio), de ahí que dependa de la guarda previa a la orden ([#186](https://github.com/cherrera0001/Agents_Learning_Loops/issues/186)).
 - CI comprueba que `rebuild` funciona desde los episodios y que dos reconstrucciones dan los mismos bytes
   (`tests/integration/test_devlog_memory_unversioned.py` y un paso del workflow), no que un archivo
   versionado esté sincronizado.
@@ -156,6 +171,42 @@ python -m scripts.devlog recall "título del issue"   # (--embedder fastembed: b
 
 Los pasos, responsables y reglas del registro están en
 [`CONTRIBUTING.md`](../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto); aquí no se repiten.
+
+## Líneas base de fallo
+
+`python -m scripts.devlog base-rates` cuenta desde `learning/episodes/`, sin escribir nada y con salida 0
+(2 si el archivo de clases no se puede leer). No predice, no lee GitHub y no cambia `recall`:
+
+```bash
+python -m scripts.devlog base-rates                # tres tablas en texto
+python -m scripts.devlog base-rates --json         # la misma cuenta en JSON
+python -m scripts.devlog base-rates --hasta 80     # solo episodios con seq < 80 (excluye el 80 y los posteriores)
+```
+
+- **Por acción:** pasos, pasos fallidos, fracción e intervalo de Wilson al 95 %.
+- **Por clase de fallo:** la clasificación está en [`failure_classes.json`](failure_classes.json) (las ocho
+  clases del pre-registro del experimento «azar», secciones 3 y 8.5). Cada paso fallido cae en la **primera**
+  clase, en el orden del archivo, cuyo patrón (expresión regular sin distinguir mayúsculas) casa con su
+  `error` o su `note`. La salida da cuántos pasos fallidos no caben en ninguna («sin clase») y en cuántos
+  episodios aparece cada clase. `--clases <archivo>` usa otra. Es una clasificación por palabras, con estas
+  salvedades (también en el campo `caveat` del archivo y en la salida):
+  - las expresiones se escribieron leyendo los mismos episodios que clasifican, así que la fracción
+    «sin clase» (17,1 % con 74 episodios) es una cifra dentro de la muestra; el analista de datos estima
+    20 a 30 % para episodios nuevos (30,1 % con solo los patrones anteriores al episodio 52; 19,5 % en
+    versión rodante);
+  - un paso puede casar con varias clases y decide el orden del archivo (85 de 258 pasos fallidos; la salida
+    da la cuenta);
+  - **la tabla por clase no debe usarse como línea base de predicciones hasta validarla con un segundo
+    lector.** La tabla por acción sí.
+- **Por tercios:** los episodios ordenados por `seq`, partidos por cantidad: el grupo `i` (0, 1, 2) toma las
+  posiciones `i·n//3` a `(i+1)·n//3` de los `n` episodios (con 74, grupos de 24, 25 y 25), así que un episodio
+  más mueve las fronteras. Sirve para ver si la tasa cambia. Dos episodios con el mismo `seq` hacen que la
+  orden salga con 2 y lo diga, en vez de contarlos juntos.
+- **Qué no cuenta:** la CI, los veredictos de revisión y todo hecho que un episodio no registre; la salida lo
+  dice. Para una línea base «antes de predecir» sobre un issue `N`, usa `--hasta N`.
+
+Las pruebas (`tests/integration/test_devlog_base_rates.py`) usan un conjunto fijo de episodios escrito en la
+prueba, no los reales.
 
 ## Chequeo del tablero
 
