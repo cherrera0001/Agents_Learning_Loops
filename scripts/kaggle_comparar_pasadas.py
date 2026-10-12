@@ -27,9 +27,9 @@ con el otro, y un hueco idéntico en los dos pasaría).
 
 El registro se ata a su JSON: su nombre se deriva del del JSON (``iteracion_X.json`` y
 ``registro_iteracion_X.jsonl``, con o sin el prefijo ``salida__``), y las tareas que empezó deben ser
-exactamente las de las corridas que cuentan. Solo mira las corridas con ``cuenta_para_resueltas: true``; si
-tienen condiciones distintas, una tarea repetida dentro de un lado o un ``par_faltante`` que no es booleano,
-es una entrada inválida.
+exactamente las de las corridas que cuentan, con el mismo ``resuelta`` que el JSON.
+Solo mira las corridas con ``cuenta_para_resueltas: true``; si tienen condiciones distintas, una tarea
+repetida dentro de un lado o un ``par_faltante`` que no es booleano, es una entrada inválida.
 
 Salida:
     0  comparación completa: hay ``--lista``, ninguna tarea excluida, al menos un par que comparar, los dos
@@ -37,8 +37,9 @@ Salida:
     2  entrada inválida o ilegible (carpeta sin JSON o sin su registro, JSON roto, tarea repetida en un lado)
     3  hay tareas colgadas (pares excluidos) y nada más está mal
     4  la comparación no es completa por otra causa (sin ``--lista``, registro no fiable o que no cuadra con
-       su JSON, sesión cortada o muerta, JSON sin ``completo: true``, huecos de cobertura, cero pares tras
-       excluir, la misma salida en los dos lados); gana al 3
+       su JSON o con líneas ilegibles, sesión cortada o muerta, JSON sin ``completo: true``, huecos de
+       cobertura, cero pares tras excluir, la misma salida en los dos lados aunque esté reformateada); gana
+       al 3
 No hay ningún código que diga «sin hallazgos» para una comparación con pares excluidos.
 """
 
@@ -145,12 +146,16 @@ def _es_colgada_en_json(fila: dict[str, Any]) -> bool:
     return fila.get("par_faltante") is True or fila.get("clase") == CLASE_COLGADA
 
 
-def _huella(*archivos: Path | None) -> str:
-    h = hashlib.sha256()
-    for a in archivos:
-        h.update(b"-" if a is None else a.read_bytes())
-        h.update(b"\0")
-    return h.hexdigest()
+def _huella(filas: dict[str, dict[str, Any]], eventos: list[dict[str, Any]]) -> str:
+    """Huella del contenido de una salida: sus filas y los eventos de su registro, ya leídos.
+
+    No depende de los bytes (saltos de línea, líneas en blanco, sangrado, orden de las claves): una copia
+    reformateada de la misma salida tiene la misma huella. Dos pasadas distintas no la comparten porque el
+    registro trae las horas de cada evento.
+    """
+    normal = [filas[t] for t in sorted(filas)], eventos
+    texto = json.dumps(normal, ensure_ascii=True, sort_keys=True, default=str)
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
 
 
 def _registro_de(archivo: Path) -> tuple[Path, Path | None]:
@@ -185,22 +190,37 @@ def leer_salida(ruta: Path) -> dict[str, Any]:
     except RegistroError as exc:
         raise CompararError(f"{carpeta.name}: {exc}") from exc
     sesion = informe["sesion"]
-    empezadas = [str(o["inicio"].get("tarea")) for o in ocurrencias_de_tarea(eventos)]
+    ocurrencias = ocurrencias_de_tarea(eventos)
+    empezadas = [str(o["inicio"].get("tarea")) for o in ocurrencias]
     distintas = sorted(set(empezadas) ^ set(filas)) if (len(empezadas) == len(set(empezadas))) else None
+    # El ``resuelta`` de cada ``tarea_fin`` del registro debe ser el de la fila del JSON.
+    sin_acuerdo = sorted(
+        str(o["inicio"].get("tarea"))
+        for o in ocurrencias
+        if o["fin"] is not None
+        and str(o["inicio"].get("tarea")) in filas
+        and o["fin"].get("resuelta") != filas[str(o["inicio"].get("tarea"))]["resuelta"]
+    )
+    cuadra = (
+        f"el registro empezó {len(empezadas)} tareas (hay repetidas) y el JSON trae {len(filas)}"
+        if distintas is None
+        else (
+            f"el registro y el JSON difieren en {len(distintas)} tareas "
+            f"(el registro empezó {len(empezadas)}, el JSON trae {len(filas)})"
+        )
+        if distintas
+        else (
+            f"el registro y el JSON no coinciden en si {len(sin_acuerdo)} tareas quedaron resueltas "
+            f"({', '.join(sin_acuerdo[:5])}{'…' if len(sin_acuerdo) > 5 else ''})"
+        )
+        if sin_acuerdo
+        else None
+    )
     return {
         "salida": carpeta.name,
         "ruta": str(archivo.resolve()),
-        "huella": _huella(archivo, registro),
-        "tareas_registro_no_cuadran": (
-            f"el registro empezó {len(empezadas)} tareas (hay repetidas) y el JSON trae {len(filas)}"
-            if distintas is None
-            else (
-                f"el registro y el JSON difieren en {len(distintas)} tareas "
-                f"(el registro empezó {len(empezadas)}, el JSON trae {len(filas)})"
-            )
-            if distintas
-            else None
-        ),
+        "huella": _huella(filas, eventos),
+        "tareas_registro_no_cuadran": cuadra,
         "lineas_ilegibles": ilegibles,
         "filas": filas,
         "json_completo": completo,
@@ -255,6 +275,10 @@ def _motivos_del_lado(nombre: str, lado: dict[str, Any]) -> tuple[list[str], lis
             otros.append(f"{etiqueta}: el JSON de la pasada no dice completo: true")
         if s["tareas_registro_no_cuadran"]:
             otros.append(f"{etiqueta}: {s['tareas_registro_no_cuadran']}")
+        if s["lineas_ilegibles"]:
+            # Una línea truncada o ajena (sesión matada desde fuera, texto tras el cierre): el registro puede
+            # haber perdido eventos, así que la comparación no se da por completa.
+            otros.append(f"{etiqueta}: el registro trae {s['lineas_ilegibles']} líneas ilegibles")
         # El 7 es la sesión que terminó con colgadas: ya lo dice el motivo de arriba.
         if s["codigo_registro"] not in (EXIT_OK, EXIT_CON_COLGADAS) or not s["registro_fiable"]:
             otros.append(f"{etiqueta}: el registro dice «{s['veredicto']}» (código {s['codigo_registro']})")
@@ -329,7 +353,17 @@ def comparar(
         "lados": {
             nombre: {
                 "salidas": [
-                    {k: s[k] for k in ("salida", "estado", "registro_fiable", "json_completo", "veredicto")}
+                    {
+                        k: s[k]
+                        for k in (
+                            "salida",
+                            "estado",
+                            "registro_fiable",
+                            "json_completo",
+                            "lineas_ilegibles",
+                            "veredicto",
+                        )
+                    }
                     for s in lado["salidas"]
                 ],
                 "tareas": len(lado["filas"]),

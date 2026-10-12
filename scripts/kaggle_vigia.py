@@ -30,7 +30,7 @@ escribe ``envios.json`` primero y puede morir justo después, así que una lectu
 ``lectura_anterior_utc``, ``lectura_anterior_de`` y ``lectura_utc``). La lectura no dice cuándo cambió un
 envío, solo entre qué dos lecturas: de ``error`` a ``complete`` entre las 21:13 y las 21:37 acota una
 evaluación; no la mide. La lectura anterior es la más reciente de dos: el ``envios.json`` del último rescate
-o la última lectura del propio vigía (``vigia_ultima_lectura.json``), así que un cambio se anota una sola
+o la última lectura del propio vigía (``vigia_ultima_lectura.json``), así que un cambio se anota a lo sumo una
 vez y con el intervalo más corto que hay. Si no puede escribir, lo dice y sigue.
 
 **Avisa de un envío sin terminar** (punto 17): cualquiera que la API devuelva en un estado que no sea
@@ -308,6 +308,10 @@ def _par(valor: tuple[str, float | None] | None) -> dict[str, Any] | None:
     return None if valor is None else {"estado": valor[0], "nota": valor[1]}
 
 
+def _estado(par: dict[str, Any] | None) -> str:
+    return "sin lectura" if par is None else str(par["estado"])
+
+
 def cambios_de_estado(
     base: dict[int, tuple[str, float | None]],
     actuales: dict[int, tuple[str, float | None]],
@@ -363,9 +367,10 @@ def registrar_lectura(
     Escribe solo en ``carpeta`` (la de los rescates, ignorada por git).
 
     Primero guarda la última lectura, con un archivo temporal y un reemplazo atómico, y solo después anota
-    los cambios: si la lectura no se puede guardar no se anota nada (el próximo arranque lo anotará una sola
-    vez) y, si falla la anotación, la lectura ya está guardada y el cambio no se duplica (queda sin anotar y
-    se dice). Si no puede escribir, lo dice en una línea y no lanza.
+    los cambios: si la lectura no se puede guardar no se anota nada y el próximo arranque lo anotará; si falla
+    la anotación, la lectura ya está guardada y el cambio no se reintenta, así que queda sin anotar y el
+    mensaje lo nombra. Cada cambio se anota **a lo sumo una vez**, no exactamente una. Si no puede escribir,
+    lo dice en una línea y no lanza.
     """
     previa = leer_lectura_del_vigia(carpeta)
     if previa is not None and previa[0] > ahora:
@@ -391,13 +396,25 @@ def registrar_lectura(
     try:
         temporal.write_text(json.dumps(lectura, ensure_ascii=False), encoding="utf-8")
         temporal.replace(destino)
+    except OSError as exc:
+        return [
+            f"no pude guardar la lectura del vigía ({type(exc).__name__}): no anoté ningún cambio; "
+            "el próximo arranque lo anotará"
+        ]
+    try:
         if cambios:
             with (carpeta / ARCHIVO_DE_CAMBIOS).open("a", encoding="utf-8", newline="\n") as archivo:
                 for cambio in cambios:
                     archivo.write(json.dumps(cambio, ensure_ascii=False) + "\n")
     except OSError as exc:
+        perdidos = "; ".join(
+            f"envío {c['ref']}: {_estado(c['antes'])} -> {_estado(c['ahora'])} entre "
+            f"{c['lectura_anterior_utc']} y {c['lectura_utc']}"
+            for c in cambios
+        )
         return [
-            f"no pude guardar la lectura del vigía ({type(exc).__name__}): los cambios no quedaron anotados"
+            f"la lectura del vigía sí se guardó, pero {len(cambios)} cambios no quedaron anotados "
+            f"({type(exc).__name__}) y no se reintentarán: {perdidos}"
         ]
     if not cambios:
         return []

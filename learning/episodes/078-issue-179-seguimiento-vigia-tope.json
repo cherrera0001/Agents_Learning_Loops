@@ -35,7 +35,7 @@
       "action": "edit_module",
       "success": false,
       "error": "La primera revisión encontró entradas con las que el guion de comparación salía con 0 sin merecerlo: el registro no atado a su JSON, la misma salida en los dos lados, cero pares y una lista de tareas opcional; las pruebas solo usaban pares con p = 1 y no las detectaban",
-      "note": "scripts/kaggle_comparar_pasadas.py reutiliza cargar_salida, diagnosticar y codigo_de de kaggle_registro y mcnemar_exact_p de kaggle_replicas; acepta varias salidas por lado, une las colgadas del JSON y del registro, y sale con 3 (colgadas) o 4 (otra incompletitud; gana al 3). Probado a mano sobre completa frente a pasada_2 y a comprobar_pasadas/caso_9: da 4 en los dos, con el par excluido en el segundo"
+      "note": "scripts/kaggle_comparar_pasadas.py usa leer_salida (propia: ata el registro al JSON por el nombre y por el conjunto de tareas), diagnosticar, codigo_de, leer_jsonl y ocurrencias_de_tarea de kaggle_registro y mcnemar_exact_p de kaggle_replicas; acepta varias salidas por lado, une las colgadas del JSON y del registro, y sale con 3 (colgadas) o 4 (otra incompletitud; gana al 3). Probado a mano sobre completa frente a pasada_2 y a comprobar_pasadas/caso_9: da 4 en los dos, con el par excluido en el segundo. El fallo de esta acción lo resolvió el segundo commit del PR (bb83975) y las pruebas de defectos inyectados, no el paso de ruff que viene después."
     },
     {
       "action": "write_tests",
@@ -88,13 +88,32 @@
       "error": "Corrí ruff y las pruebas solo sobre los archivos tocados y la CI falló en las ocho tandas anteriores; esta vez corrí la suite completa. ruff check dio además un E501 en una línea que partí mal al corregir la excepción de condiciones distintas"
     },
     {
+      "action": "edit_module",
+      "success": false,
+      "error": "Al atar el registro al JSON solo comparé el nombre y el conjunto de tareas: una copia del registro del otro lado con el nombre de este, o un JSON con 6 resueltas frente a un registro con 0, seguía saliendo con 0; la huella era de los bytes, así que una copia con un salto de línea de más o con el JSON resangrado también salía con 0; y las líneas ilegibles del registro se contaban y no llegaban al informe ni al código de salida. Segunda revisión de código, sobre 8cfad0e",
+      "note": "leer_salida cruza el resuelta de cada tarea_fin con el del JSON (comprobado antes en las 37 salidas reales guardadas: coincide en todas, 26 de 26 en completa, y ninguna trae líneas ilegibles); la huella es del contenido normalizado (filas y eventos leídos, no bytes); una línea ilegible da 4 y se informa por salida"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "El mensaje del vigía cuando falla la anotación decía «no pude guardar la lectura» cuando sí se había guardado, no nombraba el cambio perdido ni decía que no se reintentaría, y el docstring prometía «una sola vez» cuando es «a lo sumo una». Además, al reescribirlo con un script de Python lanzado desde un heredoc, los \\n del código salieron como saltos de línea reales y dejaron el módulo con un SyntaxError que vi al correr las pruebas; lo arreglé con la herramienta de edición",
+      "note": "El guardado de la lectura y la anotación son dos bloques: si falla el primero no se anota nada; si falla el segundo, el mensaje dice que la lectura sí se guardó, nombra cada cambio perdido (envío, estados y las dos horas) y que no se reintentará. Se cambió una aserción de tests/test_kaggle_seguimiento_179.py, prueba de este mismo PR, porque esperaba el texto falso"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Los registros de las pruebas de la comparación traían resuelta=true en todas las tarea_fin y las tareas colgadas no traían resuelta, al revés que un registro real; al cruzar el resuelta con el JSON fallaron 12 pruebas. Se corrigieron los dos ayudantes según un registro real",
+      "note": "Con 36 defectos inyectados a mano en el guion, sobreviven 3, todos equivalentes (la comparación de rutas está cubierta por la huella; la huella de las filas la cubre el registro, que lleva las horas; registro_fiable ya está en el código del registro). Antes sobrevivían 13 de los 62 del revisor (las líneas 111, 126, 138, 181, 285, 293, 373 y 164 entre ellos)"
+    },
+    {
       "action": "run_tests",
       "success": true,
-      "note": "Segunda vuelta (tras la revisión): ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov de la suite completa: 2949 pasadas, 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI."
+      "note": "Tercera vuelta (segunda revisión): ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov de la suite completa, 2973 pasadas y 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI."
     }
   ],
   "lessons": [
     "Un guion que compara dos pasadas debe decir en su salida y en su código que una pasada con una tarea colgada no es completa, y no dar nunca 0 a una comparación con pares excluidos",
-    "Antes de escribir una fecha de «desde cuándo no hay lectura» en un documento, releer los envios.json guardados: la ausencia de una lectura se afirma con la lista de las que existen"
+    "Antes de escribir una fecha de «desde cuándo no hay lectura» en un documento, releer los envios.json guardados: la ausencia de una lectura se afirma con la lista de las que existen",
+    "Un cruce entre dos fuentes del mismo dato (el JSON y el registro) ata por contenido y no solo por nombre; una huella para saber si dos salidas son la misma se calcula sobre el contenido normalizado y no sobre los bytes"
   ]
 }

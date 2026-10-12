@@ -119,7 +119,12 @@ def test_si_no_puede_guardar_la_lectura_no_anota_nada_y_el_siguiente_arranque_lo
 def test_si_falla_la_anotacion_la_lectura_ya_esta_guardada_y_no_se_duplica(tmp_path: Path) -> None:
     (tmp_path / kv.ARCHIVO_DE_CAMBIOS).mkdir()  # abrir para anexar falla
     lineas = kv.registrar_lectura(tmp_path, T_RESCATE, {1: ("error", None)}, {1: ("complete", 0.13)}, AHORA)
-    assert any("los cambios no quedaron anotados" in x for x in lineas)
+    (mensaje,) = lineas
+    # Dice la verdad: la lectura sí se guardó; nombra el cambio (envío, estados, las dos horas) y que no se
+    # reintentará.
+    assert "sí se guardó" in mensaje and "no quedaron anotados" in mensaje and "no se reintentarán" in mensaje
+    assert "envío 1: error -> complete entre 2026-10-09T10:00:00Z y 2026-10-09T14:00:00Z" in mensaje
+    assert "no pude guardar la lectura" not in mensaje
     assert kv.leer_lectura_del_vigia(tmp_path) == (AHORA, {1: ("complete", 0.13)})
     # El siguiente arranque ve la misma lectura: no hay cambio nuevo y no se reintenta la anotación.
     assert (

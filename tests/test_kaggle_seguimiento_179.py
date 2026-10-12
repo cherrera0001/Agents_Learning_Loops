@@ -144,7 +144,7 @@ def test_si_no_puede_escribir_lo_dice_y_no_lanza(tmp_path: Path) -> None:
     guardar(r, "2026-10-08T2113Z", [envio(1, "error")])
     (r / kv.ARCHIVO_DE_CAMBIOS).mkdir()  # un directorio donde iría el archivo: abrirlo para anexar falla
     lineas = correr(r, api([envio(1, "complete", "0.13")]))
-    assert any("no pude guardar la lectura del vigía" in x for x in lineas)
+    assert any("sí se guardó" in x and "no quedaron anotados" in x for x in lineas)
     assert any(x.startswith("envío 1 pasó de `error` a `complete`") for x in lineas)
 
 

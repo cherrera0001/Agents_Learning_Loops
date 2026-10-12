@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -28,14 +29,21 @@ def _e(tipo: str, tarea: str | None, hora: float, **campos: Any) -> dict[str, An
     return {"evento": tipo, "tarea": tarea, "hora": hora, "hora_utc": f"h{hora}", **campos}
 
 
-def _bien(nombre: str, hora: float, numero: int) -> list[dict[str, Any]]:
+def _bien(nombre: str, hora: float, numero: int, resuelta: bool = True) -> list[dict[str, Any]]:
     return [
         _e("tarea_inicio", nombre, hora),
         _e("peticion_inicio", nombre, hora + 1, peticion=numero, caracteres_entrada=10),
         _e("peticion_fin", nombre, hora + 2, peticion=numero, motivo="stop"),
         _e("diff_cierre", nombre, hora + 3, bytes=5, sha256="x", archivos=[]),
         _e("agente_fin", nombre, hora + 4, error=None, entrego=True),
-        _e("tarea_fin", nombre, hora + 5, clase="resuelta", resuelta=True, con_tope=True),
+        _e(
+            "tarea_fin",
+            nombre,
+            hora + 5,
+            clase="resuelta" if resuelta else "no",
+            resuelta=resuelta,
+            con_tope=True,
+        ),
     ]
 
 
@@ -43,7 +51,15 @@ def _colgada(nombre: str, hora: float) -> list[dict[str, Any]]:
     return [
         _e("tarea_inicio", nombre, hora),
         _e("tarea_colgada", nombre, hora + 9, tope_s=9, segundos=9.0, hilo_vivo=False, sigue=True),
-        _e("tarea_fin", nombre, hora + 10, clase="tarea_colgada", con_tope=True, par_faltante=True),
+        _e(
+            "tarea_fin",
+            nombre,
+            hora + 10,
+            clase="tarea_colgada",
+            resuelta=False,
+            con_tope=True,
+            par_faltante=True,
+        ),
     ]
 
 
@@ -51,7 +67,7 @@ def _registro(tareas: dict[str, str], cierre: bool = True, marca: str = "") -> s
     eventos: list[dict[str, Any]] = [_e("registro_instalado", None, T0, enganches=ENGANCHES, pasada=marca)]
     for numero, (nombre, que) in enumerate(tareas.items(), start=1):
         hora = T0 + 20 * numero
-        eventos += _colgada(nombre, hora) if que == "c" else _bien(nombre, hora, numero)
+        eventos += _colgada(nombre, hora) if que == "c" else _bien(nombre, hora, numero, que == "r")
     if cierre:
         eventos.append(
             _e("cierre", None, T0 + 20 * (len(tareas) + 2), errores_del_registro=0, ultimo_error=None)
@@ -606,3 +622,198 @@ def test_la_salida_se_fuerza_a_utf8(monkeypatch: pytest.MonkeyPatch, tmp_path: P
     monkeypatch.setattr(kc.sys, "stderr", Falso())
     assert kc.main(["--base", str(tmp_path / "x"), "--otra", str(tmp_path / "y")]) == kc.EXIT_ENTRADA
     assert llamadas == ["utf-8", "utf-8"]
+
+
+# ---------------------------------------------------------------------------
+# Segunda revisión: el registro cruzado con el JSON, la huella de contenido y las líneas ilegibles
+# ---------------------------------------------------------------------------
+
+
+def _fijar_resuelta_en_el_registro(ruta: Path, valor: bool) -> None:
+    eventos = [json.loads(x) for x in ruta.read_text(encoding="utf-8").splitlines()]
+    for e in eventos:
+        if e["evento"] == "tarea_fin":
+            e["resuelta"] = valor
+    ruta.write_text("\n".join(json.dumps(e) for e in eventos), encoding="utf-8")
+
+
+def test_un_registro_de_otra_pasada_con_el_nombre_de_esta_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """El registro del otro lado copiado con el nombre de este: mismas tareas, otro ``resuelta``."""
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "nnnrrr", strict=True)), nombre="p2")
+    copia = (p1 / "registro_iteracion_p1.jsonl").read_text(encoding="utf-8")
+    (p2 / "registro_iteracion_p2.jsonl").write_text(copia, encoding="utf-8")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4
+    (motivo,) = [m for m in r["motivos"] if "no coinciden en si" in m]
+    assert "6 tareas" in motivo and "a_1" in motivo
+
+
+def test_un_json_con_seis_resueltas_frente_a_un_registro_con_cero_no_sale_con_0(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict.fromkeys(TAREAS, "r"), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict.fromkeys(TAREAS, "r"), nombre="p2")
+    _fijar_resuelta_en_el_registro(p2 / "registro_iteracion_p2.jsonl", False)
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("no coinciden en si 6 tareas" in m for m in r["motivos"])
+
+
+def test_una_copia_reformateada_de_la_misma_salida_sale_con_4(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    p2 = tmp_path / "p2"
+    shutil.copytree(p1, p2)
+    original = (p1 / "registro_iteracion_p1.jsonl").read_text(encoding="utf-8")
+    (p2 / "registro_iteracion_p1.jsonl").write_text("\n\n" + original + "\n\n", encoding="utf-8")
+    datos = json.loads((p1 / "iteracion_p1.json").read_text(encoding="utf-8"))
+    (p2 / "iteracion_p1.json").write_text(json.dumps(datos, indent=4, sort_keys=True), encoding="utf-8")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("comparten la misma salida" in m for m in r["motivos"])
+
+
+def test_dos_pasadas_distintas_con_las_mismas_tareas_y_resultados_no_comparten_huella(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 0 and not any("misma salida" in m for m in r["motivos"])
+
+
+@pytest.mark.parametrize("que", ["truncada", "basura_tras_el_cierre"])
+def test_un_registro_con_lineas_ilegibles_no_sale_con_0_y_llega_al_informe(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], que: str
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    ruta = p2 / "registro_iteracion_p2.jsonl"
+    lineas = ruta.read_text(encoding="utf-8").splitlines()
+    if que == "truncada":
+        i = next(n for n, x in enumerate(lineas) if '"peticion_fin"' in x)
+        lineas[i] = lineas[i][: len(lineas[i]) // 2]
+    else:
+        lineas.append('{"evento": "peticion_fin", "ta')
+    ruta.write_text("\n".join(lineas), encoding="utf-8")
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and any("líneas ilegibles" in m for m in r["motivos"])
+    assert r["lados"]["otra"]["salidas"][0]["lineas_ilegibles"] == 1
+    assert r["lados"]["base"]["salidas"][0]["lineas_ilegibles"] == 0
+
+
+# ---------------------------------------------------------------------------
+# Defectos que sobrevivían a la primera corrección
+# ---------------------------------------------------------------------------
+
+
+def _corrida(marca: bool | None, resueltas: str) -> dict[str, Any]:
+    corrida: dict[str, Any] = {
+        "condicion": "A",
+        "tareas": [{"instance_id": t, "resuelta": c == "r"} for t, c in zip(TAREAS, resueltas, strict=True)],
+    }
+    if marca is not None:
+        corrida["cuenta_para_resueltas"] = marca
+    return corrida
+
+
+def test_una_corrida_sin_la_marca_no_cuenta_aunque_traiga_filas(tmp_path: Path) -> None:
+    solo_sin_marca = {"X1": _corrida(None, "rrrnnn")}
+    p = _salida(
+        tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1", corridas=solo_sin_marca
+    )
+    with pytest.raises(kc.CompararError, match="ninguna corrida trae cuenta_para_resueltas"):
+        kc.leer_salida(p)
+    mixtas = {
+        "X0": {"condicion": "A", "tareas": [{"instance_id": "x_9", "resuelta": True}]},
+        "X1": _corrida(True, "rrrnnn"),
+    }
+    p3 = _salida(tmp_path / "p3", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p3", corridas=mixtas)
+    assert set(kc.leer_salida(p3)["filas"]) == set(TAREAS)
+
+
+@pytest.mark.parametrize("valor", ["true", 1, None])
+def test_una_fila_con_resuelta_que_no_es_booleano_es_entrada_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], valor: Any
+) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p2")
+    archivo = p2 / "iteracion_p2.json"
+    datos = json.loads(archivo.read_text(encoding="utf-8"))
+    datos["corridas"]["X1"]["tareas"][0]["resuelta"] = valor
+    archivo.write_text(json.dumps(datos), encoding="utf-8")
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == kc.EXIT_ENTRADA and "«resuelta» booleano" in err
+
+
+def test_un_json_sin_ninguna_corrida_que_cuente_es_entrada_invalida(tmp_path: Path) -> None:
+    p = _salida(tmp_path / "p", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p", corridas={"X1": 3})
+    with pytest.raises(kc.CompararError, match="ninguna corrida trae cuenta_para_resueltas"):
+        kc.leer_salida(p)
+
+
+def test_un_registro_sin_ningun_evento_legible_es_entrada_invalida(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn")
+    (p2 / "registro_iteracion_p2.jsonl").write_text("no es json\n", encoding="utf-8")
+    codigo, _, err = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == kc.EXIT_ENTRADA and "ningún evento legible" in err
+
+
+def test_una_lista_con_elementos_que_no_son_texto_es_entrada_invalida(tmp_path: Path) -> None:
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS, "rrrnnn", strict=True)), nombre="p1")
+    lista = tmp_path / "lista.json"
+    lista.write_text(json.dumps({"lista": [1, 2, 3]}), encoding="utf-8")
+    assert kc.main(["--base", str(p1), "--otra", str(p1), "--lista", str(lista)]) == kc.EXIT_ENTRADA
+
+
+def test_una_colgada_sin_par_no_cuenta_como_excluida_y_ninguna_resuelta_descuenta_las_excluidas(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # a_6 falta en la base y está colgada en la otra (sin par); a_2 está colgada en la otra y sí tiene par.
+    p1 = _salida(tmp_path / "p1", dict(zip(TAREAS[:5], "rrnnn", strict=True)), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict(zip(TAREAS, "rcnnnc", strict=True)), nombre="p2")
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert r["pares"]["excluidos"] == 1 and r["pares"]["tareas_excluidas"] == ["a_2"]
+    assert r["pares"]["colgadas_sin_par"] == ["a_6"]
+    # quedan a_1, a_3, a_4 y a_5: a_1 la resuelven las dos y las otras tres, ninguna
+    assert r["tabla"]["concordantes"] == {"ambas_resueltas": 1, "ninguna_resuelta": 3}
+    assert r["tabla"]["discordantes"]["solo_base"] == 0 and r["tabla"]["discordantes"]["solo_otra"] == 0
+
+
+def test_el_mensaje_de_resuelta_que_no_coincide_nombra_solo_cinco_y_dice_que_hay_mas(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ids = _ids(7)
+    p1 = _salida(tmp_path / "p1", dict.fromkeys(ids, "r"), nombre="p1")
+    p2 = _salida(tmp_path / "p2", dict.fromkeys(ids, "r"), nombre="p2")
+    _fijar_resuelta_en_el_registro(p2 / "registro_iteracion_p2.jsonl", False)
+    _, r, _ = _comparar(capsys, tmp_path, [p1], [p2], lista=ids)
+    (motivo,) = [m for m in r["motivos"] if "no coinciden en si" in m]
+    assert "7 tareas" in motivo and "b_5" in motivo and "b_6" not in motivo and "…" in motivo
+
+
+def test_una_sesion_cortada_a_media_tarea_no_rompe_la_comparacion(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """La última tarea empezó y no tiene ``tarea_fin``: se dice por el registro, no por una excepción."""
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn", cierre=False)
+    ruta = p2 / "registro_iteracion_p2.jsonl"
+    lineas = ruta.read_text(encoding="utf-8").splitlines()
+    ruta.write_text(
+        "\n".join(x for x in lineas if '"tarea_fin"' not in x or "a_6" not in x), encoding="utf-8"
+    )
+    codigo, r, _ = _comparar(capsys, tmp_path, [p1], [p2])
+    assert codigo == 4 and not any("no coinciden en si" in m for m in r["motivos"])
+
+
+def test_el_latido_se_lee_y_distingue_una_sesion_viva_y_detenida_de_una_muerta(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    p1, p2 = _dos(tmp_path, "rrrnnn", "rrrnnn", cierre=False)
+    sin_latido = _comparar(capsys, tmp_path, [p1], [p2])[1]
+    assert any("muerta desde fuera" in m for m in sin_latido["motivos"])
+    (p2 / "latido_iteracion_p2.jsonl").write_text(json.dumps({"hora": T0 + 100_000}), encoding="utf-8")
+    con_latido = _comparar(capsys, tmp_path, [p1], [p2])[1]
+    assert any("viva y detenida" in m for m in con_latido["motivos"])
