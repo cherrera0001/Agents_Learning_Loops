@@ -51,14 +51,15 @@ Para una lección que recomienda el operador `o` y una tarea `q`:
   difiere, no se evalúa.
 - `a = 1` se lee «admitida»; `a = 0`, «vetada».
 
-**Diferencia con el agente de #58.** Aquel solo vetaba cuando D no era ambiguo, y con D ambiguo dejaba que la
-memoria ordenara. Este predicado **también veta cuando D es ambiguo**: sin diagnóstico que distinga, la
-lección no se admite. Es una regla nueva; no se ha ejecutado nunca.
+**Diferencia con el solver acotado con D de #58.** Aquel solo vetaba cuando D no era ambiguo, y con D ambiguo
+dejaba que la memoria ordenara. Este predicado **también veta cuando D es ambiguo**: sin diagnóstico que
+distinga, la lección no se admite. Es una regla nueva; no se ha ejecutado nunca.
 
 **Límite lógico, declarado antes.** `D` solo lee rasgos del `stderr`. Dos tareas con los mismos rasgos
-reciben los mismos candidatos, tengan la causa que tengan: sobre ellas el predicado no puede admitir una
-lección y vetar la otra. Solo puede acertar absteniéndose en las dos. El informe cuenta aparte los pares con
-rasgos idénticos.
+reciben los mismos candidatos, tengan la causa que tengan. En un par de **operador distinto** con rasgos
+idénticos, el predicado no puede vetar una lección y admitir la otra: solo acierta si veta las dos. En un par
+de **mismo operador** con rasgos idénticos, admitir las dos es un acierto. El informe cuenta aparte los pares
+con rasgos idénticos.
 
 ## 4. El banco
 
@@ -70,27 +71,46 @@ rasgos idénticos.
 - **Cada tarea** trae lo mismo que las actuales: el enunciado público con los campos de `benchmark/public/`,
   su test de aceptación público y, sellados, el defecto (archivo, texto antes y después), el operador correcto
   y el par.
-- **Quién lo escribe:** un agente que no es el orquestador ni ningún rol del concilio. No lee
+- **Quién lo escribe:** un agente de entorno que no es el orquestador y que **no trae contexto del concilio**:
+  una ejecución nueva de Codex, sin reanudar ninguna sesión anterior. Codex ocupó un rol en el concilio en
+  otras ejecuciones, y en una de ellas recibió la lista de campos candidatos; por eso no basta con pedirle que
+  no lea. Trabaja en una carpeta aislada que solo contiene `specs/software_learning_protocol.md`,
+  `src/experiments/agent.py`, `experiments/software_project/` y `benchmark/public/`. No están ahí
   `src/experiments/diagnostic.py`, `failure_memory.py`, `nonlexical_seed.py`, `docs/results/`,
   `docs/preregistration/`, `benchmark/private/` ni los expedientes de los concilios. Su encargo se guarda tal
-  cual y se cita en el informe.
+  cual, su manifiesto lista lo que leyó y ejecutó, y los dos se citan en el informe.
+- **Exposición residual, declarada:** el protocolo que sí lee menciona en una línea que existe una línea base
+  de diagnóstico que lee la reproducción pública. No dice sus reglas.
 - **Dónde vive hasta evaluarse:** fuera de `benchmark/`, para no tocar las huellas que fijan los recibos
   publicados.
 
-Por qué 4 y 4: con cuatro pares de cada tipo, una separación perfecta tiene probabilidad 1/70 si la
-asignación fuera al azar. Con menos no hay prueba exacta que baje de 0,05 (tres y tres: 1/20).
+Por qué 4 y 4: si los pares se marcaran «admitido» al azar, acertar los ocho tiene probabilidad 1/70. El
+mínimo que deja esa probabilidad bajo 0,05 es cuatro pares de un tipo y tres del otro (1/35); con tres y tres
+es 1/20 y no alcanza. Se piden cuatro y cuatro para poder perder un par por invalidez.
 
 ## 5. Validez de una tarea
 
-Se comprueba **sin ejecutar ni mirar `D`**, por alguien distinto del autor. Una tarea es válida si se cumplen
-las tres:
+Se comprueba **sin ejecutar ni mirar `D`**, por alguien distinto del autor, con las funciones que ya usa el
+harness de experimento en `756e2c2`:
 
-1. con el defecto aplicado, su test de aceptación falla;
-2. aplicando el parche del operador sellado, el test de aceptación y los tests de negocio pasan;
-3. aplicando cada uno de los otros dos operadores, no pasan.
+- **«Pasa»** es lo que `execute_tests` de `src/experiments/runner.py` llama éxito sobre el workspace: el test
+  de aceptación de la tarea y `tests/test_business.py` se ejecutan sin fallos y corren al menos dos tests.
+- **«Aplicar un operador»** es escribir en el workspace la salida de
+  `BoundedRepairAgent.change(archivos, operador, semilla)`. No es restaurar el texto `before` del defecto.
+- **Semillas:** 1, 4, 5, 6, 7 y 9, las de la campaña de referencia. El archivo que `change` toca puede
+  depender de la semilla.
 
-Un par es válido si lo son sus dos tareas y el tipo que resulta (mismo operador o distinto) es el que el
-autor selló. Los pares inválidos se excluyen y se listan con su motivo. **No se reemplazan.**
+Una tarea es válida si se cumplen las cuatro:
+
+1. sin el defecto, pasa;
+2. con el defecto aplicado, no pasa;
+3. con el defecto y el operador sellado aplicado, pasa **con las seis semillas**;
+4. con el defecto y cada uno de los otros dos operadores, no pasa **con ninguna** de las seis semillas. Que
+   `change` no encuentre dónde aplicar (devuelve `None`) cuenta como no pasar.
+
+Si el resultado de 3 o de 4 cambia según la semilla, la tarea es inválida. Un par es válido si lo son sus dos
+tareas y el tipo que resulta (mismo operador o distinto) es el que el autor selló. Los pares inválidos se
+excluyen y se listan con su motivo. **No se reemplazan.**
 
 ## 6. Unidad, estadístico y veredicto
 
@@ -106,17 +126,23 @@ autor selló. Los pares inválidos se excluyen y se listan con su motivo. **No s
 **Acierto:** un par de mismo operador *admitido*, o un par de operador distinto *vetado*. Un par mixto es un
 error, del tipo que sea.
 
-**Estadístico primario:** número de aciertos sobre pares válidos, con la prueba exacta de Fisher unilateral
-sobre la tabla tipo de par × (admitido / no admitido).
+**Estadístico primario: el número de errores sobre los pares válidos.** El veredicto sale de esa cuenta y de
+cuántos pares válidos quedan de cada tipo; no de una prueba aplicada después.
 
 | Veredicto | Condición |
 |---|---|
-| **DISCRIMINA** | Todos los pares válidos son aciertos **y** la prueba exacta da p < 0,05 (exige al menos cuatro pares de un tipo y tres del otro) |
-| **NO DEMOSTRADO** | Algún error, con pares suficientes para que la separación perfecta hubiera dado p < 0,05 |
-| **INSUFICIENTE** | Quedan menos pares válidos que los necesarios para p < 0,05 aun con separación perfecta |
+| **DISCRIMINA** | Quedan al menos cuatro pares válidos de un tipo y tres del otro, **y** cero errores |
+| **NO DEMOSTRADO** | Quedan al menos cuatro de un tipo y tres del otro, **y** uno o más errores |
+| **INSUFICIENTE** | Quedan menos pares válidos que cuatro de un tipo y tres del otro, haya o no errores |
 
-Con ocho pares válidos, un solo error ya da p = 17/70 = 0,24: el único resultado que pasa es la separación
-perfecta. No hay veredicto intermedio ni «casi».
+Por qué cero errores: la referencia es marcar al azar como «admitidos» tantos pares como pares de mismo
+operador hay. Acertarlos todos tiene probabilidad 1/70 con cuatro y cuatro y 1/35 con cuatro y tres. Con un
+solo par mal marcado ya no baja de 0,05 (con cuatro y cuatro, la prueba exacta unilateral da 1/14). No hay
+veredicto intermedio ni «casi».
+
+Como dato descriptivo, y sin efecto en el veredicto, se informa también la prueba exacta de Fisher sobre la
+tabla tipo de par × (admitido / no admitido). Esa tabla cuenta un par mixto como «no admitido», así que puede
+dar un valor pequeño con un error presente: por eso no decide.
 
 **Se informa siempre, sea cual sea el veredicto:** la tabla par a par; lecciones dañinas admitidas sobre
 pares de operador distinto; lecciones útiles vetadas sobre pares de mismo operador; pares mixtos; pares con
@@ -142,4 +168,10 @@ eso se informan las dos tasas y no una.
 
 Toda desviación se anota en el informe con su motivo. Son desviaciones, entre otras: cambiar el predicado, las
 reglas o su huella; añadir, quitar o corregir tareas; cambiar la regla de validez; evaluar `D` antes de cerrar
-la validez; que el autor haya leído algo de la lista de la sección 4.
+la validez; que el autor haya leído algo fuera de su carpeta aislada.
+
+**Nota de versión.** Este archivo tuvo dos commits antes de que existiera el banco: el primero (`f99c3e6`) y
+una corrección tras la revisión independiente del PR #199, que cambió la definición del estadístico (era una
+prueba de Fisher que no coincidía con la definición de acierto), cerró la regla de validez (semillas, qué es
+aplicar un operador, qué es pasar), precisó quién escribe el banco y corrigió una cifra (17/70 por 1/14). El
+predicado de la sección 3 y su huella no cambiaron.

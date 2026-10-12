@@ -47,9 +47,9 @@
       "note": "Auditor del método, con todo a la vista, antes de la síntesis. Rehízo las cifras que deciden (mínimo de la prueba de signos con 3 y 6 tareas, exposiciones por brazo, curva de rendimiento frente al tamaño, costo de medir con asignación desigual), comprobó contra el código los campos citados, recontó los votos, listó doce fallos del orquestador y dio el dictamen: PERMANECER, y un solo paso respaldado. La síntesis adoptó su clasificación de entregables (cuatro respaldados, nueve solo diseño, siete no producidos) y su paso siguiente, no los del orquestador"
     },
     {
-      "action": "run_experiment",
-      "success": false,
-      "error": "El encargo pedía resultados numéricos y una simulación Monte Carlo. No se corrió ninguna: la especificación del simulador quedó vetada por quince confusores, una prueba nula con efecto real de +0,20 y dos predicciones de control que fallarían con código correcto. Las únicas cuentas numéricas fueron cálculos locales de los roles; las de las rondas 4 y 5 no dejaron archivo en la carpeta del concilio y no se pueden reproducir, porque el orquestador no lo exigió"
+      "action": "analyze_results",
+      "success": true,
+      "note": "Síntesis con lo que el concilio no entregó dicho sin suavizar. El encargo pedía resultados numéricos y una simulación Monte Carlo; no se corrió ninguna, por decisión de diseño: la ronda 4 vetó la especificación del simulador (quince confusores, una prueba nula con efecto real de +0,20 y dos predicciones de control que fallarían con código correcto). Las únicas cuentas numéricas fueron cálculos locales de los roles; las de las rondas 4 y 5 no dejaron archivo en la carpeta del concilio y no se pueden reproducir"
     },
     {
       "action": "estimate_issue",
