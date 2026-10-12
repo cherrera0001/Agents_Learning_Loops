@@ -12,6 +12,7 @@ Uso::
     python -m scripts.devlog rebuild
     python -m scripts.devlog board --since 76        # chequeo de solo lectura (ver board_check)
     python -m scripts.devlog pilot --since 76        # lectura del piloto (ver pilot_metrics)
+    python -m scripts.devlog base-rates [--hasta 80] [--json]   # líneas base de fallo (ver base_rates)
 """
 
 from __future__ import annotations
@@ -215,6 +216,13 @@ def main() -> None:
     from scripts.pilot_metrics import add_arguments, parse_map
 
     add_arguments(p_pilot)
+    p_base = sub.add_parser(
+        "base-rates",
+        help="solo lectura: líneas base de fallo contadas desde los episodios (por acción, clase y tercio)",
+    )
+    from scripts.base_rates import add_arguments as add_base_rates_arguments
+
+    add_base_rates_arguments(p_base)
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):  # UTF-8 también al redirigir en Windows
         sys.stdout.reconfigure(encoding="utf-8")
@@ -225,6 +233,12 @@ def main() -> None:
         from scripts.board_check import run_board
 
         sys.exit(run_board(since=args.since, snapshot=args.snapshot, episodes=load_episodes()))
+    if args.cmd == "base-rates":
+        from scripts.base_rates import run_base_rates
+
+        sys.exit(
+            run_base_rates(load_episodes(), hasta=args.hasta, as_json=args.json, classes_path=args.clases)
+        )
     if args.cmd == "pilot":
         from scripts.pilot_metrics import run_pilot
 
