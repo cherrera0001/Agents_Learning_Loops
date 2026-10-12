@@ -45,6 +45,9 @@ Salida:
        más de ``SILENCIO_DETENIDA_SEGUNDOS`` después del último evento (#164)
     7  sesión terminada con tareas colgadas: el notebook cortó al menos una tarea por su tope por tarea,
        comprobó que su hilo había terminado y siguió con las demás (#164)
+    8  solo con ``--sin-razonar`` (corrida de un kit sin razonamiento): la sesión está completa y el registro
+       es fiable, pero alguna petición pide razonar o no trae el dato. Una sola invalida la corrida. Cualquier
+       otro código distinto de 0 gana al 8; el problema se dice igual por stderr
 Una sesión que el notebook terminó por una tarea colgada (``corte('tarea_colgada')``) sale con 3.
 Precedencia en ``diagnosticar``: 4 gana a 3, y 3 gana a 7, a 6 y a 5 (un registro no fiable se dice aunque la
 sesión esté cortada o muerta; un corte anotado por el notebook se dice aunque falte el cierre). El 7 exige
@@ -90,6 +93,11 @@ EXIT_REGISTRO = 4
 EXIT_MUERTA = 5
 EXIT_DETENIDA_VIVA = 6
 EXIT_CON_COLGADAS = 7
+# Sesión completa de un kit sin razonamiento en la que alguna petición no pidió «no razonar» (concilio 45).
+EXIT_RAZONA = 8
+AYUDA_SIN_RAZONAR = (
+    "Corrida de un kit sin razonamiento: si alguna petición pide razonar o no trae el dato, sale con 8"
+)
 
 # Enganche que solo declara un registro del #164 en adelante (el notebook con tope por tarea).
 ENGANCHE_DEL_MAPA = "mapa de hilos del núcleo"
@@ -765,13 +773,43 @@ def _diagnostico_de(ruta: Path, tareas_esperadas: int | None = None) -> dict[str
     return informe
 
 
+def problema_si_no_debia_razonar(informe: dict[str, Any]) -> str | None:
+    """Regla de validez de una corrida con un kit sin razonamiento: toda petición debe pedir no razonar.
+
+    Una sola petición que pida razonar invalida la corrida. Una petición sin el dato tampoco vale: sin el
+    parámetro decide el servidor, y el registro no puede afirmar que no razonó. ``None`` si se cumple.
+    """
+    cuenta = informe.get("razonamiento") or {}
+    piden, sin_dato = cuenta.get("peticiones_que_piden_razonar"), cuenta.get("peticiones_sin_el_dato")
+    no_piden = cuenta.get("peticiones_que_piden_no_razonar")
+    if piden is None or sin_dato is None or no_piden is None:
+        return "el registro no trae el recuento de peticiones que piden razonar"
+    if piden or sin_dato or not no_piden:
+        return (
+            f"{piden} peticiones piden razonar, {sin_dato} no traen el dato y {no_piden} piden no razonar: "
+            "la corrida no vale como corrida sin razonamiento"
+        )
+    return None
+
+
+def _codigo_con_la_regla(informe: dict[str, Any], sin_razonar: bool) -> tuple[int, str | None]:
+    """El código del diagnóstico y, si se pidió la regla y no se cumple, su problema. Un código que ya no
+    es 0 se conserva; con la sesión completa y la regla rota sale ``EXIT_RAZONA``."""
+    codigo = codigo_de(informe)
+    problema = problema_si_no_debia_razonar(informe) if sin_razonar else None
+    return (EXIT_RAZONA if problema and codigo == EXIT_OK else codigo), problema
+
+
 def _orden_diagnosticar(args: argparse.Namespace) -> int:
     informe = _diagnostico_de(args.salida, args.tareas_esperadas)
     print(json.dumps(informe, ensure_ascii=False, indent=1))
-    return codigo_de(informe)
+    codigo, problema = _codigo_con_la_regla(informe, args.sin_razonar)
+    if problema:
+        print(f"CORRIDA INVÁLIDA: {problema}.", file=sys.stderr)
+    return codigo
 
 
-def _pasada(carpeta: Path, tareas_esperadas: int | None = None) -> dict[str, Any]:
+def _pasada(carpeta: Path, tareas_esperadas: int | None = None, sin_razonar: bool = False) -> dict[str, Any]:
     """Lo que se puede decir de una pasada esperada: su código y el motivo, con la carpeta que haya."""
     if not carpeta.is_dir():
         return {"codigo": EXIT_REGISTRO, "motivo": "no existe la carpeta de este notebook en el rescate"}
@@ -786,7 +824,15 @@ def _pasada(carpeta: Path, tareas_esperadas: int | None = None) -> dict[str, Any
         informe = _diagnostico_de(carpeta, tareas_esperadas)
     except RegistroError as exc:
         return {"codigo": EXIT_ENTRADA, "motivo": str(exc)}
-    return {"codigo": codigo_de(informe), "veredicto": informe["sesion"]["veredicto"]}
+    if not sin_razonar:
+        return {"codigo": codigo_de(informe), "veredicto": informe["sesion"]["veredicto"]}
+    codigo, problema = _codigo_con_la_regla(informe, True)
+    return {
+        "codigo": codigo,
+        "veredicto": informe["sesion"]["veredicto"],
+        "razonamiento": informe["razonamiento"],
+        "regla_sin_razonar": problema or "cumplida: todas las peticiones piden no razonar",
+    }
 
 
 def _orden_comprobar(args: argparse.Namespace) -> int:
@@ -801,7 +847,10 @@ def _orden_comprobar(args: argparse.Namespace) -> int:
     except (ValueError, KeyError, TypeError):
         faltantes = None
     esperadas: list[str] = list(dict.fromkeys(args.notebook or []))
-    pasadas = {slug: _pasada(args.rescate / "notebooks" / slug, args.tareas_esperadas) for slug in esperadas}
+    pasadas = {
+        slug: _pasada(args.rescate / "notebooks" / slug, args.tareas_esperadas, args.sin_razonar)
+        for slug in esperadas
+    }
     no_nombrados: dict[str, Any] = {}
     for carpeta in sorted(p for p in (args.rescate / "notebooks").glob("*") if p.is_dir()):
         if carpeta.name in pasadas:
@@ -858,6 +907,7 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Tareas que la pasada debía empezar; con otro número el registro no es fiable (salida 4)",
     )
+    d.add_argument("--sin-razonar", action="store_true", help=AYUDA_SIN_RAZONAR)
     d.set_defaults(funcion=_orden_diagnosticar)
     c = sub.add_parser("comprobar", help="Rescate que mira bytes y diagnóstico del registro, juntos")
     c.add_argument("--rescate", type=Path, required=True, help="Carpeta de un rescate ya bajado")
@@ -873,6 +923,7 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Tareas que cada pasada nombrada debía empezar; con otro número su registro no es fiable",
     )
+    c.add_argument("--sin-razonar", action="store_true", help=AYUDA_SIN_RAZONAR)
     c.set_defaults(funcion=_orden_comprobar)
     args = p.parse_args(argv)
     try:

@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-09",
+  "last_updated": "2026-10-12",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -81,6 +81,32 @@
       "public_score": 0.13,
       "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
       "notes": "Ref. Kaggle 56916129, enviado 2026-10-07 16:25 UTC como reenvío del mismo zip de sub-005 tras un error de sistema. Nota pública 0,13, leída el 2026-10-09 13:42 UTC. ADVERTENCIA: también pasó por estado de error antes de puntuar: `error` («A system error. Please try resubmitting to resolve the error») en todas las lecturas guardadas del 2026-10-08 entre las 21:13 y las 22:31 UTC, y `complete` con 0,13 en la del 2026-10-09 13:42 UTC; no hay lecturas guardadas entre esas dos. Mismo zip, notas distintas (0,08 y 0,13): es el ruido de la tabla, no un efecto del zip. Kaggle guarda 72 108 bytes para este envío y 79 355 para sub-005, y la API no deja bajar el archivo: su identidad con el zip local no está comprobada. Escrito a mano: `register` devuelve el registro existente si el SHA-256 ya figura, fija la fecha del día y el estado `prepared`, y aquí además `verify` da INVÁLIDO sin `adk-submission` instalado."
+    },
+    {
+      "submission_id": "sub-007",
+      "date": "2026-10-12",
+      "condition": "A0",
+      "zip_filename": "submission_a0_sin_razonar.zip",
+      "sha256": "01a6d82fc42fb9991601570520eda0e8e81bf0a05b253e13fe9718306a1cc4e2",
+      "size_bytes": 3475,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: kit preparado para el paso 0 del concilio 45, sin subir nada a Kaggle. Condición A0 «sin razonar»: el zip de la A (sub-002, SHA-256 d8a3e1d3…) con UNA línea cambiada en configs/sampling.yaml: `thinking_budget: 4096` pasa a `thinking_budget: 0`. Los 6 miembros y su orden son los mismos y los otros 5 son idénticos byte a byte, eval_config.yaml incluido. Motivo: desde adk_submission 0.2.13 el presupuesto decide si el modelo razona, y la A pasó a razonar con el pensamiento oculto. Prueba local sin GPU con las ruedas reales y un servidor falso: con A0, 6 de 6 peticiones llevan enable_thinking false y ningún presupuesto, con adk_submission 0.2.13 y con 0.2.12; temperatura, top_p y tokens máximos son los de la A. Compila con el compilador del organizador en local, con las dos versiones. No medido: qué hace el modelo real. Escrito a mano, como sub-005 y sub-006. El zip no se versiona (data/ está ignorada): solo su huella."
+    },
+    {
+      "submission_id": "sub-008",
+      "date": "2026-10-12",
+      "condition": "I",
+      "zip_filename": "submission_i_razona.zip",
+      "sha256": "65a0216007e19bf6b26ec1ae0386be06814e97a3d85f63636fb10053651a6763",
+      "size_bytes": 3494,
+      "is_exploratory": true,
+      "status": "submitted",
+      "public_score": null,
+      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
+      "notes": "Ref. Kaggle 57098570, enviado 2026-10-12 06:46:48 UTC. Es el mismo zip de sub-005 y sub-006, sin cambios: «I razona», lectura 3 de 5. Estado pendiente al escribir esto; sin nota. Si el puntuador usa el arnés nuevo, esta lectura no es comparable con las dos anteriores: no está medido qué versión usa. Escrito a mano con los datos que dio el orquestador (este registro no leyó Kaggle): `register` devuelve el registro existente si el SHA-256 ya figura."
     }
   ]
 }

@@ -1637,6 +1637,120 @@ misma imagen fijada. Las cinco porciones del brazo se rearmaron también (llevan
 **La pasada 1 de 60 tareas en una sesión no es el paso siguiente.** El diseño de después del sondeo lo
 decide el concilio con su dato.
 
+### Lo que dio el sondeo `s1` en Kaggle
+
+El sondeo corrió entero en Kaggle el 2026-10-12. Estas cifras son las que dio el orquestador, de su rescate;
+este documento no las recontó. Sin identificadores de tarea.
+
+| Medida | Valor |
+|---|---|
+| Tareas, y resueltas | 12, 4 |
+| Clases de fin | resuelta 4; tiempo agotado sin parche 5; tiempo agotado con parche 1; llamadas agotadas sin parche 2 |
+| Segundos por tarea | media 212,0; mediana 242,6; de 85,9 a 248,2 |
+| Peticiones | 260, de ellas 7 canceladas por el tope |
+| Respuestas con razonamiento | 151 de 253 |
+| Parte del reloj que es generación del modelo | 97 % |
+| Sesión | 3 064 s; registro instalado a los 519 s |
+| Cuota | 1,71 h (factor 2,01) |
+| Tareas colgadas, errores del registro | 0, 0 |
+| Versiones del arnés en la sesión | las esperadas |
+| `kaggle_registro comprobar` | código 0 |
+
+Contra la regla de lectura: la media (212,0 s) pasa de 120 s y queda por debajo de 270 s; se cortaron por
+tiempo 6 de 12 tareas, que es la mitad y no «más de la mitad». La predicción 51 del issue #195 (el notebook
+rearmado falla en Kaggle por una causa que el ensayo local no vio) **no ocurrió**.
+
+### Paso 0: el kit sin razonar (`A0`) y su notebook (`s2`)
+
+Con ese dato, el concilio 45 decidió medir primero la misma porción **sin razonamiento**. Nada de este
+apartado se subió a Kaggle.
+
+**El kit.** `submission_a0_sin_razonar.zip` (3 475 bytes, SHA-256
+`01a6d82fc42fb9991601570520eda0e8e81bf0a05b253e13fe9718306a1cc4e2`) es el zip de base (`d8a3e1d3…`) con una
+línea cambiada, la 5 de `configs/sampling.yaml`:
+
+```diff
+-  thinking_budget: 4096
++  thinking_budget: 0
+```
+
+Los 6 miembros y su orden son los mismos; los otros 5, `eval_config.yaml` incluido, son idénticos byte a
+byte. `armar_kit_a0.py` lo arma y lo comprueba miembro a miembro. El programa de compilación de
+`kaggle_ensayo` sale con 0 contra él con las dos versiones del arnés. Queda en `registry.json` como
+`sub-007`, preparado y no enviado.
+
+**La petición**, con las ruedas reales y el servidor falso, como en [la prueba de
+arriba](#la-prueba-con-las-ruedas-reales): 2 tareas y 6 peticiones por corrida, todas del agente principal.
+
+| Kit | Arnés | `enable_thinking` | `thinking_token_budget` | `temperature` | `top_p` | `max_completion_tokens` |
+|---|---|---|---|---|---|---|
+| **`A0`** | **0.2.11 / 0.2.13** | **`false` en 6 de 6** | **ausente en 6 de 6** | 0,2 | 0,95 | 8 192 |
+| Base | 0.2.11 / 0.2.13 | `true` en 6 de 6 | 4096 en 6 de 6 | 0,2 | 0,95 | 8 192 |
+| `A0` | 0.2.7 / 0.2.12 | `false` en 6 de 6 | ausente en 6 de 6 | 0,2 | 0,95 | 8 192 |
+| Base | 0.2.7 / 0.2.12 | `false` en 6 de 6 | ausente en 6 de 6 | 0,2 | 0,95 | 8 192 |
+
+La petición no lleva más campos que esos (aparte del modelo, los mensajes y las herramientas). Comparada
+campo a campo, con el arnés nuevo `A0` difiere de la base en `chat_template_kwargs` y en
+`thinking_token_budget` y en nada más; con el anterior, las dos peticiones son iguales. Con presupuesto 0 la
+petición no lleva `thinking_token_budget: 0`: no lleva la clave. Qué hace el modelo real con
+`enable_thinking: false` no está medido.
+
+**El notebook.** `kernel_iteracion_08_s2` (`cs4all/iteracion-08-s2`) es el de `s1` (`9ea5149a…`, el que
+corrió) con 7 líneas cambiadas, y `armar_s2.py` se detiene si deshaciéndolas no recupera `s1` byte a byte:
+
+| Celda | Líneas | Qué cambia |
+|---|---|---|
+| 2 | 1 | el nombre del archivo de versiones (`…_s2.json`) |
+| 4 | 2 | `CONDICIONES` (la condición `A` con el zip de base pasa a `A0` con el zip nuevo) y el nombre del grupo (`sorteo_60_s2`; las mismas 12 tareas, en su orden) |
+| 8 | 1 | el nombre de salida (`iteracion_08_s2`) |
+| 10 | 3 | el plan (`('A0S2', 'A0', 'sorteo_60_s2')`) y los nombres del resultado y del zip |
+
+Las otras ocho celdas son las de `s1`: topes, márgenes, enganches, guardias, guarda de versiones y
+diagnóstico. `kernel-metadata.json` solo cambia de `id` y de título.
+
+**Regla de validez, comprobable en la salida real: una sola petición que pida razonar invalida la corrida.**
+El registro ya anota `pide_razonar` por petición y `diagnosticar` da el recuento por tarea y para la sesión
+(`razonamiento.peticiones_que_piden_razonar`). Desde este cambio, `kaggle_registro diagnosticar` y
+`comprobar` aceptan `--sin-razonar`: con la sesión completa y el registro fiable salen con **8** si alguna
+petición pide razonar o **no trae el dato** (sin el parámetro decide el servidor, y el registro no puede
+afirmar que no razonó), y lo dicen por stderr. Cualquier otro código distinto de 0 gana al 8. La orden para
+leer la corrida de `s2`:
+
+```bash
+python -m scripts.kaggle_registro comprobar --rescate <rescate> --notebook iteracion-08-s2 --tareas-esperadas 12 --sin-razonar
+```
+
+**El ensayo**, con `ipykernel` 6.17.1 y las ruedas reales:
+
+| Corrida | Qué fuerza | Tareas | Filas | Peticiones | Piden razonar | Piden no razonar | `diagnosticar` | Resultado |
+|---|---|---|---|---|---|---|---|---|
+| `completa_s2` | Nada | 6 de las 12 (las que tienen copia local) | 6 | 18 | 0 | 18 | 0 | pasa |
+| `tarea_colgada_s2` | Bucle síncrono en la tarea 2, tope de 90 s | 4 | 1 resuelta, 1 colgada | 3 | 0 | 3 | 3 | pasa |
+
+En las dos, el ensayo exige que ninguna petición pida razonar ni lleve presupuesto, y que el recuento del
+registro sea 0; el registro y el servidor cuentan lo mismo. Todo lo que queda en la salida lleva
+`iteracion_08_s2` y la etiqueta `A0S2`, y la guarda de versiones deja su archivo sin diferencias. El chequeo
+previo (`kaggle_preflight comprobar … --ruedas … --listado listado_ruedas_0840.txt`) sale con 0: 16 imports
+del arnés comprobados, versiones y tamaños como en el listado.
+
+Huellas, en el mismo árbol de trabajo que [las del #195](#huellas-del-195) (ignorado por git; el
+orquestador las copia y las comprueba antes de subir):
+
+| Archivo | Bytes | SHA-256 |
+|---|---|---|
+| `iteracion_08_razona/kernel_iteracion_08_s2/iteracion.ipynb` | 112 259 | `e8a5604c053fe9bced6597ba7271cc8fe8bed629d128173d2e9f07dd8893b8b0` |
+| `iteracion_08_razona/kernel_iteracion_08_s2/kernel-metadata.json` | 654 | `fcfc907cc0902e648e7e4ca3ea54681815097f05416ace5ecd49d1c179917ad1` |
+| `data/envios/submission_a0_sin_razonar.zip` | 3 475 | `01a6d82fc42fb9991601570520eda0e8e81bf0a05b253e13fe9718306a1cc4e2` |
+| `iteracion_08_razona/armar_s2.py` | — | `5a3e43a2ea9c43563f42adcad9ce8cdf80633eb95d3220011db53b737aec074e` |
+| `iteracion_08_razona/armar_kit_a0.py` | — | `37d8d360c0a3b4d4558062720b9cd254266e5c5bdd83233866e10b2e06815a0d` |
+| `iteracion_08/prueba_a0/RESUMEN.json` (4 de 4 pasan) | — | `7043c6e438417976bd08af1630aa8b3a713407b932a3738360631ad0caa3e477` |
+| `iteracion_08/prueba_a0/HUELLAS.txt` (50 archivos) | — | `410f65764681425832aaeacc43be9f108e08aa0630aa11708ae8b199cc3e558f` |
+| `iteracion_08/ensayo_salida_s2/RESUMEN.json` (2 de 2 pasan) | — | `961598744800f5d6449dd72fed0899cd4b516eb5e4d9c2ac16dfbc696c747eb8` |
+| `iteracion_08/ensayo_salida_s2/HUELLAS.txt` (28 archivos) | — | `84212516e379c6e22df0c52ce81dd989233b2dd76658a8b8374a781abbf4f599` |
+
+Lo que el paso 0 no repitió: el corte por tiempo sobre `s2` y los demás escenarios. Subir `s2` lo decide el
+dueño, con las mismas [condiciones](#condiciones-de-lanzamiento-del-sondeo) que el sondeo.
+
 ### El ensayo rearmado
 
 Siete corridas, una tras otra, con la imagen de `ipykernel` 6.17.1 y **con las ruedas reales** (el modo de
