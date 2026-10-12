@@ -7,14 +7,15 @@ sobre si discrimina.
 
 El autor del banco se detuvo porque leyó su encargo de un modo más estricto que el pre-registro (ver
 *Desviaciones*). Con esa lectura caben tres pares, no ocho. Con la lectura literal del pre-registro quizá
-cabían más tareas, pero no más unidades independientes: eso es lo que este informe deja establecido.
+cabían más tareas. Si habrían sido más unidades independientes depende de una definición que el pre-registro
+no fijó; la lectura del orquestador es que no (ver *Qué significa y qué no*).
 
 ## Qué pasó
 
 1. El pre-registro quedó fijado en el commit `87e6032` del PR #199, tras tres pasadas de un revisor
    independiente, antes de encargar el banco.
-2. El banco se encargó a una ejecución nueva de Codex, sin contexto del concilio, en una carpeta que solo
-   contenía el protocolo, `src/experiments/agent.py`, la aplicación y `benchmark/public/`.
+2. Según el encargo y el manifiesto (en el expediente sin versionar, ver *Material*), el banco se encargó a
+   una ejecución nueva de Codex, sin contexto del concilio, en una carpeta que solo contenía el protocolo, `src/experiments/agent.py`, la aplicación y `benchmark/public/`.
 3. El autor leyó los tres operadores y la aplicación, contó dónde puede actuar cada operador y **se detuvo
    sin escribir ninguna tarea**, como su encargo le permitía si no existían dieciséis defectos distintos. No
    ejecutó tests ni operadores. Dejó un manifiesto con lo que leyó y lo que ejecutó.
@@ -40,10 +41,10 @@ EXP-06 con otro defecto.
 - **Un sitio admite más de un defecto.** EXP-04 y EXP-07 alteran la misma línea de `app/middleware.py` de dos
   maneras. El número de **defectos** que se pueden escribir no está acotado en seis; el de **sitios**, sí.
 - **Tareas en el mismo sitio comparten la reparación.** El operador aplica ahí el mismo parche, sea cual sea
-  el defecto. Dos tareas del mismo sitio no son unidades independientes para una prueba que cuenta pares como
-  si lo fueran.
-- **Con seis sitios caben tres pares que no compartan ninguno.** En cualquier mezcla: los tres de mismo
-  operador, los tres de operador distinto, o uno y dos. Con tres pares la separación perfecta tiene
+  el defecto. Lectura del orquestador, que el pre-registro no fijó: por eso dos tareas del mismo sitio no
+  deberían contarse como unidades independientes.
+- **Con seis sitios caben tres pares que no compartan ninguno.** En tres mezclas: los tres de mismo
+  operador, los tres de operador distinto, o uno de mismo y dos de distinto. Con tres pares la separación perfecta tiene
   probabilidad de 1/3 o más por azar, así que ninguna de esas mezclas alcanza un veredicto distinto de
   INSUFICIENTE.
 - **Sobre el predicado: nada.** Sigue siendo un candidato respaldado por tres tareas cuyas reglas se
@@ -67,8 +68,8 @@ hay no cabe en este solver sin ampliar los operadores o la aplicación.
   archivo u otra línea» **dentro de cada par**. El autor lo exigió entre las dieciséis y concluyó que no
   cabían. Con la lectura literal habría podido repetir sitios entre pares con defectos distintos.
 - **No se le pidió reescribir con la lectura literal.** Habría sido cambiar el encargo después de conocer el
-  obstáculo, y el banco resultante tendría pares que comparten sitio, que no son las unidades independientes
-  que la cuenta de 1/70 supone. El pre-registro no decía cómo tratar ese caso.
+  obstáculo, y el banco resultante tendría pares que comparten sitio. La cuenta de 1/70 trata los pares como
+  intercambiables; si pares que comparten sitio lo son, el pre-registro no lo decía.
 - **El pre-registro no fijó qué hace independientes a dos tareas**, ni comprobó antes cuántos sitios había,
   aunque el código de los operadores estaba a la vista. Es un defecto del diseño, no del autor.
 
