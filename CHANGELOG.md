@@ -6,6 +6,7 @@ Cada cambio enlaza su issue; el aprendizaje asociado está en `learning/episodes
 ## [Unreleased]
 
 ### Añadido
+- Comprobación de herramientas de `scripts/kaggle_submission.py` (#177, seguimiento del PR #175): con `--permitir-mencion` sale un `[AVISO]` por cada línea donde aparece el nombre y no sale el `[OK]` del agente con menciones permitidas; un subagente declarado en `sub_agents` puede nombrar a su padre directo (un nieto no puede nombrar a un tío); la ayuda de `register` dice que verifica con la regla estricta. Siete pruebas nuevas y una cambiada.
 - Caso Kaggle, vuelta 43: el registro de hallazgos pasa los siete que seguían en `medido` a decidido (cuatro), descartado (dos) o abierto con el dato que falta (uno), y suma cuatro nuevos; desenlaces de las predicciones 7 a 12 y 17 a 20 en `experiments/azar/preregistro/prediccion_de_fallos.md`, sección 15 (una marcada y nueve sin marcar: los informes de revisión no están publicados); la revisión cruzada sin firmas y el auditor después de ella quedan escritos en `CONTRIBUTING.md` y en la skill `concilio-de-experimento`. Episodios 076 (#180) y 079.
 - Manuscrito (castellano e inglés): segundo par de envíos del mismo archivo a la tabla pública, 0,08 y 0,13, como nota posterior a la fecha de corte. Los PDF no se regeneraron.
 - Experimento «azar»: desenlaces de las predicciones 13 a 16 (issue #169) y 21 a 24 (issue #173) en `experiments/azar/preregistro/prediccion_de_fallos.md`, sección 14. Seis de ocho ocurrieron; sin puntuación.
