@@ -1,6 +1,7 @@
 # Pre-registro · Predicado de alcance por diagnóstico, en tareas escritas a ciegas (#198)
 
-**Registro**: el último commit de este archivo en el PR #199 (ver la nota de versión al final), hecho **antes** de que exista ninguna de las tareas del
+**Registro**: el último commit de este archivo en el PR #199 (ver la nota de versión al final), hecho
+**antes** de que exista ninguna de las tareas del
 banco nuevo y antes de encargar su escritura. Cambiar este documento después de que el banco exista lo
 invalida en ese punto, y toda desviación se reporta como tal en el informe de resultados.
 
@@ -111,7 +112,9 @@ Una tarea es válida si se cumplen las cuatro:
 Casos límite: si `change` lanza una excepción (por ejemplo, porque el defecto deja un archivo que no se puede
 analizar), cuenta como no pasar; con el operador sellado eso hace inválida la tarea. En la condición 3 el
 operador sellado tiene que modificar el mismo archivo que el defecto: si hace pasar los tests tocando otro, la
-tarea es inválida. Si el resultado de 3 o de 4 cambia según la semilla, la tarea es inválida. Un par es válido si lo son sus dos
+tarea es inválida. Si el resultado de 3 o de 4 cambia según la semilla, la tarea es inválida.
+
+Un par es válido si lo son sus dos
 tareas y el tipo que resulta (mismo operador o distinto) es el que el autor selló. Los pares inválidos se
 excluyen y se listan con su motivo. **No se reemplazan.**
 
@@ -176,7 +179,8 @@ la validez; que el autor haya leído algo fuera de su carpeta aislada.
 
 **Nota de versión.** Este archivo tuvo tres commits antes de que existiera el banco, y el vinculante es el
 último: el primero (`f99c3e6`), una corrección tras la revisión independiente del PR #199 (`6e5bb22`) y un
-ajuste tras la segunda revisión (casos límite de la validez y redacción). La corrección cambió la definición del estadístico (era una
+ajuste tras la segunda revisión (casos límite de la validez y redacción). La corrección cambió la
+definición del estadístico (era una
 prueba de Fisher que no coincidía con la definición de acierto), cerró la regla de validez (semillas, qué es
 aplicar un operador, qué es pasar), precisó quién escribe el banco y corrigió una cifra (17/70 por 1/14). El
 predicado de la sección 3 y su huella no cambiaron.
