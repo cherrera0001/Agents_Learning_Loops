@@ -1212,7 +1212,8 @@ Tres porciones de 20 no caben en el tope del conjunto de tareas aunque solo una 
 tamaño que cabe. Lo que **no** cubre la aritmética: con **dos** colgadas en una porción el peor caso es 7 260 s y
 no cabe; el criterio del issue pedía una. Una sesión de 9 000 s admite un arranque de hasta 9 000 − 6 870 =
 2 130 s; el mayor medido, en 5 sesiones rescatadas, es 947,6 s (la carga del modelo de la iteración 02, 1 142,4 s,
-no trae su arranque; sumándole lo que le sumó la iteración 03, unos 90 s, daría unos 1 230 s: inferido).
+no trae su arranque; sumándole lo que el arranque suma a la carga en las otras cinco sesiones que traen ambos, de
+91 a 122 s, daría de 1 233 a 1 264 s: inferido).
 
 ### Cuánto cuesta en horas de cuota
 
@@ -1223,23 +1224,46 @@ cuota_h = porciones × factor × (tareas × segundos_por_tarea + carga_del_model
         = 5 × 2 × (12 × 304 + carga) / 3600
 ```
 
-Las entradas, con su marca: **304 s** es la tarea más larga de las 250 filas del rescate del 2026-10-09 a las
-17:41 UTC (303,6 s; medido, `medidas_previas.json`). La **carga del modelo** va de 363,6 a 1 142,4 s en las
-sesiones rescatadas (medido, el mismo archivo). El **factor 2,0** son horas de cuota por hora de reloj, el que
-usa la cuenta del experimento (su techo es 2,25); aquí no se recalculó.
+Las entradas, cada una con su nombre y su marca:
 
-| Supuesto por tarea | Carga 364 s | Carga 1 142 s |
+- **304 s es el máximo observado, no el tope.** Es la tarea más larga de las 250 filas del rescate del
+  2026-10-09 a las 17:41 UTC (303,6 s; medido, `medidas_previas.json`), todas con un tope del agente de 4 o
+  4,5 min. El tope por tarea que permiten los topes del arnés es **540 s**: 240 s del agente más cinco órdenes
+  de la verificación de 60 s cada una (`eval_config.yaml`). El desglose «240 + 64» de los 303,6 s observados
+  (unos 64 s de verificación) es inferido: el archivo no separa las dos partes.
+- **La carga del modelo** va de 363,6 a 1 142,4 s en las sesiones rescatadas (medido, el mismo archivo).
+- **El factor** son horas de cuota por hora de reloj. El **2,0 es un supuesto** de la cuenta del concilio 43,
+  sin fuente versionada que lo mida; el 2,25 es su techo y es el que da las 5,6 h de una pasada de base
+  (9 000 s × 2,25 / 3 600 = 5,6; inferido: la cifra de 5,6 h llegó en el encargo, sin su cuenta). Aquí no se
+  recalculó ninguno.
+
+**Límites de la fórmula.** No cuenta el tramo entre que acaba la carga y empieza la primera tarea (de 91 a 122 s
+en las cinco sesiones rescatadas que traen ambos; sumaría de 0,25 a 0,34 h a las cinco sesiones, inferido) ni el
+cierre de la sesión (empaquetado y parada del servidor; no medido).
+
+| Supuesto por tarea (factor 2,0) | Carga 364 s | Carga 1 142 s |
 |---|---|---|
-| Todas a 304 s ("al tope") | **11,1 h** | **13,3 h** |
+| Todas a 304 s (el máximo observado) | **11,1 h** | **13,3 h** |
+| Todas a 540 s (el tope por tarea, sin colgadas) | 19,0 h | 21,2 h |
 | Todas a 246 s (media de la condición I: otro kit, 4,5 min y 60 llamadas, 29 filas) | 9,2 h | 11,4 h |
 | Todas a 304 s, factor 2,25 | 12,5 h | 15,0 h |
 
-Con las dos pasadas de la base, a 5,6 h cada una (cifra del encargo del concilio; no recalculada aquí, coincide
-con 9 000 s × 2,25 / 3 600 = 5,6), el total al tope es **22,3 a 24,5 h** frente a las 24 h que fijó el dueño.
-**El peor caso del plan pasa de 24 h**: ocurre si la carga supera unos 960 s con todas las tareas a 304 s
-(inferido: (24 − 11,2) × 3 600 / 10 − 12 × 304). El máximo que permiten los topes del notebook (todas a 540 s y
-una colgada por porción) es 21,7 h solo para el brazo, con factor 2,0 y arranque de 947,6 s (24,4 h con 2,25): es
-aritmética de topes, no una previsión.
+**Total con las dos pasadas de base, con el mismo factor en las dos partes** (304 s por tarea; el 5,6 h del
+encargo es 2,5 h de sesión × 2,25):
+
+| Factor en el brazo y en la base | Base (2 pasadas) | Brazo | Total | ¿Pasa de 24 h? |
+|---|---|---|---|---|
+| 2,0 | 10,0 h | 11,1 a 13,3 h | **21,1 a 23,3 h** | No |
+| 2,25 | 11,25 h | 12,5 a 15,0 h | **23,8 a 26,2 h** | Con carga de más de unos 430 s |
+| 2,0 en el brazo y 2,25 en la base (la cuenta del encargo) | 11,2 h | 11,1 a 13,3 h | 22,3 a 24,5 h | Con carga de más de unos 960 s |
+
+La tercera fila mezcla factores y es la que dio el 24,5 h del encargo; no se usa para decidir. **Para decidir se
+usa el 2,25 en ambos**, porque es el techo: la regla protege un gasto, y una cuenta que pasa de 24 h con el
+techo avisa antes que una que solo pasa con el supuesto. Con el 2,0 en ambos el peor caso (23,3 h) queda bajo
+las 24 h. Que el peor caso pase de 24 h depende del factor, que no está medido.
+
+El máximo que permiten los topes del notebook (todas a 540 s y una colgada por porción) es 21,7 h solo para el
+brazo, con factor 2,0 y arranque de 947,6 s (24,4 h con 2,25): es aritmética de topes, no una previsión.
 
 Esto **sustituye** la cuenta de `armado_razona.json` (9,5 a 10,8 h con factor 2,0, y 10,7 a 12,2 con 2,25), que
 usaba la media de 246 s y el arranque medido (472 a 948 s). Con el arranque en lugar de la carga y 304 s, el
@@ -1247,15 +1271,21 @@ brazo daría 11,4 a 12,8 h (inferido, mismo cálculo).
 
 ### Regla de parada tras la primera porción
 
-Decidida por el concilio el 2026-10-12: se lanza `r1` sola y se lee su media. **Si la media por tarea pasa de
-240 s, o la proyección pasa de 24 h, no se lanzan `r2` a `r5`.** La media es la de `duration_seconds` de las
-12 filas de `iteracion_08_r1.json`; la carga es la de esa sesión. La proyección (definición de este
-documento) es `5 × 2 × (12 × media + carga) / 3600` más las dos pasadas de base (11,2 h). «Pasar» es estrictamente
-mayor. Las dos pruebas están en `tests/test_kaggle_costo_brazo.py`.
+Decisión del concilio del 2026-10-12, registrada en el issue #182: se lanza `r1` sola y se lee su media.
+**Si la media por tarea pasa de 240 s, o la proyección pasa de 24 h, no se lanzan `r2` a `r5`.** La media es la
+de `duration_seconds` de las 12 filas de `iteracion_08_r1.json`; la carga es la de esa sesión. La proyección
+(definición de este documento) es `5 × factor × (12 × media + carga) / 3600` más las dos pasadas de base con el
+mismo factor, y **se calcula con el factor 2,25 en ambas partes** (base de 11,25 h; [por qué](#cuánto-cuesta-en-horas-de-cuota)).
+«Pasar» es estrictamente mayor. Una media o una carga que no sea un número finito y no negativo (la media de cero
+filas es NaN) no autoriza nada: la regla responde «no lanzar» con el motivo. Las pruebas están en
+`tests/test_kaggle_costo_brazo.py`.
 
-Con las constantes de arriba, la media de 240 s detiene **antes** que las 24 h: a 240 s y con la carga mayor la
-proyección es 22,4 h. La proyección solo manda si las pasadas de base cuestan más de 11,2 h. Doce tareas son una
-muestra pequeña de la media, y el ensayo no dice nada de ella ([lo que no valida](#qué-valida-el-ensayo-del-brazo-y-qué-no)).
+La media de 240 s detiene **antes** que las 24 h casi siempre: a 240 s la proyección es de 21,4 h con la carga
+menor y de 23,8 h con la mayor (1 142 s). La proyección manda sobre la media solo con una carga de más de
+1 200 s, o con unas pasadas de base de más de 11,43 h (a 240 s y con la carga mayor). Con el factor 2,0 en ambas
+partes (base de 10 h) esos umbrales son 2 160 s y 12,83 h; con la base mezclada del encargo (11,2 h), 1 728 s.
+Doce tareas son una muestra pequeña de la media, y el ensayo no dice nada de ella
+([lo que no valida](#qué-valida-el-ensayo-del-brazo-y-qué-no)).
 
 ### El ensayo
 
@@ -1328,7 +1358,7 @@ el latido de 30 s del notebook, ni se sabe cuánto tardaría allí el latido que
 | El kit difiere en una línea (`include_thoughts`), comprobado byte a byte | Cumplido (medido, repetido) |
 | Cada notebook difiere de la pasada 1 solo en zip, etiqueta, nombres de salida y porción; el armado se detiene si no | Cumplido (medido, repetido) |
 | La unión de las porciones es el sorteo, en orden, sin repetir ni omitir | Cumplido (medido, repetido) |
-| Aritmética escrita: cada porción cabe con todas las tareas al tope y una colgada | Cumplido para una colgada ([tabla](#por-qué-cinco-porciones-y-no-tres)); dos no caben |
+| Aritmética escrita: cada porción cabe con todas las tareas al tope por tarea (540 s) y una colgada | Cumplido para una colgada ([tabla](#por-qué-cinco-porciones-y-no-tres)); dos no caben |
 | Ensayo local de cada notebook con `diagnosticar` y `comprobar` en el código esperado, salidas por ruta y SHA-256 | **Parcial**: sesión completa en los cinco; corte por tiempo y colgada solo en `r1` |
 | Las huellas de las pasadas 1 y 2 no cambian | Cumplido (medido) |
 | Comprobaciones de `CONTRIBUTING.md` en verde; `revisor-codigo` y analista de datos | Las comprobaciones, en el PR; los dos roles los encarga el orquestador |
