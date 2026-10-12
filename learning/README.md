@@ -47,6 +47,21 @@ los PR #61 y #57 chocaron en él. El dueño eligió (2026-10-03) dejar de versio
   52 consultas, 5 dieron otra lista de lecciones al cargar el archivo; por ejemplo,
   `"conflicto de merge entre PR paralelos en CI"`. La respuesta de `recall` es la de referencia. El defecto
   de orden está en el paquete de memoria y queda fuera de #96.
+- **`recall` omite las lecciones «fallback» de misma acción** ([#187](https://github.com/cherrera0001/Agents_Learning_Loops/issues/187)).
+  El consolidador anota como remedio de un fallo el primer éxito posterior aunque sea la misma acción
+  («Si 'X' falla con '…', usar 'X'»), y esa lección no recomienda nada. `recall` no la muestra: se
+  identifica por el identificador del nodo `lesson:fallback:<falló>:<resolvió>` con los dos nombres iguales
+  (y los nombres completos de la etiqueta también iguales, porque el identificador recorta a 40 caracteres).
+  El filtro va **antes** del corte de `-n`: al quitar una, sube la siguiente, y la salida dice cuántas
+  omitió (las que habrían ocupado una de las `n` posiciones). Se conservan las «fallback» que recomiendan
+  otra acción, las «avoid» y las redactadas a mano. Solo cambia lo que `recall` muestra: `rebuild` y el
+  grafo guardado no cambian, y la consolidación de la biblioteca tampoco (corregirla puede mover la
+  referencia del Experimento 1 y está aplazado). Medido el 2026-10-12: 21 de las 75 lecciones «fallback»
+  son de misma acción; en una réplica sobre 65 episodios (cada uno con al menos 10 anteriores, consulta =
+  su `goal`) salen 124 de 305 posiciones mostradas, ninguna lección de otra acción desaparece y 4 réplicas
+  quedan con menos de cinco lecciones. Efecto conocido: la lección del heredoc, que llegaba por una
+  lección degenerada, se recupera en 1 de 9 episodios donde ese fallo se repitió (antes 5 de 9 con el
+  mismo criterio), de ahí que dependa de la guarda previa a la orden ([#186](https://github.com/cherrera0001/Agents_Learning_Loops/issues/186)).
 - CI comprueba que `rebuild` funciona desde los episodios y que dos reconstrucciones dan los mismos bytes
   (`tests/integration/test_devlog_memory_unversioned.py` y un paso del workflow), no que un archivo
   versionado esté sincronizado.
