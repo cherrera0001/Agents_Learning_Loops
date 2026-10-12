@@ -1,0 +1,54 @@
+{
+  "seq": 83,
+  "id": "issue-167-devlog-base-rates",
+  "goal": "devlog base-rates (#167): líneas base de fallo contadas desde los episodios, por acción, por clase de fallo (clasificación por palabras en learning/failure_classes.json, con los pasos sin clase) y por tercios; --hasta y --json; sin tocar recall",
+  "ref": "#167",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-09",
+    "size": "S",
+    "points": 2,
+    "uncertainty": 1,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "medium"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue, antes de editar: devolvió acciones con relevancia 0,01 y lecciones de otros módulos (heredoc, import circular, canal léxico sin resultados) más tres issues parecidos (#78, #105, #122) con su fracción de pasos fallidos; la única lección aplicable (ejecutar recall antes de tocar scripts/devlog.py) ya estaba en el encargo. No cambió el diseño."
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/base_rates.py (cuenta, Wilson, clases, tercios, --hasta, --json) y el subcomando en scripts/devlog.py con importación diferida, sin tocar recall; learning/failure_classes.json con las ocho clases del pre-registro. Las expresiones de las clases se escribieron leyendo los 258 errores, así que la fracción sin clase de la salida es un mínimo, no una predicción honesta de lo que dejaría una clasificación escrita sin mirar."
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "15 pruebas con un conjunto fijo de seis episodios escrito en la prueba; --hasta se fija con un episodio sin fallos (seq 5) para distinguir < de <=; el archivo de clases real solo se comprueba en estructura, sin contar episodios reales"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "learning/README.md (sección Líneas base de fallo) y CHANGELOG.md"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2887 pasan, 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Una clasificación por palabras escrita leyendo los errores que luego clasifica da una fracción sin clase optimista: para predecir sobre ella, congela las expresiones antes de contar",
+    "Un recuento hecho a mano sobre los episodios (203 pasos en 65 episodios) no se puede reproducir sin el commit exacto; al citar un recuento, escribe el commit de los episodios"
+  ]
+}
