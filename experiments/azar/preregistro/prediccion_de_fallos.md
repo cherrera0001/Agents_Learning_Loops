@@ -627,7 +627,24 @@ Los nombres de campo son los de `registro_iteracion_08_s2.jsonl`.
 > - **72:** `tarea_fin.hora` − `agente_fin.hora` de la misma `tarea`, 60 s o más en alguna. Línea base: máximo 4,0 s en `s2` y 3,9 s en `s1` (`paso2_ordenes.txt`, orden 8). Tareas sin `agente_fin`: no cuentan.
 > - **73:** exactamente un evento `cierre` y 60 eventos `tarea_fin`. No es el estado «completa» de la herramienta (`kaggle_registro.py:649`), que además exige ausencia de cortes.
 
-**Lo que queda dicho por el orquestador, no por los autores.** La 56 y la 66 hablan del mismo hecho con
+**Segunda nota del analista de datos** (2026-10-12 21:31 UTC, tras la segunda revisión; copiada tal cual):
+
+> **52 y 53.** Segundos = el campo segundos del evento tarea_fin del registro (en s2, 136,9 para la primera tarea); no segundos_arnes ni segundos_reloj del json por tarea. Media aritmética sobre las tareas válidas.
+>
+> **55.** Se cuentan las resueltas solo entre las de las 12 que sean válidas en la corrida nueva; el umbral 2 a 4 no se reescala. Si alguna de las 12 no es válida: no evaluable.
+>
+> **61.** Discordancia = d / n, con n = tareas válidas en las dos pasadas y d = las de ellas con resuelta distinto; n < 55: no evaluable.
+>
+> **64.** Se lee de versiones_arnes_iteracion_08_*.json de la salida de cada subida, campo sha256 de cada rueda del arnés (lo escribe la guarda del #182). El de s2 solo trae tamaños: si el archivo no trae sha256, no evaluable.
+>
+> **60, línea base.** Vale 0,99 h (2,77 − 1,78, lectura de uvx kaggle quota); el 0,98 era el cálculo previo (reloj x 2,01). La línea base no es criterio de marca.
+
+**Segunda nota del forense del arnés** (2026-10-12 21:26 UTC; copiada tal cual):
+
+> **69:** ocurre si algún evento `agente_fin` tiene en su campo `error` (cadena) el texto `exceeded session timeout`, sin distinguir mayúsculas. Ejemplo: registro de `s1`, línea 83, `"error": "Agent exceeded session timeout (4.0 min)"`; en `s1` son 7 eventos, todos en ese campo. `error` nulo o ausente: no cuenta. Probabilidad y umbral, sin cambio.
+
+**Lo que queda dicho por el orquestador, no por los autores.** La frase de 20.4 «las del forense se marcan con
+el registro» vale para todas menos la 71, que se marca contra la bitácora del caso. La 56 y la 66 hablan del mismo hecho con
 reglas distintas (una cuenta tareas y busca la cadena contenida; la otra cuenta peticiones con igualdad
 exacta): no se unifican, cada una se marca con la suya. Para que la 65 y la 71 sean evaluables, la bitácora
 del caso tiene que copiar la salida literal de cada orden `kernels push`. El guion `puerta.py` del analista no
