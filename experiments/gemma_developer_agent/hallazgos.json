@@ -340,6 +340,17 @@
       },
       "motivo_descarte": null,
       "por_que_sigue_abierto": null
+    },
+    {
+      "id": "diff_del_latido_con_el_arbol_a_medio_montar",
+      "que_se_midio": "Ensayo local del #182 (2026-10-09, núcleo Jupyter real, modelo falso, latido cada 2 s): en 4 de 6 sesiones completas un latido guardó como diff en curso entre 4,6 y 23,8 MB (4 577 548 a 23 817 270 bytes), y en las tres cuyo diff quedó en disco, 177, 1 329 y 2 129 entradas de archivo borrado: el árbol de la tarea a medio montar, no un parche. En esas 4 sesiones fueron 1 o 2 latidos de 43 a 69; el mayor hueco entre latidos fue de 3,0 a 4,4 s frente a una mediana de 2,0 a 2,1 s. Los diffs de cierre de esas mismas sesiones miden de 273 a 8 786 bytes. No se midió en Kaggle ni con el latido de 30 s, y no se sabe cuánto tarda allí.",
+      "primera_vuelta": 43,
+      "primera_fecha": "2026-10-09",
+      "vueltas_medido": [43],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Medido una sola vez y solo en local. Falta saber si ocurre en Kaggle, cuánto tarda el latido que lo toma y si cabe en la copia de /kaggle/working; se lee en el primer latido de la primera porción del brazo."
     }
   ]
 }
