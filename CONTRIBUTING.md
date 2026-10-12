@@ -288,6 +288,24 @@ python -m scripts.mutation_check            # cada propiedad detecta su defecto 
 `mutation_check` tarda más de diez minutos. Un subagente implementador o revisor no la lanza en local
 salvo que el encargo lo pida: lee su resultado en el CI del PR.
 
+## Guardas previas a una orden de Bash
+
+Un gancho `PreToolUse` de Claude Code (`.claude/settings.json`, guion `scripts/guarda_previa.py`) revisa cada
+orden de Bash antes de ejecutarla y **rechaza** (no avisa) dos cosas que el texto no logró hacer cumplir:
+
+- **Un heredoc que alimenta un intérprete** (`python -`, `node`, `bash`...), que escribe un archivo fuente
+  (`cat > x.py <<EOF`) o cuyo cuerpo pasa de 60 líneas. En su lugar: escribe el archivo con la herramienta de
+  edición y ejecútalo. Siguen pasando el mensaje de commit con heredoc y el heredoc corto de texto plano.
+- **Una escritura en GitHub con la cuenta equivocada**: `gh pr|issue create|comment|edit|close|merge|review`,
+  `gh api` con `-X POST|PATCH|PUT|DELETE` o `-f/-F`, `gh project item-*`, `gh release *` o `git push`, en este
+  repositorio, cuando la cuenta efectiva no es `cherrera0001`. Forma correcta:
+  `GH_TOKEN="$(gh auth token --user cherrera0001)" gh ...`. Las lecturas no se frenan.
+
+Cada rechazo se cuenta en `.claude/guarda_previa.jsonl` (ignorado por git); `python -m scripts.guarda_previa
+--contar` lo lee. **Condición de reversión** (issue #186): si en los 15 episodios siguientes a la fusión hay
+2 o más pasos fallidos por heredoc, o más de 1 orden legítima frenada, el gancho pasa a solo contar. Los
+ganchos no alcanzan a Codex ni a otros agentes. Detalle y límites: [`docs/entorno/harness.md`](docs/entorno/harness.md).
+
 ## Tests
 
 | Carpeta | Qué contiene | Ejecutar |

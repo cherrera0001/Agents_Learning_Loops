@@ -1,0 +1,71 @@
+{
+  "seq": 82,
+  "id": "issue-186-guardas-previas",
+  "goal": "Guardas ejecutables previas a una orden de Bash: un gancho PreToolUse que rechaza y cuenta los heredocs que alimentan un intérprete, escriben un archivo fuente o pasan de 60 líneas, y que rechaza una escritura de gh o un git push con una cuenta que no es cherrera0001; documentadas en harness.md y CONTRIBUTING.md",
+  "ref": "#186",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-12",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "publish_comment",
+      "success": false,
+      "error": "Incidente de cuenta del 2026-10-12, previo a este issue: un comentario del PR #185 salió con la cuenta vinculaterritorio porque era la activa del llavero de gh y la orden no fijaba GH_TOKEN. Resolución: el orquestador republicó el comentario con cherrera0001 y retiró el original. La lección ya estaba escrita (episodios 035 y 045) y no se cumplió: por eso este issue la convierte en la guarda de cuenta del gancho"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall con el título del issue antes de editar: devolvió una sola acción (update_docs, relevancia 0,01) y cinco lecciones de otros módulos (security.txt, rutas del rescate, emparejado de observaciones), más los issues parecidos #171 y #121. Ninguna sobre heredocs ni cuentas: no cambió el diseño. Las lecciones sobre heredocs salieron al buscar a mano en learning/episodes/"
+    },
+    {
+      "action": "gather_cases",
+      "success": true,
+      "note": "Búsqueda de los pasos fallidos cuya nota menciona heredoc: salen 11 (002, 007, 011, 012, 027, 054, 062, 067, 069, 071 y el 080 del #177, posterior al recuento de 10 del issue); 4 por largo y 7 por secuencias de escape. Los episodios guardan la causa, no la orden literal: las pruebas usan paráfrasis"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/guarda_previa.py (solo biblioteca estándar): heredoc real = << con delimitador y línea de cierre, por lo que un << dentro de una cadena o un 1 << n de python -c no cuenta; rechaza si la línea del << ejecuta un intérprete, redirige a un archivo fuente o el cuerpo pasa de 60 líneas (N=60: 6 de 152 cuerpos de commit pasan de 60, 29 pasan de 20). Cuenta: remoto origin del cwd, token declarado en la orden, token literal contra el llavero local o cuenta activa de hosts.yml, todo sin red. Tope propio de 6 s dentro de uno de 10 s del gancho; si falla, deja pasar y lo dice. Registro .claude/guarda_previa.jsonl (ya ignorado por git) y --contar"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "ruff check dejó tres hallazgos tras la primera versión: una línea de 113 caracteres en un mensaje, un if anidado (SIM102) y un noqa BLE001 que no estaba habilitado (RUF100); ruff format reordenó además el archivo de pruebas. Se corrigieron antes de entregar"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "tests/test_guarda_previa.py, por subproceso con el JSON del gancho por stdin: 11 casos históricos y 4 rechazos más, todos con código 2; 14 órdenes legítimas con código 0 (commit con heredoc, datos cortos, << en cadenas, python -c con desplazamientos, <<<, 60 líneas justas); cuenta con hosts.yml falso y token propio inyectado, sin red, y comprobación de que ningún token sale por stdout, stderr ni registro; fallo y tope simulados; el contador y su lectura"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Sección en docs/entorno/harness.md (reglas, por qué N=60, cómo se decide la cuenta, límites: no alcanza a Codex, no analiza Bash, una sesión abierta no recoge el gancho), sección en CONTRIBUTING.md con la condición de reversión, entrada del CHANGELOG y bloque PreToolUse en .claude/settings.json sin tocar los SessionStart"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "ruff check, ruff format --check, mypy y export_schema --check en verde; pytest --cov: 2951 pasadas y 9 omitidas, cobertura 98,72 %. La mutación se lee en la CI del PR"
+    }
+  ],
+  "lessons": [
+    "Una regla escrita no frenó once heredocs ni tres cambios de cuenta; lo que sí la hace cumplir es una comprobación ejecutable previa a la orden, con registro de cuántas veces actuó",
+    "Antes de fijar un umbral de líneas, mide qué órdenes legítimas lo cruzan: aquí el contenido (intérprete o archivo fuente) explica la mayoría de los fallos y el largo solo cuatro",
+    "Un gancho que bloquea debe fallar abierto: con un tope propio menor que el del gancho y, si algo falla, dejar pasar la orden diciéndolo y contándolo",
+    "Una escritura en GitHub con la cuenta del llavero activo se evita fijando GH_TOKEN en la propia orden con gh auth token --user cherrera0001, nunca con gh auth switch"
+  ]
+}

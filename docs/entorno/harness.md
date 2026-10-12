@@ -117,6 +117,65 @@ Límites, dichos sin rodeos:
   puede compararlos, lo dice. Un rescate que solo trae `envios.json`, o con fecha futura, no se usa y se avisa.
 - **No escribe en disco.** Para quitarlo, borrar el segundo elemento de `SessionStart` en `.claude/settings.json`.
 
+### Guardas previas a una orden de Bash
+
+Un gancho `PreToolUse` con `matcher: "Bash"` (`.claude/settings.json`, junto a los `SessionStart`, que no
+toca) ejecuta `python "$CLAUDE_PROJECT_DIR/scripts/guarda_previa.py"` antes de cada orden. Recibe por stdin el
+JSON de Claude Code (`tool_name`, `tool_input.command`, `cwd`); para rechazar sale con 2 y escribe el motivo
+por stderr, que Claude recibe como error de la herramienta. (La otra forma documentada, salir con 0 y un JSON
+`permissionDecision: deny`, no hace falta: el código 2 con stderr basta y es la que usa el guion.)
+
+**Guarda de heredoc.** Rechaza un heredoc real (un `<<` con delimitador y una línea de cierre; `1 << 3` y un
+`<<` dentro de una cadena no cuentan) si:
+
+| Regla | Se rechaza cuando... |
+|---|---|
+| `interprete` | la línea del `<<` ejecuta `python`, `py`, `node`, `bash`, `sh`, `perl`, `pwsh`... (también `cat <<EOF \| python -`) |
+| `archivo_fuente` | la línea del `<<` redirige o usa `tee` hacia un archivo fuente (`.py`, `.js`, `.ts`, `.sh`, `.ps1`...) |
+| `largo` | el cuerpo pasa de **60** líneas |
+
+**Por qué estas reglas y este N.** De los 11 pasos fallidos por heredoc que hay en `learning/episodes/` (los
+10 del recuento del issue más el del #177), 4 son por largo («unexpected EOF») y 7 por secuencias de escape o un
+guion a medias; casi todos alimentaban a Python o escribían un archivo de código (los episodios guardan la
+causa, no la orden literal, y las pruebas usan paráfrasis). Por eso mira el contenido y no solo la longitud. El N=60 sale de los commits del repositorio: 29 de 152 cuerpos pasan de 20
+líneas y 6 pasan de 60 (casi todos fusiones automáticas); 60 deja pasar un mensaje o un archivo de datos
+razonable y frena los cuerpos enteros de issue o de parche. Ante la duda (heredoc sin cierre y con delimitador
+en minúsculas, comillas sin cerrar) deja pasar.
+
+**Guarda de cuenta.** Rechaza una orden `gh` de escritura (`pr create|comment|merge|edit|close|review|reopen|ready`,
+`issue create|comment|edit|close|reopen|delete|transfer`, `api` con `-X POST|PATCH|PUT|DELETE` o `-f/-F/--input`
+salvo una consulta GraphQL sin `mutation`, `project item-*`, `release` salvo `list|view|download`) o un
+`git push`, solo si `git remote get-url origin` del directorio de trabajo es
+`cherrera0001/Agents_Learning_Loops` y la orden no apunta a otro repositorio (`-R`, ruta `repos/...`). La
+cuenta efectiva se decide **sin red**:
+
+1. `GH_TOKEN=` o `GITHUB_TOKEN=` en la orden con `gh auth token --user X`: vale `X`.
+2. Un token literal, en la orden o en el entorno del gancho: se compara con `gh auth token --user cherrera0001`
+   (llavero local). Distinto: rechaza.
+3. Sin token: la cuenta activa que dice `hosts.yml` de `gh` (`GH_CONFIG_DIR`, `%APPDATA%\GitHub CLI`,
+   `~/.config/gh`). Si no es `cherrera0001`: rechaza.
+
+Si no puede saberlo (sin `hosts.yml`, sin llavero, token que solo se resuelve al ejecutar) deja pasar y lo
+cuenta como `dudoso`. **Nunca imprime ni guarda el token** ni la orden entera: el registro guarda los primeros
+60 caracteres de la primera línea con los tokens tapados.
+
+**Registro y recuento.** Cada rechazo, cada «dudoso» y cada falla suma una línea a `.claude/guarda_previa.jsonl`
+(ignorado por git). `python -m scripts.guarda_previa --contar` imprime el total de rechazos y el desglose por
+regla. Es lo que se lee para la condición de reversión del issue #186 (2 o más pasos fallidos por heredoc en 15
+episodios, o más de una orden legítima frenada: el gancho pasa a solo contar).
+
+Límites, dichos sin rodeos:
+
+- **Seguridad del propio gancho.** Tope propio de **6 s** (el del gancho en `settings.json` es de 10 s). Si el
+  guion falla, no entiende la entrada o pasa del tope, **deja pasar la orden y lo dice** (stderr y
+  `systemMessage`), y lo cuenta como `falla`. Un gancho que rompe todas las órdenes se acaba quitando.
+- **Solo cubre Claude Code.** Codex, Cursor y agy no leen los ganchos de `.claude`: para ellos la regla sigue
+  siendo solo texto.
+- **No es un analizador de Bash.** Una orden armada con variables (`"$PY" - <<EOF`) o una escritura dentro de
+  una cadena de otro intérprete no se ve. Prefiere el falso negativo al falso positivo.
+- **Un gancho nuevo se lee al abrir la sesión**: una sesión ya abierta no lo recoge.
+- Para quitarlo: borrar el bloque `PreToolUse` de `.claude/settings.json`.
+
 ### Criterios de cierre por tipo de trabajo
 
 Cada issue declara su *Tipo de cierre* y su *Evidencia requerida* en la plantilla
