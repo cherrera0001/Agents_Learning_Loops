@@ -18,7 +18,7 @@
     "model_source": "self-reported",
     "escalated": false,
     "estimate_revisions": 0,
-    "prs": 1
+    "prs": 8
   },
   "steps": [
     {
@@ -59,7 +59,7 @@
     {
       "action": "analyze_results",
       "success": true,
-      "note": "Medición con los episodios del repositorio (63 evaluables de 73, memoria solo con los anteriores): el ranking de devlog recall no se separa del azar (AUC medio 0,550; p = 0,055) y la tasa base de fallo por acción lo supera (0,646; diferencia pareada −0,095, IC −0,165 a −0,022; prueba de signos p = 0,076). Exploratorio: un corpus, episodios dependientes, código de hoy. 21 de 75 lecciones automáticas son «si X falla, usar X». Solo 11 de 63 episodios con recall_memory dicen que lo recuperado cambió una decisión (un evaluador). Dictamen de la segunda tanda en el comentario del issue #182"
+      "note": "Medición exploratoria (un corpus, episodios dependientes, recall reconstruido con el código de hoy), publicada en https://github.com/cherrera0001/Agents_Learning_Loops/issues/103#issuecomment-6118099669. Sobre 73 episodios en main 72ca143, 63 evaluables (memoria solo con los anteriores): el ranking de devlog recall no se separa del azar (AUC medio 0,550 en 61 episodios; permutación p = 0,055) y la tasa base de fallo por acción lo supera (0,646; diferencia pareada −0,095, IC −0,165 a −0,022; prueba de signos p = 0,076). 21 de 75 lecciones automáticas son «si X falla, usar X» (120 de 295 por posición mostrada). Solo 11 de 63 episodios con recall_memory dicen que lo recuperado cambió una decisión (un evaluador, sobre autoinforme). Dictamen de la segunda tanda: https://github.com/cherrera0001/Agents_Learning_Loops/issues/182#issuecomment-6117006015"
     },
     {
       "action": "open_pr",
@@ -69,7 +69,7 @@
     {
       "action": "open_pr",
       "success": true,
-      "note": "Comentario republicado con cherrera0001 y original retirado; desde entonces la cuenta va fijada en cada encargo que escribe. PR #185 (#177), #189 (#167), #190 (#182, Refs), #191 (#186), #192 (#187) y #193 (#188) fusionados, cada uno con revisor independiente; el #184 (#179) sigue abierto"
+      "note": "Comentario republicado con cherrera0001 y original retirado; desde entonces la cuenta va fijada en cada encargo que escribe. Seis PR fusionados (#185, #189, #190, #191, #192 y #193), cada uno con revisor independiente; el #184 (#179) sigue abierto (gh pr view 184: OPEN, sin mergedAt). outcome.prs cuenta los siete PR de la vuelta más este"
     },
     {
       "action": "update_docs",
@@ -84,12 +84,12 @@
     {
       "action": "review_code",
       "success": true,
-      "note": "La primera revisión de cuatro de los seis PR fusionados pidió cambios (#184, #190, #191, #193). En el #191 la primera versión del gancho rechazaba todos los git push: lo encontró el revisor con una batería de órdenes legítimas, no el implementador"
+      "note": "De siete PR revisados en la vuelta, cuatro recibieron «cambios requeridos» en su primera revisión (#184, #190, #191, #193); seis están fusionados (#185, #189, #190, #191, #192, #193) y el #184 sigue abierto. En el #191 la primera versión del gancho rechazaba todos los git push: lo encontró el revisor con una batería de órdenes legítimas, no el implementador"
     },
     {
       "action": "run_tests",
       "success": false,
-      "error": "Se dio el cierre del #177 por confirmable antes de mirar la CI de main: falló por una prueba intermitente (assert 0.039 >= 0.04 en Windows). La CI de main rompió dos veces por esa prueba antes de arreglarse"
+      "error": "Se dio el cierre del #177 por confirmable antes de mirar la CI de main: falló por una prueba intermitente (assert 0.039 >= 0.04 en Windows). Consta una caída de la CI de main en 33f07be (https://github.com/cherrera0001/Agents_Learning_Loops/issues/188#issuecomment-6116755897); una segunda caída en la CI del PR #190 la dice el orquestador y no pude comprobarla"
     },
     {
       "action": "edit_module",
@@ -108,7 +108,7 @@
     }
   ],
   "lessons": [
-    "Una lección que se repite se vuelve comprobación ejecutable en el punto de uso: el texto recuperado no evitó cinco repeticiones del heredoc y la orden de la skill sí evitó los choques de seq",
+    "Una lección que se repite se vuelve comprobación ejecutable en el punto de uso: el texto recuperado no evitó cinco repeticiones del heredoc posteriores a la regla escrita (comentario del issue #103 citado en el paso de la medición) y la orden de la skill sí evitó los choques de seq",
     "Antes de llamar independiente a una coincidencia, mira qué leyó el otro: si leyó algo que tú escribiste, no es independiente",
     "El resumen de evidencia de un concilio se contrasta cita por cita con su archivo antes de repartirlo, y lo contrasta alguien que no vota",
     "Un gancho que rechaza necesita, antes de fusionarse, una batería de órdenes legítimas escrita por quien no lo implementó: la primera versión rechazaba todos los git push",

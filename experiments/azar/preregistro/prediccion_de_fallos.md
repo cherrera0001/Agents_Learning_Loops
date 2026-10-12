@@ -501,7 +501,7 @@ PR #189 (`mergedAt` 2026-10-12T03:20:07Z), PR #191 (2026-10-12T04:18:07Z) y PR #
 | 40 | 0,30 | sin contar | No ocurrió | Mismo primer comentario: 12 de 12 comprobaciones sobre `7d07ddd` |
 | 41 | 0,35 | 10 de 73 episodios | **Abierta** | Se marca tras el episodio 15 posterior a la fusión del PR #191 (`ddc9e88`, 2026-10-12T04:18:07Z). Vence el 2026-11-11 si antes no se llega a 15 episodios |
 | 42 | 0,50 | sin contar | No ocurrió | [PR #189, comentario de las 03:01 UTC](https://github.com/cherrera0001/Agents_Learning_Loops/pull/189#issuecomment-6116964635): primera revisión sobre `e150177`, «apto con observaciones», sin bloqueantes |
-| 43 | 0,45 | sin contar | Ocurrió, con una salvedad | Mismo comentario, recuento del analista de datos: 203 pasos fallidos en el pre-registro (sección 8.5) frente a 214 en el recuento del analista sobre 65 episodios, y 68 frente a 81 sin clase. El analista dice que los 11 de diferencia «no son un error de conteo» sino otro conjunto de 65 episodios; los «68 sin clase» sí difieren porque entonces había siete clases. Se marca «ocurrió» porque la predicción decía «difiere en al menos una celda», no por qué difiere |
+| 43 | 0,45 | sin contar | Ocurrió, con una salvedad | Mismo comentario, recuento del analista de datos: la orden coincide celda a celda con el recuento actual del analista (29 acciones, 73 episodios, 0 diferencias). Lo que difiere es contra el recuento del pre-registro: 203 pasos fallidos en el pre-registro (sección 8.5) frente a 214 en el recuento del analista sobre 65 episodios, y 68 frente a 81 sin clase. El analista dice que los 11 de diferencia «no son un error de conteo» sino otro conjunto de 65 episodios; los «68 sin clase» sí difieren porque entonces había siete clases. Se marca «ocurrió» porque la predicción decía «difiere en al menos una celda», no por qué difiere |
 | 44 | 0,55 | sin contar | No ocurrió | Mismo comentario: 17,1 % sin clase (44 de 258 pasos fallidos, por la orden sobre los episodios reales). Es una cifra dentro de la muestra: el analista estima 20 a 30 % para episodios nuevos, y 30,1 % con solo los patrones anteriores al episodio 52 |
 | 45 | 0,55 | 3 de 5 (a mano) | No ocurrió | PR #192, comentario de las 03:49 UTC: primera revisión sobre `6f075e3`, «apto con observaciones», sin bloqueantes |
 | 46 | 0,15 | sin contar | No ocurrió | Mismo comentario: réplica propia del revisor sobre 75 episodios (`a32357e`); el resumen del analista dice que no empeora nada. La cifra «0 lecciones de otra acción retiradas» consta en `learning/README.md` (réplica del implementador sobre 65 episodios) |
@@ -509,7 +509,9 @@ PR #189 (`mergedAt` 2026-10-12T03:20:07Z), PR #191 (2026-10-12T04:18:07Z) y PR #
 
 Cuenta, sin puntuación: de las diez, nueve tienen desenlace y una (la 41) sigue abierta. De las nueve, tres
 ocurrieron (38, 39 y 43) y seis no. La suma de las probabilidades de las nueve es 4,45, así que se esperaban
-unas 4,5 ocurrencias y hubo 3. Con nueve predicciones en tres issues no se puede hablar de calibración: la
+unas 4,5 ocurrencias y hubo 3. Criterio de las predicciones 38, 42 y 45: «pide cambios» se leyó como el veredicto escrito «cambios
+requeridos»; «apto con observaciones» cuenta como no ocurrido, aunque después se corrigieran observaciones.
+Con nueve predicciones en tres issues no se puede hablar de calibración: la
 convención de la sección 8.4 pide cien en veinte, y 4,45 contra 3 es un recuento, no una lectura.
 
 Qué se midió y qué no: lo medido es el desenlace de cada hecho en los PR citados. No se midió si predecir
