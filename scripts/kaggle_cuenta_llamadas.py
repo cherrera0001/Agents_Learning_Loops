@@ -23,7 +23,8 @@ Dos salidas con destinos distintos:
 
 Salida del proceso: 0 si contó; 2 si no pudo contar (sin carpeta, o no pudo escribir, o el detalle caería
 en una carpeta versionable); 4 si contó pero alguna traza o algún zip no se pudo leer (el agregado lo dice en
-``sesiones_sin_traza`` y ``zips_ilegibles``); 5 si el rescate no trae ningún zip de trazas (nada que contar).
+``sesiones_sin_traza`` y ``zips_ilegibles``); 5 si el rescate no trae ningún zip de trazas (nada que contar),
+también cuando es un rescate de verdad (trae ``envios.json``) y no bajó ninguna carpeta ``notebooks/``.
 
 Definiciones (cada una tiene su prueba en ``tests/test_kaggle_cuenta_llamadas.py``)
 ------------------------------------------------------------------------------------
@@ -691,6 +692,10 @@ def cuenta_rescate(rescate: Path) -> tuple[dict[str, Any], list[dict[str, Any]],
     """(agregado, detalle por sesión, problemas) de todos los ``salida__crudo_*.zip`` de un rescate."""
     notebooks = carpeta_de_notebooks(rescate)
     if notebooks is None:
+        # Un rescate de verdad (trae su envios.json) sin notebooks/ no bajó ninguna salida: no hay nada que
+        # contar. Una carpeta que no es un rescate (la ruta mal puesta) sigue siendo una entrada inválida.
+        if rescate.is_dir() and (rescate / "envios.json").is_file():
+            raise NadaQueContar("El rescate no trae la carpeta notebooks/: no bajó ninguna salida.")
         raise RescateError("No encuentro la carpeta notebooks/ en el rescate.")
     zips = sorted(notebooks.glob("*/salida__crudo_*.zip"))
     if not zips:
