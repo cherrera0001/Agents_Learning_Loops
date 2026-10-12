@@ -1,0 +1,91 @@
+{
+  "seq": 89,
+  "id": "issue-198-concilio-cuantitativo-y-preregistro-alcance",
+  "goal": "Concilio cuantitativo sobre memoria selectiva (ocho roles, ocho rondas y auditor del método) y, como salida, el pre-registro de un predicado de alcance por diagnóstico que se probará en tareas nuevas escritas a ciegas",
+  "ref": "#198",
+  "estimate": {"version": 1, "date": "2026-10-12", "size": "XL", "points": 8, "uncertainty": 3, "risk": 3, "planned_model": "Opus 5.5", "planned_effort": "xhigh"},
+  "outcome": {"used_model": "Opus 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con la pregunta del concilio, desde main al día. Devolvió tres lecciones: no usar heredocs, no repartir un resumen de evidencia escrito por el orquestador y fijar la cuenta de GitHub al delegar. La primera y la tercera se aplicaron; la segunda se aplicó en la ronda 1 (el encargo del dueño se copió literal y se dieron rutas a los informes originales) y se incumplió después, ver los pasos fallidos"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El orquestador guardó su propio informe de la ronda 1 como r1/claude.md. En Windows ese nombre equivale a CLAUDE.md y el arnés lo carga como instrucciones a quien toque la carpeta, así que pudo llegar a los otros roles mientras escribían. Se renombró cerca de un minuto después; el archivo nació a las 16:39:50 y cuatro informes ajenos nacieron entre las 16:40:28 y las 16:40:48, así que «a tiempo» no es comprobable. El auditor no halló frases suyas en los otros siete informes, pero no puede descartarlo"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Renombrado a r1/arquitecto_agentes.md. Los informes de la ronda 2 en adelante se nombraron por ronda o por letra, sin nombres que el arnés interprete"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Ronda 1 con los ocho roles sin verse entre sí (seis subagentes, Codex en solo lectura y el orquestador, que escribió el suyo antes de leer ninguno). Ronda 2: el matemático, sobre el expediente sin firmas, redujo las ocho propuestas a tres arquitecturas y encontró que la compuerta del orquestador se bloquea: un recuerdo nuevo nunca se muestra y nunca acumula datos"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "A mitad del concilio llegó la respuesta de un hilo de Codex que el dueño había lanzado aparte, con veredicto incluido (PERMANECER en planificación). El orquestador la metió en el expediente como informe I y la repartió a todos los roles antes de que votaran la misma pregunta. Los siete votos PERMANECER no son independientes de ese informe; tres roles lo citan para una de las cuatro condiciones"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El orquestador añadió a la pregunta de decisión del dueño una subpregunta propia con el marco puesto («qué resultado del simulador sería solo devolver lo que se le puso a mano»). Los ocho roles respondieron con esa misma fórmula. Y en el encargo de la ronda 7 entregó a Codex un resumen de «la tesis dominante» y la lista de campos candidatos encabezada por el que él defendía. Es el fallo que el recall del primer paso traía como lección"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "El orquestador afirmó tres cosas que el auditor corrigió: que cinco roles proponían contadores con retención al azar (eran tres, los otros no tenían de dónde sacar el contrafactual); que ningún intervalo excluye el cero con tres tareas (vale para pruebas exactas y el método no estaba congelado); y propuso medir la tasa de cambio del entorno en los registros existentes, donde hay cero transiciones porque todas las corridas citan un solo commit"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Auditor del método, con todo a la vista, antes de la síntesis. Rehízo las cifras que deciden (mínimo de la prueba de signos con 3 y 6 tareas, exposiciones por brazo, curva de rendimiento frente al tamaño, costo de medir con asignación desigual), comprobó contra el código los campos citados, recontó los votos, listó doce fallos del orquestador y dio el dictamen: PERMANECER, y un solo paso respaldado. La síntesis adoptó su clasificación de entregables (cuatro respaldados, nueve solo diseño, siete no producidos) y su paso siguiente, no los del orquestador"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Síntesis con lo que el concilio no entregó dicho sin suavizar. El encargo pedía resultados numéricos y una simulación Monte Carlo; no se corrió ninguna, por decisión de diseño: la ronda 4 vetó la especificación del simulador (quince confusores, una prueba nula con efecto real de +0,20 y dos predicciones de control que fallarían con código correcto). Las únicas cuentas numéricas fueron cálculos locales de los roles; las de las rondas 4 y 5 no dejaron archivo en la carpeta del concilio y no se pueden reproducir"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El orquestador no guardó en la carpeta del concilio los prompts de los seis subagentes ni pidió a los roles el guion de sus cuentas: el auditor no pudo comprobar qué leyó cada uno, y las cuentas de las rondas 4 y 5 quedaron sin poder reproducirse. Además dejó el cuaderno atrasado mientras corrían las rondas"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cuaderno puesto al día con el dictamen del auditor, las correcciones a sus propias entradas y los doce fallos del orquestador. Para el paso siguiente se guardaron el encargo exacto del autor del banco y el borrador que traía el dueño, con el motivo de cada diferencia; el encargo exige al autor un manifiesto con lo que leyó y ejecutó"
+    },
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Issue #198 con Estimación v1 (XL, 8 puntos, I3, R3, Opus 5.5 xhigh, ancla #46) y etiqueta de talla; el gestor de proyecto rellenó los campos del tablero y los leyó de vuelta. El banco lo escribirá Codex, porque quien congela el predicado no puede escribir las tareas"
+    },
+    {
+      "action": "update_spec",
+      "success": false,
+      "error": "El pre-registro fijó un banco de 16 tareas en 8 pares sin contar antes en cuántos sitios de la aplicación pueden actuar los tres operadores, aunque su código estaba a la vista, y sin decir qué hace independientes a dos tareas: son seis sitios, y con seis caben tres pares que no compartan ninguno. Tres pasadas de un revisor independiente corrigieron el estadístico, la regla de validez y una cifra falsa (17/70 por 1/14), y ninguna vio que faltaba contar los sitios ni definir la independencia. Lo que sí quedó bien: docs/preregistration/scope-predicate.md con commit anterior a la existencia del banco: predicado congelado con la huella de las reglas del diagnóstico; 16 tareas en 8 pares disjuntos, 4 de mismo operador y 4 de operador distinto; validez de tarea sin mirar el diagnóstico; un solo resultado que pasa (separación perfecta, 1/70). El encargo que traía el dueño pedía 8 tareas en 4 pares, todos de operador distinto, y solo enunciados: con eso una regla que lo vetara todo habría acertado siempre y el predicado no se podía calcular, porque lee la salida de la reproducción y no el enunciado"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "El banco se encargó a una ejecución nueva de Codex en una carpeta aislada (solo el protocolo, agent.py, la aplicación y benchmark/public). El autor contó los sitios donde cada operador puede actuar, encontró seis y se detuvo sin escribir ninguna tarea, como el encargo le pedía. El orquestador lo comprobó aparte leyendo change() y buscando los patrones en la aplicación: dos sitios por operador, y las nueve tareas actuales ya los ocupan todos. Veredicto del pre-registro: INSUFICIENTE; el predicado no se ejecutó. Informe en docs/results/scope-predicate.md"
+    }
+  ],
+  "lessons": [
+    "Antes de fijar en un pre-registro el tamaño de un banco de tareas, cuenta cuántos casos distintos admite el banco de pruebas: en el solver acotado los operadores actúan en seis sitios, dos por operador, y dos tareas en el mismo sitio comparten la reparación. Y escribe en el pre-registro qué hace independientes a dos tareas",
+    "Un obstáculo no es una imposibilidad hasta que lo comprueba otro: el orquestador escribió «techo de seis defectos» y el revisor mostró que un sitio admite varios defectos; lo acotado son los sitios, y el autor había leído su encargo más estricto de lo escrito",
+    "Dale a quien escribe un banco la instrucción de detenerse y decir cuántos casos caben en vez de rellenar: el autor ciego contó en una lectura los seis sitios que el orquestador y tres pasadas de revisión no habían contado",
+    "Un informe que ya trae veredicto no se reparte a los roles antes de que voten la misma pregunta: primero votan, después lo leen y dicen si cambian",
+    "La pregunta del dueño va literal a los roles; una subpregunta del orquestador se rotula como suya y sin adjetivos que marquen la respuesta",
+    "No nombres claude.md ningún archivo en una carpeta que lean subagentes: en Windows equivale a CLAUDE.md y el arnés lo carga como instrucciones",
+    "Pide a cada rol que deje en la carpeta del concilio el guion de toda cuenta numérica y guarda ahí el prompt de cada subagente: sin eso el auditor no puede reproducir ni comprobar qué leyó cada uno",
+    "Antes de probar un selector en un banco, comprueba que el banco tiene casos donde el selector debe admitir y casos donde debe vetar: con solo uno de los dos, la regla trivial acierta siempre",
+    "Si quien orquesta ocupa además un rol, vota antes de leer los demás votos y la síntesis sigue el orden de acciones del auditor, no el suyo"
+  ]
+}
