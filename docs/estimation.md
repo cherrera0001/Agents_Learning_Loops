@@ -92,7 +92,7 @@ Estado al 2026-10-02: **una entrega (#85), escalada a Sonnet 5.5.** El código d
 
 ### 2.7 Subagentes que no construyen: revisores, gestor, staff de texto público y staff de experimento (elección sin medir)
 
-La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4), y las tres del staff de texto público (`investigador-papers`, `revisor-redactor` y `validador-estadistico`), y las siete del staff de experimento (`arquitecto-ia`, `forense-arnes`, `analista-datos`, `qa-trayectorias`, `inteligencia-publica`, `auditor-metodo` y `verificador-limpio`), no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
+La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor-codigo`, `revisor-docs` y `gestor-proyecto` ([`enrutamiento.md`](entorno/enrutamiento.md) § 4), y las cinco del staff de texto público (`investigador-papers`, `revisor-redactor`, `validador-estadistico`, `auditor-datos` y `revisor-figuras-tablas`), y las siete del staff de experimento (`arquitecto-ia`, `forense-arnes`, `analista-datos`, `qa-trayectorias`, `inteligencia-publica`, `auditor-metodo` y `verificador-limpio`), y tres de los cuatro roles de construcción y decisión del staff de experimento (`estratega-experimentos`, `disenador-agente` y `calibrador`), no construyen: son medios del orquestador, que sigue siendo quien revisa, decide el merge y confirma (regla 4). El cuarto, `constructor-kit`, sí construye (edita código y abre PR); está en la tabla por pertenecer al staff, y la tabla de § 2 sigue mandando para el issue concreto que construya. Su modelo es una **elección inicial, no derivada de la tabla ni medida**:
 
 | Definición | Modelo | Motivo de la elección |
 |---|---|---|
@@ -109,6 +109,10 @@ La tabla de § 2 asigna modelos a quien **construye**. Las definiciones `revisor
 | `analista-datos` | Sonnet 5.5 | Cuenta desde archivos crudos con guiones propios; el auditor del método recalcula lo que decide |
 | `qa-trayectorias` | Sonnet 5.5 | Clasifica trayectorias y parches con una lista escrita; no se ha probado otro modelo |
 | `inteligencia-publica` | Sonnet 5.5 | Lee y cita fuentes abiertas; no se ha probado otro modelo |
+| `estratega-experimentos` | Opus 5.5 | Plantea un problema de asignación con parámetros que faltan y contradice el plan vigente; no se ha probado uno menor ni medido que lo haga mejor |
+| `disenador-agente` | Opus 5.5 | Convierte fallos de trayectorias en textos de instrucción y herramientas que otro modelo ejecutará; no se ha probado uno menor |
+| `calibrador` | Sonnet 5.5 | Compara dos kits archivo por archivo y calcula un costo con una lista de reglas escrita; no se ha probado otro modelo |
+| `constructor-kit` | Opus 5.5 | **Construye**: edita código y abre PR, como un implementador, pero es dueño de un kit cuyo cambio aislado debe probarse byte a byte; se eligió el modelo de `implementador-opus` sin medir que uno menor falle |
 
 Un revisor puede ser de un modelo menor que el autor de lo que revisa (caso: `revisor-docs` sobre el PR #92, escrito por el orquestador): por eso su informe no decide, lo decide el orquestador. Lo observado hasta el 2026-10-02 son cinco revisiones (PR #90, #91, #92, #93 y #95), las cinco con defectos reales no declarados por el autor; no bastan para decir si otro modelo habría hecho lo mismo.
 
