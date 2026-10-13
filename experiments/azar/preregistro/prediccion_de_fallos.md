@@ -657,3 +657,89 @@ frase, «Retiro mi "IC95 bajo 25 %"», que se refiere a una versión anterior de
 Ninguna predicción dice cuál kit acierta más: esta corrida no compara kits. Ninguna cubre la nota del envío.
 Las probabilidades son juicio de cada rol; solo las que citan una línea base la tienen medida, y esa línea
 base son 12 tareas.
+
+## 21. Concilio 47 (issue #182): el «cerrojo», la edición temprana y los enunciados sin contenido
+
+**Qué se predice.** Lo mismo que la sección 20: la corrida de 60 tareas con el kit `A0` sin razonar sobre las
+ruedas del 2026-10-12 19:51 UTC, y su repetición. Al escribir esto no existe ninguna de las dos. La sección 20
+no se toca.
+
+**Quién escribió cada parte.** La definición, el auditor del método. Las predicciones, el analista de datos y
+QA de trayectorias, cada uno por su cuenta, el 2026-10-13 antes de las 01:00 UTC. El orquestador las copió
+aquí y les dio número: las dos listas venían numeradas desde la 74; las del analista quedan 74 a 77 y las de
+QA pasan a 78 a 83. Originales, sin versionar: `.scratch/concilio_memoria/fase2/concilio_47/auditor/
+definicion_cerrojo_2026-10-13.txt`, `analista/predicciones_21.md` y `qa/predicciones_21.md`.
+
+**Un hecho que cambia la lectura de la sección 20.** De las 129 tareas públicas, 24 tienen un enunciado de
+menos de 100 caracteres (20 de 48 en `rich`, 3 de 67 en `fastapi`, 1 de 13 en `requests`): un título de PR sin
+descripción. De las 60 del sorteo, 14. Lo contaron tres lectores por separado con la misma regla sobre
+`experiments/gemma_developer_agent/data/tasks.jsonl`. El corte de 100 se fijó antes de probar otros; con 150 y
+200 salen 18 y 20 de 60.
+
+### 21.1 Definición del auditor (copiada tal cual, sin tildes como en el original)
+
+> D1. Lectura mal formada (LMF): llamada a read_file cuyos argumentos no cumplen la firma del arnes (swegemma/tools/workspace.py:88-93: filepath str, start_line int|None, end_line int|None). Es LMF si: (a) trae alguna clave distinta de filepath, start_line, end_line; o (b) falta filepath o no es cadena; o (c) filepath contiene comilla doble, coma, llave, o las palabras start_line / end_line; o (d) start_line o end_line presentes y no convertibles a entero. Una lectura bien formada (LBF) es toda otra llamada a read_file.
+>
+> D2. Sesion atrapada: tiene al menos una racha de 3 o mas llamadas CONSECUTIVAS a herramientas que son todas LMF. (Criterio primario. Un cerrojo es una racha, no un total.) Libres: todas las demas, hayan o no tenido alguna LMF.
+>
+> D3. Tasa de repeticion: entre las llamadas LMF que tienen llamada siguiente en la sesion, fraccion cuya siguiente es tambien LMF. Contraste: lo mismo tras una LBF. Secundaria: fraccion cuya siguiente es identica (mismos argumentos).
+>
+> D4. Resultado: `resolved` de task_results.jsonl (o el campo equivalente del resumen de la corrida si no hay jsonl).
+>
+> D5. Prueba: Fisher exacta de dos colas, atrapadas frente a libres. Tamano de efecto: diferencia de proporciones con intervalo de Newcombe al 95 % y razon de momios con correccion de 0,5. Alfa 0,05. Un solo contraste primario. Las sesiones repiten tareas entre corridas: se informa tambien por corrida y la cuenta de tareas distintas.
+>
+> D6. Sensibilidades (se informan, no deciden): total de LMF >=1, >=3, >=5.
+>
+> D7. Edicion temprana: N = 12 (viene de la instruccion de los kits publicos, no de nuestros datos). Primera edicion = indice (desde 1) de la primera llamada edit_file o write_file cuyo filepath no empieza por /tmp y cuyo nombre de archivo no empieza por test_ ni esta bajo tests/ o test/. Temprana: indice <= 12. Tardia o nunca: el resto. Como resolver exige editar, se informa tambien restringido a las sesiones que editaron alguna vez.
+>
+> D8. Lo que refuta «el cerrojo baja la tasa de resueltas»: en la muestra grande, diferencia con intervalo que incluye el cero, o tasa de resueltas de las atrapadas >= la de las libres. Lo que lo sostiene: p < 0,05 e intervalo entero bajo cero. En ningun caso se lee como causa: es observacional y la sesion atrapada puede ser la tarea dificil.
+
+Con esta definición, antes de la corrida: 6 atrapadas de 24 en `s1` y `s2` (0 de 6 resueltas frente a 7 de 18;
+p = 0,13) y 22 de 145 en las iteraciones 03 a 07 (2 de 22 frente a 37 de 123; p = 0,065). En el kit que razona,
+0 atrapadas de 29. El umbral de la racha lo eligió el auditor y él mismo lo llama arbitrario.
+
+### 21.2 Predicciones del analista de datos (copiadas tal cual)
+
+> «Atrapada» = definición del auditor (racha de 3 o más `read_file` mal formados seguidos). Campos de `tarea_fin`: `tarea`, `resuelta`, `clase`. **La racha no está en el registro**: se cuenta en `traces/trace_<tarea>.json` del zip crudo. Solo con el registro, 74, 75 y 77 no son evaluables.
+
+| N.º | Afirmación (60 tareas, A0, ruedas 19:51; cada pasada) | Prob. | Línea base | Criterio |
+|---|---|---|---|---|
+| 74 | Atrapadas entre 6 y 19 | 0,80 | 6/24 en s1+s2; 22/145; 0/29 razonando | racha >=3 en traza |
+| 75 | Resueltas entre atrapadas <= 20 %; entre libres 20 a 40 % | 0,70 | 0/6 y 7/18; 2/22 y 37/123 | `resuelta` por grupo de 74; vale con >=5 atrapadas |
+| 76 | Con `len(problem_statement)<100` en `tasks.jsonl`: 14 de 60; resueltas entre ellas <=3 (0,80); entre las otras 46, de 8 a 20 (0,75) | 0,99 la cuenta | s1+s2: 0/8 sesiones cortas, 7/16 el resto | regla y `resuelta` |
+| 77 | Repetición: al menos la mitad de las atrapadas de la pasada 1 lo son en la 2 | 0,65 | sin dato | intersección de tareas |
+
+> Con otros cortes (150, 200) salen 18 y 20; no probé otros antes de fijar 100. Las 12 de s1/s2 tienen 4 cortas con <100, no 5.
+>
+> Ninguna de 52 a 65 cambia de sentido. Nota a la 54: su base 3/12 incluye 4 cortas sin resolver; el techo es 46, y más de 14 resueltas se hace menos probable.
+
+### 21.3 Predicciones de QA de trayectorias (copiadas tal cual; la numeración 78 a 83 es de este archivo)
+
+> **Regla «primera edición».** Primera llamada `edit_file` o `write_file` de la sesión; su número es el orden de las llamadas a herramienta de esa tarea. Fuente: `anatomia.llamada_de_la_primera_edicion` de `iteracion_08_s*.json` (el registro `registro_iteracion_08_s2.jsonl` no guarda nombres de herramienta; el campo sale de las trazas).
+
+| N.º | Afirmación | Prob. | Línea base | Marca |
+|---|---|---|---|---|
+| 78 | Fracción de sesiones con primera edición ≤12 llamadas, en la pasada 1, entre 0,15 y 0,40 | 0,75 | s1 6/12, s2 3/12 (`iteracion_08_s*.json`) | campo citado, sobre tareas válidas |
+| 79 | Resueltas entre las de edición ≤12: ≥0,70; entre el resto: ≤0,10 | 0,70 | 7/9 y 0/15 (con la regla de arriba) | mismo campo y `resuelta` |
+| 80 | De las ~14 tareas cortas, se resuelven de 0 a 3 | 0,80 | 0 de 8 sesiones | `instance_id` en la regla de enunciado, `resuelta` |
+| 81 | Tasa de resueltas en cortas menor que en el resto (diferencia ≥0,10) | 0,80 | 0,00 contra 0,44 | igual |
+| 82 | En cortas, la mediana de llamadas antes de la primera edición es mayor o no existe edición en ≥40 % de las sesiones | 0,65 | 4 de 8 sin parche (`parche_caracteres == 0`) | `parche_caracteres`, `llamadas_herramientas` |
+| 83 | En cortas, ≥2 sesiones buscan por número de issue (`search_similar_code` o grep de «#NNNN») | 0,55 | rich_3105 en s1 y s2 | no evaluable con el registro; sí con trazas (`arguments`) |
+
+> Repetición: 78-82 igual sentido; 83 solo con trazas.
+
+(En el original la última línea dice «74-78» y «79», con la numeración provisional de QA.)
+
+### 21.4 Lo que queda dicho por el orquestador, no por los autores
+
+- **Dos reglas distintas para «primera edición».** La del auditor (D7) excluye `/tmp` y los archivos de
+  prueba; la de QA usa el campo `anatomia.llamada_de_la_primera_edicion`, que cuenta también los guiones de
+  reproducción. Las predicciones 78 y 79 se marcan con la regla de QA; el contraste del auditor, con D7. No se
+  unifican.
+- **La 76 y la 80 hablan del mismo hecho** (cuántas tareas cortas se resuelven) con el mismo criterio y la
+  misma probabilidad: se marcan las dos.
+- **Las predicciones 74, 75, 77 y 83 no se pueden marcar con el registro**: exigen las trazas del zip crudo de
+  la corrida. Si ese zip no se rescata, quedan «no evaluables».
+- **Cuántas tareas cortas hay en las 12 de `s1` y `s2`:** el analista cuenta 4 con la regla de menos de 100
+  caracteres; otro rol contó 5 leyendo los enunciados. La regla escrita es la de 100.
+- **Ninguna de estas predicciones dice cuál kit acierta más**, y ninguna cubre la nota de un envío.
