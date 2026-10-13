@@ -1,0 +1,49 @@
+{
+  "seq": 91,
+  "id": "issue-206-guarda-falla-cerrada",
+  "goal": "Que la guarda previa de cuenta rechace una escritura de gh con el token de otra cuenta aunque no pueda determinar de qué repositorio es el directorio de trabajo (git lento, ausente o directorio inexistente)",
+  "ref": "#206",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-13",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 1,
+    "risk": 3,
+    "planned_model": "Sonnet 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Sonnet 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con el título del issue; devolvió lecciones sobre guardas que fallan abiertas, ninguna más específica que el diagnóstico escrito del issue"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Primero las pruebas: tope del subproceso forzado a 0,001 s y directorio de trabajo inexistente, con las tres órdenes del caso real. Seis fallaron contra el código anterior (rechazo esperado, pasaba como pasa-dudoso) y las otras cuatro nuevas, que fijan lo que no debe cambiar, pasaron antes y después"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "En evaluar_cuenta el repositorio desconocido ya no corta antes de mirar el token: el bucle de usuarios_token va antes del veredicto repo_desconocido. Los demás veredictos con repositorio desconocido conservan su regla (repo_desconocido) y su cuenta"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Archivo de la guarda: 164 pasan. Veinte corridas seguidas para descartar intermitencia de las pruebas nuevas"
+    }
+  ],
+  "lessons": [
+    "Una comprobación que puede no concluir (tope, herramienta ausente) no debe ir antes de una violación que no depende de ella: ordena primero lo que se decide con la propia orden y deja lo dudoso para el final",
+    "Para fijar un fallo intermitente de CI, fuerza la causa medida (tope ínfimo, directorio inexistente) en una prueba determinista, en vez de repetir la prueba hasta que falle"
+  ]
+}

@@ -8,7 +8,8 @@ cuentan lo dudoso: un falso rechazo cuesta más que un fallo que se escapa.
    pasa de ``MAX_LINEAS_HEREDOC`` líneas.
 2. **Cuenta de GitHub.** Rechaza una orden ``gh`` de escritura (lista explícita de pares grupo-verbo) en
    este repositorio cuando la orden no menciona ``GH_TOKEN`` en ninguna parte y la cuenta activa de ``gh``
-   no es ``cherrera0001``, o cuando nombra otra cuenta en ``gh auth token --user``. ``git push`` nunca se
+   no es ``cherrera0001``, o cuando nombra otra cuenta en ``gh auth token --user`` (esto último también
+   si no se logra saber de qué repositorio es el directorio, #206). ``git push`` nunca se
    rechaza: se cuenta como «push visto» (git usa su propio gestor de credenciales).
 
 Contrato del gancho: lee por stdin (bytes, UTF-8) el JSON de Claude Code (``tool_name``,
@@ -578,14 +579,15 @@ def evaluar_cuenta(orden: str, cwd: str, entorno: Mapping[str, str]) -> Veredict
     este = es_este_repositorio(cwd)
     if este is False:
         return None
-    if este is None:
-        return Veredicto(VEREDICTO_DUDOSO, "cuenta:repo_desconocido", "gh")
     escrituras = [e for e in obs.escrituras if not apunta_a_otro_repo(e[1])]
     if not escrituras:
-        return None
+        return None if este else Veredicto(VEREDICTO_DUDOSO, "cuenta:repo_desconocido", "gh")
     descripcion = escrituras[0][0]
     if obs.cambia_directorio:
-        return Veredicto(VEREDICTO_DUDOSO, "cuenta:cambia_directorio", "gh")
+        regla = "cuenta:cambia_directorio" if este else "cuenta:repo_desconocido"
+        return Veredicto(VEREDICTO_DUDOSO, regla, "gh")
+    # Un token de otra cuenta es una violación aunque no se sepa de qué repositorio es el directorio
+    # (git lento, ausente o directorio inexistente, #206): solo ``este is False`` la deja pasar.
     for usuario in obs.usuarios_token:
         if usuario.lower() != CUENTA:
             return Veredicto(
@@ -594,6 +596,8 @@ def evaluar_cuenta(orden: str, cwd: str, entorno: Mapping[str, str]) -> Veredict
                 "gh",
                 f"{descripcion} con el token de la cuenta {usuario}",
             )
+    if este is None:
+        return Veredicto(VEREDICTO_DUDOSO, "cuenta:repo_desconocido", "gh")
     if "GH_TOKEN" in orden or "GITHUB_TOKEN" in orden:
         if _TOKEN_LITERAL.search(orden):
             return Veredicto(VEREDICTO_DUDOSO, "cuenta:token_literal", "gh")
