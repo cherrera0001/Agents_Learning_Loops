@@ -788,3 +788,100 @@ tabla difieren, manda la nota.
   caracteres; el rol diseñador contó 5 con otra regla, «menos de 120 caracteres útiles» (el quinto es
   `rich_3105`, de 452 caracteres). La regla escrita aquí es la de 100.
 - **Ninguna de estas predicciones dice cuál kit acierta más**, y ninguna cubre la nota de un envío.
+
+## 22. Bloque R1 del concilio 47 (issue #205): la base dos veces y cuatro candidatos, en 12 tareas
+
+**Qué se predice.** El bloque R1 que fijó la adenda del auditor del concilio 47: las 12 primeras tareas del
+sorteo (4 de ellas con enunciado de menos de 100 caracteres), el kit que razona (`65a02160…`), las ruedas del
+2026-10-12 19:51 UTC, y seis brazos: la base dos veces y cuatro candidatos. Al escribir esto no existe ningún
+dato de R1, los cuatro kits todavía se están construyendo y no se ha subido nada.
+
+**Los cuatro candidatos**, cada uno distinto de la base solo en lo que se dice:
+
+| | Candidato | Qué cambia |
+|---|---|---|
+| C1 | Tres cambios a 6 minutos | 6 min por tarea, 28 llamadas, 240 s por orden, sin subagente, grafo prohibido en la instrucción, edición temprana |
+| C2 | Edición temprana sola | Solo esa instrucción (primera edición de fuente en la llamada 10 o antes) |
+| C3 | Tope de pensamiento | `thinking_budget` 4096 → 1536 |
+| C4 | Triaje de enunciado corto | Instrucción para tareas cuyo enunciado no describe el problema |
+
+**La regla que se va a aplicar** (adenda del auditor, escrita antes): un candidato se envía si está revisado
+y ensayado en Docker, y en R1 tiene media de 262 s o menos, ninguna tarea colgada y neto de −1 o mejor frente
+a la base. La adenda dice también que 12 tareas locales filtran seguridad y no calidad.
+
+**Quién escribió cada lista.** El diseñador del agente (2026-10-13 01:01 UTC) y el analista de datos
+(2026-10-13, antes de cualquier subida), cada uno sin ver la del otro. El orquestador las copió aquí; las del
+diseñador no traían número y reciben del 93 al 98, uno por bloque. Originales, sin versionar:
+`.scratch/concilio_memoria/fase2/concilio_47/disenador/predicciones_r1.md` y `analista/predicciones_r1.md`.
+
+### 22.1 Predicciones del analista de datos (copiadas tal cual)
+
+> Campos: `tarea_fin.{tarea,resuelta,segundos}`, `cierre.tareas_colgadas`. Neto = resueltas solo por el candidato menos solo por la primera pasada de la base. Grupo vacío o pasada incompleta: no evaluable.
+
+| N.º | Afirmación | Prob. | Línea base | Criterio |
+|---|---|---|---|---|
+| 84 | Base contra sí misma: 1 a 5 discordantes de 12 | 0,80 | s1 vs s2: 3/12 (kits distintos) | `resuelta` por `tarea` |
+| 85 | Resueltas de la base: 2 a 6 en cada pasada (conjunción) | 0,75 | s1: 4/12 | `resuelta` |
+| 86 | Media de C1 (6 min) <=262 s | 0,45 | proyección 263 s; s1 212 s | media de `segundos` |
+| 87 | Ninguna colgada, por candidato (C1 a C4) | 0,93 cada una | 0 en 24 sesiones | `tareas_colgadas`=0 |
+| 88 | Neto >=-1: C1 0,70; C2 0,80; C3 0,75; C4 0,72 | por separado | nula 0,64 a 0,89 | conteo de discordantes |
+| 89 | Pasa la regla (tiempo, colgada y neto, conjunción): C1 0,30; C2 0,68; C3 0,65; C4 0,62 | las del propio enunciado | idem | idem |
+| 90 | Neto a 0,80: C1 y C2 de -2 a +3; C3 y C4 de -3 a +2 | 0,80 por candidato | idem | idem |
+| 91 | Cuota del bloque entre 9,0 y 12,5 h | 0,80 | adenda 9,8 a 11,5; s2 0,98 h por 12 | diferencia de `uvx kaggle quota` antes de la primera subida y tras la última sesión `complete` |
+
+> **Lo que el bloque no dice (92).** Orden de los cuatro por neto en R1 igual al orden por nota en la tabla: 0,05 (azar 0,04); el primero de R1 es el primero de la tabla: 0,30 (azar 0,25). Se marca con candidatos ya enviados, una lectura cada uno. No evaluable si se enviaron menos de 3, si hay empate en el primer lugar o si cambiaron las ruedas entre lecturas.
+
+### 22.2 Predicciones del diseñador del agente (copiadas tal cual; los números 93 a 98 son de este archivo)
+
+> «Base» = media de sus dos pasadas. Segundos = media de `duration_seconds`. (T) = exige las trazas del zip crudo; lo demás sale del json de la sesión.
+
+**93. Base.**
+
+> Media entre 215 y 245 s (p 0,7). Resueltas de 3 a 5 en cada pasada (p 0,8).
+
+**94. C1, tres cambios a 6 minutos.**
+
+> - Media entre 235 y 280 s (p 0,7). Pasa de 262 s: p 0,35.
+> - Resueltas: base menos 1 o más (p 0,75); más que la mejor pasada de la base: p 0,25.
+> - Primera edición de fuente en la llamada 10 o antes en 6 o más sesiones (p 0,4). (T)
+> - Alguna llamada al subagente retirado: p 0,2. Llamadas de grafo: 3 o menos (p 0,6). (T)
+
+**95. C2, edición temprana sola.**
+
+> - Media a ±15 s de la base (p 0,75). Pasa de 262 s: p 0,03.
+> - Resueltas a ±1 de la base (p 0,7).
+> - Sesiones con primera edición en la llamada 10 o antes: al menos 2 más que la base (p 0,35). Apuesto a que no se adelanta. (T)
+
+**96. C3, tope de pensamiento 1 536.**
+
+> - Ninguna respuesta con 2 000 `completion_tokens` o más (p 0,8); la base, al menos una (p 0,8). (T)
+> - Media menor que la base (p 0,65). Pasa de 262 s: p 0,02.
+> - Pierde una tarea que las dos pasadas de la base resuelven: p 0,25.
+
+**97. C4, triaje.**
+
+> - Llamadas en las 4 cortas: mediana de 10 o menos (p 0,4); la base, 15 o más (p 0,8).
+> - Segundos sumados en las 4 cortas: 600 o menos (p 0,4); la base, 850 o más (p 0,7).
+> - Media menor que la base (p 0,6). Pasa de 262 s: p 0,02.
+> - Una tarea no corta entregada en la llamada 8 o antes y no resuelta: p 0,2. (T)
+> - Resueltas a ±1 de la base (p 0,75); alguna corta resuelta: p 0,1.
+
+**98. General.**
+
+> Ningún candidato difiere de la base en más de 2 resueltas (p 0,8).
+
+### 22.3 Lo que queda dicho por el orquestador, no por los autores
+
+- **Cada línea con su probabilidad es una predicción y se marca por separado.** Las del diseñador llevan
+  varias por bloque; el número del bloque (93 a 98) es solo para citarlas.
+- **Las dos listas definen la base de forma distinta.** El analista compara cada candidato con la primera
+  pasada de la base; el diseñador, con la media de las dos. Y usan campos distintos para el tiempo
+  (`tarea_fin.segundos` y `duration_seconds`). No se unifican: cada una se marca con su definición.
+- **Las dos listas discrepan en C1.** Que la media de C1 pase de 262 s: 0,35 según el diseñador y 0,55 según
+  el analista (su 86 da 0,45 a que no pasa). Se marcan las dos.
+- **Vale la regla por defecto de 21.5** para lo que ninguna lista fija: si al marcar hace falta una decisión
+  que no está escrita, la predicción queda «no evaluable», nunca a su favor.
+- **Las marcadas (T) exigen las trazas del zip crudo de cada sesión.** Si no se rescatan, quedan «no
+  evaluables».
+- **Ninguna predicción de esta sección dice qué candidato sacará mejor nota.** La 92 dice expresamente que
+  el bloque casi no informa de eso.
