@@ -1,0 +1,56 @@
+{
+  "seq": 91,
+  "id": "issue-202-staff-de-construccion",
+  "goal": "Añadir al staff de experimento cuatro roles que construyen y deciden (estratega, diseñador del agente, calibrador y constructor del kit), dar a los roles de solo lectura escritura en su carpeta de trabajo, y hacer que los dos revisores publiquen su revisión en el PR",
+  "ref": "#202",
+  "estimate": {"version": 1, "date": "2026-10-13", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con la pregunta sobre definiciones de agentes de entorno. La lección aplicable: un rol ejercido con un encargo escrito a mano pasa a definición versionada, y la definición fija lo que el encargo tuvo que repetir. Por eso las cuatro definiciones recogen del encargo del concilio 47 las prohibiciones, la separación de medido, inferido y no medido, y el guion de cada cuenta"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Un bucle de sed con el nombre de archivo en una variable, lanzado desde la herramienta de shell del worktree, fue rechazado porque no se podía demostrar que no era una orden de git; no leyó nada"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se repitió la lectura con las herramientas Read y Grep, un archivo por llamada, y se leyeron las definiciones y los documentos que hacía falta"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Un filtro de jq con select(test(\"learning/episodes\")) falló en PowerShell (\"function not defined: episodes/0\") porque las comillas dobles internas se perdieron al pasar la expresión; no se supo qué episodios llevaban los PR abiertos"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se listaron los nombres de archivo de cada PR y se filtraron con Select-String: el PR #201 trae el 090 y el siguiente libre es el 091"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cuatro definiciones nuevas en .claude/agents/, la sección «Roles que construyen y deciden» y la tabla «Una vuelta de competencia» en agentes.md, cuatro filas en estimation.md § 2.7, y las menciones de conteo de enrutamiento.md, README.md y la skill concilio-de-experimento. Las definiciones de solo lectura reciben la herramienta Write; la regla de escribir solo en la carpeta del encargo ya estaba escrita en la mayoría y se extendió al staff de texto público, que la prohibía"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "La skill concilio-de-experimento sumó al diseñador y al estratega a la primera ronda en paralelo, mientras agentes.md los pone después del concilio (el estratega necesita los candidatos del diseñador). Además constructor-kit salió sin línea tools: y sin las prohibiciones de leer benchmark/private/ y de usar credenciales. Lo encontró el revisor de documentos"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "La skill dice ahora lo mismo que agentes.md: el concilio es el paso de medir; el diseñador entra después con lo medido y el estratega después del diseñador. constructor-kit explica por qué hereda todas las herramientas y añade las prohibiciones. agentes.md dice que el límite de escritura es de la definición, no de la herramienta, y que el orquestador lo comprueba con git status. CONTRIBUTING.md dice que el revisor publica su revisión y que no se fusiona sin que conste en la API"
+    }
+  ],
+  "lessons": [
+    "Una restricción de ruta («solo en la carpeta del encargo») no se aplica con la lista de herramientas: Write la puede violar. Queda como regla de la definición y la comprueba el orquestador con git status, no un permiso",
+    "Cuando una definición dice «escribe solo en tu carpeta» pero la lista de herramientas no trae Write, el rol no puede cumplirlo y el orquestador transcribe a mano: comprueba el frontmatter, no solo la prosa",
+    "Al añadir un rol, busca los conteos escritos con letra («siete», «quince») en README, enrutamiento y skills: son los que se quedan falsos en silencio",
+    "Cuando un documento y una skill describen el mismo orden de pasos, léelos juntos antes de entregar: la skill puso en paralelo dos roles que el documento ordena en serie"
+  ]
+}

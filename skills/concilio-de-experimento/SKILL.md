@@ -13,7 +13,10 @@ description: Pasar cada vuelta de un experimento con modelo por roles independie
 
 - [`CONTRIBUTING.md`](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), *Vuelta de un
   experimento con modelo*, pasos 1 y 4 a 7: el procedimiento que esta skill proyecta.
-- [`docs/entorno/agentes.md`](../../docs/entorno/agentes.md#staff-de-experimento): los siete roles.
+- [`docs/entorno/agentes.md`](../../docs/entorno/agentes.md#staff-de-experimento): los siete roles que
+  miden, los cuatro que
+  [construyen y deciden](../../docs/entorno/agentes.md#roles-que-construyen-y-deciden) y el orden de una
+  [vuelta de competencia](../../docs/entorno/agentes.md#una-vuelta-de-competencia).
 - [`skills/corrida-valida`](../corrida-valida/SKILL.md): el criterio que el concilio aplica.
 - Episodios: `learning/episodes/064-issue-103-estado-medido-y-ciclo-kaggle.json` («cuando dos roles de un
   concilio recomiendan cosas opuestas, busca en el informe de uno la medida que el otro dejó sin verse») y
@@ -32,12 +35,19 @@ envío falla sin explicación.
    día con `origin/main`, y baja los datos con la skill [`corrida-valida`](../corrida-valida/SKILL.md).
    Sin rescate demostrado no hay concilio.
 2. **Convoca la primera ronda en paralelo, sobre los mismos archivos.** Ninguno modifica el
-   repositorio, la evidencia ni un sistema externo; ejecutan solo en local. Siempre: analista de datos
+   repositorio, la evidencia ni un sistema externo; ejecutan solo en local y escriben su informe y sus
+   guiones solo dentro de la carpeta de trabajo que les das (tienen la herramienta Write para eso).
+   Siempre: analista de datos
    y forense del arnés. El auditor del método va en todas las vueltas, pero entra después de la
    revisión cruzada (paso 5). Según la pregunta: QA de trayectorias (si se propone
    cambiar la conducta del agente), arquitecto de IA (si se propone cambiar el modelo, el presupuesto o el
    cómputo, o adoptar un método ajeno) e inteligencia pública (si el experimento se mide en un sistema
-   externo).
+   externo). Si falta anclar la medida a una nota conocida, suma al calibrador. El concilio es el
+   paso de **medir** de una vuelta de competencia
+   ([orden de la vuelta](../../docs/entorno/agentes.md#una-vuelta-de-competencia)). Después, con lo
+   medido, entra el diseñador del agente (candidatos a partir de los fallos); con sus candidatos, y antes
+   de gastar cuota en más de un brazo, el estratega de experimentos. El constructor del kit construye
+   más tarde, en un PR, con lo que el dueño decida. Ninguno de los tres va en esta primera ronda.
 3. **Da a cada rol los archivos, no tu conclusión.** El encargo dice la pregunta, las rutas, las
    prohibiciones y la carpeta de trabajo. Un rol al que se le entrega la hipótesis la devuelve confirmada.
    Todos reciben la misma pregunta, la del dueño, además de la parte de su oficio, y una duda final: la
