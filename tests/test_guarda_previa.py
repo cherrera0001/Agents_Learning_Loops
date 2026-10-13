@@ -497,11 +497,20 @@ ORDENES_CON_TOKEN_AJENO = (
 )
 
 
+@pytest.mark.parametrize(
+    "fallo",
+    [subprocess.TimeoutExpired(cmd="git", timeout=0.001), FileNotFoundError("git")],
+    ids=["tope_agotado", "git_ausente"],
+)
 @pytest.mark.parametrize("orden", ORDENES_CON_TOKEN_AJENO)
 def test_token_ajeno_se_rechaza_si_git_no_responde_a_tiempo(
-    orden: str, tmp_path: Path, repo: Path, monkeypatch: pytest.MonkeyPatch
+    orden: str, fallo: Exception, tmp_path: Path, repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(gp, "TOPE_SUBPROCESO", 0.001)
+    def git_que_falla(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise fallo
+
+    # Simula el fallo de la llamada a ``git`` en el propio proceso, sin depender de cuánto tarda.
+    monkeypatch.setattr(gp.subprocess, "run", git_que_falla)
     assert gp.es_este_repositorio(str(repo)) is None
     veredicto = gp.evaluar_cuenta(orden, str(repo), _entorno(tmp_path, HOSTS_PROPIO))
     assert veredicto is not None
