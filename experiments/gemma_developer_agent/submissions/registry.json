@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-12",
+  "last_updated": "2026-10-13",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -107,6 +107,58 @@
       "public_score": null,
       "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
       "notes": "Ref. Kaggle 57098570, enviado 2026-10-12 06:46:48 UTC. Es el mismo zip de sub-005 y sub-006, sin cambios: «I razona», lectura 3 de 5. Estado pendiente al escribir esto; sin nota. Si el puntuador usa el arnés nuevo, esta lectura no es comparable con las dos anteriores: no está medido qué versión usa. Escrito a mano con los datos que dio el orquestador (este registro no leyó Kaggle): `register` devuelve el registro existente si el SHA-256 ya figura."
+    },
+    {
+      "submission_id": "sub-009",
+      "date": "2026-10-13",
+      "condition": "C1",
+      "zip_filename": "submission_r1_c1_tres_cambios_6min.zip",
+      "sha256": "a038a38925d7f1cf34a09e425e66f4b5eaedef9481fee23efe3e33b2b2d0193f",
+      "size_bytes": 2980,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: candidato 1 del bloque R1 (concilio 47, issue 205), sin subir nada a Kaggle. Es el zip que razona (sub-005, SHA-256 65a02160…) con tres miembros cambiados y dos borrados, según la especificación del diseñador (candidatos_r1.md, SHA-256 899e4aa9…): eval_config.yaml (timeout_seconds 60 a 240, max_tool_calls 60 a 28, max_time_minutes 4.5 a 6), agent.yaml (sin la entrada agent_tool del subagente; las tres herramientas de grafo siguen declaradas), prompts/system.md (la línea 11 pasa a prohibir el grafo y entran tres viñetas de edición temprana tras la línea 14); se borran sub_agents/code_analyzer.yaml y prompts/analyzer.md. configs/sampling.yaml conserva su registro comprimido byte a byte. Ensayado en local con las ruedas del 2026-10-12 19:51 UTC y un servidor falso: no mide calidad. Escrito a mano, como sub-005 a sub-008. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-010",
+      "date": "2026-10-13",
+      "condition": "C2",
+      "zip_filename": "submission_r1_c2_edicion_temprana.zip",
+      "sha256": "aa0750f0f47f63276cfcd3756fd0771d0b6633b3e21393e60ce8f9351dea0f39",
+      "size_bytes": 3749,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: candidato 2 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: tres viñetas de edición temprana después de la línea 14 (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad. Escrito a mano. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-011",
+      "date": "2026-10-13",
+      "condition": "C3",
+      "zip_filename": "submission_r1_c3_pensamiento_1536.zip",
+      "sha256": "e655e942abce3fb8576cf0abbe461fb518d4194ec8cde78521bb9055191b7e44",
+      "size_bytes": 3494,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: candidato 3 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con UNA línea cambiada en configs/sampling.yaml: `thinking_budget: 4096` pasa a `thinking_budget: 1536`. Pesa lo mismo que la base (3 494 bytes) con otra huella. Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: las peticiones del agente llevan thinking_token_budget 1536; que el servidor real aplique ese tope no está medido. Escrito a mano. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-012",
+      "date": "2026-10-13",
+      "condition": "C4",
+      "zip_filename": "submission_r1_c4_triaje.zip",
+      "sha256": "8e7009dda5d9e460e3be852084408f45864393e63e4602dde053f243615f96b8",
+      "size_bytes": 4013,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: candidato 4 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: un bloque nuevo de 15 líneas («Step 0», triaje de enunciados que no describen el problema) entre el párrafo de «Core Objective» y «## Workflow» (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad ni si el modelo obedece. Escrito a mano. El zip no se versiona: solo su huella."
     }
   ]
 }

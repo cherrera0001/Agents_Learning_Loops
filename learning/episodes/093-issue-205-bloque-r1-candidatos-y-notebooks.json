@@ -1,0 +1,87 @@
+{
+  "seq": 93,
+  "id": "issue-205-bloque-r1-candidatos-y-notebooks",
+  "goal": "Bloque R1 del concilio 47: armar cuatro candidatos de kit sobre el kit que razona, cada uno con la prueba de que solo cambia lo declarado, y los notebooks de 12 tareas pareadas (la base dos veces y los cuatro candidatos), ensayados en Docker con las ruedas del 2026-10-12 y un servidor falso, sin subir nada",
+  "ref": "#205",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-13",
+    "size": "L",
+    "points": 5,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el texto del encargo, desde una rama nueva sobre origin/main. Se aplicaron dos lecciones: partir del artefacto que ya corrió y comprobar que se sabe volver a escribirlo byte a byte antes de tocarlo, y no cambiar bytes de un zip a mano en una prueba"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Antes de escribir se leyó el dictamen y la adenda del auditor, el guion de ensayo del paso 0 y el arnés extraído. De ahí salió que el mensaje de cada tarea anuncia los topes y que el servidor falso no guardaba ni las herramientas ni la instrucción: para comprobar «la petición sale como debe» había que guardar el cuerpo entero de cada petición. La especificación del diseñador no existía al empezar; se trabajó en lo que no dependía de ella y se leyó cuando apareció"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El guion de armado esperaba 16 líneas en el bloque del candidato 4 y la especificación trae 15: conté mal al leerla. El guion se detuvo antes de escribir nada, que es lo que debía hacer"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se contaron las líneas de cada bloque de la especificación con el propio guion (3, 3, 1, 1 y 15) y se corrigió la cifra esperada. El texto de las instrucciones no se toca a mano en ningún momento: el guion lo lee del archivo del diseñador, cuya huella comprueba"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "La primera versión del módulo volvía a escribir el zip con zipfile, comprimiendo de nuevo todos los miembros. La comprobación previa del guion (reescribir la base sin cambios y comparar) falló: 3 479 bytes y no 3 494. El intérprete del árbol trae zlib-ng y la base se comprimió con otra zlib, así que los miembros no declarados habrían cambiado de bytes comprimidos aunque su contenido fuera el mismo"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "El módulo copia ahora los registros del zip tal cual (cabecera local, nombre y datos comprimidos) y solo vuelve a comprimir los miembros declarados; en esos cambia el CRC, los dos tamaños y los datos. Se niega si no sabe volver a montar la base byte a byte. La prueba de que el resto no cambió es doble: contenido, orden y metadatos miembro a miembro, y además el mismo registro comprimido"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba de «bytes antes del primer registro» esperaba el mensaje de registros no seguidos y el lector se detiene antes, en el directorio central: con un prefijo pegado a mano los desplazamientos del zip quedan corridos. La prueba suponía cuál de las dos negativas saltaba"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "La prueba cubre ahora los dos casos por separado: el prefijo pegado a mano (directorio central ilegible) y un zip escrito por zipfile tras un prefijo, con desplazamientos correctos y el primer registro fuera de 0 (registros no seguidos). 24 pruebas, cada negativa con su mensaje"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Seis notebooks, uno por brazo, derivados del de 60 tareas ya fusionado con 7 líneas que salen y 7 que entran; el armado deshace los reemplazos y exige recuperar aquel byte a byte, y comprueba que entre brazos solo difieren el kit y los nombres. Una sesión por brazo y no dos brazos por sesión: el plan de varias entradas nunca se ensayó, una tarea colgada se llevaría el brazo siguiente y el servidor ya caliente se confundiría con el candidato. El nombre lleva br1 porque iteracion-08-r1 ya existía"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Ensayo en Docker, un contenedor a la vez y sin red, con un guion derivado del del paso 0 por reemplazos que casan una vez: guarda el cuerpo de cada petición y añade un escenario en que el modelo falso llama al subagente y a una herramienta de grafo. Con el candidato 1 la llamada al subagente retirado vuelve como un error con la lista de herramientas disponibles y la tarea sigue hasta entregar; no termina la tarea, que era el riesgo anotado con un arnés anterior. Los dos topes nuevos del candidato 1 se ensayaron cortando (28 llamadas y 6 minutos), con una copia aparte del guion que lee los topes del kit del notebook: el guion de origen los llevaba fijos para el kit de entonces. Los resultados de cada corrida están en el documento"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El documento separa lo armado, lo ensayado y lo que el ensayo no dice (qué hace el modelo real con cada instrucción, si el servidor real aplica el tope de pensamiento, las 6 tareas sin copia local, el pip install real), con la cuenta de reloj y de cuota de cada sesión y la lista exacta de diferencias con el notebook de 60"
+    }
+  ],
+  "lessons": [
+    "Para decir que el resto de un zip no cambió, copia los registros de los miembros no declarados con sus bytes comprimidos: volver a comprimirlos da otro flujo con otra versión de zlib aunque el contenido sea igual",
+    "Si el texto exacto de un cambio lo escribe otro rol, que el guion lo lea de su archivo con la huella comprobada en vez de copiarlo a mano: la cuenta de líneas hecha a ojo ya falló una vez",
+    "Un servidor falso que solo guarda los parámetros de muestreo no puede decir qué herramientas ni qué instrucción recibió el modelo: guarda el cuerpo entero de la petición y compáralo después con el kit",
+    "Antes de escribir una prueba de una negativa, mira cuál de las negativas salta primero con esa entrada",
+    "El riesgo de una herramienta retirada del kit se mide haciendo que el modelo falso la llame, con el arnés real: lo anotado con un arnés anterior no vale para el nuevo"
+  ]
+}
