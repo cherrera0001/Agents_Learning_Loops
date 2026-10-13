@@ -15,16 +15,25 @@ que la versión nueva eliminó. Nada lo comparaba. Este módulo reúne, sin red 
 Lo que **no** ve ninguna de estas guardas: un cambio de conducta del arnés que conserva nombres y firmas
 (en 0.2.13, ``thinking_budget`` pasa a decidir si el modelo razona). Eso exige leer el diff de fuentes en
 cada cambio de versión.
+
+Desde el concilio 46 (#182) guarda además el SHA-256 esperado de cada rueda del arnés
+(``RUEDAS_ESPERADAS_SHA256``): el 2026-10-12 el conjunto se volvió a publicar con las mismas versiones y otro
+contenido, y comparar cadenas de versión no lo vio. La guarda del notebook puede compararlo antes de cargar
+el modelo (``celda_de_versiones(..., sha256=...)``), el chequeo previo lo compara contra la carpeta de ruedas
+y ``cambios_desde_la_sesion`` dice qué cambió respecto de las ruedas con que corrió una sesión. El SHA-256
+dice que el archivo es otro; no dice qué cambió dentro.
 """
 
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import re
 import zipfile
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +44,21 @@ ARNES_ENSAYADO: dict[str, str] = {
     "adk_submission": "0.2.13",
     "adk_eval_core": "0.1.0",
     "google_adk": "1.36.1",
+}
+# SHA-256 esperado de cada rueda del arnés (concilio 46, #182): las publicadas en el conjunto el 2026-10-12
+# a las 19:51 UTC. La versión no basta: ese día ``swegemma-0.2.11`` cambió de contenido sin cambiar de
+# versión, y la guarda de versiones no lo vio. Son las que el notebook exige antes de cargar el modelo, no
+# «las que hay hoy en Kaggle»: cambiarlas exige leer el diff de fuentes y repetir el ensayo con las ruedas
+# reales. Con estas se corrió ese ensayo el 2026-10-12 (petición sin razonar, sesión completa, tarea colgada
+# y control con una rueda anterior): el resultado está en el PR #201.
+RUEDAS_ESPERADAS_SHA256: dict[str, str] = {
+    f"{dist}-py3-none-any.whl": huella
+    for dist, huella in (
+        ("adk_eval_core-0.1.0", "e614e1b2fe8d886a634871e4c57f9887e1cc66e8c27300f8503a43c6e3ca82f3"),
+        ("adk_submission-0.2.13", "f156f0bd84580ccb9334726d114d7a5481f16d3a6e2887cc4d276ced0ef8d99d"),
+        ("google_adk-1.36.1", "1a2f6868c509e3151fb0de3575a7d18b45c338be86f420924dad74e7193631a0"),
+        ("swegemma-0.2.11", "9ad876581f3acde8ec3c369858f0834e2b9f41a3cffce3ca42f09cb090aea9d3"),
+    )
 }
 # Paquete de Python que instala cada rueda del arnés (para la comprobación de imports).
 PAQUETES_DEL_ARNES: dict[str, str] = {
@@ -72,22 +96,72 @@ USO_SUSTITUTO = (
 )
 
 
-def celda_de_versiones(archivo: str, esperadas: Mapping[str, str] | None = None) -> str:
+MARCA_SHA256 = "# SHA-256 de las ruedas (#182)"
+# Líneas que la guarda por sha256 añade a la de versiones, y detrás de cuál van. Quitarlas devuelve la guarda
+# de versiones byte a byte (lo comprueba una prueba): así el armado puede listar la diferencia exacta.
+_SHA256_IMPORT = "import hashlib as _hashlib\n"
+_SHA256_CUENTA = (
+    f"{MARCA_SHA256}: de cada .whl del directorio de ruedas, leída por bloques; las esperadas se comparan.\n"
+    "_sha256_visto = {}\n"
+    "if _ruedas is not None:\n"
+    "    for _archivo in [_a for _a in _ruedas if _a.endswith('.whl')]:\n"
+    "        try:\n"
+    "            _h = _hashlib.sha256()\n"
+    "            with open(_os.path.join(_dir_ruedas, _archivo), 'rb') as _f:\n"
+    "                for _bloque in iter(lambda: _f.read(1 << 20), b''):\n"
+    "                    _h.update(_bloque)\n"
+    "            _sha256_visto[_archivo] = _h.hexdigest()\n"
+    "        except OSError as _exc:\n"
+    "            _sha256_visto[_archivo] = 'ilegible: ' + type(_exc).__name__\n"
+    "_sha256_distintas = {}\n"
+    "for _archivo, _esperado in ARNES_SHA256_ESPERADO.items():\n"
+    "    if _sha256_visto.get(_archivo) != _esperado:\n"
+    "        _sha256_distintas[_archivo] = [_esperado, _sha256_visto.get(_archivo)]\n"
+)
+_SHA256_RESUMEN = (
+    "_resumen_arnes.update({'sha256_esperadas': ARNES_SHA256_ESPERADO, 'sha256': _sha256_visto})\n"
+    "_resumen_arnes['sha256_distintas'] = _sha256_distintas\n"
+)
+_SHA256_AVISO = (
+    "print('ARNES sha256:', 'las esperadas' if not _sha256_distintas else 'DISTINTAS', "
+    "'|', len(_sha256_visto), 'ruedas con huella')\n"
+    "for _archivo, (_esperado, _visto) in _sha256_distintas.items():\n"
+    "    print('ARNES sha256 distinto:', _archivo, '| esperado', _esperado, '| visto', _visto)\n"
+)
+_SHA256_PARADA = (
+    "if _sha256_distintas:\n"
+    "    raise RuntimeError(f'ARNES: sha256 distinto del esperado (esperado, visto) "
+    "{_sha256_distintas}; se detiene antes de cargar el modelo')\n"
+)
+
+
+def celda_de_versiones(
+    archivo: str, esperadas: Mapping[str, str] | None = None, sha256: Mapping[str, str] | None = None
+) -> str:
     """Texto que se añade a la celda que comprueba la instalación de las ruedas.
 
     Escribe en ``archivo`` (un archivo de salida de la sesión) las versiones instaladas del arnés, las
     esperadas y el listado del directorio de ruedas con sus bytes, y detiene el notebook, antes de la GPU,
     si alguna versión no es la esperada. Se basta sola: no usa nombres de otras celdas salvo ``W`` (el
     directorio de ruedas), y lo tolera ausente.
+
+    Con ``sha256`` (nombre de archivo ``.whl`` -> SHA-256 esperado; #182) calcula además el SHA-256 de cada
+    ``.whl`` del directorio de ruedas, lo deja en el mismo archivo junto a los esperados, y detiene el
+    notebook, antes de cargar el modelo, si alguna de las esperadas difiere, falta o no hay directorio: la
+    salida y el archivo traen los dos valores. Lo que compara es el archivo del que ``pip`` instaló en la
+    celda anterior, no lo que quedó en ``site-packages``. Sin ``sha256`` el texto es el de siempre.
     """
     esperadas = dict(ARNES_ENSAYADO if esperadas is None else esperadas)
+    con_sha256 = sha256 is not None
     return (
         f"{MARCA_VERSIONES}: quedan en un archivo de salida; si no son las ensayadas, se detiene.\n"
-        "import importlib.metadata as _md\n"
+        + (_SHA256_IMPORT if con_sha256 else "")
+        + "import importlib.metadata as _md\n"
         "import json as _json\n"
         "import os as _os\n"
         f"ARNES_ESPERADO = {esperadas!r}\n"
-        f"ARCHIVO_VERSIONES = {archivo!r}\n"
+        + (f"ARNES_SHA256_ESPERADO = {dict(sha256 or {})!r}\n" if con_sha256 else "")
+        + f"ARCHIVO_VERSIONES = {archivo!r}\n"
         "_arnes_visto = {}\n"
         "for _nombre in ARNES_ESPERADO:\n"
         "    try:\n"
@@ -104,16 +178,55 @@ def celda_de_versiones(archivo: str, esperadas: Mapping[str, str] | None = None)
         "    _ruedas = {}\n"
         "    for _archivo in sorted(_os.listdir(_dir_ruedas)):\n"
         "        _ruedas[_archivo] = _os.path.getsize(_os.path.join(_dir_ruedas, _archivo))\n"
-        "_os.makedirs(_os.path.dirname(ARCHIVO_VERSIONES), exist_ok=True)\n"
+        + (_SHA256_CUENTA if con_sha256 else "")
+        + "_os.makedirs(_os.path.dirname(ARCHIVO_VERSIONES), exist_ok=True)\n"
         "_resumen_arnes = {'esperadas': ARNES_ESPERADO, 'instaladas': _arnes_visto}\n"
         "_resumen_arnes.update({'distintas': _arnes_distintas, 'ruedas': _ruedas})\n"
-        "with open(ARCHIVO_VERSIONES, 'w', encoding='utf-8') as _f:\n"
+        + (_SHA256_RESUMEN if con_sha256 else "")
+        + "with open(ARCHIVO_VERSIONES, 'w', encoding='utf-8') as _f:\n"
         "    _json.dump(_resumen_arnes, _f, indent=1)\n"
         "print('ARNES versiones:', _arnes_visto, '| archivo', ARCHIVO_VERSIONES)\n"
-        "if _arnes_distintas:\n"
+        + (_SHA256_AVISO if con_sha256 else "")
+        + "if _arnes_distintas:\n"
         "    raise RuntimeError(f'ARNES: versiones distintas de las ensayadas (esperada, instalada) "
-        "{_arnes_distintas}; se detiene antes de la GPU')\n"
+        "{_arnes_distintas}; se detiene antes de la GPU')\n" + (_SHA256_PARADA if con_sha256 else "")
     )
+
+
+def lineas_de_la_guarda_por_sha256(sha256: Mapping[str, str]) -> list[str]:
+    """Las líneas que ``celda_de_versiones`` añade cuando recibe ``sha256``, en su orden."""
+    texto = (
+        _SHA256_IMPORT
+        + f"ARNES_SHA256_ESPERADO = {dict(sha256)!r}\n"
+        + _SHA256_CUENTA
+        + _SHA256_RESUMEN
+        + _SHA256_AVISO
+        + _SHA256_PARADA
+    )
+    return texto.splitlines(keepends=True)
+
+
+def sha256_de(ruta: Path) -> str:
+    """SHA-256 de un archivo, leído por bloques."""
+    huella = hashlib.sha256()
+    with ruta.open("rb") as f:
+        for bloque in iter(lambda: f.read(1 << 20), b""):
+            huella.update(bloque)
+    return huella.hexdigest()
+
+
+def diferencias_de_sha256(carpeta: Path, esperadas: Mapping[str, str]) -> list[str]:
+    """Una frase, con los dos valores, por cada rueda esperada que en ``carpeta`` falta o difiere."""
+    out = []
+    for nombre, esperado in esperadas.items():
+        ruta = carpeta / nombre
+        if not ruta.is_file():
+            out.append(f"{nombre}: se espera sha256 {esperado} y la carpeta no trae esa rueda")
+            continue
+        visto = sha256_de(ruta)
+        if visto != esperado:
+            out.append(f"{nombre}: se espera sha256 {esperado} y la de la carpeta tiene {visto}")
+    return out
 
 
 def sustituir_modelo_declarado(celda: str) -> str:
@@ -207,6 +320,55 @@ def cambios_del_listado(antes: Sequence[Mapping[str, Any]], ahora: Sequence[Mapp
         for campo in ("bytes", "fecha"):
             if a[nombre].get(campo) != b[nombre].get(campo):
                 out.append(f"{nombre}: {campo} {a[nombre].get(campo)} -> {b[nombre].get(campo)}")
+    return out
+
+
+FECHA_HORA = re.compile(r"(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})")
+
+
+def fecha_de(texto: Any) -> datetime | None:
+    """La fecha y hora UTC de un texto de Kaggle (``2026-10-12T19:51:41.56Z`` o ``2026-10-09 14:43:26.259``).
+
+    Se queda en el segundo: las fracciones llegan con una, tres o siete cifras según la ruta de la API.
+    ``None`` si el texto no tiene esa forma o no es una fecha que exista.
+    """
+    m = FECHA_HORA.match(str(texto or "").strip())
+    if m is None:
+        return None
+    anio, mes, dia, hora, minuto, segundo = (int(x) for x in m.groups())
+    try:
+        return datetime(anio, mes, dia, hora, minuto, segundo, tzinfo=UTC)
+    except ValueError:
+        return None
+
+
+def cambios_desde_la_sesion(
+    ruedas_de_la_sesion: Mapping[str, Any], corrio: datetime | None, ahora: Sequence[Mapping[str, Any]]
+) -> list[str]:
+    """Qué cambió entre las ruedas con que corrió una sesión y un listado del conjunto (#182).
+
+    ``ruedas_de_la_sesion`` es el ``ruedas`` del archivo de versiones que deja la celda 2 (nombre -> bytes,
+    tal como la sesión los vio); ``corrio``, la hora en que arrancó. Una rueda cambió si sale, entra, pesa
+    otra cosa o su fecha en el listado es posterior al arranque de la sesión: el 2026-10-12 las 41 ruedas se
+    volvieron a publicar a las 19:51 UTC, 39 con el mismo tamaño, y una sesión de las 13:57 quedó atrás sin
+    que nada lo dijera. Las fechas posteriores se resumen en una sola frase. Sin ``corrio`` solo compara
+    nombres y bytes.
+    """
+    antes = {str(n): b for n, b in ruedas_de_la_sesion.items() if str(n).endswith(".whl")}
+    actual = {str(x["nombre"]): x for x in ahora if str(x.get("nombre", "")).endswith(".whl")}
+    out = [f"sale {n}" for n in sorted(set(antes) - set(actual))]
+    out += [f"entra {n}" for n in sorted(set(actual) - set(antes))]
+    for nombre in sorted(set(antes) & set(actual)):
+        if antes[nombre] != actual[nombre].get("bytes"):
+            out.append(f"{nombre}: bytes {antes[nombre]} -> {actual[nombre].get('bytes')}")
+    if corrio is not None:
+        fechas = {n: fecha_de(x.get("fecha")) for n, x in actual.items()}
+        despues = sorted(f for f in fechas.values() if f is not None and f > corrio)
+        if despues:
+            out.append(
+                f"{len(despues)} de {len(actual)} ruedas con fecha posterior a la sesión "
+                f"(la última, {despues[-1].strftime('%Y-%m-%dT%H:%M:%SZ')})"
+            )
     return out
 
 
@@ -461,6 +623,30 @@ def esperado_en_el_notebook(celdas: Sequence[str]) -> dict[str, str] | None:
         except (ValueError, SyntaxError):
             return None
         if isinstance(valor, dict) and "raise RuntimeError" in celda:
+            return {str(k): str(v) for k, v in valor.items()}
+    return None
+
+
+SHA256_ESPERADO_EN_LA_CELDA = re.compile(r"^ARNES_SHA256_ESPERADO = (\{.*\})$", re.MULTILINE)
+
+
+def sha256_esperado_en_el_notebook(celdas: Sequence[str]) -> dict[str, str] | None:
+    """Los SHA-256 que la guarda del notebook exige (``ARNES_SHA256_ESPERADO``); ``None`` si no los compara.
+
+    Solo cuenta una guarda que trae, tal cual, las líneas que calculan, comparan y detienen: un notebook que
+    solo declara la constante, o que la compara sin detenerse, no la tiene.
+    """
+    for celda in celdas:
+        if MARCA_VERSIONES not in celda:
+            continue
+        m = SHA256_ESPERADO_EN_LA_CELDA.search(celda)
+        if m is None or not all(x in celda for x in (_SHA256_CUENTA, _SHA256_RESUMEN, _SHA256_PARADA)):
+            return None
+        try:
+            valor = ast.literal_eval(m.group(1))
+        except (ValueError, SyntaxError):
+            return None
+        if isinstance(valor, dict):
             return {str(k): str(v) for k, v in valor.items()}
     return None
 

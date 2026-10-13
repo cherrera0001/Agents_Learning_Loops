@@ -1,0 +1,99 @@
+{
+  "seq": 90,
+  "id": "issue-182-guarda-sha256-y-notebook-de-60",
+  "goal": "Paso 3 del concilio 46: que el notebook, el chequeo previo y el vigía comparen el SHA-256 de las ruedas del arnés (cambiaron de contenido sin cambiar de versión y nada lo vio), armar sin subirlo el notebook de 60 tareas con el kit sin razonar sobre las ruedas nuevas, y repetir con ellas el paso 0",
+  "ref": "#182",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-10",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 3,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el texto del encargo, desde una rama nueva sobre origin/main. La lección que se aplicó tal cual: partir del artefacto que ya corrió (s2, con su huella) y aplicar reemplazos que se deshacen hasta recuperarlo byte a byte. La estimación copiada es la «Estimación v1» del issue #182, escrita para el brazo con razonamiento, no para este paso"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La guarda por sha256 es un parámetro nuevo de la función que ya escribía la guarda de versiones: sin él, el texto es el de siempre (así no cambia ninguna prueba ni la huella de los notebooks ya armados) y con él añade líneas que una función lista, de modo que el armado puede decir la diferencia exacta. El vigía toma como referencia lo que vio la última sesión rescatada y su hora de arranque, no el listado del último rescate: el rescate se había hecho después de la republicación y por eso callaba"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "La prueba «otro contenido con el mismo tamaño» cambiaba bytes dentro del zip a mano: el CRC dejó de casar, la rueda quedó ilegible y el chequeo previo dio dos fallos (el de sha256 y un import sin fuente) donde la prueba esperaba uno. El segundo intento renombró una clase que el notebook de la prueba importaba, con el mismo efecto"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "La rueda cambiada se vuelve a escribir como zip válido con un texto del mismo largo en un archivo que nadie importa: mismo nombre, misma versión, mismos bytes de tamaño, otra huella. La prueba afirma antes que el tamaño no cambió, y lleva su control (antes de tocarla, pasa)"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El guion de armado supuso que s2 estaba escrito con saltos LF: está escrito en Windows en modo texto (CRLF, sin salto final). No pudo reproducir s2 byte a byte y se detuvo antes de escribir nada, que es lo que debía hacer"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se miraron los primeros y últimos bytes de s2 y se probaron las formas de serializar hasta dar con la suya (112 163 bytes con LF más 96 saltos = 112 259). El notebook nuevo sale con esa misma forma. Al listar las diferencias apareció que los topes de s2 (sesión 9 000 s, tareas 7 200 s) no son los 9 600 s del dictamen: con ellos la tarea 60 solo empieza con una media de 122 s, y con los del dictamen, de 142 s. Se cambiaron dos constantes y quedó dicho en el documento. En el documento escribí que los 150 s del dictamen eran un error de cuenta; no lo son: 142,4 s es la condición para que empiece la tarea 60 y 150,7 s la media con que las 60 caben en la sesión (lo aclararon el dueño y el revisor)"
+    },
+    {
+      "action": "run_demo",
+      "success": true,
+      "note": "Lo que se pudo comprobar sin instalar código ajeno, mientras Docker no respondía. La guarda de la celda 2 del notebook armado, ejecutada contra los bytes de las ruedas reales: ninguna distinta con las de las 19:51 y tres con las anteriores (dos de ellas pesan lo mismo). El chequeo previo: 0 con las ruedas nuevas, 2 con las anteriores. El vigía sobre el rescate real reproduce el aviso que faltó"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El documento separa lo comprobado sin Docker de lo no ensayado, dice que las huellas versionadas son «las publicadas a las 19:51» y no «las ensayadas» hasta que corra el ensayo, y deja escritas dos decisiones para el orquestador: los topes, y que el notebook no pasa el tope nuevo de verificación (corre con los 300 s por defecto del arnés)"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Docker no respondía (failed to connect to the docker API) al empezar ni al abrir el PR. La prueba de la petición con las ruedas nuevas y el servidor falso, y el ensayo del notebook (sesión completa y tarea colgada), no se corrieron. No se arrancó Docker ni se simuló: el encargo decía decirlo, y el PR se abrió diciéndolo"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "El orquestador arrancó Docker y el paso 0 corrió con el guion que estaba escrito, sin cambiar el notebook ni el código: la petición sale sin razonar y sin presupuesto en todas (6 de 6 con el notebook de la pasada 1 y 78 de 78 con el de 60 tareas, que corrió sus 26 tareas con copia local), con los mismos parámetros, campo a campo, que con las ruedas anteriores; la tarea colgada se corta; la guarda por sha256 pasa dentro del contenedor y deja la huella en el archivo de versiones; con una rueda anterior el notebook se detiene en la celda 2, sin registro y sin ninguna petición. Una sonda que envuelve la orden de pytest de la verificación midió su tope: 300 s con las ruedas nuevas y 60 s con las anteriores"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El guion que resume el ensayo, escrito sin poder ejecutarlo, se cayó al leer un archivo de la salida: la ruta pasa de 260 caracteres en Windows. Corregido eso, dio un fallo falso en el control: buscaba el texto de la excepción en un campo del informe que lo recorta"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Las cinco corridas ya habían terminado bien; lo que fallaba era el lector. Se le puso el prefijo de ruta larga y se leyó la excepción del notebook ejecutado, que la trae entera. No se tocó nada de lo ensayado"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "El revisor inyectó 43 mutantes y 11 sobrevivían. Se añadieron pruebas para ellos (huella distinta solo en el último carácter en los tres sitios, rueda ilegible, huella de solo el primer bloque, un dígito de la constante, guarda sin las líneas del resumen, frontera y orden de las fechas, error de lectura en el chequeo previo, ruedas vacías en el vigía): todas pasan contra el código que ya estaba, así que no destaparon ningún defecto. El vigía dice ahora «no pude leer» cuando un archivo de versiones es ilegible, en vez de callar como si nada hubiera cambiado"
+    }
+  ],
+  "lessons": [
+    "Para probar «mismo tamaño y otro contenido» de un archivo comprimido, vuelve a escribirlo válido con un texto del mismo largo; cambiar bytes a mano rompe su suma de control y la prueba mide otra avería",
+    "Antes de aplicar reemplazos a un artefacto que ya corrió, comprueba que sabes volver a escribirlo byte a byte sin tocar nada: los saltos de línea de quien lo escribió no son los tuyos",
+    "Una guarda que compara con «el último estado guardado» calla si ese estado se guardó después del cambio: compara con lo que vio la última corrida y con su hora",
+    "Cuando el ensayo que da nombre a una constante («ensayadas») no se pudo correr, no le pongas ese nombre: di qué son y qué falta para que lo sean",
+    "Al armar la corrida que un dictamen describe, lista sus diferencias con la anterior y compáralas con las cifras del dictamen: aquí el tope de sesión escrito no era el del notebook",
+    "Un guion escrito sin poder ejecutarlo falla la primera vez por algo ajeno a lo que mide (aquí, una ruta de más de 260 caracteres): cuando falle, mira primero si la corrida terminó bien antes de tocar nada de lo ensayado",
+    "Antes de decir que una cifra de un dictamen está mal, comprueba si responde a otra pregunta que la tuya: la media para que empiece la última tarea no es la media para que quepan todas"
+  ]
+}
