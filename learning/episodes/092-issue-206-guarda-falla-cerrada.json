@@ -1,5 +1,5 @@
 {
-  "seq": 91,
+  "seq": 92,
   "id": "issue-206-guarda-falla-cerrada",
   "goal": "Que la guarda previa de cuenta rechace una escritura de gh con el token de otra cuenta aunque no pueda determinar de qué repositorio es el directorio de trabajo (git lento, ausente o directorio inexistente)",
   "ref": "#206",
