@@ -1890,6 +1890,210 @@ ignorado por git; el orquestador lo copia y las comprueba):
 Las salidas de las comprobaciones sin Docker están en `salidas/` de esa carpeta. La repetición (`a0_p2`) se arma con
 `armar_a0_p1.py --pasada 2`: no se armó.
 
+### Bloque R1: cuatro candidatos sobre el kit que razona (concilio 47, #205)
+
+Nada de este apartado se subió ni se envió a Kaggle. El concilio 47 (2026-10-13) decidió medir en las 12
+primeras tareas del sorteo la base que razona dos veces y cuatro candidatos, y leyó esa medida como filtro de
+**seguridad, no de calidad**: con 12 tareas pareadas ningún resultado atribuye una mejora; la calidad se lee
+en la tabla, un candidato por envío. Lo que sigue es lo construido y lo ensayado en local, con un servidor de
+modelo falso: dice que cada cambio se aplica, no si el modelo lo obedece.
+
+**Los cuatro candidatos.** Cada uno es el zip que razona (`submission_i_razona.zip`,
+`65a0216007e19bf6b26ec1ae0386be06814e97a3d85f63636fb10053651a6763`, 6 miembros) con lo que declara la
+especificación del diseñador (`candidatos_r1.md`, SHA-256 `899e4aa9…`, en el expediente del concilio, sin
+versionar) y nada más. El texto de cada instrucción es del diseñador: `armar_candidatos_r1.py` lo lee de los
+bloques de código de ese archivo, cuya huella comprueba, y no lo lleva escrito.
+
+| # | Zip | Bytes | SHA-256 | Miembros que cambian (líneas que salen / entran) | Miembros borrados | Idénticos a la base |
+|---|---|---|---|---|---|---|
+| 1 | `submission_r1_c1_tres_cambios_6min.zip` | 2 980 | `a038a38925d7f1cf34a09e425e66f4b5eaedef9481fee23efe3e33b2b2d0193f` | `eval_config.yaml` (3 / 3), `agent.yaml` (3 / 0), `prompts/system.md` (1 / 4) | `sub_agents/code_analyzer.yaml`, `prompts/analyzer.md` | 1 |
+| 2 | `submission_r1_c2_edicion_temprana.zip` | 3 749 | `aa0750f0f47f63276cfcd3756fd0771d0b6633b3e21393e60ce8f9351dea0f39` | `prompts/system.md` (0 / 3) | — | 5 |
+| 3 | `submission_r1_c3_pensamiento_1536.zip` | 3 494 | `e655e942abce3fb8576cf0abbe461fb518d4194ec8cde78521bb9055191b7e44` | `configs/sampling.yaml` (1 / 1) | — | 5 |
+| 4 | `submission_r1_c4_triaje.zip` | 4 013 | `8e7009dda5d9e460e3be852084408f45864393e63e4602dde053f243615f96b8` | `prompts/system.md` (0 / 16) | — | 5 |
+
+- **Candidato 1, tres cambios a 6 minutos.** `eval_config.yaml`: `timeout_seconds` 60 → 240, `max_tool_calls`
+  60 → 28, `max_time_minutes` 4.5 → 6 (`max_turns: 100` no cambia). `agent.yaml`: salen las tres líneas de la
+  entrada `agent_tool` del subagente; las tres herramientas de grafo **siguen declaradas**. `prompts/system.md`:
+  la línea 11, que mandaba usar `search_similar_code`, pasa a prohibir las tres herramientas de grafo, y entran
+  las tres viñetas de edición temprana después de la línea 14. Su `system.md` es el del candidato 2 más esa
+  línea 11, y nada más (el armado lo comprueba).
+- **Candidato 2, edición temprana sola.** Las tres viñetas después de la línea 14 de `prompts/system.md`
+  («First Source Edit By Tool Call 10»…).
+- **Candidato 3, tope de pensamiento.** La línea 5 de `configs/sampling.yaml`: `thinking_budget: 4096` →
+  `thinking_budget: 1536`. Pesa lo mismo que la base y tiene otra huella.
+- **Candidato 4, triaje de enunciado corto.** Un bloque de 15 líneas («Step 0: Does the Problem Statement
+  Describe the Problem?») entre el párrafo de «Core Objective» y `## Workflow` de `prompts/system.md`, con una
+  línea en blanco después.
+
+**La prueba de que el resto no cambió.** `scripts/kaggle_kit.py` (nuevo, con `tests/test_kaggle_kit.py`) arma
+la variante copiando los registros del zip de base en su orden: los miembros que no cambian se copian con sus
+bytes (cabecera local, nombre y datos comprimidos), sin volver a comprimirlos, y en los que cambian solo
+cambian el CRC, los dos tamaños y los datos; fecha, permisos y demás metadatos son los de la base. Se niega si
+un cambio declarado deja el contenido como estaba, si nombra un miembro que la base no tiene o si no sabe
+volver a escribir la base byte a byte. `diferencias_con_lo_declarado` compara después los dos zips miembro a
+miembro (contenido, orden y metadatos) contra la lista declarada, y `registros_identicos` dice qué miembros
+conservan además el mismo registro comprimido. En los cuatro candidatos las dos listas coinciden con la tabla
+de la especificación, y queda en `kits/armado_candidatos.json` con el SHA-256 de cada miembro en la base y en
+el candidato y el diff de cada miembro cambiado. La primera versión del armado volvía a comprimir todos los
+miembros y **se detuvo sola**: reescrita así, la base no salía byte a byte (3 479 bytes y no 3 494), porque el
+intérprete de este árbol trae otra `zlib` (`zlib-ng`) que la que comprimió la base. Por eso los registros se
+copian.
+
+`kaggle_submission verify` sobre los cinco zips da `[OK]` en la comprobación de herramientas (ninguna
+instrucción nombra una herramienta que su agente no tenga) y, como siempre en este entorno, no compila por no
+tener `adk-submission` instalado; la compilación la hace el arnés real en el ensayo de abajo. Quedan en
+`registry.json` como `sub-009` a `sub-012`, preparados y no enviados.
+
+**Los notebooks.** Seis, uno por brazo, cada uno derivado del notebook de 60 tareas ya fusionado
+(`kernel_iteracion_08_a0_p1`, `1a4b1c7f…`) con **7 líneas que salen y 7 que entran**; `armar_bloque_r1.py` se
+detiene si deshaciéndolas no recupera ese notebook byte a byte:
+
+| Celda | Salen | Entran | Qué cambia |
+|---|---|---|---|
+| 2 | 1 | 1 | El nombre del archivo de versiones (`versiones_arnes_<salida>.json`). La guarda por SHA-256 es la misma, con las mismas cuatro huellas |
+| 4 | 2 | 2 | `CONDICIONES`: el zip `A0` pasa al zip del brazo, con su letra (`I`, `C1` a `C4`). `GRUPOS`: de las 60 tareas (`sorteo_60`) a las 12 primeras (`sorteo_60_br1`), las mismas de `s1` y `s2`, en su orden |
+| 8 | 1 | 1 | El nombre de salida (`iteracion_08_br1_<brazo>`) |
+| 10 | 3 | 3 | El plan (`('BR1<BRAZO>', '<letra>', 'sorteo_60_br1')`) y los nombres del resultado y del zip crudo |
+
+No cambia ningún tope: sesión 9 600 s, margen final 600 s, tareas 8 400 s, 900 s por tarea. Las otras ocho
+celdas son las del notebook de 60. Entre brazos solo difieren el kit y los nombres (5 líneas entre los dos de
+base, 6 entre la base y cada candidato). `kernel-metadata.json` solo cambia de `id` y de título. El nombre
+lleva `br1` y no `r1` porque `iteracion-08-r1` ya es la primera porción del brazo del #182.
+
+| Brazo | Kit | Notebook (`cs4all/…`) | Bytes | SHA-256 de `iteracion.ipynb` |
+|---|---|---|---|---|
+| Base, primera | `65a02160…` | `iteracion-08-br1-i1` | 114 198 | `cedfc5ccf91103aaa61ebc30699a2ad6358d0814e865965ce1f0b9ad307ac9d4` |
+| Base, segunda | `65a02160…` | `iteracion-08-br1-i2` | 114 198 | `2f6bc97b608a12c687c6f25952a4bb755146279408529645b942f1bcea694e03` |
+| Candidato 1 | `a038a389…` | `iteracion-08-br1-c1` | 113 772 | `92064bdbe7615aa7bf1a09aa4bc7612840e000c5df0df096186a65030b63c20e` |
+| Candidato 2 | `aa0750f0…` | `iteracion-08-br1-c2` | 115 020 | `cc927f211f628f01a8c7f0f3aa2ad07d0c20e2d4e3a40e7f8b02f98a7843729f` |
+| Candidato 3 | `e655e942…` | `iteracion-08-br1-c3` | 114 200 | `5fb84df0382736d3a713feb1f63888afbb5aba513d0ef8c9c2e22da45a3c7f88` |
+| Candidato 4 | `8e7009dd…` | `iteracion-08-br1-c4` | 115 828 | `26c28e82c2144f320646730e8defea0382cbec08c1457e04fe24ae6f110bf748` |
+
+**Las trazas.** Las predicciones del diseñador marcadas (T) se leen en la traza de cada tarea. El zip crudo de
+cada sesión (`crudo_<salida>_<etiqueta>.zip`) guarda el directorio de resultados del arnés entero, y en él
+`traces/trace_<tarea>.json`; eso ya lo hacía el notebook de 60 y no se tocó. El ensayo de abajo comprueba que
+cada zip crudo trae una traza por tarea terminada, con sus pasos y sus llamadas.
+
+**Plan de sesiones: seis, una por brazo.** Datos medidos en Kaggle con la base razonando (`s1`): 212,0 s por
+tarea, sesión de 3 064 s, registro instalado a los 519 s; `s2` arrancó en 558,6 s. Cuota = reloj × 2,01.
+
+| Sesión | Reloj previsto | Cuota | Si todas las tareas agotan su tope de tiempo |
+|---|---|---|---|
+| Un brazo de 4,5 min (los dos de base y los candidatos 2, 3 y 4) | 560 + 12 × 212 = 3 104 s (51,7 min) | 1,73 h | 560 + 12 × 270 = 3 800 s; 2,12 h |
+| Candidato 1 (6 min) | 3 104 s si su media es la de la base; 560 + 12 × 262 = 3 704 s en el umbral que lo descarta | 1,73 h; 2,07 h | 560 + 12 × 360 = 4 880 s; 2,72 h |
+| **Bloque (6 sesiones)** | | **10,40 h** con 212 s en todos; **11,39 h** con el candidato 1 en su tope | 13,33 h con los seis en su tope |
+
+- Cabe en el tope de sesión con cualquier desenlace: el peor caso de una tarea es su tope de tiempo más los
+  300 s de verificación, y el corte de sesión llega a los 9 000 s (9 600 menos el margen). Con el candidato 1,
+  560 + 12 × 660 = 8 480 s. `run_command` limita cada orden al tiempo que le queda a la tarea
+  (`tools/execution.py`), así que los 240 s por orden no alargan una tarea más allá de sus 6 minutos; la más
+  larga posible, 665 s, queda bajo los 900 s del tope por tarea.
+- **Por qué no dos brazos por sesión.** Ahorraría un arranque por pareja (560 s; 0,31 h; 0,94 h en el bloque).
+  No se hace: el plan de varias entradas del notebook nunca se ha ensayado ni corrido (el guion de ensayo
+  exige una sola); una tarea colgada termina la sesión y se llevaría el brazo siguiente; el segundo brazo
+  correría con el servidor ya caliente y el primero no, y eso se confundiría con el candidato; y dos brazos en
+  su peor caso no caben en una sesión.
+- **Orden**, de dos en dos (Kaggle admite dos sesiones con GPU a la vez): base 1 y candidato 1; base 2 y
+  candidato 2; candidatos 3 y 4. Una base en cada una de las dos primeras tandas.
+- La cuenta coincide con la del auditor (9,8 a 11,5 h). El chequeo previo va con `--tope-min 160`.
+
+#### El ensayo del bloque R1 en Docker
+
+Docker, imagen de `ipykernel` 6.17.1, un contenedor a la vez y sin red, con las cuatro ruedas de
+`arnes_2026-10-12_1951/ruedas` instaladas dentro (`google_adk` 1.36.1, `litellm` 1.104.0). Los notebooks y los
+zips ensayados son los de las tablas de arriba, sin cambios: no se cambió ninguno para que una corrida pasara.
+El guion de ensayo es el del paso 0 del #182 (`a292c60c…`) con seis reemplazos que casan una vez
+(`derivar_ensayo_r1.py`): guarda el **cuerpo entero de cada petición** que recibe el servidor falso y añade el
+escenario `prohibidas`. `correr_ensayo_r1.sh` lanza las corridas y `resumen_r1.py` las lee y compara cada
+petición con lo que declara el zip del brazo; sale con 0 («todo cumple»).
+
+**Por zip, en la sesión completa de su notebook** (6 de las 12 tareas, las que tienen copia local; 18
+peticiones por corrida, todas del agente principal):
+
+| Brazo | Herramientas declaradas en la petición | `enable_thinking` / `thinking_token_budget` | Topes en el mensaje de cada tarea | Instrucción |
+|---|---|---|---|---|
+| Base (`i1`, `i2`) | las 9 del arnés y `code_analyzer_agent` | `true` / 4096, 18 de 18 | 4.5 minutos, 60 llamadas, 60 s por orden | contiene el `system.md` del zip entero |
+| Candidato 1 | las 9 del arnés; **sin** `code_analyzer_agent` | `true` / 4096, 18 de 18 | **6.0 minutos, 28 llamadas, 240 s por orden** | contiene el `system.md` del zip entero (4 580 caracteres) |
+| Candidato 2 | las 9 y `code_analyzer_agent` | `true` / 4096, 18 de 18 | 4.5 minutos, 60 llamadas, 60 s | contiene el `system.md` del zip entero (4 496) |
+| Candidato 3 | las 9 y `code_analyzer_agent` | `true` / **1536**, 18 de 18 | 4.5 minutos, 60 llamadas, 60 s | la de la base (3 881) |
+| Candidato 4 | las 9 y `code_analyzer_agent` | `true` / 4096, 18 de 18 | 4.5 minutos, 60 llamadas, 60 s | contiene el `system.md` del zip entero (5 101) |
+
+En las seis, `max_completion_tokens` 8 192, `temperature` 0,2 y `top_p` 0,95, y la petición no lleva más
+parámetros. Las herramientas llegan en el orden de `agent.yaml`. La sección «Code Intelligence Tools» del
+mensaje de tarea sigue apareciendo con el candidato 1 (el grafo está declarado; en 5 de las 6 tareas
+ensayadas, igual que con la base): por eso su instrucción dice «even though the task message lists them».
+
+**Por notebook:**
+
+| Corrida | Qué fuerza | Resultado en los seis notebooks |
+|---|---|---|
+| `completa_<brazo>` | Nada | 6 tareas, 5 resueltas y 1 con parche que no pasa; json completo; `diagnosticar` 0; la guarda por SHA-256 deja su archivo con las cuatro huellas esperadas y ninguna distinta; todo lo que queda lleva el nombre y la etiqueta del brazo; el zip crudo trae las 6 trazas con sus llamadas |
+| `tarea_colgada_<brazo>` | Bucle síncrono en la tarea 2, tope de 90 s | 1 resuelta y 1 colgada, cortada a los 90 s; el notebook no sigue y cierra el registro; `diagnosticar` 3, el esperado |
+
+«Resuelta» no dice nada del agente: el modelo falso aplica el parche de referencia.
+
+**Qué pasa si el modelo llama al subagente o al grafo** (escenario `prohibidas`, 2 tareas: en la primera el
+modelo falso llama a `code_analyzer_agent`, luego a `search_similar_code`, y después aplica el parche y
+entrega):
+
+| Kit | `code_analyzer_agent` | `search_similar_code` | La tarea |
+|---|---|---|---|
+| Candidato 1 (subagente retirado; grafo declarado y prohibido en la instrucción) | El arnés devuelve al modelo `{"status": "error", "error_type": "ValueError", "error": "Tool 'code_analyzer_agent' not found.\nAvailable tools: run_command, …"}` y hay petición siguiente. Ninguna petición de subagente llega al servidor | Se ejecuta y devuelve resultados, como en la base: la instrucción no la impide, solo la desaconseja | Sigue: el parche se aplica, `submit_patch` responde y queda resuelta, con 5 peticiones. La traza guarda las cuatro llamadas |
+| Base (control: los dos declarados) | Se ejecuta: llega 1 petición del subagente, con sus cuatro herramientas y el mismo presupuesto, y su informe vuelve al modelo | Igual | Igual |
+
+Con el arnés 0.2.11 y `google_adk` 1.36.1, **llamar al subagente retirado cuesta una petición y no termina la
+tarea**. El riesgo que la bitácora anotó con un arnés anterior (la tarea terminaba con parche vacío) no
+aparece. No está medido cuántas veces lo intentaría el modelo real ni qué hace tras leer ese error. El
+contador de llamadas del arnés dio 2 en esa tarea con cuatro llamadas en la traza, en los dos kits: no se
+miró cuáles cuenta.
+
+**Los dos topes nuevos del candidato 1, cortando** (`correr_cortes_r1.sh`; una copia aparte del guion,
+`derivar_ensayo_r1.py --cortes`, lee los topes del `eval_config.yaml` del kit del notebook en vez de los 40
+llamadas y 4 minutos del kit de entonces; 3 tareas, el corte en la segunda):
+
+| Corrida | Qué fuerza | Resultado |
+|---|---|---|
+| `corte_llamadas_c1` | El modelo falso no entrega | El arnés termina la sesión del agente con «Agent exceeded tool call budget (28 calls)», 28 llamadas contadas; la sesión sigue con la tarea siguiente; `diagnosticar` 0 |
+| `corte_tiempo_c1` | Una petición retenida 450 s | Cancelada a los 360,0 s con «Agent exceeded session timeout (6.0 min)»; la tarea deja su diff al cierre y la sesión sigue; `diagnosticar` 0 |
+| `corte_llamadas_i1` (control, la base) | El modelo falso no entrega | «Agent exceeded tool call budget (60 calls)», 60 llamadas |
+
+**Chequeo previo.** Con el listado del conjunto de ruedas leído el 2026-10-13 a las 01:15 UTC
+(`uvx kaggle datasets files …`, solo lectura): 41 archivos, el más reciente del 2026-10-12 19:51:59, las
+cuatro ruedas del arnés con los bytes de entonces. `kaggle_preflight comprobar <carpeta> --tope-min 160
+--ruedas <las de las 19:51> --listado <ese listado>` sale con **0 en los seis notebooks** (16 imports, tamaños
+y SHA-256), y las cuatro ruedas locales tienen las huellas de `sha256_ruedas_1951.txt`. El listado no trae
+huellas: que las ruedas que hoy sirve Kaggle sean byte a byte las de las 19:51 se infiere de que no cambiaron
+de fecha ni de tamaño, no se volvieron a bajar. La guarda de la celda 2 lo comprueba ya en la sesión.
+
+**Lo que este ensayo no dice.**
+
+- **Si el modelo obedece.** Ninguna instrucción nueva se probó con el modelo real: ni la edición antes de la
+  llamada 10, ni el triaje, ni la prohibición del grafo. El modelo falso aplica el parche de referencia.
+- **Si el servidor real aplica `thinking_token_budget: 1536`.** Se comprobó que la petición lo lleva.
+- **La duración.** Ninguna media por tarea sale de aquí; el umbral de 262 s del candidato 1 solo se lee en
+  Kaggle.
+- **6 de las 12 tareas**: las que no tienen copia local.
+- **El `pip install` real y las celdas 0 a 2**: el ensayo las sustituye por un doble; la guarda corre tal cual
+  contra las 4 ruedas montadas. `vllm` no se compara.
+- El corte por tiempo de los brazos de 4,5 minutos, y los demás escenarios del #160 y del #164, no se
+  repitieron con estos notebooks.
+- Dos brazos en una sesión: no se armó ni se ensayó.
+
+Huellas, en el árbol de trabajo del agente
+(`.claude/worktrees/agent-af24f5e38c32823a3/experiments/gemma_developer_agent/data/rescate_kaggle/instrumentos/issue_205_bloque_r1/`,
+ignorado por git; el orquestador lo copia y las comprueba con `HUELLAS.txt`, que trae el SHA-256 de cada
+archivo de la carpeta). Las de los zips y los notebooks están en las tablas de arriba.
+
+| Archivo | SHA-256 |
+|---|---|
+| `especificacion/candidatos_r1.md` (copia de la del diseñador) | `899e4aa942af833fa2dae15b65da3ad2e789e006bc73147c42335b1f5743a490` |
+| `etapa/iteracion_08/ensayo_nucleo.py` (guion derivado, 14 corridas) | `875a3e148f7c44562ea9861d715df00e99b075dea81cd83280abd0ae1f305a10` |
+| `etapa_cortes/iteracion_08/ensayo_nucleo.py` (con `--cortes`, 3 corridas) | `d5b2e70bc032442cd5265e0d77fab85c29ccebb762d193ee4be9daff2e434a65` |
+
+Subir el bloque lo decide el dueño, con las mismas [condiciones](#condiciones-de-lanzamiento-del-sondeo) que
+el sondeo, las predicciones fechadas del diseñador y del analista, y el chequeo previo repetido con el listado
+de ese día antes de cada tanda.
+
 ### El ensayo rearmado
 
 Siete corridas, una tras otra, con la imagen de `ipykernel` 6.17.1 y **con las ruedas reales** (el modo de
