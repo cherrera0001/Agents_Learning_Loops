@@ -730,16 +730,49 @@ p = 0,13) y 22 de 145 en las iteraciones 03 a 07 (2 de 22 frente a 37 de 123; p 
 
 (En el original la última línea dice «74-78» y «79», con la numeración provisional de QA.)
 
-### 21.4 Lo que queda dicho por el orquestador, no por los autores
+### 21.4 Precisiones de los autores, tras la revisión del PR #204 (copiadas tal cual)
 
+Un revisor independiente señaló predicciones que no se podían aplicar sin juicio y una línea base errónea. Lo
+copiado en 21.2 y 21.3 no se editó. Cada autor precisó lo suyo el 2026-10-13 antes de las 01:00 UTC, todavía
+sin ningún dato de la corrida, sin cambiar afirmaciones, probabilidades ni umbrales. Donde una nota y una
+tabla difieren, manda la nota.
+
+**Analista de datos:**
+
+> **75.** Mal planteada: dos partes, una cifra. Queda como probabilidad de la **conjunción** (atrapadas <=20 % Y libres 20 a 40 %); se marca cada parte aparte (acierta/falla) y la 75 acierta solo si ambas aciertan. Con menos de 5 atrapadas: «no evaluable». Con libres vacío: «no evaluable».
+>
+> **76.** Tres partes: la cuenta (14 de 60, prob. 0,99), cortas <=3 resueltas (0,80) y resto 8 a 20 (0,75). Cada probabilidad es de **su parte**, no de la conjunción. Si la pasada no termina las 60 tareas: las dos de resueltas «no evaluable»; la cuenta se marca igual (no depende de la corrida).
+>
+> **77.** Sin ninguna atrapada en la pasada 1: «no evaluable» (sin denominador). Si la pasada 2 no se corre o queda incompleta: «no evaluable».
+
+**QA de trayectorias:**
+
+> **79.** La probabilidad es de la **conjunción**: ≥0,70 entre edición ≤12 y ≤0,10 en el resto. Cada parte se marca con `resuelta` agrupada por `anatomia.llamada_de_la_primera_edicion` (≤12 frente a mayor o `None`). Grupo vacío: la 79 no es evaluable. Mal planteada: dos afirmaciones, una probabilidad.
+>
+> **82.** La probabilidad es de la **disyunción** de (a) mediana de llamadas hasta la primera edición en cortas mayor que en las no cortas de la misma pasada, y (b) ≥40 % de sesiones cortas con ese campo en `None`. Se marca con ese campo, no con `parche_caracteres` (`rich_3470` de `s2` tiene parche y `None`). Sin no cortas, (a) no es evaluable.
+>
+> **83.** `rich_3105` no es corta (452 caracteres): entre las 4 cortas de `s1` y `s2` no hay base. Mal fundada.
+>
+> **Exigen trazas del zip crudo:** 78, 79, 82 y 83. La 80 y la 81 salen de `resuelta` y `instance_id`.
+
+### 21.5 Lo que queda dicho por el orquestador, no por los autores
+
+- **Dos omisiones del orquestador al copiar la definición, que el revisor señaló.** El original trae un
+  preámbulo que 21.1 dejó fuera: «Unidad: la sesion (una tarea en una corrida). Secuencia: todas las llamadas
+  a herramientas de la traza, en orden», que es lo que D2 llama «consecutivas»; y «Ya conocia, por los
+  informes ajenos, los resultados en las 24 sesiones de s1 y s2». Es decir: la definición se fijó antes de
+  abrir las 145 sesiones antiguas, **no** antes de conocer el resultado en las 24. Y el recuento sobre las 145
+  y el «0 atrapadas de 29» que cita 21.1 son, según el propio auditor, posteriores y exploratorios, y están
+  confundidos con el kit.
 - **Dos reglas distintas para «primera edición».** La del auditor (D7) excluye `/tmp` y los archivos de
   prueba; la de QA usa el campo `anatomia.llamada_de_la_primera_edicion`, que cuenta también los guiones de
-  reproducción. Las predicciones 78 y 79 se marcan con la regla de QA; el contraste del auditor, con D7. No se
-  unifican.
+  reproducción. En las mismas 24 sesiones, D7 da 7 de 8 y 0 de 16; el campo de QA, 7 de 9 y 0 de 15. Las
+  predicciones 78 y 79 se marcan con la regla de QA; el contraste del auditor, con D7. No se unifican.
 - **La 76 y la 80 hablan del mismo hecho** (cuántas tareas cortas se resuelven) con el mismo criterio y la
   misma probabilidad: se marcan las dos.
-- **Las predicciones 74, 75, 77 y 83 no se pueden marcar con el registro**: exigen las trazas del zip crudo de
-  la corrida. Si ese zip no se rescata, quedan «no evaluables».
+- **Las predicciones 74, 75, 77, 78, 79, 82 y 83 no se pueden marcar con el registro**: exigen las trazas
+  del zip crudo de la corrida. Si ese zip no se rescata, quedan «no evaluables». La 76, la 80 y la 81 salen
+  del registro y de `tasks.jsonl`.
 - **Cuántas tareas cortas hay en las 12 de `s1` y `s2`:** el analista cuenta 4 con la regla de menos de 100
   caracteres; otro rol contó 5 leyendo los enunciados. La regla escrita es la de 100.
 - **Ninguna de estas predicciones dice cuál kit acierta más**, y ninguna cubre la nota de un envío.
