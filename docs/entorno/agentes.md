@@ -167,7 +167,8 @@ el solver acotado, y tampoco el agente que el experimento evalúa. Salvo el cons
 modifica el repositorio, la evidencia ni un sistema externo: leen los mismos archivos, ejecutan solo en
 local (un validador, un ensayo en Docker), escriben su informe y sus guiones **solo dentro de la carpeta
 de trabajo ignorada por git que el encargo les da** (tienen la herramienta Write para eso y para nada
-más), dicen qué refutaría su conclusión y no suben, envían ni contratan nada. El rescate lo hace el
+más). **Ese límite es de la definición, no de la herramienta:** Write no restringe rutas, y el
+orquestador lo comprueba con `git status` al recibir cada entrega. Dicen qué refutaría su conclusión y no suben, envían ni contratan nada. El rescate lo hace el
 orquestador antes del concilio; la única excepción es el verificador limpio, que hace el suyo. Los
 convoca el orquestador con la skill
 [`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md); el criterio que aplican está
