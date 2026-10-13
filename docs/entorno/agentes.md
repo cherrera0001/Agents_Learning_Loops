@@ -45,6 +45,11 @@ Comprueba una entrega antes del merge, con medios propios e independientes de qu
 entrega: informa. Se desdobla en dos roles, porque revisar un cambio de código y revisar un documento
 exigen comprobaciones distintas; un PR que toca ambos pasa por los dos.
 
+Cada revisor **publica su revisión en el PR** con `gh pr review <n> --comment --body-file <archivo>`, con
+el veredicto en la primera línea (`--approve` y `--request-changes` no sirven cuando el PR es de la misma
+cuenta), y comprueba por `gh api repos/<repo>/pulls/<n>/reviews` que quedó. Es lo único que escribe en
+GitHub; sigue sin editar código, hacer push ni merge. El archivo de la revisión va fuera del repositorio.
+
 ### Revisor de código
 
 Definición ejecutable: [`.claude/agents/revisor-codigo.md`](../../.claude/agents/revisor-codigo.md).
@@ -89,7 +94,8 @@ ejecutable: [`.claude/agents/gestor-proyecto.md`](../../.claude/agents/gestor-pr
 
 Tres roles revisan un texto que explica el proyecto hacia fuera (el README, un post, un artículo) antes de
 publicarlo. Son personal de entorno: no son el agente de biblioteca ni el solver acotado. Cada uno tiene
-veto, solo informa y no publica en ninguna red. El procedimiento está en
+veto, solo informa y no publica en ninguna red; no editan el repositorio y escriben su informe solo dentro
+de la carpeta de trabajo ignorada por git que el encargo les da. El procedimiento está en
 [`CONTRIBUTING.md`](../../CONTRIBUTING.md#revisión-de-un-texto-público).
 
 ```mermaid
@@ -153,13 +159,17 @@ Skill: [`revisor-figuras-tablas`](../../skills/revisor-figuras-tablas/SKILL.md).
 
 ## Staff de experimento
 
-Siete roles trabajan cada **vuelta de un experimento con modelo**
-([procedimiento](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo)). Son personal de entorno: no
-son el agente de biblioteca ni el solver acotado, y tampoco el agente que el experimento evalúa. Ninguno
+Once roles trabajan cada **vuelta de un experimento con modelo**
+([procedimiento](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo)): los siete que leen y miden,
+y los cuatro que construyen y deciden (estratega, diseñador del agente, calibrador y constructor del kit,
+[más abajo](#roles-que-construyen-y-deciden)). Son personal de entorno: no son el agente de biblioteca ni
+el solver acotado, y tampoco el agente que el experimento evalúa. Salvo el constructor del kit, ninguno
 modifica el repositorio, la evidencia ni un sistema externo: leen los mismos archivos, ejecutan solo en
-local (un validador, un ensayo en Docker), escriben solo en una carpeta ignorada por git, dicen qué
-refutaría su conclusión y no suben, envían ni contratan nada. El rescate lo hace el orquestador antes
-del concilio; la única excepción es el verificador limpio, que hace el suyo. Los convoca el orquestador con la skill
+local (un validador, un ensayo en Docker), escriben su informe y sus guiones **solo dentro de la carpeta
+de trabajo ignorada por git que el encargo les da** (tienen la herramienta Write para eso y para nada
+más), dicen qué refutaría su conclusión y no suben, envían ni contratan nada. El rescate lo hace el
+orquestador antes del concilio; la única excepción es el verificador limpio, que hace el suyo. Los
+convoca el orquestador con la skill
 [`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md); el criterio que aplican está
 en [`corrida-valida`](../../skills/corrida-valida/SKILL.md).
 
@@ -258,6 +268,73 @@ Definición ejecutable: [`.claude/agents/verificador-limpio.md`](../../.claude/a
 - Trabaja solo y por puertas: hace su propio rescate y, si no lo demuestra o falta el log de la corrida
   en cuestión, se detiene. Se usa cuando un informe ya
   cambió de conclusión, o antes de una decisión que cuesta dinero, cuota o un envío.
+
+### Roles que construyen y deciden
+
+Los siete roles anteriores leen y miden. En el caso Kaggle eso dejó sin dueño tres decisiones (qué
+candidato del kit probar, cómo repartir la cuota y los envíos, qué nota conocida ancla la medida local) y
+la construcción misma del candidato. Estos cuatro roles las toman. Los tres primeros no editan el
+repositorio y escriben en su carpeta de trabajo; el constructor del kit sí lo edita, por PR.
+
+#### Estratega de experimentos
+
+Definición ejecutable:
+[`.claude/agents/estratega-experimentos.md`](../../.claude/agents/estratega-experimentos.md).
+
+- Reparte la cuota y los envíos entre candidatos: escribe el problema de asignación (brazos, costo de
+  medir, ruido y función objetivo), compara planes con cuentas y un guion de simulación, y da la regla de
+  parada y la diferencia local mínima que merece un envío.
+- Entra antes de gastar cuota en más de un brazo. No arma corridas ni escribe las predicciones fechadas de
+  su propio plan.
+
+#### Diseñador del agente
+
+Definición ejecutable: [`.claude/agents/disenador-agente.md`](../../.claude/agents/disenador-agente.md).
+
+- Convierte los fallos medidos en trayectorias en tres a cinco candidatos al kit: cambio mínimo y aislado,
+  con el texto exacto de la instrucción o la herramienta, la clase de fallo que ataca, qué puede empeorar
+  y cómo se comprueba en Docker que el cambio se aplica (eso no mide calidad).
+- No edita el kit ni sube nada. Se apoya en el [QA de trayectorias](#qa-de-trayectorias), que describe qué
+  hizo el agente; el diseñador propone qué cambiar.
+
+#### Calibrador
+
+Definición ejecutable: [`.claude/agents/calibrador.md`](../../.claude/agents/calibrador.md).
+
+- Ancla la medida local a una nota conocida: réplica de un resultado público o de un envío propio anterior
+  en las mismas tareas. Empieza por las reglas guardadas (si se puede correr y enviar un kit ajeno; mientras
+  no esté claro, no).
+- Diseña la corrida sin subir nada y dice qué se podría concluir de ella y qué no. No envía kits ajenos.
+
+#### Constructor del kit
+
+Definición ejecutable: [`.claude/agents/constructor-kit.md`](../../.claude/agents/constructor-kit.md).
+
+- Es el único de los cuatro que **edita código y abre PR**, con las herramientas de un
+  [implementador](#implementador) y su flujo: rama, recall, episodio y `Closes #<n>`.
+- Construye el candidato tal como lo especifica el diseñador, prueba con huellas que el resto del kit no
+  cambió byte a byte, lo ensaya en Docker y mantiene el conjunto de regresión de trayectorias.
+- No decide qué candidato se envía, no sube, no envía y no hace merge.
+
+### Una vuelta de competencia
+
+Orden de una vuelta de un experimento que se mide en una competencia, con lo que cada paso entrega al
+siguiente. El concilio ([`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md)) es el
+paso 1.
+
+| Paso | Rol | Entrega al siguiente |
+|---|---|---|
+| 1. Medir | Staff que lee y mide: analista de datos, forense del arnés, QA de trayectorias, inteligencia pública y, al final, auditor del método (más calibrador si falta anclar la medida) | Qué falló, con qué prueba, qué es ruido, qué dicen las reglas y, si el calibrador entró, a qué nota equivale la medida local |
+| 2. Diseñar | Diseñador del agente | Tres a cinco candidatos con texto exacto, clase de fallo y riesgo |
+| 3. Asignar | Estratega de experimentos | Qué candidatos reciben cuota y envíos, la regla de parada y la diferencia local mínima; las predicciones las escribe otro rol |
+| 4. Construir | Constructor del kit | Un PR por candidato, con las huellas que prueban que lo demás no cambió |
+| 5. Ensayar | Constructor del kit y forense del arnés | Ensayo en Docker con servidor falso y arranque con las ruedas vigentes: prueba que el cambio se aplica, no que mejora |
+| 6. Revisar | Revisor de código y auditor del método | Revisión publicada en el PR; dictamen sobre si la decisión cae dentro del ruido |
+| 7. Presentar al dueño | Orquestador | Recomendación con lo medido, lo inferido y lo no medido |
+
+Toda subida y todo envío esperan la palabra del dueño: ningún rol de este staff los hace, y el paso 7 no
+es una formalidad sino la puerta. Una subida a un sistema externo no se prepara en el paso 4 con la excusa
+de ganar tiempo: se prepara después de que el dueño decida.
 
 ## Cierre
 

@@ -1,0 +1,40 @@
+{
+  "seq": 91,
+  "id": "issue-202-staff-de-construccion",
+  "goal": "Añadir al staff de experimento cuatro roles que construyen y deciden (estratega, diseñador del agente, calibrador y constructor del kit), dar a los roles de solo lectura escritura en su carpeta de trabajo, y hacer que los dos revisores publiquen su revisión en el PR",
+  "ref": "#202",
+  "estimate": {"version": 1, "date": "2026-10-13", "size": "S", "points": 2, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall con la pregunta sobre definiciones de agentes de entorno. La lección aplicable: un rol ejercido con un encargo escrito a mano pasa a definición versionada, y la definición fija lo que el encargo tuvo que repetir. Por eso las cuatro definiciones recogen del encargo del concilio 47 las prohibiciones, la separación de medido, inferido y no medido, y el guion de cada cuenta"
+    },
+    {
+      "action": "research_sources",
+      "success": false,
+      "error": "Un bucle de sed con el nombre de archivo en una variable, lanzado desde la herramienta de shell del worktree, fue rechazado porque no se podía demostrar que no era una orden de git; no leyó nada. Se repitió con las herramientas de lectura, una por archivo"
+    },
+    {
+      "action": "research_sources",
+      "success": false,
+      "error": "Un filtro de jq con select(test(\"learning/episodes\")) falló en PowerShell (\"function not defined: episodes/0\") porque las comillas dobles internas se perdieron al pasar la expresión; no se supo qué episodios llevaban los PR abiertos. Se resolvió listando los nombres de archivo y filtrándolos con Select-String: el PR #201 trae el 090 y el siguiente libre es el 091"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Cuatro definiciones nuevas en .claude/agents/, la sección «Roles que construyen y deciden» y la tabla «Una vuelta de competencia» en agentes.md, cuatro filas en estimation.md § 2.7, y las menciones de conteo de enrutamiento.md, README.md y la skill concilio-de-experimento. Las definiciones de solo lectura reciben la herramienta Write; la regla de escribir solo en la carpeta del encargo ya estaba escrita en la mayoría y se extendió al staff de texto público, que la prohibía"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "revisor-codigo y revisor-docs publican su revisión con gh pr review --comment --body-file, con el veredicto en la primera línea, y comprueban por la API de revisiones. Ganan Write solo para el archivo de la revisión, fuera del repositorio. No se pudo probar aquí que un subagente cargue la definición nueva desde una sesión abierta: eso queda por observar"
+    }
+  ],
+  "lessons": [
+    "Una restricción de ruta («solo en la carpeta del encargo») no se aplica con la lista de herramientas: Write la puede violar. Queda como regla de la definición y la comprueba el revisor, no un permiso",
+    "Cuando una definición dice «escribe solo en tu carpeta» pero la lista de herramientas no trae Write, el rol no puede cumplirlo y el orquestador transcribe a mano: comprueba el frontmatter, no solo la prosa",
+    "Al añadir un rol, busca los conteos escritos con letra («siete», «quince») en README, enrutamiento y skills: son los que se quedan falsos en silencio"
+  ]
+}

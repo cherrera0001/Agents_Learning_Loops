@@ -68,7 +68,7 @@ Por herramienta:
   de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
   `.claude/`.
 
-  Hay además quince definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
+  Hay además dieciocho definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
   [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
   [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
   [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y
@@ -95,6 +95,15 @@ Por herramienta:
   una elección sin medir (§ 2.7). En la vuelta del 2026-10-08 esos roles se ejercieron con un subagente genérico
   y un encargo escrito a mano (`learning/episodes/065-issue-103-vuelta-39-concilio-y-registro.json`);
   ninguna de estas definiciones se ha observado cargada desde una sesión nueva.
+
+  Tres más son del staff de experimento y deciden sin construir (los
+  [roles que construyen y deciden](agentes.md#roles-que-construyen-y-deciden)):
+  [`estratega-experimentos`](../../.claude/agents/estratega-experimentos.md) y
+  [`disenador-agente`](../../.claude/agents/disenador-agente.md) con alias `opus`, y
+  [`calibrador`](../../.claude/agents/calibrador.md) con alias `sonnet`. El cuarto,
+  [`constructor-kit`](../../.claude/agents/constructor-kit.md) (alias `opus`), sí construye: edita código y
+  abre PR con las herramientas de un implementador. Es una elección sin medir (§ 2.7), y ninguna de las
+  cuatro se ha observado cargada desde una sesión nueva.
 - **Cursor**: la persona elige el modelo del chat en el selector. Un subagente usa el ID de la tabla solo
   si quien lo lanza lo copia desde `docs/estimation.md`.
 
