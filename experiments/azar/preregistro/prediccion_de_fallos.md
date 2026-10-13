@@ -808,8 +808,9 @@ dato de R1, los cuatro kits todavía se están construyendo y no se ha subido na
 **La regla que se va a aplicar** (adenda del auditor, escrita antes; citada literal): «el primer candidato,
 en este orden, revisado, ensayado en Docker, con media de 262 s o menos en R1, ninguna colgada y neto de −1 o
 mejor frente a la base. Si ninguno está listo, no se reenvía la base.» El orden es el de la tabla de arriba,
-de C1 a C4. La adenda dice también que 12 tareas locales filtran seguridad y no calidad. Todo envío y toda
-subida siguen necesitando la palabra del dueño.
+de C1 a C4. La adenda dice también que 12 tareas locales filtran seguridad y no calidad. Esa regla no
+autoriza nada por sí sola: la decisión de subir, enviar o pagar es del dueño
+([`concilio-de-experimento`](../../../skills/concilio-de-experimento/SKILL.md), paso 8).
 
 **Quién escribió cada lista.** El diseñador del agente (2026-10-13 01:01 UTC) y el analista de datos
 (2026-10-13, antes de cualquier subida), cada uno sin ver la del otro. El orquestador las copió aquí; las del
@@ -901,7 +902,9 @@ probabilidades ni umbrales. Donde una nota y una lista difieren, manda la nota.
   desde fuera.
 - **La regla por defecto de 21.5 rige aquí sin su umbral de 55 tareas válidas**, que es de la corrida de 60:
   en R1 «pasada completa» es lo que dice la nota 1 del analista.
-- **Con estas notas hay cuatro reglas para «primera edición» en el archivo** (D7 del auditor, el campo de QA,
+- **La nota 3 del analista remite a «21.2 (0,99 h)»; ese dato está en 20.5**, en la segunda nota del
+  analista sobre la línea base de la predicción 60. La cita no se toca.
+- **Con estas notas hay tres reglas para «primera edición» en el archivo** (D7 del auditor, el campo de QA,
   y ahora `primera_edicion_fuente_ok`, que además exige estado `ok` y extensión `.py`). Las predicciones del
   diseñador se marcan con la suya. No se unifican.
 - **Cada línea con su probabilidad es una predicción y se marca por separado.** Las del diseñador llevan
