@@ -921,3 +921,61 @@ probabilidades ni umbrales. Donde una nota y una lista difieren, manda la nota.
   evaluables».
 - **Ninguna predicción de esta sección dice qué candidato sacará mejor nota.** La 92 dice expresamente que
   el bloque casi no informa de eso.
+
+### 22.5 Segundas precisiones del diseñador, tras la revisión del PR #209 (copiadas tal cual)
+
+La revisión de código de los kits y notebooks del bloque (PR #209, revisión 5497999068) encontró que el
+arnés tiene dos cuentas de llamadas que no coinciden (el contador `llamadas_herramientas` solo cuenta las
+que gastan presupuesto; la traza las cuenta todas) y que la predicción 97 no decía en cuál se lee. Su autor
+la precisó antes de que exista ningún dato de R1. Original:
+`.scratch/concilio_memoria/fase2/concilio_47/disenador/predicciones_r1_precisiones_2.md`, sha256
+`e15250e58bb9e45d94f2e2129169d691a6e642ab212ded0b0950857a9b62b9b2`; los guiones de comprobación están junto a él. Lo único que cambia al
+copiar: los 4 títulos de segundo nivel del original pasan a cuarto nivel, para no romper el índice de este
+archivo. Las predicciones del analista (84 a 92) no se tocan: la revisión no encontró ninguna ambigua.
+
+Escritas por el diseñador del agente el 2026-10-13 a las 02:13 UTC, sin ningún dato de R1 (nada se ha subido). Responden al defecto 2 de la revisión del PR #209. No cambian afirmaciones, probabilidades ni umbrales. Donde difieran de mis precisiones de las 01:21, mandan estas.
+
+**Archivos de cada brazo.** Sesión: `iteracion_08_br1_<brazo>.json` (`corridas.*.tareas[]`). Registro: `registro_iteracion_08_br1_<brazo>.jsonl`. Traza: `traces/trace_<tarea>.json` dentro de `crudo_iteracion_08_br1_<brazo>_*.zip`.
+
+**Comprobado con** `precisiones_2_comprobar.py` y `precisiones_2_extra.py` (salidas `.salida.txt` junto a ellos) sobre `s1`, `s2` y seis ensayos del bloque (`completa_c3`, `completa_c4`, `completa_i1`, `prohibidas_c1`, `tarea_colgada_c4`, `corte_llamadas_c1`). `s1` y `s2` no son la base de R1 (otros topes, otro kit): prueban que el campo existe y que reproduce mi línea base, nada más.
+
+#### Definiciones comunes
+
+- **A. Posición de una llamada.** Orden, desde 1, de los `tool_calls` de todos los `steps` de la traza, de cualquier autor y con cualquier resultado. Incluye `submit_patch`, `get_status`, las rechazadas, las de herramienta inexistente y las internas del subagente. Su total es `bucle.llamadas` de la sesión. **No** es el contador del arnés (`llamadas_herramientas`), que no cuenta esas. Comprobado: `bucle.llamadas` igual al recuento de la traza en las 24 sesiones de `s1` y `s2` y en los ensayos; en `corte_llamadas_c1`, 33 contra 28.
+- **B. Tarea corta.** `enunciado_caracteres` < 100 en la sesión. Comprobado en `s1` y `s2`: `rich_3470` (74), `rich_3942` (54), `rich_4079` (71) y `fastapi_15280` (64); `rich_3105` tiene 450 y no es corta. Si un brazo no da exactamente 4, sus líneas «en las cortas» quedan no evaluables.
+- **C. Tiempo.** Manda `tarea_fin.segundos` del registro; media de las 12 sin redondear. «Entre a y b» incluye los extremos; «pasa de 262» es > 262; «menor» es estricto. Comprobado: en `s1` la media da 212,01 s y la de `duration_seconds` 211,97 s; por tarea difieren 0,1 s como máximo (0,2 s en los ensayos).
+- **D. Resueltas.** Recuento de `tarea_fin.resuelta` en las 12. Comprobado: `s1` 4, `s2` 3.
+
+#### Por predicción
+
+**97, «llamadas en las 4 cortas».** Campo: `bucle.llamadas` (definición A) de las 4 tareas cortas. Regla: mediana de los 4 valores (media de los dos centrales) ≤ 10; para la base, media de las medianas de sus dos pasadas ≥ 15. Elijo este campo porque es el de mi línea base y porque la línea no llevaba (T): sale del json de la sesión. Comprobado: `s1` da 19, 13, 40, 36 (mediana 27,5), que reproduce la línea base; `llamadas_herramientas` da 19, 13, 39, 36, como dijo el revisor. `s2`: 39, 36, 27, 38 (mediana 37,0). Si a una corta le falta la traza (`bucle` nulo: visto en `tarea_colgada_c4`), la línea queda no evaluable en ese brazo. Al marcar se informa también la mediana de `llamadas_herramientas`; no marca.
+*Reserva:* la posición cuenta el `submit_patch` de la entrega y el contador no, así que una corta entregada tras 10 llamadas contadas da 11. No toco el umbral.
+
+**97, «segundos sumados en las 4 cortas».** Suma de `tarea_fin.segundos` de las 4 cortas ≤ 600; para la base, media de las sumas de sus dos pasadas ≥ 850. Comprobado: `s1` 982,7 s; `s2` 458,7 s.
+
+**97, «no corta entregada en la llamada 8 o antes y no resuelta» (T).** Tarea con `enunciado_caracteres` ≥ 100, posición (A) del primer `submit_patch` de su traza ≤ 8 y `tarea_fin.resuelta` falso. Se cumple si hay al menos una en C4. Comprobado: 0 de 8 en `s1` y 0 de 8 en `s2` (la entrega más temprana, en la posición 9); en los ensayos el campo existe (posición 2). Si falta una traza y ninguna otra tarea lo cumple, no evaluable.
+
+**94 y 95, «primera edición en la llamada 10 o antes» (T).** Sigue mi precisión 1 de las 01:21; añado que el índice es la posición A, no el contador del arnés, y que **no** vale `anatomia.llamada_de_la_primera_edicion` de la sesión, que cuenta ediciones fallidas y reproductores. Comprobado: con mi regla, `s1` da 4 sesiones (`rich_3882` 5, `rich_3518` 9, `rich_2725` 9, `rich_3905` 8) y `s2` 3; con el campo de la sesión, `s1` daría 5. Una tarea sin traza no cuenta como «en la 10 o antes».
+*Reservas:* (1) la posición incluye las llamadas internas del subagente (en `s1`, 11 de las 18 de `rich_3105`), que la base tiene y C1 no; (2) los ensayos no editan ningún archivo, así que la forma `"status": "ok"` de la salida de `edit_file` solo está vista en `s1` y `s2`, no con las ruedas de las 19:51; (3) un paso con dos `tool_calls` comparte observación (1 paso de 241 en `s1`, 2 de 378 en `s2`).
+
+**94, «alguna llamada al subagente retirado» (T).** Al menos un `tool_call` con `function_name` igual a `code_analyzer_agent` en las trazas de las 12 tareas de C1 (lo mismo que `anatomia.herramientas["code_analyzer_agent"]`). Comprobado en `prohibidas_c1`: la llamada rechazada aparece en la traza (1) aunque el arnés no la cuenta (2 contadas, 4 en traza). `s1`: 1; `s2`: 2.
+
+**94, «llamadas de grafo: 3 o menos» (T).** Sigue mi precisión 2; añado que cuentan con cualquier resultado, también rechazadas, y que el total coincide con la suma de `anatomia.herramientas` para los tres nombres. Comprobado: coincide en las 24 sesiones y en los ensayos; `s1` 2, `s2` 23, `prohibidas_c1` 1.
+
+**96, «ninguna respuesta con 2 000 `completion_tokens` o más» (T).** Campo: `metrics.completion_tokens` de los `steps` con `source` igual a `agent`, en las trazas de las 12 tareas. C3 cumple si ningún paso llega a 2 000; la base, si al menos uno llega entre sus dos pasadas. Es el campo de mi línea base (`g5_tokens.py`). Comprobado: `s1` tiene dos (4 145 en `rich_3180` y 4 265 en `rich_3278`); `s2`, ninguno. En `completa_c3` el campo existe; los pasos `final` sin métrica repiten la respuesta del paso anterior (3 peticiones, 3 pasos con métrica). Al marcar se informa también el máximo de `peticion_fin.completion_tokens` del registro; no marca.
+*Reservas:* (1) el registro ve respuestas que la traza no trae (en `s1`: 588 contra 433 en `rich_4079` y 650 contra 307 en `fastapi_14616`); una respuesta larga cortada por el reloj puede estar solo en el registro. Si el registro muestra 2 000 o más y la traza no, se dice al marcar. (2) `completion_tokens` suma pensamiento y texto visible, y el tope de 1 536 es solo de pensamiento: una respuesta puede pasar de 2 000 con el tope aplicado. No medido: en `s1` el registro no separa los tokens de pensamiento.
+
+**96, «pierde una tarea que las dos pasadas de la base resuelven».** `tarea_fin.resuelta` por `tarea`. Sigue mi precisión 5.
+
+**98.** |x − base| > 2 en alguno de los cuatro candidatos, con la base sin redondear (precisión 4) y las resueltas de D.
+
+#### Se quedan como están
+
+- **93** y las líneas de media, de «pasa de 262 s» y de resueltas de **94 a 97**: sin más cambio que fijar los campos C y D.
+- **97, «alguna corta resuelta»:** `tarea_fin.resuelta` en las 4 cortas de C4 (B y D).
+- Ninguna predicción queda «no evaluable» de antemano. Las no evaluables condicionales son las dichas arriba (traza ausente, cortas distintas de 4) y las de mis precisiones 3 y 5.
+
+#### Lo que no comprobé
+
+- Ninguna de estas reglas se ha aplicado a una salida con el modelo real y el kit de R1: los ensayos usan el servidor falso, con 2 a 6 tareas y sin ediciones.
+- No comprobé con qué ruedas corrieron `s1` y `s2`; sus `versiones_arnes` dan los mismos números de versión que las de las 19:51, y eso no distingue.
