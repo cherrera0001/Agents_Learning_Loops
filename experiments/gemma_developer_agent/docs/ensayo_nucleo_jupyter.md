@@ -2043,9 +2043,33 @@ entrega):
 
 Con el arnés 0.2.11 y `google_adk` 1.36.1, **llamar al subagente retirado cuesta una petición y no termina la
 tarea**. El riesgo que la bitácora anotó con un arnés anterior (la tarea terminaba con parche vacío) no
-aparece. No está medido cuántas veces lo intentaría el modelo real ni qué hace tras leer ese error. El
-contador de llamadas del arnés dio 2 en esa tarea con cuatro llamadas en la traza, en los dos kits: no se
-miró cuáles cuenta.
+aparece. No está medido cuántas veces lo intentaría el modelo real ni qué hace tras leer ese error.
+
+**Dos cuentas de llamadas que no son la misma.** En esa tarea (`prohibidas`, con el candidato 1 y con la
+base) `llamadas_herramientas` vale 2 y la traza tiene 4 llamadas. No es un defecto: son dos definiciones.
+
+| Cuenta | De dónde sale | Qué cuenta |
+|---|---|---|
+| `llamadas_herramientas` (evento `agente_fin` del registro, `scripts/kaggle_registro_enganches.py:524`; y la fila de la tarea, de `result.tool_calls`) | `context.tool_calls_used` del arnés (`swegemma/context.py:549-550`) | Solo las llamadas que gastan presupuesto: las herramientas con `@budget_gated` por defecto. **No cuenta** `submit_patch` ni `get_status` (`tools/execution.py:76` y `119`, `count_tool_call=False`), ni la llamada al subagente (declarado o no), ni una herramienta que no existe, ni las llamadas rechazadas con el presupuesto ya agotado |
+| Índice de llamada en la traza (`anatomia.llamada_de_la_primera_edicion`, `bucle.llamadas`, la definición D7 de la sección 21 del pre-registro, y «la llamada 10» del diseñador) | `tool_calls` de cada paso de `traces/trace_<tarea>.json` | Todas las llamadas que hizo el modelo, en orden, respondidas o rechazadas |
+
+En el ejemplo: `code_analyzer_agent` (no cuenta), `search_similar_code` (cuenta), `run_command` (cuenta) y
+`submit_patch` (no cuenta): 2 de 4. En `corte_llamadas_c1` el arnés cuenta 28 y la traza trae 33
+`run_command`: las cinco últimas las rechazó con el presupuesto agotado. Lo que eso cambia en el bloque R1:
+
+- **El tope de 28 del candidato 1 es de llamadas que gastan presupuesto.** Una traza suya puede traer más de
+  28 llamadas; «agotó el tope» se lee en `llamadas_herramientas` o en el error del agente, no contando la
+  traza. La clase `llamadas_agotadas_*` del notebook salta con el tope menos 1 (celda 10): 27 en el candidato
+  1 y 59 en los demás brazos.
+- **Las predicciones que cuentan posición** (78, 79 y 82 de la sección 21; la primera edición en la llamada 10
+  del diseñador) usan el índice de la traza, que es también lo que el modelo puede contar. Las que cuentan
+  el tope (59 y 70 de la sección 20) usan el contador del arnés. Una predicción que diga «llamadas» sin decir
+  cuál de las dos no se puede marcar: las «llamadas en las 4 cortas» del candidato 4 deben fijar el campo
+  antes de la corrida. En `origin/main` el pre-registro llega a la sección 21; no hay sección 22 que leer.
+- **El aviso de presupuesto se adelanta.** El arnés añade `budget_warning` a cada respuesta cuando quedan 10
+  llamadas o menos (`tools/base.py:47-66`): desde la llamada contada 18 con el candidato 1, y desde la 50 con
+  los demás. Es un efecto del tope de 28 que la especificación no nombra; se ve en
+  `bucle.llamada_del_primer_aviso`.
 
 **Los dos topes nuevos del candidato 1, cortando** (`correr_cortes_r1.sh`; una copia aparte del guion,
 `derivar_ensayo_r1.py --cortes`, lee los topes del `eval_config.yaml` del kit del notebook en vez de los 40

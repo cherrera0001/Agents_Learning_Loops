@@ -1,5 +1,5 @@
 {
-  "seq": 92,
+  "seq": 93,
   "id": "issue-205-bloque-r1-candidatos-y-notebooks",
   "goal": "Bloque R1 del concilio 47: armar cuatro candidatos de kit sobre el kit que razona, cada uno con la prueba de que solo cambia lo declarado, y los notebooks de 12 tareas pareadas (la base dos veces y los cuatro candidatos), ensayados en Docker con las ruedas del 2026-10-12 y un servidor falso, sin subir nada",
   "ref": "#205",
