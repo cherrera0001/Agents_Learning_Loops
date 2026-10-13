@@ -8,7 +8,7 @@ Ficha `pc-v06` · video 6 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **Duración:** 1:16:55 (4615 s en los datos de la página).
 - **Fecha de publicación que da la página:** 2026-06-12.
 - **Canal:** Y Combinator.
-- **Estado del contenido:** `no_abierto`. La descripción no enlaza una transcripción y la pista de subtítulos automáticos respondió HTTP 429. Lo que se dijo en el video no se leyó: esta ficha no afirma nada de su contenido.
+- **Estado del contenido:** `no_abierto`. No se encontró una transcripción publicada y la pista de subtítulos automáticos respondió HTTP 429. Lo que se dijo en el video no se leyó: esta ficha no afirma nada de su contenido.
 
 Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y no se leyeron):
 

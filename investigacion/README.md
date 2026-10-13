@@ -11,6 +11,10 @@ experimento*); este archivo solo dice qué hay aquí y cómo se usa.
 - [`fuentes/indice.jsonl`](fuentes/indice.jsonl): una línea por fuente, en JSON. Es lo que se busca.
 - `fuentes/<fuente>/`: el manifiesto de esa fuente (fecha, método y conteo), sus fichas y, si lo hay, un
   parecer para el concilio. La primera es [`fuentes/paper-club/`](fuentes/paper-club/MANIFIESTO.md).
+- `local/`: copia local del texto completo de las fuentes (por ejemplo, una transcripción), un Markdown
+  por entrada con su URL, la hora de consulta y la huella de la respuesta. **Git la ignora y no se
+  versiona**: es texto de terceros y este repositorio no lo republica. Una sesión que no la tenga la
+  rehace bajando de nuevo la URL de la ficha. En el repositorio quedan las notas, no el texto.
 
 ## Qué no es
 
@@ -53,7 +57,10 @@ Reglas de una ficha:
 - Ninguna ficha cita una obra cuyo identificador no se abrió en la sesión que la escribió. Lo que no abre
   queda `no_abierto` con su motivo.
 - Una entrada que la página no mostró no existe en el índice.
-- De un video se anota solo lo que la página mostró. No se pega una transcripción entera.
+- De un video se anota solo lo que la página o su transcripción publicada mostraron, en notas propias con
+  el minuto de la charla, y la ficha dice qué partes se leyeron y cuáles no. No se pega una transcripción
+  entera: el texto completo va a `local/`.
+- Una charla de un video puede tener fila propia; su `identificador` es `youtube:<id>@<minuto>`.
 - Una fila reservada para una fuente siguiente lleva `no_abierto` y dice que no se procesó.
 
 ## Cómo se busca
@@ -63,7 +70,10 @@ Con las herramientas de lectura, sin código propio:
 - Grep sobre `investigacion/fuentes/indice.jsonl` con una palabra del mecanismo (por ejemplo `memoria`,
   `compactación` o `guía`), con un identificador (`2603.03596`) o con un campo (`"estado": "no_abierto"`,
   `"clase": "oceano"`).
-- Glob sobre `investigacion/fuentes/*/fichas/*.md` y Read de la ficha larga, que trae autores y versión.
+- Glob sobre `investigacion/fuentes/*/fichas/*.md` y Read de la ficha larga, que trae autores, versión y
+  las notas de la transcripción.
+- Si existe `investigacion/local/`, Grep sobre el texto completo para encontrar el pasaje; lo que se cite
+  de ahí se comprueba contra la URL de la ficha.
 - Después, Grep del mismo término sobre el código: si el código ya nombra el mecanismo, el orden de
   `CONTRIBUTING.md` manda parar ahí.
 
@@ -71,6 +81,7 @@ Con las herramientas de lectura, sin código propio:
 
 | Fuente | Estado | Dónde |
 |---|---|---|
-| Paper Club, lista de YouTube del canal de Y Combinator | Procesada el 2026-10-13 | [`fuentes/paper-club/MANIFIESTO.md`](fuentes/paper-club/MANIFIESTO.md) |
+| Paper Club, lista de YouTube del canal de Y Combinator | Procesada el 2026-10-13; 4 de 7 videos sin contenido abierto | [`fuentes/paper-club/MANIFIESTO.md`](fuentes/paper-club/MANIFIESTO.md) |
+| Root Access, el sitio de las transcripciones | 5 de 22 entradas bajadas el 2026-10-13; una sin leer | [`fuentes/root-access/MANIFIESTO.md`](fuentes/root-access/MANIFIESTO.md) |
 | Canal de Y Combinator | Fila reservada, sin procesar | `indice.jsonl`, id `yc-canal` |
 | Otras listas de Paper Club | Fila reservada, sin procesar | `indice.jsonl`, id `pc-otras-listas` |

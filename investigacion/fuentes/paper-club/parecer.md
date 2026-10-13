@@ -10,8 +10,9 @@ contexto.
 
 **Ficha.** `pc-p-2603.03596` en [`indice.jsonl`](../indice.jsonl): Torne et al. (2026), *MEM: Multi-Scale
 Embodied Memory for Vision Language Action Models*, arXiv:2603.03596, versión v2. Se abrió el registro y
-se leyó el resumen el 2026-10-13; el texto completo no. La obra trata de políticas de robot, con video
-para el horizonte corto. Lo que aquí se propone comparte la idea de las dos escalas y no implementa la
+se leyeron el resumen y la transcripción de la charla el 2026-10-13; el texto completo del paper no. La
+obra trata de políticas de robot, con video para el horizonte corto; su memoria larga es un texto corto
+que la política reescribe en cada paso, y qué anotar en él lo fijaron sus autores de antemano. Lo que aquí se propone comparte la idea de las dos escalas y no implementa la
 obra. Sus resultados son de sus autores.
 
 **Si el código ya lo nombra.** No. Una búsqueda con `git grep` del nombre del método y de «multi-scale» no

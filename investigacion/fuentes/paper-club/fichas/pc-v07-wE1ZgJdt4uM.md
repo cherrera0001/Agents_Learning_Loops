@@ -8,7 +8,7 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **Duración:** 1:07:19 (4038 s en los datos de la página).
 - **Fecha de publicación que da la página:** 2026-05-28.
 - **Canal:** Y Combinator.
-- **Estado del contenido:** `no_abierto`. La descripción no enlaza una transcripción y la pista de subtítulos automáticos respondió HTTP 429. Lo que se dijo en el video no se leyó: esta ficha no afirma nada de su contenido.
+- **Estado del contenido:** `no_abierto`. No se encontró una transcripción publicada y la pista de subtítulos automáticos respondió HTTP 429. Lo que se dijo en el video no se leyó: esta ficha no afirma nada de su contenido.
 
 ## Obras con identificador en la descripción
 

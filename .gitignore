@@ -34,3 +34,6 @@ experiments/gemma_developer_agent/submissions/*.zip
 # Experimento azar: datos crudos e instrumentos
 experiments/azar/data/
 *.ipynb_checkpoints
+
+# Area de investigacion: texto completo de terceros, copia local de consulta (no se versiona)
+investigacion/local/
