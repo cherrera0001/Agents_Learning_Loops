@@ -769,10 +769,12 @@ tabla difieren, manda la nota.
   (analista: «2026-10-13, UTC»; QA: «2026-10-13T00:56Z»). El resto está copiado tal cual.
 - **Regla por defecto para lo que ninguna nota fija.** El revisor señaló que varias predicciones no dicen
   sobre qué pasada se marcan ni qué pasa si la pasada queda incompleta (74, 78, 80, 81), y que la 82 (a) y la
-  83 dejan sin fijar un detalle del recuento. No lo fija el orquestador en su nombre. Vale esto: se marcan
-  sobre la **primera pasada**; si esa pasada tiene menos de 55 tareas válidas, o si al aplicar el criterio
-  hace falta una decisión que no está escrita aquí, la predicción queda **«no evaluable»**, y el informe dice
-  cuál fue la decisión que faltaba. Nunca se resuelve una ambigüedad a favor de la predicción.
+  83 dejan sin fijar un detalle del recuento. No lo fija el orquestador en su nombre. Vale esto, **solo donde
+  ni la tabla ni la nota del autor lo fijan** (si lo fijan, mandan ellas: la 74 dice «cada pasada» y se marca
+  en cada una; la 76 dice qué pasa si la pasada no termina las 60): se marca sobre la primera pasada; si esa
+  pasada tiene menos de 55 tareas válidas, o si al aplicar el criterio hace falta una decisión que no está
+  escrita aquí, la predicción queda **«no evaluable»**, y el informe dice cuál fue la decisión que faltaba.
+  Nunca se resuelve una ambigüedad a favor de la predicción.
 - **Dos reglas distintas para «primera edición».** La del auditor (D7) excluye `/tmp` y los archivos de
   prueba; la de QA usa el campo `anatomia.llamada_de_la_primera_edicion`, que cuenta también los guiones de
   reproducción. En las mismas 24 sesiones, D7 da 7 de 8 y 0 de 16; el campo de QA, 7 de 9 y 0 de 15. Las
@@ -783,6 +785,6 @@ tabla difieren, manda la nota.
   del zip crudo de la corrida. Si ese zip no se rescata, quedan «no evaluables». La 76, la 80 y la 81 salen
   del registro y de `tasks.jsonl`.
 - **Cuántas tareas cortas hay en las 12 de `s1` y `s2`:** el analista cuenta 4 con la regla de menos de 100
-  caracteres; el rol diseñador contó 5 leyendo los enunciados (el quinto tiene 450 caracteres). La regla
-  escrita es la de 100.
+  caracteres; el rol diseñador contó 5 con otra regla, «menos de 120 caracteres útiles» (el quinto es
+  `rich_3105`, de 452 caracteres). La regla escrita aquí es la de 100.
 - **Ninguna de estas predicciones dice cuál kit acierta más**, y ninguna cubre la nota de un envío.
