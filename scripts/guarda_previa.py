@@ -109,6 +109,11 @@ MENSAJE_CUENTA = (
     f"{CUENTA}. Fija la cuenta en la propia orden, sin `gh auth switch`: "
     f'GH_TOKEN="$(gh auth token --user {CUENTA})" gh ... Las lecturas no se frenan.'
 )
+MENSAJE_REPO_DESCONOCIDO = (
+    " No pude determinar el repositorio de destino (git no respondió, el directorio no existe o el `cd` "
+    "no es una ruta literal); un token de otra cuenta solo pasa si el repositorio es otro. Si lo es, "
+    "dilo en la orden con `-R <dueño>/<repo>`."
+)
 
 # ---------------------------------------------------------------- análisis de la orden
 
@@ -474,6 +479,20 @@ class Observacion:
     cambia_directorio: bool = False
     # Cuentas de ``gh auth token --user X`` que son una orden (simple o dentro de ``$(...)``), no texto.
     usuarios_token: list[str] = field(default_factory=list)
+    # Destino de cada ``cd``/``pushd`` (ruta literal) o ``None`` si no se puede saber (variables, ``~``,
+    # ``cd -``, ``cd`` sin argumento, ``git -C``...). Un ``None`` hace indeterminado el repositorio.
+    destinos_cd: list[str | None] = field(default_factory=list)
+
+
+def _destino_literal(args: Sequence[str]) -> str | None:
+    """Ruta literal de ``cd``/``pushd``; ``None`` si lleva variables, ``~``, ``-`` o no hay ruta."""
+    rutas = [a for a in args if a != "--" and not (a.startswith("-") and a != "-")]
+    if len(rutas) != 1:
+        return None
+    ruta = rutas[0]
+    if ruta == "-" or any(c in ruta for c in "$`~*?"):
+        return None
+    return ruta
 
 
 def observar(orden: str) -> Observacion:
@@ -499,13 +518,34 @@ def observar(orden: str) -> Observacion:
                     saltar = True
                     if a in {"-C", "--git-dir", "--work-tree"}:
                         obs.cambia_directorio = True
+                        obs.destinos_cd.append(None)
                 elif not a.startswith("-"):
                     sin.append(a)
             if sin[:1] == ["push"]:
                 obs.push = True
         elif nombre in {"cd", "pushd"}:
             obs.cambia_directorio = True
+            obs.destinos_cd.append(_destino_literal(args))
     return obs
+
+
+def _ruta_nativa(ruta: str) -> str:
+    """En Windows, ``/c/Users/x`` (Git Bash) se vuelve ``C:/Users/x``; en otros sistemas no cambia."""
+    m = re.match(r"^/([A-Za-z])(?:/(.*))?$", ruta)
+    if os.name == "nt" and m:
+        return f"{m.group(1).upper()}:/{m.group(2) or ''}"
+    return ruta
+
+
+def repositorio_tras_cd(obs: Observacion, cwd: str) -> bool | None:
+    """``True``/``False`` según el repositorio al que llevan los ``cd``; ``None`` si no se sabe."""
+    actual = cwd or "."
+    for destino in obs.destinos_cd:
+        if destino is None:
+            return None
+        ruta = _ruta_nativa(destino)
+        actual = ruta if os.path.isabs(ruta) else os.path.join(actual, ruta)
+    return es_este_repositorio(actual)
 
 
 def es_este_repositorio(cwd: str) -> bool | None:
@@ -571,15 +611,31 @@ class Veredicto:
     motivo: str = ""
 
 
+REGLA_TOKEN_AJENO = "cuenta:token_ajeno"
+REGLA_TOKEN_AJENO_DESCONOCIDO = "cuenta:token_ajeno_repo_desconocido"
+
+
+def _token_ajeno(descripcion: str, usuario: str, destino: bool | None) -> Veredicto | None:
+    """Rechazo por token de otra cuenta; ``None`` solo si se sabe que el repositorio de destino es otro."""
+    if destino is False:
+        return None
+    regla = REGLA_TOKEN_AJENO if destino else REGLA_TOKEN_AJENO_DESCONOCIDO
+    return Veredicto(VEREDICTO_RECHAZO, regla, "gh", f"{descripcion} con el token de la cuenta {usuario}")
+
+
 def evaluar_cuenta(orden: str, cwd: str, entorno: Mapping[str, str]) -> Veredicto | None:
     """Veredicto de la guarda de cuenta, o ``None`` si la orden no la concierne o pasa sin más."""
     obs = observar(orden)
     if not obs.escrituras:
         return Veredicto(VEREDICTO_PUSH, "cuenta:push", "git") if obs.push else None
+    escrituras = [e for e in obs.escrituras if not apunta_a_otro_repo(e[1])]
+    ajeno = next((u for u in obs.usuarios_token if u.lower() != CUENTA), None)
+    if ajeno and obs.cambia_directorio and escrituras:
+        # Tras un ``cd`` la escritura sale del directorio al que lleva, no de ``cwd`` (#206).
+        return _token_ajeno(escrituras[0][0], ajeno, repositorio_tras_cd(obs, cwd))
     este = es_este_repositorio(cwd)
     if este is False:
         return None
-    escrituras = [e for e in obs.escrituras if not apunta_a_otro_repo(e[1])]
     if not escrituras:
         return None if este else Veredicto(VEREDICTO_DUDOSO, "cuenta:repo_desconocido", "gh")
     descripcion = escrituras[0][0]
@@ -588,14 +644,8 @@ def evaluar_cuenta(orden: str, cwd: str, entorno: Mapping[str, str]) -> Veredict
         return Veredicto(VEREDICTO_DUDOSO, regla, "gh")
     # Un token de otra cuenta es una violación aunque no se sepa de qué repositorio es el directorio
     # (git lento, ausente o directorio inexistente, #206): solo ``este is False`` la deja pasar.
-    for usuario in obs.usuarios_token:
-        if usuario.lower() != CUENTA:
-            return Veredicto(
-                VEREDICTO_RECHAZO,
-                "cuenta:token_ajeno",
-                "gh",
-                f"{descripcion} con el token de la cuenta {usuario}",
-            )
+    if ajeno:
+        return _token_ajeno(descripcion, ajeno, este)
     if este is None:
         return Veredicto(VEREDICTO_DUDOSO, "cuenta:repo_desconocido", "gh")
     if "GH_TOKEN" in orden or "GITHUB_TOKEN" in orden:
@@ -699,7 +749,10 @@ def decidir(evento: Mapping[str, Any], entorno: Mapping[str, str]) -> str | None
         return None
     registrar(entorno, veredicto.tipo, veredicto.regla, veredicto.ejecutable)
     if veredicto.tipo == VEREDICTO_RECHAZO:
-        return MENSAJE_CUENTA.format(motivo=veredicto.motivo)
+        mensaje = MENSAJE_CUENTA.format(motivo=veredicto.motivo)
+        if veredicto.regla == REGLA_TOKEN_AJENO_DESCONOCIDO:
+            mensaje += MENSAJE_REPO_DESCONOCIDO
+        return mensaje
     return None
 
 
