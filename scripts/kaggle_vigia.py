@@ -45,6 +45,13 @@ nuevo lo apaga; que la bitácora y la memoria se actualicen es trabajo del orque
 (``scripts/kaggle_arnes.py``). Calla si nada cambió, y no pide nada si el rescate no trae listado. El
 2026-10-12 una corrida falló a los 106 s por un cambio de tres días antes que nadie vio.
 
+**Y si ya no es el conjunto con que corrió la última sesión** (#182, concilio 46): con ese mismo listado, sin
+otra petición, lo compara con lo que la última sesión rescatada vio en su directorio de ruedas (el archivo
+``versiones_arnes_*.json`` que deja la celda 2 del notebook) y con la hora en que arrancó
+(``notebooks.json``): avisa de cada rueda que sale, entra o pesa otra cosa, y de cuántas tienen en el listado
+una fecha posterior a la sesión. El mismo día, a las 19:51 UTC, el conjunto se volvió a publicar con las
+mismas versiones; el rescate se hizo después, su listado ya era el nuevo y la comparación de arriba calló.
+
 Además imprime los hallazgos de ``experiments/gemma_developer_agent/hallazgos.json`` que llevan más de una
 vuelta en estado ``medido`` (regla de ``CONTRIBUTING.md``: un hallazgo medido no puede aparecer en dos
 vueltas sin una decisión escrita). Eso no necesita red ni token.
@@ -809,9 +816,101 @@ def avisos_de_ruedas(carpeta: Path, token: str, pedir: Pedir, limite: float) -> 
                 + resto
                 + "): baja las ruedas, lee el diff de fuentes y repite el ensayo antes de subir"
             )
-        return lineas
+        return lineas + avisos_desde_la_ultima_sesion(carpeta, actual)
     except Exception as exc:  # el vigía no estorba por un aviso auxiliar
         return [f"no pude comparar el conjunto de ruedas del arnés ({type(exc).__name__})"]
+
+
+PREFIJO_DE_VERSIONES = "salida__versiones_arnes_"
+
+
+def ultima_sesion_con_ruedas(carpeta: Path) -> tuple[str, datetime | None, dict[str, Any]] | None:
+    """La sesión más reciente del rescate que dejó su archivo de versiones: ``(notebook, arranque, ruedas)``.
+
+    ``ruedas`` es lo que la celda 2 del notebook vio en el directorio de ruedas (nombre -> bytes). El arranque
+    sale del ``lastRunTime`` de ``notebooks.json``; sin él la sesión cuenta como la más antigua. ``None`` si
+    ningún notebook del rescate trae un archivo de versiones legible con ruedas.
+    """
+    arranques: dict[str, datetime | None] = {}
+    try:
+        lista = json.loads((carpeta / "notebooks.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        lista = []
+    for x in lista if isinstance(lista, list) else []:
+        if isinstance(x, dict) and x.get("ref"):
+            arranques[str(x["ref"]).split("/")[-1]] = kaggle_arnes.fecha_de(x.get("lastRunTime"))
+    halladas: list[tuple[bool, datetime, str, dict[str, Any]]] = []
+    for archivo in sorted((carpeta / "notebooks").glob(f"*/{PREFIJO_DE_VERSIONES}*.json")):
+        ruedas = _ruedas_del_archivo(archivo)
+        if ruedas:
+            arranque = arranques.get(archivo.parent.name)
+            orden = arranque or datetime.min.replace(tzinfo=UTC)
+            halladas.append((arranque is not None, orden, archivo.parent.name, ruedas))
+    if not halladas:
+        return None
+    con_hora, orden, notebook, ruedas = max(halladas, key=lambda h: h[:3])
+    return notebook, (orden if con_hora else None), ruedas
+
+
+def _ruedas_del_archivo(archivo: Path) -> dict[str, Any] | None:
+    """El ``ruedas`` de un archivo de versiones; ``None`` si no se puede leer o no trae ruedas."""
+    try:
+        ruedas = json.loads(archivo.read_text(encoding="utf-8")).get("ruedas")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return ruedas if isinstance(ruedas, dict) and ruedas else None
+
+
+def sesiones_sin_ruedas_legibles(carpeta: Path) -> list[str]:
+    """Notebooks del rescate cuyo archivo de versiones existe pero no se puede leer o no trae ruedas.
+
+    De esas sesiones no se sabe con qué ruedas corrieron: no es lo mismo que «nada cambió», y se dice.
+    """
+    archivos = sorted((carpeta / "notebooks").glob(f"*/{PREFIJO_DE_VERSIONES}*.json"))
+    return sorted({a.parent.name for a in archivos if _ruedas_del_archivo(a) is None})
+
+
+def avisos_desde_la_ultima_sesion(carpeta: Path, actual: Sequence[Mapping[str, Any]]) -> list[str]:
+    """Avisa si el conjunto de ruedas ya no es aquel con que corrió la última sesión rescatada (#182).
+
+    Comparar con el listado del último rescate no basta: el 2026-10-12 el rescate se hizo **después** de que
+    el conjunto se volviera a publicar, su listado ya era el nuevo y el vigía calló, aunque la última sesión
+    había corrido con las ruedas anteriores. La referencia aquí es lo que la sesión vio (el archivo de
+    versiones de su celda 2) y la hora en que arrancó. No pide nada a Kaggle: usa el listado ya leído. Calla
+    si ninguna sesión del rescate dejó ese archivo o si nada cambió. Si una sesión lo dejó y no se puede leer
+    o no trae ruedas, lo dice: de esa sesión no se sabe, que no es lo mismo que «nada cambió».
+    """
+    sin_leer = sesiones_sin_ruedas_legibles(carpeta)
+    ilegibles = (
+        [
+            f"no pude leer las ruedas del archivo de versiones de {len(sin_leer)} sesiones "
+            f"({', '.join(sin_leer[:MAX_CAMBIOS_DE_RUEDAS])}): no sé si el conjunto de ruedas del arnés es "
+            "el que vieron"
+        ]
+        if sin_leer
+        else []
+    )
+    sesion = ultima_sesion_con_ruedas(carpeta)
+    if sesion is None:
+        return ilegibles
+    notebook, arranque, ruedas = sesion
+    cambios = kaggle_arnes.cambios_desde_la_sesion(ruedas, arranque, actual)
+    if not cambios:
+        return ilegibles
+    cuando = (
+        arranque.strftime("%Y-%m-%dT%H:%M:%SZ") if arranque else "sin hora de arranque: no comparé fechas"
+    )
+    resto = f" … y {len(cambios) - MAX_CAMBIOS_DE_RUEDAS} más" if len(cambios) > MAX_CAMBIOS_DE_RUEDAS else ""
+    return [
+        *ilegibles,
+        f"EL CONJUNTO DE RUEDAS DEL ARNÉS YA NO ES EL DE LA ÚLTIMA SESIÓN ({notebook}, {cuando}; "
+        f"{len(cambios)} cambios: "
+        # La frase de las fechas va la última: se muestra siempre, aunque la lista se recorte.
+        + "; ".join([*cambios[: MAX_CAMBIOS_DE_RUEDAS - 1], cambios[-1]] if resto else cambios)
+        + resto
+        + "): lo que midió esa sesión es de otro arnés; baja las ruedas, compara su sha256 y el diff de "
+        "fuentes, y repite el ensayo antes de subir",
+    ]
 
 
 def vigia(

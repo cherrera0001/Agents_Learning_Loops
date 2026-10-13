@@ -17,6 +17,11 @@ existe en ellas. ``--listado`` añade el listado del conjunto (el ``listado_rued
 la salida de ``kaggle datasets files``): versiones y tamaños. No ve un cambio de conducta del arnés que
 conserve nombres y firmas.
 
+Desde el concilio 46 (#182) compara también SHA-256, no solo tamaño: si la guarda del notebook trae los
+SHA-256 esperados de las ruedas del arnés, exige que sean los de ``kaggle_arnes.RUEDAS_ESPERADAS_SHA256`` y
+que las ``.whl`` de ``--ruedas`` los tengan, y dice los dos valores cuando no. Un notebook cuya guarda solo
+compara versiones (los armados antes de ese día) recibe un ``[AVISO]``, que no impide la orden de subida.
+
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
     python -m scripts.kaggle_preflight comprobar <dir> --tope-min 75 --ruedas <carpeta> [--listado <archivo>]
@@ -81,10 +86,16 @@ EXIT_INVALID = 2
 class Hallazgo:
     ok: bool
     texto: str
+    # Un aviso no impide subir (``ok`` sigue en True) pero no se imprime como «OK»: dice qué no se comprobó.
+    aviso: bool = False
 
 
 def _bien(texto: str) -> Hallazgo:
     return Hallazgo(True, texto)
+
+
+def _aviso(texto: str) -> Hallazgo:
+    return Hallazgo(True, texto, aviso=True)
 
 
 def _mal(texto: str) -> Hallazgo:
@@ -353,6 +364,33 @@ def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None
         out.append(_mal(f"La guarda del notebook espera {esperado} y se ensayó con {ensayado}."))
     else:
         out.append(_bien("El notebook se detiene si las versiones del arnés no son las ensayadas."))
+    # SHA-256 (#182): la versión no basta, el conjunto se volvió a publicar con las mismas versiones.
+    sha_esperado = kaggle_arnes.RUEDAS_ESPERADAS_SHA256
+    sha_del_notebook = kaggle_arnes.sha256_esperado_en_el_notebook(celdas)
+    if esperado is not None and sha_del_notebook is None:
+        out.append(
+            _aviso(
+                "La guarda del notebook no compara el sha256 de las ruedas (armado anterior al concilio 46): "
+                "si el conjunto se vuelve a publicar con las mismas versiones, correrá con otro arnés sin "
+                "detenerse. Este chequeo no lo impide; rearma el notebook con la guarda por sha256."
+            )
+        )
+    elif sha_del_notebook is not None and sha_del_notebook != sha_esperado:
+        distintas = sorted(
+            f"{n}: el notebook espera {sha_del_notebook.get(n)} y el esperado es {sha_esperado.get(n)}"
+            for n in set(sha_del_notebook) | set(sha_esperado)
+            if sha_del_notebook.get(n) != sha_esperado.get(n)
+        )
+        out.append(
+            _mal("La guarda del notebook espera otro sha256 de las ruedas: " + "; ".join(distintas) + ".")
+        )
+    elif sha_del_notebook is not None:
+        out.append(
+            _bien(
+                f"El notebook se detiene si el sha256 de alguna de las {len(sha_esperado)} ruedas del arnés "
+                "no es el esperado."
+            )
+        )
 
     entradas: list[dict[str, Any]] = []
     if listado is not None:
@@ -407,6 +445,23 @@ def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None
             if distintas
             else _bien("Las ruedas del arnés de --ruedas tienen el tamaño que dice el listado.")
         )
+    if sha_del_notebook is not None:
+        # El tamaño no basta: dos ruedas del arnés cambiaron de contenido el 2026-10-12 con los mismos bytes.
+        try:
+            distintas = kaggle_arnes.diferencias_de_sha256(ruedas, sha_del_notebook)
+        except OSError as exc:
+            distintas = [f"no se pudieron leer las ruedas ({type(exc).__name__})"]
+        out += [
+            _mal(f"Las ruedas de --ruedas no son las que la guarda del notebook espera: {d}.")
+            for d in distintas
+        ]
+        if not distintas:
+            out.append(
+                _bien(
+                    f"Las {len(sha_del_notebook)} ruedas del arnés de --ruedas tienen el sha256 que la "
+                    "guarda del notebook espera."
+                )
+            )
     informe = kaggle_arnes.comprobar_imports(celdas, fuentes)
     out += [_mal(f"Import que no existe en las ruedas: {texto}.") for texto in informe.rotos]
     out += [_mal(f"Import sin fuente con que comprobarlo: {texto}.") for texto in informe.sin_fuente]
@@ -502,7 +557,7 @@ def main(argv: list[str] | None = None) -> int:
 
     hallazgos = comprobar_para_subir(args.directorio, args.tope_min, args.ruedas, args.listado)
     for h in hallazgos:
-        print(f"[{'OK' if h.ok else 'FALLA'}] {h.texto}")
+        print(f"[{'AVISO' if h.aviso else 'OK' if h.ok else 'FALLA'}] {h.texto}")
     fallos = sum(1 for h in hallazgos if not h.ok)
     if fallos:
         print(f"\nNO SUBIR: {fallos} comprobaciones fallan.", file=sys.stderr)
