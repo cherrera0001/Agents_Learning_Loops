@@ -253,9 +253,9 @@ previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la 
   ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
   fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
   `.claude/agents/<rol>.md`; el repositorio versiona `implementador-haiku`, `implementador-sonnet` e
-  `implementador-opus`, y quince que no construyen (`revisor-codigo`, `revisor-docs`, `gestor-proyecto`,
-  los cinco del staff de texto público y los siete del staff de experimento:
-  [`docs/entorno/agentes.md`](docs/entorno/agentes.md));
+  `implementador-opus`, y dieciocho que no construyen (`revisor-codigo`, `revisor-docs`, `gestor-proyecto`,
+  los cinco del staff de texto público y diez del staff de experimento), más `constructor-kit`, que sí
+  construye: [`docs/entorno/agentes.md`](docs/entorno/agentes.md);
   todas declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se comprueba en la
   transcripción). En Cursor, la persona elige el modelo del chat
   en el selector, y un subagente usa el ID de la tabla solo si quien lo lanza lo copia desde

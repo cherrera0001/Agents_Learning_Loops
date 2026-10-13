@@ -56,7 +56,8 @@ Issue listo (plantilla) → ESTIMAR → In Progress → RETRIEVE → implementar
    del autor
    ([`revisor-codigo`](.claude/agents/revisor-codigo.md) o [`revisor-docs`](.claude/agents/revisor-docs.md),
    según lo que toque; ambos si toca código y documentos), y decide el merge con su informe y con el CI en
-   verde. El revisor informa y no edita; las correcciones vuelven al implementador o las hace el
+   verde. El revisor publica su revisión en el PR (`gh pr review --comment`) y no se fusiona sin que
+   conste en `gh api repos/<repo>/pulls/<n>/reviews`. Informa y no edita; las correcciones vuelven al implementador o las hace el
    orquestador, y si la verificación falla se escala un modelo (regla 2 de `docs/estimation.md`).
 7. **CONFIRMAR** (orquestador), después del merge squash **verificado** (`mergedAt`) y no antes. Se
    comprueba el criterio de cierre según el tipo de trabajo y se escribe en el tablero y en el issue:
