@@ -490,6 +490,188 @@ def test_el_caso_real_con_token_ajeno_sigue_rechazandose(tmp_path: Path, repo: P
         assert _motivo(_gancho(_evento(orden, repo), _entorno(tmp_path, HOSTS_PROPIO))) is not None, orden
 
 
+ORDENES_CON_TOKEN_AJENO = (
+    'GH_TOKEN="$(gh auth token --user vinculaterritorio)" gh pr comment 191 --body "texto"',
+    "gh pr comment 191 --body x && X=`gh auth token --user vinculaterritorio`",
+    'X="$(gh auth token -u vinculaterritorio)"; gh pr comment 191 --body "texto"',
+)
+
+
+@pytest.mark.parametrize(
+    "fallo",
+    [subprocess.TimeoutExpired(cmd="git", timeout=0.001), FileNotFoundError("git")],
+    ids=["tope_agotado", "git_ausente"],
+)
+@pytest.mark.parametrize("orden", ORDENES_CON_TOKEN_AJENO)
+def test_token_ajeno_se_rechaza_si_git_no_responde_a_tiempo(
+    orden: str, fallo: Exception, tmp_path: Path, repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def git_que_falla(*_args: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        raise fallo
+
+    # Simula el fallo de la llamada a ``git`` en el propio proceso, sin depender de cuánto tarda.
+    monkeypatch.setattr(gp.subprocess, "run", git_que_falla)
+    assert gp.es_este_repositorio(str(repo)) is None
+    veredicto = gp.evaluar_cuenta(orden, str(repo), _entorno(tmp_path, HOSTS_PROPIO))
+    assert veredicto is not None
+    assert (veredicto.tipo, veredicto.regla) == ("rechazo", "cuenta:token_ajeno_repo_desconocido")
+
+
+@pytest.mark.parametrize("orden", ORDENES_CON_TOKEN_AJENO)
+def test_token_ajeno_se_rechaza_con_un_directorio_de_trabajo_inexistente(orden: str, tmp_path: Path) -> None:
+    inexistente = tmp_path / "no_existe"
+    proc = _gancho(_evento(orden, inexistente), _entorno(tmp_path, HOSTS_PROPIO))
+    motivo = _motivo(proc)
+    assert motivo is not None, orden
+    assert "vinculaterritorio" in motivo
+    # El rechazo por repositorio desconocido se separa en el registro y el mensaje ofrece la salida.
+    assert _registro(tmp_path)[0]["regla"] == "cuenta:token_ajeno_repo_desconocido"
+    assert "No pude determinar el repositorio" in motivo
+    assert "-R <dueño>/<repo>" in motivo
+
+
+def test_el_rechazo_con_repositorio_conocido_conserva_su_regla_y_su_mensaje(
+    tmp_path: Path, repo: Path
+) -> None:
+    motivo = _motivo(_gancho(_evento(ORDENES_CON_TOKEN_AJENO[0], repo), _entorno(tmp_path, HOSTS_PROPIO)))
+    assert motivo is not None
+    assert "No pude determinar" not in motivo
+    assert _registro(tmp_path)[0]["regla"] == "cuenta:token_ajeno"
+
+
+def _ev(orden: str, cwd: Path | str, tmp_path: Path) -> gp.Veredicto | None:
+    return gp.evaluar_cuenta(orden, str(cwd), _entorno(tmp_path, HOSTS_PROPIO))
+
+
+def _firma(v: gp.Veredicto | None) -> tuple[str, str] | None:
+    return None if v is None else (v.tipo, v.regla)
+
+
+AJENO = 'GH_TOKEN="$(gh auth token --user vinculaterritorio)" gh pr comment 1 --body x'
+
+
+def test_cd_a_este_repositorio_con_token_ajeno_se_rechaza(tmp_path: Path, repo: Path) -> None:
+    orden = f'cd "{repo.as_posix()}" && {AJENO}'
+    assert _firma(_ev(orden, tmp_path, tmp_path)) == ("rechazo", "cuenta:token_ajeno")
+    # También desde el repositorio ajeno como directorio de trabajo: manda el destino del ``cd``.
+    assert _firma(_ev(orden, tmp_path / "no_existe", tmp_path)) == ("rechazo", "cuenta:token_ajeno")
+
+
+def test_cd_relativo_se_resuelve_contra_el_directorio_de_trabajo(
+    tmp_path: Path, repo: Path, otro_repo: Path
+) -> None:
+    assert _firma(_ev(f"cd repo && {AJENO}", tmp_path, tmp_path)) == ("rechazo", "cuenta:token_ajeno")
+    assert _ev(f"cd ../otro && {AJENO}", repo, tmp_path) is None
+
+
+def test_cd_a_otro_repositorio_con_el_token_de_esa_cuenta_pasa(
+    tmp_path: Path, repo: Path, otro_repo: Path
+) -> None:
+    orden = f'cd "{otro_repo.as_posix()}" && {AJENO}'
+    assert _ev(orden, repo, tmp_path) is None
+    assert _ev(orden, tmp_path / "no_existe", tmp_path) is None
+
+
+def test_cd_a_este_repositorio_con_el_token_propio_o_sin_token_no_se_frena(
+    tmp_path: Path, repo: Path
+) -> None:
+    ruta = repo.as_posix()
+    for orden in (
+        f'cd "{ruta}" && export GH_TOKEN="$(gh auth token --user cherrera0001)" && gh pr comment 1 --body x',
+        f'cd "{ruta}" && gh pr view 1',
+        f'cd "{ruta}" && gh pr comment 1 --body x',
+        f'cd "{ruta}" && git status',
+    ):
+        v = _ev(orden, tmp_path, tmp_path)
+        assert v is None or v.tipo != "rechazo", orden
+    assert _firma(_ev(f'cd "{ruta}" && gh pr comment 1 --body x', repo, tmp_path)) == (
+        "pasa-dudoso",
+        "cuenta:cambia_directorio",
+    )
+
+
+@pytest.mark.parametrize(
+    "prefijo",
+    [
+        'cd "$HOME/x" && ',
+        "cd ~/x && ",
+        "cd - && ",
+        "cd && ",
+        "cd /no/existe/jamas/x && ",
+        "git -C /x status && ",
+    ],
+)
+def test_cd_sin_ruta_literal_o_inexistente_con_token_ajeno_se_rechaza(
+    prefijo: str, tmp_path: Path, repo: Path
+) -> None:
+    v = _ev(prefijo + AJENO, repo, tmp_path)
+    assert _firma(v) == ("rechazo", "cuenta:token_ajeno_repo_desconocido"), prefijo
+
+
+def test_cd_con_repositorio_desconocido_sin_token_ajeno_se_cuenta_como_desconocido(
+    tmp_path: Path,
+) -> None:
+    v = _ev("cd /x && gh pr comment 1 --body x", tmp_path / "no_existe", tmp_path)
+    assert _firma(v) == ("pasa-dudoso", "cuenta:repo_desconocido")
+
+
+def test_la_ruta_de_git_bash_se_convierte_en_windows() -> None:
+    esperado = "C:/Users/x" if os.name == "nt" else "/c/Users/x"
+    assert gp._ruta_nativa("/c/Users/x") == esperado
+    assert gp._ruta_nativa("/home/x") == "/home/x"
+
+
+def test_varios_usuarios_de_token_se_rechazan_si_alguno_es_ajeno(tmp_path: Path, repo: Path) -> None:
+    propio = "$(gh auth token --user cherrera0001)"
+    ajeno = "$(gh auth token --user vinculaterritorio)"
+    for primero, segundo in ((propio, ajeno), (ajeno, propio), (ajeno, ajeno)):
+        orden = f'A="{primero}" B="{segundo}" gh pr comment 1 --body x'
+        assert _firma(_ev(orden, repo, tmp_path)) == ("rechazo", "cuenta:token_ajeno"), orden
+    mayusculas = 'GH_TOKEN="$(gh auth token --user Cherrera0001)" gh pr comment 1 --body x'
+    assert _ev(mayusculas, repo, tmp_path) is None
+
+
+@pytest.mark.parametrize("este", [True, False, None])
+def test_la_escritura_hacia_otro_repositorio_segun_el_repositorio_del_directorio(
+    este: bool | None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(gp, "es_este_repositorio", lambda _cwd: este)
+    esperado = {True: None, False: None, None: ("pasa-dudoso", "cuenta:repo_desconocido")}[este]
+    assert _firma(_ev("gh pr comment 1 -R vinculaterritorio/VT --body x", tmp_path, tmp_path)) == esperado
+
+
+@pytest.mark.parametrize("este", [True, None])
+def test_el_cd_sin_token_ajeno_nombra_su_regla_segun_el_repositorio(
+    este: bool | None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(gp, "es_este_repositorio", lambda _cwd: este)
+    regla = "cuenta:cambia_directorio" if este else "cuenta:repo_desconocido"
+    assert _firma(_ev("cd /x && gh pr comment 1 --body x", tmp_path, tmp_path)) == ("pasa-dudoso", regla)
+
+
+def test_token_ajeno_pasa_solo_si_se_sabe_que_el_repositorio_es_otro(tmp_path: Path, otro_repo: Path) -> None:
+    orden = ORDENES_CON_TOKEN_AJENO[0]
+    assert _motivo(_gancho(_evento(orden, otro_repo), _entorno(tmp_path, HOSTS_PROPIO))) is None
+    assert _registro(tmp_path) == []
+
+
+def test_sin_token_ajeno_un_repositorio_desconocido_sigue_pasando_como_dudoso(tmp_path: Path) -> None:
+    entorno = _entorno(tmp_path, HOSTS_AJENO)
+    for orden in (
+        "gh pr comment 191 --body x",
+        'GH_TOKEN="$(gh auth token --user cherrera0001)" gh pr comment 191 --body x',
+    ):
+        proc = _gancho(_evento(orden, tmp_path / "no_existe"), entorno)
+        assert _motivo(proc) is None, orden
+    assert {f["regla"] for f in _registro(tmp_path)} == {"cuenta:repo_desconocido"}
+
+
+def test_token_ajeno_con_repositorio_desconocido_no_frena_si_apunta_a_otro_repo(tmp_path: Path) -> None:
+    orden = 'GH_TOKEN="$(gh auth token --user vinculaterritorio)" gh pr comment 1 -R vinculaterritorio/VT'
+    proc = _gancho(_evento(orden, tmp_path / "no_existe"), _entorno(tmp_path, HOSTS_PROPIO))
+    assert _motivo(proc) is None
+
+
 def test_token_literal_pasa_se_cuenta_como_dudoso_y_no_se_imprime(tmp_path: Path, repo: Path) -> None:
     orden = f"GH_TOKEN={TOKEN_LITERAL} gh pr comment 1 --body x"
     proc = _gancho(_evento(orden, repo), _entorno(tmp_path, HOSTS_AJENO))
