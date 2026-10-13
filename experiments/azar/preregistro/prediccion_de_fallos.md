@@ -761,9 +761,18 @@ tabla difieren, manda la nota.
   preámbulo que 21.1 dejó fuera: «Unidad: la sesion (una tarea en una corrida). Secuencia: todas las llamadas
   a herramientas de la traza, en orden», que es lo que D2 llama «consecutivas»; y «Ya conocia, por los
   informes ajenos, los resultados en las 24 sesiones de s1 y s2». Es decir: la definición se fijó antes de
-  abrir las 145 sesiones antiguas, **no** antes de conocer el resultado en las 24. Y el recuento sobre las 145
-  y el «0 atrapadas de 29» que cita 21.1 son, según el propio auditor, posteriores y exploratorios, y están
-  confundidos con el kit.
+  abrir las 145 sesiones antiguas, **no** antes de conocer el resultado en las 24. El recuento de 22 de 145 es
+  esa definición aplicada. Lo que el auditor llama posterior y exploratorio es el análisis **por kit** (el «0
+  atrapadas de 29» en el kit que razona, y 2 de 22 frente a 19 de 94 dentro de las iteraciones 03 a 05), que
+  además está confundido con el kit.
+- **A las notas de 21.4 les falta su primera línea**, la de fecha y hora, que sí está en los originales
+  (analista: «2026-10-13, UTC»; QA: «2026-10-13T00:56Z»). El resto está copiado tal cual.
+- **Regla por defecto para lo que ninguna nota fija.** El revisor señaló que varias predicciones no dicen
+  sobre qué pasada se marcan ni qué pasa si la pasada queda incompleta (74, 78, 80, 81), y que la 82 (a) y la
+  83 dejan sin fijar un detalle del recuento. No lo fija el orquestador en su nombre. Vale esto: se marcan
+  sobre la **primera pasada**; si esa pasada tiene menos de 55 tareas válidas, o si al aplicar el criterio
+  hace falta una decisión que no está escrita aquí, la predicción queda **«no evaluable»**, y el informe dice
+  cuál fue la decisión que faltaba. Nunca se resuelve una ambigüedad a favor de la predicción.
 - **Dos reglas distintas para «primera edición».** La del auditor (D7) excluye `/tmp` y los archivos de
   prueba; la de QA usa el campo `anatomia.llamada_de_la_primera_edicion`, que cuenta también los guiones de
   reproducción. En las mismas 24 sesiones, D7 da 7 de 8 y 0 de 16; el campo de QA, 7 de 9 y 0 de 15. Las
@@ -774,5 +783,6 @@ tabla difieren, manda la nota.
   del zip crudo de la corrida. Si ese zip no se rescata, quedan «no evaluables». La 76, la 80 y la 81 salen
   del registro y de `tasks.jsonl`.
 - **Cuántas tareas cortas hay en las 12 de `s1` y `s2`:** el analista cuenta 4 con la regla de menos de 100
-  caracteres; otro rol contó 5 leyendo los enunciados. La regla escrita es la de 100.
+  caracteres; el rol diseñador contó 5 leyendo los enunciados (el quinto tiene 450 caracteres). La regla
+  escrita es la de 100.
 - **Ninguna de estas predicciones dice cuál kit acierta más**, y ninguna cubre la nota de un envío.
