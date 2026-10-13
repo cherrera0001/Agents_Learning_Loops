@@ -49,7 +49,8 @@ ARNES_ENSAYADO: dict[str, str] = {
 # a las 19:51 UTC. La versión no basta: ese día ``swegemma-0.2.11`` cambió de contenido sin cambiar de
 # versión, y la guarda de versiones no lo vio. Son las que el notebook exige antes de cargar el modelo, no
 # «las que hay hoy en Kaggle»: cambiarlas exige leer el diff de fuentes y repetir el ensayo con las ruedas
-# reales. Ese ensayo (en Docker) NO se había corrido con estas ruedas al escribir esto: ver el PR del #182.
+# reales. Con estas se corrió ese ensayo el 2026-10-12 (petición sin razonar, sesión completa, tarea colgada
+# y control con una rueda anterior): el resultado está en el PR #201.
 RUEDAS_ESPERADAS_SHA256: dict[str, str] = {
     f"{dist}-py3-none-any.whl": huella
     for dist, huella in (

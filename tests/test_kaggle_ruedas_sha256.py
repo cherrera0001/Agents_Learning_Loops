@@ -496,8 +496,182 @@ def test_archivos_ilegibles_de_la_sesion_no_hacen_lanzar_al_vigia(tmp_path: Path
     )
     (carpeta / "notebooks.json").write_text("{", encoding="utf-8")
     assert kv.ultima_sesion_con_ruedas(carpeta) is None
-    assert kv.avisos_de_ruedas(carpeta, TOKEN, api(nuevo), time.monotonic() + 5) == []
+    # No lanza, y no calla: «no pude leer» no es «nada cambió»
+    assert kv.avisos_de_ruedas(carpeta, TOKEN, api(nuevo), time.monotonic() + 5) == [
+        "no pude leer las ruedas del archivo de versiones de 1 sesiones (rota): no sé si el conjunto de "
+        "ruedas del arnés es el que vieron"
+    ]
     lista = carpeta / "notebooks" / "lista"
     lista.mkdir()
     (lista / "salida__versiones_arnes_lista.json").write_text("[1, 2]", encoding="utf-8")
     assert kv.ultima_sesion_con_ruedas(carpeta) is None
+    assert kv.sesiones_sin_ruedas_legibles(carpeta) == ["lista", "rota"]
+
+
+def test_una_sesion_con_ruedas_vacias_no_es_referencia_y_se_dice(tmp_path: Path) -> None:
+    """Un `ruedas` vacío (o nulo: la guarda no encontró el directorio) no dice con qué corrió la sesión."""
+    igual = listado(ANTES)
+    sesiones = {
+        "con-ruedas": ("2026-10-12T08:41:00Z", vistas()),
+        "vacia": ("2026-10-12T13:57:31Z", {}),  # más reciente, pero sin nada que comparar
+    }
+    carpeta = rescate(tmp_path / "r", igual, sesiones)
+    (carpeta / "notebooks" / "vacia" / "salida__versiones_arnes_vacia.json").write_text(
+        json.dumps({"ruedas": {}}), encoding="utf-8"
+    )
+    notebook, _arranque, ruedas = kv.ultima_sesion_con_ruedas(carpeta)  # type: ignore[misc]
+    assert notebook == "con-ruedas" and ruedas  # con `ruedas` vacío como referencia, todo «entraría»
+    (linea,) = de_ruedas(tmp_path / "r", igual)
+    assert linea.startswith("no pude leer las ruedas del archivo de versiones de 1 sesiones (vacia)")
+    # Control: sin la sesión vacía, con el mismo listado, el vigía calla
+    (carpeta / "notebooks" / "vacia" / "salida__versiones_arnes_vacia.json").unlink()
+    assert de_ruedas(tmp_path / "r", igual) == []
+
+
+def test_una_sesion_ilegible_no_tapa_el_cambio_respecto_de_la_legible(tmp_path: Path) -> None:
+    nuevo = listado(DESPUES, swegemma=250)
+    sesiones = {"buena": ("2026-10-12T08:41:00Z", vistas()), "rota": ("2026-10-12T13:57:31Z", vistas())}
+    carpeta = rescate(tmp_path / "r", nuevo, sesiones)
+    (carpeta / "notebooks" / "rota" / "salida__versiones_arnes_rota.json").write_text("{", encoding="utf-8")
+    ilegible, cambio = de_ruedas(tmp_path / "r", nuevo)
+    assert ilegible.startswith("no pude leer las ruedas") and "(rota)" in ilegible
+    assert cambio.startswith("EL CONJUNTO DE RUEDAS DEL ARNÉS YA NO ES EL DE LA ÚLTIMA SESIÓN (buena, ")
+
+
+# ---------------------------------------------------------------------------
+# Mutantes que sobrevivían a la primera tanda (revisión del PR #201)
+# ---------------------------------------------------------------------------
+
+
+def otra_en_el_ultimo(huella: str) -> str:
+    """La misma huella con solo el último carácter cambiado: una comparación por prefijo no la distingue."""
+    return huella[:-1] + ("0" if huella[-1] != "0" else "1")
+
+
+def test_la_guarda_compara_la_huella_entera_no_un_prefijo(tmp_path: Path) -> None:
+    nombre = "a-1-py3-none-any.whl"
+    ruedas = carpeta_de_ruedas(tmp_path, {nombre: b"contenido"})
+    buena = sha(b"contenido")
+    casi = otra_en_el_ultimo(buena)
+    assert casi[:63] == buena[:63] and casi != buena
+    with pytest.raises(RuntimeError, match="sha256 distinto del esperado"):
+        correr_guarda(tmp_path / "v.json", {nombre: casi}, ruedas)
+    escrito = json.loads((tmp_path / "v.json").read_text(encoding="utf-8"))
+    assert escrito["sha256_distintas"] == {nombre: [casi, buena]}
+    assert correr_guarda(tmp_path / "v.json", {nombre: buena}, ruedas)["sha256_distintas"] == {}  # control
+
+
+def test_diferencias_de_sha256_compara_la_huella_entera(tmp_path: Path) -> None:
+    nombre = "a-1-py3-none-any.whl"
+    ruedas = carpeta_de_ruedas(tmp_path, {nombre: b"contenido"})
+    buena = sha(b"contenido")
+    casi = otra_en_el_ultimo(buena)
+    assert ka.diferencias_de_sha256(ruedas, {nombre: buena}) == []
+    assert ka.diferencias_de_sha256(ruedas, {nombre: casi}) == [
+        f"{nombre}: se espera sha256 {casi} y la de la carpeta tiene {buena}"
+    ]
+
+
+def test_el_chequeo_previo_compara_la_huella_entera_de_la_guarda_con_la_versionada(
+    tmp_path: Path, esperadas: dict[str, str]
+) -> None:
+    nombre = "swegemma-0.2.11-py3-none-any.whl"
+    casi = {**esperadas, nombre: otra_en_el_ultimo(esperadas[nombre])}
+    nb = directorio(tmp_path, ka.celda_de_versiones("/kaggle/working/v.json", sha256=casi))
+    textos = fallos(nb, tmp_path / "ruedas")
+    assert any(
+        x.startswith("La guarda del notebook espera otro sha256 de las ruedas: " + nombre) for x in textos
+    )
+    assert any("no son las que la guarda del notebook espera" in x for x in textos)
+
+
+def test_una_rueda_esperada_que_no_se_puede_leer_detiene_la_guarda(tmp_path: Path) -> None:
+    """Un directorio con nombre de rueda: `open` falla con un OSError, y eso no puede darse por bueno."""
+    nombre = "a-1-py3-none-any.whl"
+    ruedas = carpeta_de_ruedas(tmp_path, {"b-1-py3-none-any.whl": b"b"})
+    (ruedas / nombre).mkdir()
+    archivo = tmp_path / "v.json"
+    with pytest.raises(RuntimeError, match="sha256 distinto del esperado"):
+        correr_guarda(archivo, {nombre: sha(b"a")}, ruedas)
+    escrito = json.loads(archivo.read_text(encoding="utf-8"))
+    (esperado, visto) = escrito["sha256_distintas"][nombre]
+    assert esperado == sha(b"a") and visto.startswith("ilegible: ")
+    assert escrito["sha256"]["b-1-py3-none-any.whl"] == sha(b"b")  # las demás se siguen leyendo
+
+
+def test_la_huella_es_del_archivo_entero_no_del_primer_bloque(tmp_path: Path) -> None:
+    """Dos ruedas iguales en su primer MiB y distintas después: la lectura debe llegar al final."""
+    nombre = "a-1-py3-none-any.whl"
+    cabeza = b"\0" * (1 << 20)
+    entera, otra = cabeza + b"cola buena", cabeza + b"cola mala!"
+    ruedas = carpeta_de_ruedas(tmp_path, {nombre: otra})
+    assert ka.sha256_de(ruedas / nombre) == sha(otra) != sha(entera)
+    assert ka.diferencias_de_sha256(ruedas, {nombre: sha(entera)}) != []
+    with pytest.raises(RuntimeError, match="sha256 distinto del esperado"):
+        correr_guarda(tmp_path / "v.json", {nombre: sha(entera)}, ruedas)
+    (ruedas / nombre).write_bytes(entera)  # control
+    assert correr_guarda(tmp_path / "v.json", {nombre: sha(entera)}, ruedas)["sha256"] == {
+        nombre: sha(entera)
+    }
+
+
+def test_las_huellas_versionadas_son_las_publicadas_el_2026_10_12_a_las_19_51() -> None:
+    """Transcritas aparte, de `sha256_ruedas_1951.txt`: un dígito alterado en la constante tiene que verse."""
+    assert ka.RUEDAS_ESPERADAS_SHA256 == {
+        "adk_eval_core-0.1.0-py3-none-any.whl": (
+            "e614e1b2fe8d886a634871e4c57f9887e1cc66e8c27300f8503a43c6e3ca82f3"
+        ),
+        "adk_submission-0.2.13-py3-none-any.whl": (
+            "f156f0bd84580ccb9334726d114d7a5481f16d3a6e2887cc4d276ced0ef8d99d"
+        ),
+        "google_adk-1.36.1-py3-none-any.whl": (
+            "1a2f6868c509e3151fb0de3575a7d18b45c338be86f420924dad74e7193631a0"
+        ),
+        "swegemma-0.2.11-py3-none-any.whl": (
+            "9ad876581f3acde8ec3c369858f0834e2b9f41a3cffce3ca42f09cb090aea9d3"
+        ),
+    }
+
+
+def test_una_guarda_sin_las_lineas_que_dejan_la_huella_en_el_archivo_no_cuenta() -> None:
+    """Sin el resumen la guarda se detiene igual, pero la salida no trae el campo `sha256` (predicción 64)."""
+    esperado = {"a-1-py3-none-any.whl": "ab" * 32}
+    celda = ka.celda_de_versiones("/kaggle/working/v.json", sha256=esperado)
+    sin_resumen = celda.replace("_resumen_arnes['sha256_distintas'] = _sha256_distintas\n", "")
+    assert sin_resumen != celda and ka.sha256_esperado_en_el_notebook([sin_resumen]) is None
+    sin_huellas = celda.replace("'sha256': _sha256_visto", "'sha256': {}")
+    assert sin_huellas != celda and ka.sha256_esperado_en_el_notebook([sin_huellas]) is None
+
+
+def test_una_rueda_publicada_en_el_mismo_segundo_del_arranque_no_es_posterior() -> None:
+    arranque = datetime(2026, 10, 12, 13, 57, 31, tzinfo=UTC)
+    vio = {"a-1-py3-none-any.whl": 10, "b-1-py3-none-any.whl": 10, "c-1-py3-none-any.whl": 10}
+    ahora = [
+        {
+            "nombre": "a-1-py3-none-any.whl",
+            "bytes": 10,
+            "fecha": "2026-10-12T13:57:31.9Z",
+        },  # el mismo segundo
+        {"nombre": "b-1-py3-none-any.whl", "bytes": 10, "fecha": "2026-10-12T19:51:59Z"},
+        {"nombre": "c-1-py3-none-any.whl", "bytes": 10, "fecha": "2026-10-12T19:51:41Z"},
+    ]
+    # Dos posteriores, no tres; y «la última» es la mayor de ellas, no la primera
+    assert ka.cambios_desde_la_sesion(vio, arranque, ahora) == [
+        "2 de 3 ruedas con fecha posterior a la sesión (la última, 2026-10-12T19:51:59Z)"
+    ]
+
+
+def test_si_las_ruedas_no_se_pueden_leer_el_chequeo_previo_falla_y_lo_dice(
+    tmp_path: Path, esperadas: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    nb = directorio(tmp_path, ka.celda_de_versiones("/kaggle/working/v.json", sha256=esperadas))
+    assert fallos(nb, tmp_path / "ruedas") == []  # control
+
+    def no_se_puede(_carpeta: Path, _esperadas: Any) -> list[str]:
+        raise PermissionError("sin permiso")
+
+    monkeypatch.setattr(ka, "diferencias_de_sha256", no_se_puede)
+    assert fallos(nb, tmp_path / "ruedas") == [
+        "Las ruedas de --ruedas no son las que la guarda del notebook espera: no se pudieron leer las "
+        "ruedas (PermissionError)."
+    ]
