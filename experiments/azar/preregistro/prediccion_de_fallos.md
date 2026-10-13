@@ -927,11 +927,12 @@ probabilidades ni umbrales. Donde una nota y una lista difieren, manda la nota.
 La revisión de código de los kits y notebooks del bloque (PR #209, revisión 5497999068) encontró que el
 arnés tiene dos cuentas de llamadas que no coinciden (el contador `llamadas_herramientas` solo cuenta las
 que gastan presupuesto; la traza las cuenta todas) y que la predicción 97 no decía en cuál se lee. Su autor
-la precisó antes de que exista ningún dato de R1. Original:
+la precisó antes de que exista ningún dato de R1. Original, sin versionar:
 `.scratch/concilio_memoria/fase2/concilio_47/disenador/predicciones_r1_precisiones_2.md`, sha256
-`e15250e58bb9e45d94f2e2129169d691a6e642ab212ded0b0950857a9b62b9b2`; los guiones de comprobación están junto a él. Lo único que cambia al
-copiar: los 4 títulos de segundo nivel del original pasan a cuarto nivel, para no romper el índice de este
-archivo. Las predicciones del analista (84 a 92) no se tocan: la revisión no encontró ninguna ambigua.
+`e15250e58bb9e45d94f2e2129169d691a6e642ab212ded0b0950857a9b62b9b2`; los guiones de comprobación están
+junto a él, también sin versionar. Lo único que cambia al copiar: los 4 títulos de segundo nivel del
+original pasan a cuarto nivel, para no romper el índice de este archivo. Las predicciones del analista
+(84 a 92) no se tocan: esa revisión no las examinó.
 
 Escritas por el diseñador del agente el 2026-10-13 a las 02:13 UTC, sin ningún dato de R1 (nada se ha subido). Responden al defecto 2 de la revisión del PR #209. No cambian afirmaciones, probabilidades ni umbrales. Donde difieran de mis precisiones de las 01:21, mandan estas.
 
@@ -979,3 +980,46 @@ Escritas por el diseñador del agente el 2026-10-13 a las 02:13 UTC, sin ningún
 
 - Ninguna de estas reglas se ha aplicado a una salida con el modelo real y el kit de R1: los ensayos usan el servidor falso, con 2 a 6 tareas y sin ediciones.
 - No comprobé con qué ruedas corrieron `s1` y `s2`; sus `versiones_arnes` dan los mismos números de versión que las de las 19:51, y eso no distingue.
+
+### 22.6 Orden de tandas y regla de parada del estratega (copiados tal cual), y notas del orquestador
+
+Escritos por el estratega de experimentos el 2026-10-13, antes de cualquier dato de R1, a raíz de la
+revisión del PR #209. Original, sin versionar:
+`.scratch/concilio_memoria/fase2/concilio_47/estratega/adenda_r1.md`, sha256
+`a759c58a536a29df0b810fa70404a47e84511267c846c7455f2c3de8ad25627d`. Se copian sus puntos 2 y 3 enteros; lo único
+que cambia es el nivel y el número de los dos títulos. «i1» e «i2» son las dos pasadas de la base; «c1» a
+«c4», los candidatos. Las horas son de cuota.
+
+#### Orden de tandas
+**Tanda 1: i1 + c1. Tanda 2: c2 + c3. Tanda 3: i2 + c4.** (El del revisor; retiro el del constructor.) Regla: i1 en la primera tanda e i2 en la última; c1 con i1; los demás candidatos en el orden de la adenda del auditor.
+- **Por qué.** (a) Cortado tras la tanda 2, este orden deja tres candidatos evaluables para el envío; el del constructor, dos. i2 no decide ningún envío: el neto del analista se cuenta contra i1. (b) Las bases abren y cierran unas 3 h de pared: una deriva aparece entre ellas. (c) c1, primero en el orden de envío y único de 6 min, corre a la vez que una base.
+- **Confusor que evita:** que una deriva en el tiempo quede fuera del ruido base contra base, y que c3 y c4 corran después de la última base. **Costo aceptado:** si se corta tras la tanda 2 no hay i2, y quedan no evaluables las predicciones que lo exigen (punto 4).
+- **Confusores que deja:** c2 y c3 sin base simultánea; la máquina de cada sesión, confundida con el brazo en cualquier orden; c4 siempre al final. Con 12 tareas, una diferencia entre i1 e i2 no separa deriva de ruido en resueltas; sí en velocidad, que cada sesión mide sola.
+
+#### Regla de parada entre tandas (escrita antes de cualquier dato de R1)
+Tras cada tanda se leen las dos sesiones y la cuota. **No se lanza la siguiente** si en cualquiera de las dos:
+1. El estado no es `complete`, hay menos de 12 `tarea_fin`, `cierre.tareas_colgadas` ≥ 1, `errores_del_registro` ≥ 1 o `kaggle_registro comprobar` ≠ 0. Primero el forense, con el log extraído.
+2. `versiones_arnes_<salida>.json` trae algo en `distintas` o una huella de rueda distinta, o la sesión terminó en la celda 2. El bloque entero vuelve al concilio.
+3. Reloj: la sesión de un brazo de 4,5 min pasa de **3 830 s** (media sobre 275 s), o la de c1 de **4 910 s**, o la tanda gastó más cuota que su techo (**4,9 h** la primera; **4,3 h** las otras; tras la tanda 1 deben quedar 22,3 h o más). Es más que todas las tareas en su tope: la cuenta no vale.
+4. i1 resuelve **0 o 1** de 12 (`s1`: 4): «neto de −1 o mejor» lo pasaría todo y el filtro queda en tiempo y colgadas. Vuelve al concilio.
+
+**Cambia la forma, no para:** mediana de i1 bajo **29 tokens/s** (85 % de 34,0): dos sesiones a la vez no dan la velocidad de una sola; las cuatro restantes van de una en una (misma cuota, el doble de pared). **No para el bloque:** media de c1 sobre 262 s o neto de −2 o peor (descartan a c1 y nada más). Antes de cada tanda se repite el chequeo previo con el listado del día.
+
+#### Notas del orquestador (no son de los autores)
+
+- **La cuenta de cuota cambió después de fecharse la predicción 91.** La 91 (cuota del bloque entre 9,0 y
+  12,5 h) partía de 9,8 a 11,5 h. El estratega la rehízo: 11,1 a 12,1 h esperadas, con techo de 13,4 h,
+  porque la media de 212 s por tarea era de `s1`, que corrió otro kit (4 min y 40 llamadas) y no la base de
+  R1. La 91 no se toca. Lo mismo vale para las líneas base de la 86 y la 97, tomadas de `s1`.
+- **Si el bloque se corta tras la segunda tanda no hay segunda pasada de la base**, y quedan «no
+  evaluables» la 84, la 85, la 93 y las líneas del diseñador relativas a «la base» (94 a 98).
+- **Jerarquía entre notas del diseñador.** Donde 22.5 y 22.3 difieran, vale 22.5, como dice su autor; la
+  revisión del PR #211 (5498051002) no encontró ninguna diferencia de fondo entre ellas.
+- **Tres observaciones de esa revisión que quedan sin resolver y se marcarán así:** (1) la 96 se marca con
+  la traza, que ve menos respuestas que el registro: es la lectura más favorable a C3, y por eso el máximo
+  del registro se informa siempre al lado; (2) la definición A dice «de cualquier autor» y el guion del
+  diseñador busca la primera edición solo en pasos del agente, y reconoce el estado `ok` como subcadena en
+  los primeros 40 caracteres de la salida: si en R1 las dos lecturas difieren, la línea queda «no
+  evaluable»; (3) los «±15 s» de la 95 no dicen si incluyen el extremo: se
+  leen con la definición C de 22.5 («entre a y b» incluye los extremos), y si el valor cae exactamente
+  en el borde se dice al marcar.
