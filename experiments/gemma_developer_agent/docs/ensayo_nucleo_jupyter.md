@@ -1974,6 +1974,16 @@ cada sesión (`crudo_<salida>_<etiqueta>.zip`) guarda el directorio de resultado
 `traces/trace_<tarea>.json`; eso ya lo hacía el notebook de 60 y no se tocó. El ensayo de abajo comprueba que
 cada zip crudo trae una traza por tarea terminada, con sus pasos y sus llamadas.
 
+> **Corrección del 2026-10-13, tras la revisión del PR #209.** La cuenta de este apartado parte de `s1`, que
+> no es la base de R1: `s1` corrió otro kit, con 4 min y 40 llamadas por tarea; la base de R1 tiene 4,5 min
+> y 60. No hay ninguna pasada de la base con el arnés nuevo. El estratega rehízo la cuenta moviendo los
+> topes sobre las 12 tareas de `s1`: **1,83 a 1,88 h por brazo de 4,5 min, 1,95 a 2,11 h el candidato 1, y
+> 11,1 a 12,1 h el bloque, con techo de 13,4 h** (antes: 10,40 a 11,39 h). La parte fija medida es de 520
+> y 531 s, no 560. **El orden de tandas también cambió:** base 1 con candidato 1; candidatos 2 y 3; base 2
+> con candidato 4. El orden, la regla de parada entre tandas y el original están en la sección 22.6 de
+> [`prediccion_de_fallos.md`](../../azar/preregistro/prediccion_de_fallos.md). El texto y la tabla de
+> abajo se conservan como se escribieron.
+
 **Plan de sesiones: seis, una por brazo.** Datos medidos en Kaggle con la base razonando (`s1`): 212,0 s por
 tarea, sesión de 3 064 s, registro instalado a los 519 s; `s2` arrancó en 558,6 s. Cuota = reloj × 2,01.
 
