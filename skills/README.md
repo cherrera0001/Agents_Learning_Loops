@@ -18,6 +18,7 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 | [`proteger-evidencia`](proteger-evidencia/SKILL.md) | Al tocar evidencia, benchmark o el solver acotado | `evidence/README.md`, *Leakage boundary* |
 | [`corrida-valida`](corrida-valida/SKILL.md) | Al bajar lo que dejó una corrida de un experimento con modelo, y antes de conservar o descartar una condición | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
 | [`concilio-de-experimento`](concilio-de-experimento/SKILL.md) | En cada vuelta de un experimento con modelo, antes de proponer un cambio | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
+| [`investigar-antes-de-desafio`](investigar-antes-de-desafio/SKILL.md) | Ante un desafío nuevo, antes de experimentar con un método que el repositorio no ha medido | `CONTRIBUTING.md` (*Investigación antes del experimento*) |
 | [`investigador-papers`](investigador-papers/SKILL.md) | Antes de publicar un texto que cite una obra o nombre un mecanismo | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](revisor-redactor/SKILL.md) | Antes de publicar un texto público del proyecto | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](validador-estadistico/SKILL.md) | Antes de publicar un texto con cifras o verbos de resultado | `CONTRIBUTING.md` (*Revisión de un texto público*) |
@@ -28,4 +29,6 @@ Los episodios de `learning/episodes/` siguen siendo la fuente de verdad.
 
 De `investigador-papers` a `maquetar-apa` son las skills del staff de texto público; `corrida-valida` y
 `concilio-de-experimento` son las del [staff de experimento](../docs/entorno/agentes.md#staff-de-experimento).
+`investigar-antes-de-desafio` es la del [investigador de fuentes](../docs/entorno/agentes.md#investigador-de-fuentes)
+y proyecta la sección *Investigación antes del experimento* de `CONTRIBUTING.md`.
 Ninguna es un nodo Skill de la memoria.

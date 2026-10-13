@@ -179,6 +179,40 @@ otra firma. La skill [`revisar-manuscrito`](skills/revisar-manuscrito/SKILL.md) 
 `python -m scripts.paper_check comprobar <manuscrito>`, que encuentra sin agentes lo mecánico (extensión,
 citas sin entrada, tablas sin nota, cifras del resumen sin respaldo).
 
+## Investigación antes del experimento
+
+Ante un desafío nuevo (un método que se propone adoptar, un fallo sin mecanismo conocido, una pregunta que
+el repositorio todavía no midió), el orden es fijo y lo ejecuta el
+[investigador de fuentes](docs/entorno/agentes.md#investigador-de-fuentes), un agente de entorno, sobre el
+área [`investigacion/`](investigacion/README.md). Esta sección es la fuente de la regla; el área guarda las
+fichas y el índice.
+
+1. **Buscar** en [`investigacion/fuentes/indice.jsonl`](investigacion/fuentes/indice.jsonl) y en el código.
+   Si el código ya nombra el mecanismo, se dice y se para: la cita la hace el investigador de papers
+   ([revisión de un texto público](#revisión-de-un-texto-público)).
+2. **Abrir** la obra (DOI, arXiv o URL del editor) o el video (título, descripción y, si la página la da,
+   la transcripción). Lo que no abre no se cita, y su ficha queda `no_abierto` con el motivo.
+3. **Clasificar.** *Biblioteca*: identificador abierto y una frase de qué haría el mecanismo en este
+   repositorio. *Océano*: no hay ficha con identificador abierto, o `docs/results/` no tiene una medición
+   de ese mecanismo en el solver acotado ni en el kit del experimento con modelo. Una ficha que cumple las
+   dos definiciones (obra abierta, mecanismo sin medir aquí) se anota océano: el hueco manda. Una cifra de
+   un paper o de un video es de su autor: no es un resultado de este repositorio.
+4. **Proponer al concilio** un parecer de una página: el mecanismo, la ficha, si el código ya lo nombra,
+   qué medición de este repositorio lo toca y un solo contraste, con el resultado que lo descartaría. El
+   parecer no trae un diseño de corrida ni una subida.
+5. **Experimentar solo después**, con los protocolos que ya existen:
+   [`specs/software_learning_protocol.md`](specs/software_learning_protocol.md),
+   [`specs/loop_protocol.md`](specs/loop_protocol.md) y la
+   [vuelta de un experimento con modelo](#vuelta-de-un-experimento-con-modelo). Esta sección no los
+   duplica.
+
+El investigador de fuentes solo informa: no edita el repositorio, no hace commit, no publica, no inicia
+sesión en un sistema externo y no recoge datos personales. Quien incorpora sus fichas al área es un
+implementador, por PR. No reemplaza al investigador de papers: aquel abre la obra que el código ya nombra y
+veta citas de un texto público; este busca antes, en lo publicado y en lo que aquí nadie ha medido.
+
+Skill de entorno: [`investigar-antes-de-desafio`](skills/investigar-antes-de-desafio/SKILL.md).
+
 ## Vuelta de un experimento con modelo
 
 Una **vuelta** es un ciclo de un experimento que corre un modelo de lenguaje en un sistema que cuesta
@@ -206,6 +240,9 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
      suman QA de trayectorias (si se propone cambiar la conducta del agente), el arquitecto de IA (si se
      propone cambiar el modelo, el presupuesto o el cómputo, o adoptar un método ajeno) e inteligencia
      pública (si el experimento se mide en un sistema externo).
+   - Si la pregunta es adoptar un método que no está medido aquí, el
+     [investigador de fuentes](#investigación-antes-del-experimento) entra antes del diseñador del agente
+     y le entrega su parecer. No entra en la primera ronda de medición y no vota.
    - Cuando una corrida o un envío falla sin explicación, el forense del arnés se convoca de inmediato,
      sin esperar a que alguien lo pida.
    - El orquestador da a cada rol la pregunta, las rutas y las prohibiciones, no su conclusión: un rol al
