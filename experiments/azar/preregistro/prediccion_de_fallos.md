@@ -805,9 +805,11 @@ dato de R1, los cuatro kits todavía se están construyendo y no se ha subido na
 | C3 | Tope de pensamiento | `thinking_budget` 4096 → 1536 |
 | C4 | Triaje de enunciado corto | Instrucción para tareas cuyo enunciado no describe el problema |
 
-**La regla que se va a aplicar** (adenda del auditor, escrita antes): un candidato se envía si está revisado
-y ensayado en Docker, y en R1 tiene media de 262 s o menos, ninguna tarea colgada y neto de −1 o mejor frente
-a la base. La adenda dice también que 12 tareas locales filtran seguridad y no calidad.
+**La regla que se va a aplicar** (adenda del auditor, escrita antes; citada literal): «el primer candidato,
+en este orden, revisado, ensayado en Docker, con media de 262 s o menos en R1, ninguna colgada y neto de −1 o
+mejor frente a la base. Si ninguno está listo, no se reenvía la base.» El orden es el de la tabla de arriba,
+de C1 a C4. La adenda dice también que 12 tareas locales filtran seguridad y no calidad. Todo envío y toda
+subida siguen necesitando la palabra del dueño.
 
 **Quién escribió cada lista.** El diseñador del agente (2026-10-13 01:01 UTC) y el analista de datos
 (2026-10-13, antes de cualquier subida), cada uno sin ver la del otro. El orquestador las copió aquí; las del
@@ -870,17 +872,48 @@ diseñador no traían número y reciben del 93 al 98, uno por bloque. Originales
 
 > Ningún candidato difiere de la base en más de 2 resueltas (p 0,8).
 
-### 22.3 Lo que queda dicho por el orquestador, no por los autores
+### 22.3 Precisiones de los autores, tras la revisión del PR #207 (copiadas tal cual)
 
+Un revisor independiente señaló criterios que no se podían aplicar sin juicio. Lo copiado en 22.1 y 22.2 no
+se editó. Cada autor precisó lo suyo el 2026-10-13, todavía sin ningún dato de R1, sin cambiar afirmaciones,
+probabilidades ni umbrales. Donde una nota y una lista difieren, manda la nota.
+
+**Analista de datos** («2026-10-13, UTC. Precisiones a 84-92.»):
+
+> 1. Pasada completa en R1: 12 eventos `tarea_fin` (uno por tarea) y un `cierre`. La definición de tarea válida de 20.1 rige tal cual; el umbral de 55 no se aplica.
+> 2. 92: un empate de neto entre dos candidatos o de nota en la tabla deja esa pareja sin evaluar; si quedan menos de 3 candidatos ordenables sin empate, la 92 es no evaluable.
+> 3. 91: la línea base no marca; vale la de 21.2 (0,99 h), que no he vuelto a derivar.
+> 4. «263 s» sale de `ronda2_d_proyeccion.py`, fila de tope 360 s y 28 llamadas (media 263, 10,01 h para 120 tareas). «0,64 a 0,89» sale de `r1_cuentas.py`, solo de la fila de discordancia 0,25; la tabla completa de ese guion va de 0,55 a 0,93.
+> 5. No leí `predicciones_r1.md` del diseñador antes ni después de escribir la mía.
+
+**Diseñador del agente** («Escritas el 2026-10-13 a las 01:21 UTC, sin ningún dato de R1. No cambian afirmaciones, probabilidades ni umbrales.»):
+
+> 1. **Primera edición de fuente:** uso `primera_edicion_fuente_ok` (`g2_compacto.py`): índice, desde 1, de la primera llamada `edit_file` o `write_file` con estado `ok`, cuyo `filepath` termina en `.py`, contiene `/`, no empieza por `tests/` y cuyo archivo no es `test_*.py` ni `*_test.py`. Una sesión que nunca edita no cuenta como «en la 10 o antes».
+> 2. **Llamadas de grafo:** total del brazo en las 12 tareas. Cuentan `search_similar_code`, `get_code_neighbors` y `get_code_subgraph`, de cualquier autor.
+> 3. **Tiempo:** vale `tarea_fin.segundos` del registro; las predicciones de tiempo no exigen trazas. Si falta en alguna tarea, esa predicción queda no evaluable.
+> 4. **Base:** media de las dos pasadas, sin redondear. «±1»: |x − base| ≤ 1. «Base menos 1 o más»: x ≥ base − 1. «Al menos 2 más»: x ≥ base + 2. Las medianas de la base se promedian igual. «La base, al menos una» (C3): en las dos pasadas juntas.
+> 5. **Mal planteada:** «pierde una tarea que las dos pasadas resuelven» es no evaluable si ninguna tarea cumple eso.
+
+### 22.4 Lo que queda dicho por el orquestador, no por los autores
+
+- **Sobre «sin verse».** Al analista se le pidió no leer la lista del diseñador, y declara que no la leyó
+  (nota 5). Su archivo se escribió unos 80 segundos después del otro: la independencia no se puede comprobar
+  desde fuera.
+- **La regla por defecto de 21.5 rige aquí sin su umbral de 55 tareas válidas**, que es de la corrida de 60:
+  en R1 «pasada completa» es lo que dice la nota 1 del analista.
+- **Con estas notas hay cuatro reglas para «primera edición» en el archivo** (D7 del auditor, el campo de QA,
+  y ahora `primera_edicion_fuente_ok`, que además exige estado `ok` y extensión `.py`). Las predicciones del
+  diseñador se marcan con la suya. No se unifican.
 - **Cada línea con su probabilidad es una predicción y se marca por separado.** Las del diseñador llevan
   varias por bloque; el número del bloque (93 a 98) es solo para citarlas.
 - **Las dos listas definen la base de forma distinta.** El analista compara cada candidato con la primera
-  pasada de la base; el diseñador, con la media de las dos. Y usan campos distintos para el tiempo
-  (`tarea_fin.segundos` y `duration_seconds`). No se unifican: cada una se marca con su definición.
+  pasada de la base; el diseñador, con la media de las dos, sin redondear. No se unifican: cada una se marca
+  con su definición. Para el tiempo, el diseñador escribió `duration_seconds`, que solo está en el zip crudo,
+  y en su nota 3 acepta `tarea_fin.segundos` del registro, el mismo campo que usa el analista.
 - **Las dos listas discrepan en C1.** Que la media de C1 pase de 262 s: 0,35 según el diseñador y 0,55 según
   el analista (su 86 da 0,45 a que no pasa). Se marcan las dos.
-- **Vale la regla por defecto de 21.5** para lo que ninguna lista fija: si al marcar hace falta una decisión
-  que no está escrita, la predicción queda «no evaluable», nunca a su favor.
+- **Para lo que ninguna lista ni nota fija**, vale lo dicho arriba sobre la regla por defecto: si al marcar
+  hace falta una decisión que no está escrita, la predicción queda «no evaluable», nunca a su favor.
 - **Las marcadas (T) exigen las trazas del zip crudo de cada sesión.** Si no se rescatan, quedan «no
   evaluables».
 - **Ninguna predicción de esta sección dice qué candidato sacará mejor nota.** La 92 dice expresamente que
