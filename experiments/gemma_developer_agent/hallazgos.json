@@ -21,13 +21,13 @@
     },
     {
       "id": "busqueda_por_similitud_vacia",
-      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 19: 386 avisos de «no se pudo obtener el embedding» en el log frente a 196 llamadas a la herramienta. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54; se recomendó no quitarla, porque la herramienta se anuncia en el mensaje de tarea y llamar a una no declarada terminaba la tarea con parche vacío. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente). Vuelta 47, leído en el código del arnés: el argumento de la búsqueda es una ruta de símbolo o su sufijo, no texto libre, y la instrucción del kit de base pedía usarla con palabras clave del mensaje de error. En todas las corridas rescatadas, de 362 consultas, 175 son texto libre de dos palabras o más y 168 tienen forma de símbolo. En el bloque de seis sesiones la herramienta devolvió resultados alguna vez y vacío la mayoría (cuenta gruesa, por texto de las trazas). En una sesión de la base el agente hizo 7 búsquedas frente a 140 órdenes de consola y 134 lecturas.",
+      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 19: 386 avisos de «no se pudo obtener el embedding» en el log frente a 196 llamadas a la herramienta. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54; se recomendó no quitarla, porque la herramienta se anuncia en el mensaje de tarea y llamar a una no declarada terminaba la tarea con parche vacío. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente). Vuelta 47, leído en el código del arnés: el argumento de la búsqueda es una ruta de símbolo o su sufijo, no texto libre, y la instrucción del kit de base pedía usarla con palabras clave del mensaje de error. En todas las corridas rescatadas, de 362 consultas, 175 son texto libre de dos palabras o más y 168 tienen forma de símbolo. En el bloque de seis sesiones la herramienta devolvió resultados alguna vez y vacío la mayoría (cuenta gruesa, por texto de las trazas). En una sesión de la base el agente hizo 7 búsquedas frente a 140 órdenes de consola y 134 lecturas. Corrección del mismo día: «estaba mal pedida» vale para el arnés anterior y no para el vigente. El arnés vigente, cuando la consulta lleva un espacio, busca por palabras sobre los nombres y el texto de los nodos, y esa rama no existe en la versión del arnés con la que se midió el vacío en 300 de 300. Medido sin modelo en 114 tareas públicas: la búsqueda del arnés con el enunciado entero pone el sitio de la edición entre los 5 primeros en el 19,5 % de las tareas; con un solo símbolo, en el 5,3 %.",
       "primera_vuelta": 19,
       "primera_fecha": "2026-10-05",
       "vueltas_medido": [19, 38, 42, 47],
       "estado": "decidido",
       "decision": {
-        "texto": "Se revoca la decisión de la vuelta 42 de quitar las herramientas de grafo: no estaban muertas, estaban mal pedidas. El candidato siguiente corrige cómo se le dice al agente que las use y se mide antes en local, sin modelo.",
+        "texto": "No se quitan las herramientas de grafo ni se cambia la línea de la instrucción que manda buscar con palabras: con el arnés vigente esa forma de consulta es la que mejor resultado da de las que el agente puede pedir. El candidato que la reemplazaba por los vecinos de un símbolo queda retirado sin enviar.",
         "quien": "orquestador",
         "vuelta": 47,
         "fecha": "2026-10-13"
@@ -491,6 +491,17 @@
       "decision": null,
       "motivo_descarte": null,
       "por_que_sigue_abierto": "Es una correlación entre corridas, no un experimento. Falta medir en local, sin modelo, si la activación propagada del repositorio sobre el grafo de código pone el sitio arriba, y después si un kit que localiza por el grafo resuelve más."
+    },
+    {
+      "id": "localizacion_sobre_el_grafo_sin_modelo",
+      "que_se_midio": "Experimento sin modelo y sin GPU sobre las tareas públicas: 114 de 129 tienen el sitio de la edición de referencia en el grafo de código. Porcentaje de tareas con el sitio entre los 5 primeros: azar 0,8; palabras del enunciado con el coseno del repositorio 9,6; solo los símbolos que nombra el enunciado 20,5; vecinos a uno y a dos saltos 22,0; activación propagada del repositorio con su configuración por defecto 20,8; vecinos pedidos al arnés 20,3; búsqueda del arnés con el enunciado entero 19,5. Entre los 5 primeros ninguna tarea cambia de lado entre la activación y los vecinos a dos saltos. El sitio es un símbolo nombrado en 30 tareas, está a un salto en 14, a dos en 11, a tres o más en 38 y sin camino en 21. El parche de referencia se usó solo para medir.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "descartado",
+      "decision": null,
+      "motivo_descarte": "La activación propagada no ordena mejor que mirar los vecinos del símbolo nombrado, y lo que el agente ya puede pedir al arnés con la instrucción vigente da un resultado equivalente. Una prueba pareada pública de localización dentro del agente dio 95 resueltas contra 92 de 318. No se construye ni se envía un candidato de localización por grafo.",
+      "por_que_sigue_abierto": null
     }
   ]
 }
