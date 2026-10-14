@@ -20,13 +20,16 @@ deja como respaldo es la de [`decision_c1.md`](decision_c1.md).
 
 ## Qué se hace
 
-1. **Suelo.** Un kit propio, no una copia del bundle público: el dueño ordenó el 2026-10-14 que el envío sea un zip
-   nuevo, nuestro. Un cambio posterior de estrategia (bitácora, 13:10 UTC, antes de cualquier dato del kit) retira
+1. **Suelo.** Un zip nuevo, nuestro, y no el bundle público tal cual: el dueño ordenó el 2026-10-14 que el envío
+   sea un zip nuevo. Un cambio posterior de estrategia (bitácora, 13:10 UTC, antes de cualquier dato del kit) retira
    el 0,24 sin `write_file` como candidato: el 0,24 exacto y el «sin `write_file`» quedan como controles de sesión.
-   El candidato es el kit **ALL-1** (`kit_all_1/ESPECIFICACION.md`): texto escrito desde cero y dos mecanismos que
+   El candidato es el kit **ALL-1** (`kit_all_1/ESPECIFICACION.md`). Corrección del dueño de las 13:15 UTC: se
+   construye a partir del zip del 0,24, con sus cuatro archivos tal cual, y encima solo las mejoras propias y los
+   mismos topes, muestreo y herramientas: las reglas de higiene de llamadas que falten al prompt y dos mecanismos que
    el agente ejecuta, la skill `localizar` (búsqueda léxica más BM25 sobre los términos del enunciado, los 5
    primeros archivos) y la skill `entregar` (limpia rutas de pruebas y archivos sueltos, comprueba la sintaxis y
-   prohíbe el diff vacío). Cada pieza nombra el fallo medido que ataca, entre ellos el bucle de `submit_patch`
+   prohíbe el diff vacío). El diff frente al 0,24 debe mostrar solo esas adiciones, y la sesión de ALL-1 mide una
+   diferencia de dos skills sobre el 0,24, no un kit nuevo. La regla del envío no cambia. Cada pieza nombra el fallo medido que ataca, entre ellos el bucle de `submit_patch`
    vacío de las sesiones del 0,24 (49 y 51 llamadas con parche de tamaño 0, en 1 de 12 tareas por sesión).
    Antes de la sesión de 12 tareas del kit, sus puertas de ensayo son: que el arnés admita las skills, el ensayo en
    Docker con modelo falso, y `localizar` medido sin modelo sobre las 129 tareas públicas.
@@ -41,7 +44,7 @@ deja como respaldo es la de [`decision_c1.md`](decision_c1.md).
 |---|---|---|---|---|
 | G2, sonda de efecto (2,5 h de GPU como máximo) | ¿El vLLM del arnés aplica el adaptador? | Arranca a `gpu_memory_utilization` 0,80; el adaptador de ceros coincide con la base dentro de la deriva en 5 de 5; el adaptador N(0, 1) mueve el primer token al menos 1 nat y al menos 10 veces la deriva en 4 de 5 | **Pasó** (2026-10-14) | Se cierra la vía LoRA con el puntuador como está; se pide al organizador `cudagraph_specialize_lora: false` |
 | E2, aceptación | ¿El puntuador acepta el zip con adaptador? | El zip del envío del día 15 más el adaptador nulo, con los demás bytes idénticos, puntúa sin error (el primer cupo libre tras puntuar el del 15) | Espera la palabra del dueño | Un error genérico cuenta como «sin lectura» y se repite una vez; un segundo error cierra el LoRA |
-| G3, tokens por segundo de entrenamiento (4 h como máximo, solo si pasó G2) | ¿Cabe el entrenamiento en la cuota? | 150 o más: 31B; de 50 a 150: solo una miniatura de 4 M de tokens o menos; menos de 50: se cierra el entrenamiento en GPU | Relanzada (en curso) | Sin G3 no hay entrenamiento |
+| G3, tokens por segundo de entrenamiento (4 h como máximo, solo si pasó G2) | ¿Cabe el entrenamiento en la cuota? | 150 o más: 31B; de 50 a 150: solo una miniatura de 4 M de tokens o menos; menos de 50: se cierra el entrenamiento en GPU | Relanzada, en cola | Sin G3 no hay entrenamiento |
 
 **G2 se subió el 2026-10-14 y pasó** (`sonda_g2.json`): arrancó a 0,80 en 427 s; el adaptador de ceros quedó dentro
 de la deriva en 5 de 5; N(0, 1) movió el primer token entre 12,2 y 16,5 nats en 5 de 5 (deriva máxima 0,19 nats).
