@@ -144,7 +144,7 @@ def test_a_card_of_another_repository_is_not_taken_for_this_issue(tmp_path, monk
         ],
     )
     out = _run_with_snapshot(monkeypatch, capsys, snapshot).out
-    assert "tablero: Done, verificación Verificada (snapshot)" in out and "estado Todo" not in out
+    assert "tablero: Done, verificación Verificada (snapshot)" in out and "tablero: Todo" not in out
 
 
 def test_snapshot_marks_episode_provenance_and_warns_on_discrepancies(tmp_path, monkeypatch, capsys):
@@ -164,7 +164,7 @@ def test_snapshot_marks_episode_provenance_and_warns_on_discrepancies(tmp_path, 
                 "status": "Done",
                 "verificación": "Verificada",
                 "talla": "M",
-                "puntos": 2,
+                "puntos": 3,
                 "incertidumbre": 2,
                 "riesgo": 2,
                 "modelo": "Opus",
@@ -179,6 +179,7 @@ def test_snapshot_marks_episode_provenance_and_warns_on_discrepancies(tmp_path, 
     assert "usado Sonnet" in out
     assert "tablero: Done, verificación Verificada (snapshot)" in out
     assert "estimate.size=S; talla=M" in out
+    assert "estimate.points=2; puntos=3" in out
     assert "estimate.uncertainty=1; incertidumbre=2" in out
     assert "estimate.risk=1; riesgo=2" in out
     assert "estimate.planned_model=Sonnet; modelo=Opus" in out
@@ -214,6 +215,58 @@ def test_snapshot_does_not_report_matching_episode_and_card_values(tmp_path, mon
     out = _run_with_snapshot(monkeypatch, capsys, snapshot, episode).out
     assert "tablero: Done, verificación Verificada (snapshot)" in out
     assert "discrepancias episodio/snapshot" not in out
+
+
+def _card(**fields):
+    return {
+        "content": {"number": 114, "type": "Issue", "repository": REPO},
+        "status": "Done",
+        "verificación": "Verificada",
+        **fields,
+    }
+
+
+def test_snapshot_reads_the_single_select_options_as_gh_prints_them(tmp_path, monkeypatch, capsys):
+    """`gh project item-list` entrega Incertidumbre y Riesgo como texto («1») y el episodio como número."""
+    episode = _episode(
+        1,
+        "issue-114",
+        "Verificador de datos",
+        "#114",
+        estimate={"size": "S", "points": 2, "uncertainty": 1, "risk": 2},
+    )
+    card = _card(talla="S", puntos=2.0, incertidumbre="1", riesgo="2")
+    out = _run_with_snapshot(monkeypatch, capsys, _write_snapshot(tmp_path, [card]), episode).out
+    assert "tablero: Done, verificación Verificada (snapshot)" in out
+    assert "discrepancias episodio/snapshot" not in out
+    different = _card(talla="S", puntos=2, incertidumbre="2", riesgo="2")
+    out = _run_with_snapshot(monkeypatch, capsys, _write_snapshot(tmp_path, [different]), episode).out
+    assert "estimate.uncertainty=1; incertidumbre=2" in out and "estimate.risk" not in out
+
+
+@pytest.mark.parametrize(
+    ("estimate", "card"),
+    [({"points": 2}, {"talla": "M"}), ({"size": "M"}, {"puntos": 2})],
+)
+def test_a_value_missing_on_one_side_is_not_a_discrepancy(tmp_path, monkeypatch, capsys, estimate, card):
+    episode = _episode(1, "issue-114", "Verificador de datos", "#114", estimate=estimate)
+    out = _run_with_snapshot(monkeypatch, capsys, _write_snapshot(tmp_path, [_card(**card)]), episode).out
+    assert "tablero: Done" in out and "discrepancias episodio/snapshot" not in out
+
+
+def test_an_episode_that_did_not_escalate_is_compared_with_a_card_that_says_it_did(
+    tmp_path, monkeypatch, capsys
+):
+    episode = _episode(1, "issue-114", "Verificador de datos", "#114", outcome={"escalated": False})
+    out = _run_with_snapshot(
+        monkeypatch, capsys, _write_snapshot(tmp_path, [_card(escaló="Sí")]), episode
+    ).out
+    assert "outcome.escalated=No; escaló=Sí" in out
+
+
+def test_a_missing_estimate_is_said_like_a_missing_outcome():
+    line = _only_line(_episode(1, "issue-7", "Verificador de datos", "#7", outcome={"used_model": "Opus"}))
+    assert "episodio sin estimación" in line and "episodio sin resultado" not in line
 
 
 def test_recall_without_snapshot_keeps_episode_provenance_and_no_board_claim():

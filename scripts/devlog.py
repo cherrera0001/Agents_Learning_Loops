@@ -155,8 +155,21 @@ def _snapshot_discrepancies(
     return [
         f"{source}={_shown(episode_value)}; {target}={_shown(snapshot_value)}"
         for source, episode_value, target, snapshot_value in comparisons
-        if episode_value is not None and snapshot_value is not None and episode_value != snapshot_value
+        if episode_value is not None
+        and snapshot_value is not None
+        and not _same_value(episode_value, snapshot_value)
     ]
+
+
+def _same_value(episode_value: Any, snapshot_value: Any) -> bool:
+    """¿Dicen lo mismo? ``gh`` entrega las opciones de un campo (Incertidumbre, Riesgo) como texto y el
+    episodio las guarda como número: ``2`` y ``"2"`` son el mismo dato; ``3`` y ``3.0`` también."""
+    if isinstance(episode_value, bool) or isinstance(snapshot_value, bool):
+        return bool(episode_value == snapshot_value)
+    try:
+        return float(episode_value) == float(snapshot_value)
+    except (TypeError, ValueError):
+        return bool(episode_value == snapshot_value)
 
 
 def _escalated_label(value: Any) -> str | None:
