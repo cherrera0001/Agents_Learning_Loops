@@ -224,7 +224,7 @@ def test_sitio_por_la_cabecera_del_trozo_cuando_la_definicion_no_se_ve() -> None
         [
             "--- a/taller/motor.py",
             "+++ b/taller/motor.py",
-            "@@ -8,3 +8,3 @@ def _encender(llave):",
+            "@@ -8,2 +8,2 @@ def _encender(llave):",
             "     valor = chispa(llave)",
             "-    return valor",
             "+    return valor or 0",
@@ -238,7 +238,7 @@ def test_sitio_de_un_metodo_usa_la_clase_que_lo_encierra() -> None:
         [
             "--- a/taller/motor.py",
             "+++ b/taller/motor.py",
-            "@@ -1,4 +1,4 @@",
+            "@@ -1,3 +1,3 @@",
             " class Motor:",
             "     def arrancar(self):",
             "-        return _encender(self.llave)",
@@ -263,6 +263,111 @@ def test_un_metodo_nuevo_apunta_a_la_clase_y_no_al_metodo_anterior() -> None:
         ]
     )
     assert kl.sitios_de_referencia(parche, grafo()) == {"taller.motor.Motor"}
+
+
+def clase_con_dos_metodos() -> kl.GrafoCodigo:
+    return kl.GrafoCodigo(
+        {
+            "m.Caja": "class Caja:\n    None",
+            "m.Caja.abrir": "def abrir(self):\n    self.gira()\n    self.tapa = 1\n    return self.tapa",
+            "m.Caja.cerrar": "def cerrar(self):\n    self.gira()\n    self.tapa = 0\n    return self.tapa",
+            "m.suelta": "def suelta():\n    return 0",
+        },
+        [],
+    )
+
+
+def test_si_la_cabecera_es_la_clase_el_metodo_se_busca_por_las_lineas_vecinas() -> None:
+    # La cabecera de git da la clase; el ``def`` del método queda fuera del trozo. Las dos líneas que
+    # cambian y sus vecinas están en los dos métodos salvo «self.tapa = 0», que decide.
+    parche = "\n".join(
+        [
+            "--- a/m.py",
+            "+++ b/m.py",
+            "@@ -7,3 +7,3 @@ class Caja:",
+            "         self.gira()",
+            "         self.tapa = 0",
+            "-        return self.tapa",
+            "+        return bool(self.tapa)",
+        ]
+    )
+    assert kl.sitios_de_referencia(parche, clase_con_dos_metodos()) == {"m.Caja.cerrar"}
+
+
+def test_un_metodo_nuevo_bajo_la_cabecera_de_la_clase_apunta_a_la_clase() -> None:
+    parche = "\n".join(
+        [
+            "--- a/m.py",
+            "+++ b/m.py",
+            "@@ -8,2 +8,5 @@ class Caja:",
+            "         self.tapa = 0",
+            "         return self.tapa",
+            "+",
+            "+    def vaciar(self):",
+            "+        return None",
+        ]
+    )
+    assert kl.sitios_de_referencia(parche, clase_con_dos_metodos()) == {"m.Caja"}
+
+
+def test_la_cabecera_del_archivo_siguiente_no_es_una_linea_quitada() -> None:
+    # La línea quitada empieza por «-- » a propósito, y después viene otro archivo.
+    g = kl.GrafoCodigo({"a.f": "def f():\n    -- x\n    return 1", "b.g": "def g():\n    return 2"}, [])
+    parche = "\n".join(
+        [
+            "--- a/a.py",
+            "+++ b/a.py",
+            "@@ -1,2 +1,1 @@",
+            " def f():",
+            "--- x",
+            "--- a/b.py",
+            "+++ b/b.py",
+            "@@ -1,2 +1,2 @@",
+            " def g():",
+            "-    return 2",
+            "+    return 3",
+        ]
+    )
+    trozos = list(kl._trozos(parche))
+    assert [(ruta, len(lineas)) for ruta, _, lineas in trozos] == [("a.py", 2), ("b.py", 3)]
+    assert trozos[0][2] == [(" ", "def f():"), ("-", "-- x")]
+    # «-- x» está a nivel de módulo y no da sitio; el segundo archivo sí se lee.
+    assert kl.sitios_de_referencia(parche, g) == {"b.g"}
+
+
+def test_un_cambio_de_firma_apunta_a_la_funcion_cuya_definicion_se_quita() -> None:
+    parche = "\n".join(
+        [
+            "--- a/taller/bujia.py",
+            "+++ b/taller/bujia.py",
+            "@@ -1,2 +1,2 @@ def limpiar():",
+            "-def chispa(llave):",
+            "+def chispa(llave, fuerza):",
+            "     return llave * 2",
+        ]
+    )
+    assert kl.sitios_de_referencia(parche, grafo()) == {"taller.bujia.chispa"}
+
+
+def test_dos_metodos_con_el_mismo_nombre_se_distinguen_por_el_texto() -> None:
+    g = kl.GrafoCodigo(
+        {
+            "m.A.__init__": "def __init__(self):\n    self.a = 1",
+            "m.B.__init__": "def __init__(self):\n    self.b = 2",
+        },
+        [],
+    )
+    parche = "\n".join(
+        [
+            "--- a/m.py",
+            "+++ b/m.py",
+            "@@ -9,2 +9,2 @@",
+            "     def __init__(self):",
+            "-        self.b = 2",
+            "+        self.b = 3",
+        ]
+    )
+    assert kl.sitios_de_referencia(parche, g) == {"m.B.__init__"}
 
 
 def test_nombres_repetidos_se_distinguen_por_el_archivo() -> None:
@@ -396,7 +501,8 @@ def test_cruce_con_resultados_cuenta_sin_identificadores() -> None:
         return kl.Medida("a/x", 10, 1, 1, 1, 0, {kl.ACTIVACION: dict.fromkeys(kl.CORTES, valor)})
 
     medidas = {"t1": medida(1.0), "t2": medida(0.4), "t3": medida(1.0), "t4": medida(1.0)}
-    cruce = kl.cruce_con_resultados(medidas, {"t1": False, "t2": False, "t3": True})
+    cruce = kl.cruce_con_resultados(medidas, {"t1": False, "t2": False, "t3": True, "t9": False})
+    assert (cruce["tareas_con_resultado"], cruce["de_ellas_sin_medir"]) == (4, 1)
     assert cruce["nunca_resueltas"]["tareas_medidas"] == 2
     assert cruce["nunca_resueltas"]["metodos"][kl.ACTIVACION] == {"esperadas": 1.4, "seguras": 1}
     assert cruce["resueltas_alguna_vez"]["tareas_medidas"] == 1

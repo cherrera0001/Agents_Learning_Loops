@@ -44,7 +44,7 @@ import sys
 import types
 import zipfile
 from collections import Counter, defaultdict, deque
-from collections.abc import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -65,7 +65,8 @@ ACTIVACION = "activación propagada"
 HIBRIDA = "activación con siembra híbrida"
 ARNES_VECINOS = "arnés: get_code_neighbors(símbolo)"
 ARNES_SIMILAR = "arnés: search_similar_code(símbolo)"
-ARNES_PALABRAS = "arnés: search_similar_code(palabras)"
+ARNES_PALABRAS = "arnés: search_similar_code(palabras que nombran un nodo)"
+ARNES_ENUNCIADO = "arnés: search_similar_code(enunciado entero)"
 
 
 # --------------------------------------------------------------------------- grafo de código
@@ -286,7 +287,7 @@ def prob_acierto(puntajes: Mapping[str, float], oro: set[str], total: int, k: in
 
 
 # --------------------------------------------------------------------------- sitio de referencia
-_CABECERA = re.compile(r"^@@ -\d+(?:,\d+)? \+\d+(?:,\d+)? @@ ?(.*)$")
+_CABECERA = re.compile(r"^@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@ ?(.*)$")
 _DEFINICION = re.compile(r"^(\s*)(?:async\s+def|def|class)\s+([A-Za-z_][A-Za-z0-9_]*)")
 
 
@@ -308,85 +309,116 @@ def modulo_de(ruta: str, grafo: GrafoCodigo) -> str | None:
     return None
 
 
-def _cadena(previas: Sequence[str], desde: int, tope: int, cabecera: str) -> list[str]:
-    """Definiciones que encierran una línea, de dentro a fuera: las del trozo y la de su cabecera."""
+def _trozos(parche: str) -> Iterator[tuple[str, str, list[tuple[str, str]]]]:
+    """Por cada trozo del parche: ruta del archivo, texto de su cabecera ``@@`` y líneas (marca, cuerpo)."""
+    ruta = ""
+    cabecera = ""
+    lineas: list[tuple[str, str]] = []
+    faltan = {"-": 0, "+": 0}  # líneas que le quedan al trozo abierto, según su cabecera
+    for linea in parche.splitlines():
+        if faltan["-"] > 0 or faltan["+"] > 0:
+            marca = linea[:1] if linea[:1] in ("-", "+") else " "
+            if linea[:1] != "\\":  # «\ No newline at end of file» no es una línea del archivo
+                lineas.append((marca, linea[1:]))
+                for lado in ("-", "+"):
+                    faltan[lado] -= marca in (" ", lado)
+            if faltan["-"] <= 0 and faltan["+"] <= 0:
+                yield ruta, cabecera, lineas
+            continue
+        m = _CABECERA.match(linea)
+        if m:
+            cabecera, lineas = m.group(3), []
+            faltan = {"-": int(m.group(1) or 1), "+": int(m.group(2) or 1)}
+        elif linea.startswith("+++ "):
+            ruta = linea[4:].split("\t")[0].strip()
+            ruta = ruta[2:] if ruta.startswith("b/") else ruta
+    if faltan["-"] > 0 or faltan["+"] > 0:  # parche cortado: el último trozo cuenta con lo que trae
+        yield ruta, cabecera, lineas
+
+
+def _visibles(previas: Sequence[str], desde: int, tope: int) -> list[str]:
+    """Definiciones del trozo que encierran una línea, de dentro a fuera, según la sangría."""
     nombres: list[str] = []
     for i in range(desde, -1, -1):
         m = _DEFINICION.match(previas[i])
         if m and len(m.group(1)) < tope:
             nombres.append(m.group(2))
             tope = len(m.group(1))
-    m = _DEFINICION.match(cabecera)
-    if m and len(m.group(1)) < tope:
-        nombres.append(m.group(2))
     return nombres
 
 
-def _nodos_del_cambio(modulo: str, cadena: Sequence[str], pista: str, grafo: GrafoCodigo) -> set[str]:
-    """Nodos de un módulo que corresponden a un cambio dentro de las definiciones de ``cadena``."""
+def _por_texto(candidatos: Sequence[str], ventana: Sequence[str], grafo: GrafoCodigo) -> list[str]:
+    """Candidatos cuyo texto contiene más líneas de la ventana del cambio (ninguno si no contiene ninguna)."""
+    cuenta = {n: sum(1 for linea in ventana if linea in grafo.textos[n]) for n in candidatos}
+    maximo = max(cuenta.values(), default=0)
+    return [n for n, c in cuenta.items() if c == maximo] if maximo else []
+
+
+def _nodos_del_cambio(
+    modulo: str,
+    visibles: Sequence[str],
+    contenedor: str | None,
+    ventana: Sequence[str],
+    definicion_nueva: bool,
+    grafo: GrafoCodigo,
+) -> set[str]:
+    """Nodos de un módulo que corresponden a un cambio.
+
+    ``visibles`` son las definiciones que el trozo deja ver alrededor del cambio (la primera es la que
+    lo encierra); ``contenedor`` es la definición de la cabecera ``@@``, que encierra el trozo pero puede
+    ser la clase y no el método: entonces el método se busca por el texto de la ventana.
+    """
     del_modulo = [n for n in grafo.textos if n.startswith(modulo + ".")]
-    if not cadena:
-        return {n for n in del_modulo if pista and pista in grafo.textos[n]}
-    interior = cadena[0]
-    candidatos = [n for n in del_modulo if n.rsplit(".", 1)[-1] == interior]
-    for exterior in cadena[1:]:
-        dentro = [n for n in candidatos if exterior in n.split(".")]
-        candidatos = dentro or candidatos
-    if not candidatos:
-        # La definición visible es la que contiene (p. ej. la clase): se busca la línea en sus miembros.
-        candidatos = [n for n in del_modulo if interior in n.split(".")]
-        return {n for n in candidatos if pista and pista in grafo.textos[n]}
-    if len(candidatos) > 1 and pista:
-        con_texto = [n for n in candidatos if pista in grafo.textos[n]]
-        candidatos = con_texto or candidatos
-    return set(candidatos)
+    if visibles:
+        candidatos = [n for n in del_modulo if n.rsplit(".", 1)[-1] == visibles[0]]
+        for exterior in [*visibles[1:], *([contenedor] if contenedor else [])]:
+            dentro = [n for n in candidatos if exterior in n.split(".")[:-1]]
+            candidatos = dentro or candidatos
+        if len(candidatos) > 1:
+            candidatos = _por_texto(candidatos, ventana, grafo) or candidatos
+        return set(candidatos)
+    if contenedor:
+        miembros = [n for n in del_modulo if contenedor in n.split(".")]
+        propios = [n for n in miembros if n.rsplit(".", 1)[-1] == contenedor]
+        return set(propios if definicion_nueva else (_por_texto(miembros, ventana, grafo) or propios))
+    return set()
 
 
 def sitios_de_referencia(parche: str, grafo: GrafoCodigo) -> set[str]:
     """Nodos del grafo que la edición de referencia toca. **Solo para medir.**
 
     Por cada línea quitada, y por cada tanda de líneas añadidas, se busca la definición (``def`` o
-    ``class``) que la encierra, con la sangría, dentro del trozo del parche y en su cabecera ``@@``.
-    El nodo es el del módulo del archivo cuyo último componente es ese nombre. Un cambio a nivel de
-    módulo, o en un archivo que el grafo no tiene, no da sitio.
+    ``class``) que la encierra: por la sangría dentro del trozo del parche y, si el trozo no la deja
+    ver, entre los miembros de la definición de su cabecera ``@@`` cuyo texto contiene las líneas
+    vecinas al cambio. Un cambio a nivel de módulo, o en un archivo que el grafo no tiene, no da sitio.
     """
     sitios: set[str] = set()
-    modulo: str | None = None
-    previas: list[str] = []
-    cabecera = ""
-    tanda_abierta = False
-    for linea in parche.splitlines():
-        if linea.startswith("+++ "):
-            ruta = linea[4:].split("\t")[0].strip()
-            modulo = modulo_de(ruta[2:] if ruta.startswith("b/") else ruta, grafo)
-            previas, tanda_abierta = [], False
+    for ruta, cabecera, lineas in _trozos(parche):
+        modulo = modulo_de(ruta, grafo)
+        if modulo is None:
             continue
-        if linea.startswith(("--- ", "diff --git", "index ")):
-            continue
-        m = _CABECERA.match(linea)
-        if m:
-            previas, cabecera, tanda_abierta = [], m.group(1), False
-            continue
-        if modulo is None or not linea:
-            continue
-        marca, cuerpo = linea[0], linea[1:]
-        if marca == "+":
-            if not cuerpo.strip() or tanda_abierta:
-                continue
-            tanda_abierta = True
-            pista = next((p.strip() for p in reversed(previas) if p.strip()), "")
-            cadena = _cadena(previas, len(previas) - 1, _sangria(cuerpo), cabecera)
-            sitios |= _nodos_del_cambio(modulo, cadena, pista, grafo)
-            continue
+        en_cabecera = _DEFINICION.match(cabecera)
+        previas = [cuerpo for marca, cuerpo in lineas if marca != "+"]
+        vistas = 0  # líneas del archivo original ya recorridas
         tanda_abierta = False
-        if marca not in " -":
-            continue
-        previas.append(cuerpo)
-        if marca == "-" and cuerpo.strip():
+        for marca, cuerpo in lineas:
+            if marca != "+":
+                vistas += 1
+            cambia = cuerpo.strip() and (marca == "-" or (marca == "+" and not tanda_abierta))
+            tanda_abierta = marca == "+" and (tanda_abierta or bool(cuerpo.strip()))
+            if not cambia:
+                continue
             propia = _DEFINICION.match(cuerpo)
-            tope = _sangria(cuerpo) + (1 if propia else 0)
-            cadena = _cadena(previas, len(previas) - 1, tope, cabecera)
-            sitios |= _nodos_del_cambio(modulo, cadena, cuerpo.strip(), grafo)
+            tope = _sangria(cuerpo) + (1 if marca == "-" and propia else 0)
+            ventana = [p.strip() for p in previas[max(0, vistas - 4) : vistas + 3] if p.strip()]
+            sitios |= _nodos_del_cambio(
+                modulo,
+                _visibles(previas, vistas - 1, tope),
+                en_cabecera.group(2) if en_cabecera and tope > 0 else None,
+                ventana,
+                marca == "+" and bool(propia or cuerpo.lstrip().startswith("@")),
+                grafo,
+            )
     return sitios
 
 
@@ -504,14 +536,23 @@ def clasificadores_del_arnes(
                 puntajes[nombre] = max(puntajes.get(nombre, 0.0), similitud)
         return puntajes
 
-    def palabras(_enunciado: str, simbolos: Sequence[str], _grafo: GrafoCodigo) -> dict[str, float]:
-        if not simbolos:
-            return {}
-        consulta = " ".join(simbolos) + " "  # con espacio no se resuelve a un nodo: búsqueda por palabras
-        hallados = sg.get_similar_nodes(node=consulta, k=max(CORTES), **comun)
+    def por_palabras(consulta: str) -> dict[str, float]:
+        # Con un espacio la consulta no se resuelve a un nodo y el arnés busca por palabras.
+        hallados = sg.get_similar_nodes(node=consulta + " ", k=max(CORTES), **comun)
         return {str(h["node_name"]): float(h.get("similarity", 0.0)) for h in hallados}
 
-    return {ARNES_VECINOS: vecinos, ARNES_SIMILAR: similares, ARNES_PALABRAS: palabras}
+    def palabras(_enunciado: str, simbolos: Sequence[str], _grafo: GrafoCodigo) -> dict[str, float]:
+        return por_palabras(" ".join(simbolos)) if simbolos else {}
+
+    def entero(enunciado: str, _simbolos: Sequence[str], _grafo: GrafoCodigo) -> dict[str, float]:
+        return por_palabras(enunciado)
+
+    return {
+        ARNES_VECINOS: vecinos,
+        ARNES_SIMILAR: similares,
+        ARNES_PALABRAS: palabras,
+        ARNES_ENUNCIADO: entero,
+    }
 
 
 # --------------------------------------------------------------------------- agregado
@@ -579,7 +620,10 @@ def cruce_con_resultados(
     medidas: Mapping[str, Medida], resueltas: Mapping[str, bool], k: int = 5
 ) -> dict[str, Any]:
     """Conteos (sin identificadores) del sitio entre los ``k`` primeros según si la tarea se resolvió."""
-    salida: dict[str, Any] = {}
+    salida: dict[str, Any] = {
+        "tareas_con_resultado": len(resueltas),
+        "de_ellas_sin_medir": sum(1 for t in resueltas if t not in medidas),
+    }
     for etiqueta, quiere in (("nunca_resueltas", False), ("resueltas_alguna_vez", True)):
         grupo = [m for t, m in medidas.items() if t in resueltas and resueltas[t] is quiere]
         metodos = list(grupo[0].aciertos) if grupo else []
