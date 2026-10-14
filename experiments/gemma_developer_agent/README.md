@@ -872,6 +872,145 @@ reservado; y la campaña de skills si el ruido y el cómputo alcanzan, con el di
 | Acceso a L4×4 desde la cuenta | **Medido de hecho**: las corridas del manuscrito se hicieron en notebooks con cuatro GPU L4 | Manuscrito § 3, «Runs» |
 | Efecto de B, C o D | **Sin medir.** Las condiciones no existen | — |
 | Corridas con el arnés y sin modelo (tres tareas locales sin parche) | Hecho, pero el registro tiene conclusiones cuestionadas y no es una fuente de exclusiones | [`calibracion/fase2_sin_parche.json`](calibracion/fase2_sin_parche.json); pre-registro, A.4 |
+| Localización del sitio de la edición en el grafo de código, sin modelo y sin GPU (#221) | **Medida en local, 114 de 129 tareas, una configuración**: la activación propagada del repositorio no supera a los vecinos sin propagación; la búsqueda por palabras del propio arnés queda por encima | Sección 11.1; `python -m scripts.kaggle_localizacion` (sección 13) |
+
+### 11.1 Localización por el grafo de código, sin modelo (#221)
+
+**Qué se midió.** Para cada tarea pública, un guion toma como semillas los identificadores del enunciado
+que nombran un nodo del grafo de código de esa tarea, propaga activación con el mecanismo del repositorio
+(`Retriever.spread`, configuración por defecto: δ = 0,7, θ = 0,01, 3 saltos, fan-out `sqrt`) y ordena los
+nodos. La medida es si el sitio de la edición de referencia queda entre los 1, 5, 10 y 20 primeros. El
+mecanismo se usa sin cambios; lo único añadido es un adaptador que convierte cada nodo de código en un nodo
+`Concept` y cada llamada en una arista `ASSOCIATED_WITH` de peso 1. El parche de referencia se usa solo para
+saber cuál es el sitio: ninguna clasificación lo recibe. De las 129 tareas, 15 no tienen sitio en el grafo
+(la edición cae en un archivo o a un nivel que el grafo no tiene) y quedan 114. Las celdas son porcentajes
+esperados con los empates en orden aleatorio, que es lo que hace que el azar sea una fila más.
+
+| Repositorio | Tareas | Método | Entre los 1 | Entre los 5 | Entre los 10 | Entre los 20 |
+|---|---:|---|---:|---:|---:|---:|
+| Textualize/rich | 45 | azar | 0,1 % | 0,7 % | 1,4 % | 2,7 % |
+| Textualize/rich | 45 | palabras del enunciado | 0,0 % | 4,4 % | 8,9 % | 22,2 % |
+| Textualize/rich | 45 | solo semillas (0 saltos) | 8,7 % | 20,9 % | 22,6 % | 26,1 % |
+| Textualize/rich | 45 | vecinos a 1 salto | 8,7 % | 23,1 % | 27,1 % | 33,6 % |
+| Textualize/rich | 45 | vecinos a 2 saltos | 8,7 % | 23,2 % | 27,2 % | 33,9 % |
+| Textualize/rich | 45 | activación propagada | 6,4 % | 20,8 % | 24,2 % | 25,7 % |
+| Textualize/rich | 45 | activación con siembra híbrida | 8,9 % | 12,7 % | 20,1 % | 29,9 % |
+| Textualize/rich | 45 | arnés: get_code_neighbors(símbolo) | 10,0 % | 21,6 % | 27,6 % | 32,5 % |
+| Textualize/rich | 45 | arnés: search_similar_code(símbolo) | 2,2 % | 8,9 % | 9,0 % | 11,3 % |
+| Textualize/rich | 45 | arnés: search_similar_code(palabras que nombran un nodo) | 19,9 % | 33,3 % | 42,2 % | 46,9 % |
+| Textualize/rich | 45 | arnés: search_similar_code(enunciado entero) | 6,7 % | 20,6 % | 27,8 % | 35,6 % |
+| encode/httpx | 1 | azar | 1,9 % | 9,1 % | 17,5 % | 32,1 % |
+| encode/httpx | 1 | palabras del enunciado | 0,0 % | 0,0 % | 0,0 % | 0,0 % |
+| encode/httpx | 1 | solo semillas (0 saltos) | 100,0 % | 100,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | vecinos a 1 salto | 100,0 % | 100,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | vecinos a 2 saltos | 100,0 % | 100,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | activación propagada | 100,0 % | 100,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | activación con siembra híbrida | 0,0 % | 0,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | arnés: get_code_neighbors(símbolo) | 14,3 % | 71,4 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | arnés: search_similar_code(símbolo) | 0,0 % | 0,0 % | 0,0 % | 0,0 % |
+| encode/httpx | 1 | arnés: search_similar_code(palabras que nombran un nodo) | 0,0 % | 100,0 % | 100,0 % | 100,0 % |
+| encode/httpx | 1 | arnés: search_similar_code(enunciado entero) | 0,0 % | 100,0 % | 100,0 % | 100,0 % |
+| fastapi/fastapi | 56 | azar | 0,1 % | 0,7 % | 1,4 % | 2,6 % |
+| fastapi/fastapi | 56 | palabras del enunciado | 5,4 % | 10,7 % | 19,6 % | 19,6 % |
+| fastapi/fastapi | 56 | solo semillas (0 saltos) | 4,1 % | 14,2 % | 20,1 % | 22,5 % |
+| fastapi/fastapi | 56 | vecinos a 1 salto | 4,1 % | 14,1 % | 20,0 % | 22,3 % |
+| fastapi/fastapi | 56 | vecinos a 2 saltos | 4,1 % | 14,1 % | 20,0 % | 22,8 % |
+| fastapi/fastapi | 56 | activación propagada | 4,0 % | 13,9 % | 20,1 % | 25,6 % |
+| fastapi/fastapi | 56 | activación con siembra híbrida | 3,6 % | 11,0 % | 13,4 % | 16,0 % |
+| fastapi/fastapi | 56 | arnés: get_code_neighbors(símbolo) | 3,4 % | 12,3 % | 18,2 % | 23,2 % |
+| fastapi/fastapi | 56 | arnés: search_similar_code(símbolo) | 1,8 % | 3,6 % | 3,6 % | 7,3 % |
+| fastapi/fastapi | 56 | arnés: search_similar_code(palabras que nombran un nodo) | 8,8 % | 16,1 % | 16,7 % | 28,7 % |
+| fastapi/fastapi | 56 | arnés: search_similar_code(enunciado entero) | 5,4 % | 14,3 % | 16,1 % | 23,2 % |
+| psf/requests | 12 | azar | 0,2 % | 0,8 % | 1,7 % | 3,4 % |
+| psf/requests | 12 | palabras del enunciado | 0,0 % | 25,0 % | 50,0 % | 50,0 % |
+| psf/requests | 12 | solo semillas (0 saltos) | 32,0 % | 41,9 % | 42,5 % | 43,6 % |
+| psf/requests | 12 | vecinos a 1 salto | 32,0 % | 48,0 % | 50,3 % | 51,0 % |
+| psf/requests | 12 | vecinos a 2 saltos | 32,0 % | 48,0 % | 50,2 % | 50,4 % |
+| psf/requests | 12 | activación propagada | 30,8 % | 45,9 % | 50,1 % | 50,4 % |
+| psf/requests | 12 | activación con siembra híbrida | 0,1 % | 9,1 % | 9,8 % | 11,2 % |
+| psf/requests | 12 | arnés: get_code_neighbors(símbolo) | 30,8 % | 48,0 % | 50,4 % | 51,2 % |
+| psf/requests | 12 | arnés: search_similar_code(símbolo) | 0,0 % | 0,1 % | 0,1 % | 0,2 % |
+| psf/requests | 12 | arnés: search_similar_code(palabras que nombran un nodo) | 45,8 % | 50,1 % | 51,5 % | 66,9 % |
+| psf/requests | 12 | arnés: search_similar_code(enunciado entero) | 16,7 % | 33,3 % | 50,0 % | 58,3 % |
+| total | 114 | azar | 0,2 % | 0,8 % | 1,5 % | 3,0 % |
+| total | 114 | palabras del enunciado | 2,6 % | 9,6 % | 18,4 % | 23,7 % |
+| total | 114 | solo semillas (0 saltos) | 9,7 % | 20,5 % | 24,2 % | 26,8 % |
+| total | 114 | vecinos a 1 salto | 9,7 % | 22,0 % | 26,7 % | 30,4 % |
+| total | 114 | vecinos a 2 saltos | 9,7 % | 22,0 % | 26,7 % | 30,8 % |
+| total | 114 | activación propagada | 8,6 % | 20,8 % | 25,6 % | 28,9 % |
+| total | 114 | activación con siembra híbrida | 5,3 % | 11,3 % | 16,4 % | 21,7 % |
+| total | 114 | arnés: get_code_neighbors(símbolo) | 9,0 % | 20,3 % | 26,0 % | 30,5 % |
+| total | 114 | arnés: search_similar_code(símbolo) | 1,8 % | 5,3 % | 5,4 % | 8,1 % |
+| total | 114 | arnés: search_similar_code(palabras que nombran un nodo) | 17,0 % | 27,2 % | 31,1 % | 40,5 % |
+| total | 114 | arnés: search_similar_code(enunciado entero) | 7,0 % | 19,5 % | 25,0 % | 32,5 % |
+
+Las filas, de arriba abajo: **azar**; **palabras del enunciado**, el coseno entre bolsas de palabras del
+enunciado y del nombre y texto de cada nodo (la similitud léxica del repositorio); **solo semillas**, los
+nodos que el enunciado nombra, sin vecinos; **vecinos a 1 y 2 saltos**, las semillas primero y después cada
+anillo de vecinos, empatado; **activación propagada**, lo que pide el issue; **activación con siembra
+híbrida**, la misma propagación sembrada por `Retriever.seed` con el enunciado entero; y cuatro filas con las
+funciones de grafo del arnés 0.2.11 llamadas en local sobre los mismos archivos.
+
+**Lo que sale.** Entre los 5 primeros, la activación propagada pone el sitio en el 20,8 % de las tareas, las
+semillas solas en el 20,5 % y los vecinos a dos saltos en el 22,0 %: una tarea de 114 vale 0,9 puntos, así
+que las tres filas no se distinguen. Tarea por tarea, entre la activación y los vecinos a dos saltos no hay
+ninguna que cambie de lado entre los 5 primeros, y entre los 20 cambian dos en cada sentido. Casi todo lo que
+el grafo aporta está en nombrar el nodo: el sitio es una semilla en 30 tareas, está a un salto en 14, a dos en
+11, a tres o más en 38 y no tiene camino en 21 (12 de ellas sin ninguna semilla). La fila más alta no es
+ninguna de las anteriores sino la búsqueda por palabras que el arnés ya trae: 27,2 % entre los 5 y 40,5 %
+entre los 20 cuando la consulta son las palabras del enunciado que nombran un nodo, y 19,5 % y 32,5 % cuando
+es el enunciado entero. La búsqueda por similitud de embeddings desde un símbolo queda en 5,3 %.
+
+**Contraste con el benchmark público de un tercero** (tema 748395 del foro de la pista de artículo). Sus 117
+tareas con sitio contienen las 114 de aquí. En esas 114, su fusión de palabras, embeddings y distancia pone el
+sitio entre los 5 primeros en el 31,6 % y entre los 20 en el 43,9 %, y encuentra el sitio a dos saltos o
+menos de un símbolo del enunciado en el 48,2 %; aquí son 55 de 114, el mismo 48,2 %. Las dos definiciones del
+sitio no son la misma: su mediana es de 4 nodos por tarea y la de aquí de 1, y el número de nodos coincide en
+41 de 114 tareas.
+
+**Qué puede pedir el agente evaluado con sus herramientas actuales.**
+
+- **Sí, con una llamada:** `search_similar_code(query=<varias palabras>)`. Con un espacio en la consulta el
+  arnés no la resuelve a un nodo y cae a su búsqueda por palabras (3 puntos si la palabra está en el nombre
+  del nodo, 1 si está en su texto). Es la fila más alta de la tabla. Con el enunciado entero como consulta el
+  agente obtiene la última fila sin elegir nada.
+- **Sí, con una llamada por símbolo:** `get_code_neighbors(node=<símbolo>)` da el nodo que el arnés resuelve
+  y sus vecinos a un salto. Dos límites: el arnés resuelve cada nombre a un solo nodo, el de ruta más corta,
+  aunque haya varios con ese nombre; y devuelve hasta 50 vecinos en orden alfabético, sin puntaje. Los vecinos
+  a dos saltos exigen una llamada por cada vecino.
+- **No:** la clasificación por activación. Ninguna herramienta devuelve pesos, suma lo que llega por varios
+  caminos ni ordena el grafo entero; el agente tendría que calcularla. Tampoco puede filtrar «las palabras que
+  nombran un nodo» sin la lista de nodos: esa fila usa el grafo para elegir las palabras, no el parche, pero
+  el agente no tiene una herramienta que liste los nodos. Lo que sí puede es elegir él las palabras, y eso no
+  se midió.
+- **Poco útil para localizar:** `search_similar_code(query=<un símbolo>)`. Devuelve los vecinos por embedding
+  del nodo resuelto, no el nodo ni quien lo llama.
+
+**Cruce con nuestras sesiones.** De las 49 tareas con resultado en el rescate del 2026-10-13, 39 tienen sitio
+en el grafo: 27 no se resolvieron en ninguna sesión y 12 en alguna. En las 27 nunca resueltas, la búsqueda
+por palabras del arnés (palabras que nombran un nodo) pone el sitio entre los 5 primeros en 9; la activación
+propagada, en 5 con seguridad y 7,5 en esperanza. En las 12 resueltas alguna vez, 1 y 1,3.
+
+**Lo que esto no permite concluir.**
+
+- **Que el agente resuelva más.** Es una medida de dónde queda el sitio en una lista, sin modelo. Que el
+  sitio esté entre los 5 primeros no dice que el agente lo lea, lo elija ni lo edite bien.
+- **Que la activación propagada no sirva para localizar código.** Se midió una configuración, la que el
+  repositorio trae por defecto, con aristas de un solo tipo y peso 1, sobre 114 tareas de cuatro
+  repositorios, uno de ellos con una tarea. No se ajustó ningún parámetro, a propósito: ajustarlos sobre las
+  mismas tareas con las que se mide daría una cifra que no se sostiene fuera.
+- **Que una fila sea mejor que otra por menos de unos puntos.** No hay intervalos; con 114 tareas, 6 puntos
+  son 7 tareas. La ventaja de la búsqueda por palabras del arnés sobre la activación son 9 tareas contra 4
+  entre los 5 primeros.
+- **Que el sitio sea el correcto en cada tarea.** El sitio sale de un mapeo automático del parche a nodos
+  (sangría, cabecera del trozo y líneas vecinas), probado con casos sintéticos y contrastado por conteo con
+  el benchmark público, no revisado tarea por tarea. La extracción de símbolos se cambió una vez tras ver que la primera, que solo
+  aceptaba texto escrito como código, dejaba sin semillas a 54 de 114 tareas; con aquella, la activación da
+  22,8 % entre los 5 y los vecinos a dos saltos 24,4 %: la misma lectura.
+- **Que en Kaggle la búsqueda por palabras devuelva lo mismo.** Se llamó al código del arnés 0.2.11 en
+  local, fuera de su contenedor y sin el agente; no se leyó ninguna trayectoria real para comprobarlo. La
+  búsqueda por palabras está en el código de la versión 0.2.11 y no en el de la 0.2.7, que es la que había
+  cuando la búsqueda por similitud devolvía vacío a las consultas de texto libre.
 
 ---
 
@@ -996,6 +1135,25 @@ restando el montaje y la carga, con concurrencia 1 salen entre 3 y 5 minutos. El
 escalera de ocho escalones, calculada con todas las tareas válidas y un factor de cuota 2 (de 59,85 h de
 L4×4 el escalón 1, a 17,28 h el escalón 8). El tercero devuelve, para 40, 48 y 67 tareas, el suelo (6/n) y
 los discordantes que admite el caso de ruido bajo (1, 2 y 10) y el intermedio (11, 18 y 44).
+
+**Localización por el grafo de código** (sección 11.1; ejecutado el 2026-10-13; sin modelo y sin GPU; imprime
+solo agregados, sin enunciados, parches ni identificadores):
+
+```bash
+python -m scripts.kaggle_localizacion \
+  --tareas experiments/gemma_developer_agent/data/tasks.jsonl \
+  --grafos experiments/gemma_developer_agent/data/graphs
+```
+
+Sale con 0 e imprime la tabla de la sección 11.1 sin las filas del arnés ni la de siembra híbrida, y
+`"tareas_medidas": 114`, `"sin_sitio_en_el_grafo": 15`. Necesita los 127 grafos de la competencia en
+`data/graphs/` (422 MB; `kaggle competitions download gemma-4-developer-agent -f graphs/<archivo>`). Las
+demás filas se añaden con `--siembra-hibrida` y con `--arnes <carpeta que contiene el paquete swegemma>
+--embeddings experiments/gemma_developer_agent/data/embeddings` (127 archivos, 468 MB); las funciones de
+grafo del arnés piden además `numpy`, `networkx` y `cachetools`, por ejemplo con
+`uv run --no-project --with cachetools --with numpy --with networkx --with pydantic python -m scripts.kaggle_localizacion …`.
+`--resultados <carpeta con los zips de las sesiones>` añade el cruce con las tareas resueltas, en conteos, y
+`--detalle <archivo>` escribe una fila por tarea con su identificador: solo en una carpeta que git ignore.
 
 **No se versiona contenido de la competencia:**
 

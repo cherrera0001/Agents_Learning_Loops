@@ -1,0 +1,81 @@
+{
+  "seq": 99,
+  "id": "issue-221-localizacion-activacion",
+  "goal": "Aplicar la siembra y la activación propagada del repositorio al grafo de código de cada tarea pública del caso Kaggle y medir en local, sin modelo, si el sitio de la edición de referencia queda entre los primeros, frente a azar, palabras y vecinos sin propagación",
+  "ref": "#221",
+  "estimate": {"version": 1, "date": "2026-10-14", "size": "M", "points": 3, "uncertainty": 2, "risk": 2, "planned_model": "Opus 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Opus 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código. Las lecciones devueltas eran de otros dominios; sirvió la de comprobar sobre lo que se ejecuta y no sobre lo que se supone"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "La orden de bash que exportaba el token con sustitución de comandos fue rechazada por la guarda del worktree, como avisaba el encargo; se repitió en PowerShell leyendo la línea del .env sin imprimirla"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Listado paginado de los archivos de datos de la competencia y descarga en solo lectura de 127 grafos y 127 embeddings a la carpeta ignorada del checkout principal. Ningún envío ni subida"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El adaptador usó el nombre del nodo de código como identificador y MemoryGraph lo rechazó: los identificadores deben empezar por el tipo de nodo. No se había leído el modelo Node antes de escribir el adaptador"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "La primera extracción de símbolos solo aceptaba texto escrito como código (comillas invertidas, CamelCase, guion bajo, llamadas): dejó sin semillas a la mitad de las tareas, porque los enunciados son prosa corta. Se supuso la forma de los enunciados sin mirar ninguno"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Símbolo = todo identificador del enunciado que nombra un nodo del grafo, con el peso repartido entre los nodos que nombra. La variante estricta quedó como opción y se informa como sensibilidad"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "De 21 mutaciones del guion, 3 pasaban las pruebas: contar dos veces un símbolo (el tope de 1 lo tapaba), ignorar la cabecera del trozo e ignorar el archivo (el texto de la línea desempataba)"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Tres casos nuevos con líneas idénticas en dos funciones y en dos archivos; las mutaciones caen"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Al contrastar por tarea con el benchmark público, el número de sitios coincidía en 42 de 114. Leyendo el código propio: cuando el trozo del parche no deja ver el def, se tomaba la definición de la cabecera como el sitio y una sola línea para desempatar; además una cabecera de archivo «--- a/…» dentro de un trozo se leía como línea quitada. La primera tabla ya se había calculado con ese sitio"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "El parche se parte en trozos contando las líneas que declara cada cabecera; el sitio se busca por sangría dentro del trozo y, si no se ve, entre los miembros de la definición de la cabecera por las líneas vecinas al cambio. Tabla recalculada entera; 27 mutaciones, todas caen"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Corrida completa sobre 129 tareas con las funciones de grafo del arnés importadas desde su paquete. El subpaquete de grafo se carga con un paquete padre vacío porque el __init__ del arnés importa dependencias que aquí no están"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Tabla agregada, forma de consulta que el agente puede usar y lo que no permite concluir, en el documento del experimento. Ningún identificador de tarea, enunciado ni parche en lo versionado"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El episodio se numeró 098 mirando origin/main y los PR abiertos al empezar; al rebasar antes del PR, main ya traía un 098 de otro issue. Se renumeró a 099 antes de publicar"
+    }
+  ],
+  "lessons": [
+    "Antes de extraer algo de un texto de entrada, mira diez ejemplos reales: la forma supuesta (símbolos escritos como código) dejó sin semillas a la mitad de las tareas",
+    "Valida el instrumento que define el acierto antes de leer la tabla: contrasta el sitio de referencia con una fuente ajena por tarea y relee el código de ese mapeo; aquí la primera tabla salió con un sitio mal asignado",
+    "Al medir un mecanismo, incluye como fila lo que el sistema evaluado ya hace con sus propias herramientas: la búsqueda por palabras del arnés quedó por encima del mecanismo que se quería probar",
+    "Una prueba de desempate no prueba nada si otro camino del código da el mismo resultado: usa datos donde los dos caminos difieren y compruébalo rompiendo el código"
+  ]
+}
