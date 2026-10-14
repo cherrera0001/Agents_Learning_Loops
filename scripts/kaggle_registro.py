@@ -78,7 +78,14 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
 
-from scripts.kaggle_registro_enganches import CLASE_TAREA_COLGADA, ENGANCHE_NO_EXIGIDO
+from scripts.kaggle_registro_enganches import (
+    CAMPOS_DE_MUESTREO,
+    CAUSAS_POR_TEXTO,
+    CLASE_TAREA_COLGADA,
+    ENGANCHE_NO_EXIGIDO,
+    causa_del_fin,
+    clase_contradice_la_causa,
+)
 
 SEMILLA_ITERACION_08 = "ALL-kaggle-iteracion-08-2026-10-08"
 UNIVERSO_ESPERADO = 71
@@ -108,12 +115,13 @@ ENGANCHE_DEL_MAPA = "mapa de hilos del núcleo"
 SILENCIO_DETENIDA_SEGUNDOS = 960.0
 
 # Texto que el arnés pone en el error de una sesión del agente, y el tope que significa.
-TOPES_DE_TAREA = (
-    ("session timeout", "tope de tiempo de la tarea"),
-    ("tool call budget", "tope de llamadas"),
-    ("turns budget", "tope de turnos"),
-    ("maximum allowed llm turns", "tope de turnos"),
-    ("connection error", "el servidor del modelo dejó de responder"),
+# La tabla es la del registro (#215): una sola definición de qué texto significa qué causa.
+TOPES_DE_TAREA = tuple((texto, nombre) for texto, _causa, nombre in CAUSAS_POR_TEXTO)
+# Lo que `peticion_inicio` anota del muestreo (#215), con el razonamiento del #195.
+CAMPOS_DEL_MUESTREO = (
+    *(campo for campo, _ in CAMPOS_DE_MUESTREO),
+    "presupuesto_razonamiento",
+    "pide_razonar",
 )
 # Archivos de salida que solo deja un notebook con registro. Si están y falta el registro en un notebook que
 # nadie nombró como pasada esperada, se avisa; la defensa de fondo es nombrar las pasadas esperadas.
@@ -323,7 +331,7 @@ def _ficha(par: dict[str, Any]) -> dict[str, Any]:
         "error": None if fin is None else fin.get("error"),
         "retrollamadas": dict(par["retrollamadas"]),
         # #195: lo que la petición pidió y trajo de razonamiento, solo números. None: no quedó anotado.
-        "pide_razonar": inicio.get("pide_razonar"),
+        **{campo: inicio.get(campo) for campo in CAMPOS_DEL_MUESTREO},
         **{campo: None if fin is None else fin.get(campo) for campo in CAMPOS_DE_TOKENS},
     }
 
@@ -347,6 +355,34 @@ def razonamiento_de_la_tarea(propias: Sequence[dict[str, Any]]) -> dict[str, Any
         datos[campo] = sum(valores) if valores else None
         datos[f"peticiones_con_{campo}"] = len(valores)
     return datos
+
+
+def muestreo_de_la_sesion(fichas: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Cada muestreo distinto que llevaron las peticiones y cuántas lo llevaron (#215), el más usado primero.
+
+    Una sesión de un solo kit debería dar una fila, o dos si el subagente lleva otro. ``None`` en un campo:
+    la petición no lo llevaba (o el registro es anterior al #215) y decidió el servidor.
+    """
+    cuenta = Counter(tuple(f.get(campo) for campo in CAMPOS_DEL_MUESTREO) for f in fichas)
+    return [
+        {**dict(zip(CAMPOS_DEL_MUESTREO, valores, strict=True)), "peticiones": n}
+        for valores, n in cuenta.most_common()
+    ]
+
+
+def causa_de_la_tarea(ocurrencia: dict[str, Any]) -> dict[str, Any]:
+    """Causa del fin de una tarea terminada y si la clase del notebook la contradice (#215).
+
+    La causa es la que escribió `tarea_fin`; en un registro anterior se calcula aquí con la misma función,
+    a partir de su `agente_fin`. Así una sesión vieja y una nueva se leen con la misma definición.
+    """
+    fin = ocurrencia["fin"]
+    if fin is None:
+        return {"causa_fin": None, "clase_contradice_causa": None}
+    causa = fin.get("causa_fin")
+    if not isinstance(causa, str):
+        causa = causa_del_fin(ocurrencia["agente"], colgada=es_colgada(ocurrencia))
+    return {"causa_fin": causa, "clase_contradice_causa": clase_contradice_la_causa(fin.get("clase"), causa)}
 
 
 # «No respondida»: no terminó con una respuesta del modelo. «En vuelo» es solo la que no tiene fin.
@@ -584,6 +620,10 @@ def diagnosticar(
                 "terminada": fin is not None,
                 "clase": None if fin is None else fin.get("clase"),
                 "error": error_de_la_fila,
+                **causa_de_la_tarea(o),
+                # #215: lo cancelado en la tarea y lo que el servidor generó sin entregarlo. None: no anotado.
+                "canceladas": None if fin is None else fin.get("canceladas"),
+                "tokens_sin_respuesta": None if fin is None else fin.get("tokens_sin_respuesta"),
                 "fin_del_agente": None
                 if agente is None
                 else {
@@ -674,6 +714,13 @@ def diagnosticar(
             # compare dos pasadas la excluye de la cuenta de discordantes.
             "tareas_colgadas": colgadas,
             "pares_faltantes": colgadas,
+            # #215: por qué terminó cada tarea, con una sola definición, y dónde la clase dice otra cosa
+            "causas_de_fin": dict(Counter(t["causa_fin"] for t in tareas if t["causa_fin"] is not None)),
+            "tareas_con_clase_que_contradice_la_causa": [
+                {"orden": t["orden"], "tarea": t["tarea"], "clase": t["clase"], "causa_fin": t["causa_fin"]}
+                for t in tareas
+                if t["clase_contradice_causa"]
+            ],
             "segundos_de_latido_sin_eventos": silencio,
             "versiones": None if instalado is None else instalado.get("versiones"),
             "mapa_de_hilos": None if instalado is None else instalado.get("mapa_de_hilos"),
@@ -712,6 +759,7 @@ def diagnosticar(
             "motivos": dict(Counter(f["como_termino"] for f in fichas)),
             "no_respondidas": no_respondidas,
         },
+        "muestreo": muestreo_de_la_sesion(fichas),
         # #195: el total de la sesión; el de cada tarea va en su ficha.
         "razonamiento": razonamiento_de_la_tarea(fichas),
         "enganches": {

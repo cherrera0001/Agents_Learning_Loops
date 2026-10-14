@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-13",
+  "last_updated": "2026-10-14",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -103,10 +103,10 @@
       "sha256": "65a0216007e19bf6b26ec1ae0386be06814e97a3d85f63636fb10053651a6763",
       "size_bytes": 3494,
       "is_exploratory": true,
-      "status": "submitted",
-      "public_score": null,
+      "status": "scored",
+      "public_score": 0.13,
       "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
-      "notes": "Ref. Kaggle 57098570, enviado 2026-10-12 06:46:48 UTC. Es el mismo zip de sub-005 y sub-006, sin cambios: «I razona», lectura 3 de 5. Estado pendiente al escribir esto; sin nota. Si el puntuador usa el arnés nuevo, esta lectura no es comparable con las dos anteriores: no está medido qué versión usa. Escrito a mano con los datos que dio el orquestador (este registro no leyó Kaggle): `register` devuelve el registro existente si el SHA-256 ya figura."
+      "notes": "Ref. Kaggle 57098570, enviado 2026-10-12 06:46:46 UTC (hora de Kaggle). Es el mismo zip de sub-005 y sub-006, sin cambios: «I razona», lectura 3 de 5. Nota pública 0,13 (estado COMPLETE, sin error). La primera lectura guardada que lo vio completo es la del rescate del 2026-10-13 13:42 UTC (`envios.json` escrito a las 13:42:25 UTC); la última que lo vio pendiente, la del 2026-10-13 00:44 UTC. No hay lecturas guardadas entre esas dos, así que tardó entre 17,95 y 30,92 h. Las lecturas de las 15:28 y las 23:35 UTC del mismo día dicen lo mismo; no es cierto que pasara a completo a las 23:35. Kaggle guarda 72 066 bytes para este envío: su identidad con el zip local no está comprobada. Si el puntuador usa el arnés nuevo, esta lectura no es comparable con las dos anteriores: no está medido qué versión usa. Escrito a mano desde las lecturas guardadas (el issue 215 no leyó Kaggle): `register` devuelve el registro existente si el SHA-256 ya figura."
     },
     {
       "submission_id": "sub-009",
@@ -123,16 +123,16 @@
     },
     {
       "submission_id": "sub-010",
-      "date": "2026-10-13",
+      "date": "2026-10-14",
       "condition": "C2",
       "zip_filename": "submission_r1_c2_edicion_temprana.zip",
       "sha256": "aa0750f0f47f63276cfcd3756fd0771d0b6633b3e21393e60ce8f9351dea0f39",
       "size_bytes": 3749,
       "is_exploratory": true,
-      "status": "prepared",
+      "status": "submitted",
       "public_score": null,
-      "kaggle_url": null,
-      "notes": "NO ENVIADO: candidato 2 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: tres viñetas de edición temprana después de la línea 14 (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad. Escrito a mano. El zip no se versiona: solo su huella."
+      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
+      "notes": "Ref. Kaggle 57160374, enviado 2026-10-14 00:07:20 UTC (hora de Kaggle), con la descripción «C2 edicion temprana (zip aa0750f0): lectura, no mejora; regla de envio del concilio 47». Estado PENDING y sin nota en la lectura de las 00:07 UTC del 2026-10-14, hecha justo después de enviar; no hay lectura posterior en este registro. Es una lectura, no una mejora: el concilio 48 no halló diferencia fuera del ruido entre este kit y la base en 12 tareas. Hasta el envío esta entrada decía «prepared» con fecha 2026-10-13. Escrito a mano desde la salida guardada del envío (el issue 215 no leyó ni escribió en Kaggle). Candidato 2 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: tres viñetas de edición temprana después de la línea 14 (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad. Escrito a mano. El zip no se versiona: solo su huella."
     },
     {
       "submission_id": "sub-011",

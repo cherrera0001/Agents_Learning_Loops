@@ -48,6 +48,18 @@ gira para siempre. Tres defensas, que no tocan al agente ni sus topes:
   y espera un margen corto. Devuelve True solo si el hilo de la tarea terminó: entonces el notebook puede
   seguir con la tarea siguiente. Si el hilo sigue vivo, o es la segunda tarea colgada seguida, devuelve
   False y el notebook termina la sesión. Nunca corren dos tareas a la vez.
+
+Muestreo, causa del fin y peticiones canceladas (#215). Tres huecos que el concilio 48 halló en seis sesiones:
+
+- `peticion_inicio` anota el muestreo que la petición lleva: temperatura, `top_p`, tope de tokens de salida y
+  presupuesto de razonamiento. `cb_antes` anota lo mismo del cuerpo que litellm armó (`muestreo_del_cuerpo`);
+- `tarea_fin` anota `causa_fin`, que sale del error de `agente_fin` con `causa_del_fin`, la única definición.
+  La `clase` que pasa el notebook no se toca; si nombra un tope que no es la causa, `clase_contradice_causa`;
+- `tarea_fin` anota las peticiones canceladas de la tarea (número, segundos y caracteres de entrada) y
+  `tokens_sin_respuesta`: lo que el servidor generó durante la tarea, leído de su contador de `/metrics` al
+  empezar y al terminar, menos lo que entregaron las respuestas. El contador solo se lee entre tareas.
+
+Límite: de una petición cancelada queda cuánto generó el servidor y cuánto duró, no su texto.
 """
 
 import asyncio
@@ -78,6 +90,29 @@ MODOS_RICH = ("archivo", "global", "ninguno")
 ENGANCHE_NO_EXIGIDO = "retrollamadas de litellm"
 CLASE_TAREA_COLGADA = "tarea_colgada"
 PAQUETES_CON_VERSION = ("ipykernel", "jupyter_client", "nbclient", "papermill", "rich", "litellm")
+
+# Causa del fin de la sesión del agente (#215): la única definición. Texto que el arnés pone en el error de
+# `agente_fin`, la causa que significa y cómo la nombra el lector del registro. Manda el primero que casa.
+CAUSAS_POR_TEXTO = (
+    ("session timeout", "tiempo", "tope de tiempo de la tarea"),
+    ("tool call budget", "llamadas", "tope de llamadas"),
+    ("turns budget", "turnos", "tope de turnos"),
+    ("maximum allowed llm turns", "turnos", "tope de turnos"),
+    ("connection error", "servidor", "el servidor del modelo dejó de responder"),
+)
+# Causa que afirma cada clase del notebook que nombra un tope. Las demás clases no afirman ninguna.
+CAUSA_QUE_AFIRMA_LA_CLASE = (
+    ("tiempo_agotado", "tiempo"),
+    ("llamadas_agotadas", "llamadas"),
+    ("turnos_agotados", "turnos"),
+)
+# Nombres con que el muestreo viaja en una petición, por campo del registro (#215).
+CAMPOS_DE_MUESTREO = (
+    ("temperatura", ("temperature",)),
+    ("top_p", ("top_p",)),
+    ("tope_tokens_salida", ("max_completion_tokens", "max_tokens", "max_output_tokens")),
+)
+CONTADOR_DE_TOKENS = "vllm:generation_tokens_total"
 
 
 def caracteres_de(x: Any) -> int:
@@ -122,6 +157,105 @@ def razonamiento_pedido(opciones: Any) -> dict[str, Any]:
         return {"pide_razonar": pide, "presupuesto_razonamiento": presupuesto}
     except Exception:
         return {"pide_razonar": None, "presupuesto_razonamiento": None}
+
+
+def muestreo_enviado(opciones: Any) -> dict[str, Any]:
+    """Muestreo que lleva la petición (#215): temperatura, `top_p` y tope de tokens de salida. Solo números.
+
+    Como el razonamiento, viaja suelto o en ``extra_body`` según la versión del cliente; manda el primer
+    sitio que lo trae. ``None`` quiere decir que la petición no lo lleva: entonces decide el servidor. El
+    presupuesto de razonamiento lo da ``razonamiento_pedido``. Nunca lanza.
+    """
+    datos: dict[str, Any] = {campo: None for campo, _ in CAMPOS_DE_MUESTREO}
+    try:
+        for sitio in (opciones, _campo(opciones, "extra_body")):
+            if sitio is None:
+                continue
+            for campo, nombres in CAMPOS_DE_MUESTREO:
+                for nombre in nombres:
+                    valor = _campo(sitio, nombre)
+                    es_numero = isinstance(valor, (int, float)) and not isinstance(valor, bool)
+                    if datos[campo] is None and es_numero:
+                        datos[campo] = valor
+    except Exception:
+        pass
+    return datos
+
+
+def muestreo_del_cuerpo(kwargs: Any) -> dict[str, Any]:
+    """Muestreo del cuerpo que litellm armó para el servidor (#215), si la retrollamada lo trae.
+
+    `peticion_inicio` anota lo que el arnés le pide a litellm; esto, lo que litellm va a mandar. Si los dos
+    difieren, litellm cambió algo por el camino. Sin cuerpo no añade nada. Nunca lanza.
+    """
+    try:
+        cuerpo = _campo(_campo(kwargs, "additional_args"), "complete_input_dict")
+        if not isinstance(cuerpo, dict):
+            return {}
+        return {"muestreo_del_cuerpo": {**muestreo_enviado(cuerpo), **razonamiento_pedido(cuerpo)}}
+    except Exception:
+        return {}
+
+
+def causa_del_fin(agente: Any, colgada: bool = False) -> str:
+    """Por qué terminó la sesión del agente (#215). Es la única definición: la usan el registro y su lector.
+
+    ``agente`` es lo que anotó ``agente_fin`` (o ``None`` si la tarea no lo dejó). Sale del error que el
+    arnés escribió, no del número de llamadas: una sesión cortada por tiempo es `tiempo` aunque estuviera a
+    una llamada del tope. Sin error, `entrega` si el agente entregó y `sin_entrega` si no. Nunca lanza.
+    """
+    try:
+        if colgada:
+            return CLASE_TAREA_COLGADA
+        if agente is None:
+            return "sin_agente_fin"
+        error = str(_campo(agente, "error") or "").lower()
+        for texto, causa, _nombre in CAUSAS_POR_TEXTO:
+            if texto in error:
+                return causa
+        if error:
+            return "otro_error"
+        entrego = _campo(agente, "entrego")
+        return "entrega" if entrego is True else "sin_entrega" if entrego is False else "fin_sin_error"
+    except Exception:
+        return "sin_agente_fin"
+
+
+def clase_contradice_la_causa(clase: Any, causa: str) -> bool:
+    """True si la clase del notebook nombra un tope y la causa del fin es otra (#215).
+
+    El notebook llama «llamadas agotadas» a toda tarea no resuelta que acabó a una llamada del tope, también
+    si la cortó el tiempo o si entregó. La clase no se toca (es la de las corridas ya medidas); se marca.
+    """
+    for prefijo, afirma in CAUSA_QUE_AFIRMA_LA_CLASE:
+        if str(clase or "").startswith(prefijo):
+            return afirma != causa
+    return False
+
+
+def tokens_generados_del_servidor(base_url: Any, espera: float = 3.0) -> int | None:
+    """Tokens que el servidor del modelo lleva generados, de su contador de `/metrics` (#215). Nunca lanza.
+
+    El contador sube con cada token, también con los de una petición que el cliente cancela y que por eso
+    no trae respuesta ni `usage`. ``None`` si no hay servidor, no responde o no publica el contador.
+    """
+    try:
+        import urllib.request
+
+        base = str(base_url or "").rstrip("/")
+        if not base:
+            return None
+        base = base[:-3] if base.endswith("/v1") else base
+        with urllib.request.urlopen(base + "/metrics", timeout=espera) as r:
+            texto = r.read().decode("utf-8", "replace")
+        valores = [
+            float(linea.rsplit(None, 1)[1])
+            for linea in texto.splitlines()
+            if linea.split("{")[0].split(" ")[0] == CONTADOR_DE_TOKENS
+        ]
+        return int(sum(valores)) if valores else None
+    except Exception:
+        return None
 
 
 def razonamiento_recibido(eleccion: Any, uso: Any) -> dict[str, int]:
@@ -323,6 +457,12 @@ class Registro:
         self.colgadas = 0
         self.colgadas_seguidas = 0
         self.ciclos_vaciados = 0
+        # #215: lo que la tarea en curso lleva anotado, para decir en `tarea_fin` por qué terminó y cuánto
+        # generó el servidor sin que ninguna respuesta lo entregara.
+        self.fin_del_agente: dict[str, Any] | None = None
+        self.tokens_respondidos = 0
+        self.canceladas_de_la_tarea: list[dict[str, Any]] = []
+        self.contador_al_empezar: int | None = None
         self.cerrado = False
         self._lock = threading.RLock()
         self._parar = threading.Event()
@@ -395,6 +535,7 @@ class Registro:
                 "caracteres_entrada": caracteres_de(mensajes),
                 "con_herramientas": bool(herramientas),
                 "stream": bool(opciones.get("stream")),
+                **muestreo_enviado(opciones),
                 **razonamiento_pedido(opciones),
             }
         except Exception as exc:
@@ -435,6 +576,18 @@ class Registro:
             datos.setdefault("motivo", "sin_motivo")
         with self._lock:
             self.motivos[datos["motivo"]] = self.motivos.get(datos["motivo"], 0) + 1
+            # #215: lo que `tarea_fin` necesita para decir cuánto generó el servidor sin respuesta
+            tokens = datos.get("completion_tokens")
+            if isinstance(tokens, int) and not isinstance(tokens, bool):
+                self.tokens_respondidos += tokens
+            if datos["motivo"] == "cancelada":
+                self.canceladas_de_la_tarea.append(
+                    {
+                        "peticion": numero,
+                        "segundos": datos.get("segundos"),
+                        "caracteres_entrada": None if inicio is None else inicio.get("caracteres_entrada"),
+                    }
+                )
         self._costo("leer_respuesta", time.perf_counter() - t0)
         self.evento("peticion_fin", **datos)
 
@@ -468,7 +621,9 @@ class Registro:
             with registro._lock:
                 registro.retrollamadas[tipo] = registro.retrollamadas.get(tipo, 0) + 1
                 en_curso = max(registro.en_vuelo) if registro.en_vuelo else None
-            registro.evento(tipo, llamada=str(llamada), canal=canal, peticion_en_curso=en_curso)
+            # #215: antes de la llamada litellm ya armó el cuerpo que va al servidor; se anota su muestreo
+            cuerpo = muestreo_del_cuerpo(kwargs) if tipo == "cb_antes" else {}
+            registro.evento(tipo, llamada=str(llamada), canal=canal, peticion_en_curso=en_curso, **cuerpo)
 
         class _RetrollamadasDeRegistro(base):  # type: ignore[misc, valid-type]
             def log_pre_api_call(self, model: Any, messages: Any, kwargs: Any) -> None:
@@ -512,18 +667,21 @@ class Registro:
             try:
                 resultado = await original(evaluador, *args, **kwargs)
             except BaseException as exc:
-                registro.evento("agente_fin", error=type(exc).__name__ + ": " + str(exc)[:300], lanzo=True)
+                fin = {"error": type(exc).__name__ + ": " + str(exc)[:300], "lanzo": True}
+                registro.fin_del_agente = fin
+                registro.evento("agente_fin", **fin)
                 raise
             try:
                 contexto = kwargs.get("context")
-                registro.evento(
-                    "agente_fin",
-                    error=None if resultado[1] is None else str(resultado[1])[:300],
-                    parche_caracteres=len(resultado[0] or ""),
-                    entrego=getattr(contexto, "patch_submitted", None),
-                    llamadas_herramientas=getattr(contexto, "tool_calls_used", None),
-                    llamadas_modelo=getattr(contexto, "llm_calls_used", None),
-                )
+                fin = {
+                    "error": None if resultado[1] is None else str(resultado[1])[:300],
+                    "parche_caracteres": len(resultado[0] or ""),
+                    "entrego": getattr(contexto, "patch_submitted", None),
+                    "llamadas_herramientas": getattr(contexto, "tool_calls_used", None),
+                    "llamadas_modelo": getattr(contexto, "llm_calls_used", None),
+                }
+                registro.fin_del_agente = fin
+                registro.evento("agente_fin", **fin)
             except Exception as exc:
                 registro._anotar_error(exc)
             return resultado
@@ -724,7 +882,56 @@ class Registro:
         if mapa.get("ciclo") and mapa.get("vaciado"):
             self.ciclos_vaciados += 1
         self.t_tarea, self.con_tope = time.time(), False
-        self.evento("tarea_inicio", indice=indice, peticiones_previas=self.peticiones, mapa_de_hilos=mapa)
+        with self._lock:
+            self.fin_del_agente, self.tokens_respondidos, self.canceladas_de_la_tarea = None, 0, []
+        # #215: se lee aquí, antes de que el agente empiece, para no quitarle tiempo a la tarea
+        self.contador_al_empezar = self._contador_del_servidor()
+        self.evento(
+            "tarea_inicio",
+            indice=indice,
+            peticiones_previas=self.peticiones,
+            mapa_de_hilos=mapa,
+            servidor_tokens_generados=self.contador_al_empezar,
+        )
+
+    def _contador_del_servidor(self) -> int | None:
+        """Tokens generados que lleva el servidor, o None. Solo se lee entre tareas. Nunca lanza."""
+        if not self.activo:
+            return None
+        t0 = time.perf_counter()
+        try:
+            return tokens_generados_del_servidor(getattr(self.servidor, "base_url", None))
+        except Exception as exc:
+            self._anotar_error(exc)
+            return None
+        finally:
+            self._costo("contador_del_servidor", time.perf_counter() - t0)
+
+    def _causa_y_canceladas(self, clase: Any) -> dict[str, Any]:
+        """Lo que `tarea_fin` añade en el #215: causa del fin y rastro de lo cancelado. Nunca lanza.
+
+        `tokens_sin_respuesta` es lo que el servidor generó durante la tarea menos lo que entregaron las
+        respuestas: los tokens de las peticiones canceladas. Es `None` si el servidor no publica su contador.
+        """
+        try:
+            with self._lock:
+                agente, respondidos = self.fin_del_agente, self.tokens_respondidos
+                canceladas = list(self.canceladas_de_la_tarea)
+            causa = causa_del_fin(agente, colgada=clase == CLASE_TAREA_COLGADA)
+            al_terminar, al_empezar = self._contador_del_servidor(), self.contador_al_empezar
+            generados = None if al_terminar is None or al_empezar is None else al_terminar - al_empezar
+            return {
+                "causa_fin": causa,
+                "clase_contradice_causa": clase_contradice_la_causa(clase, causa),
+                "canceladas": canceladas,
+                "servidor_tokens_generados": al_terminar,
+                "tokens_generados_en_la_tarea": generados,
+                "tokens_respondidos": respondidos,
+                "tokens_sin_respuesta": None if generados is None else generados - respondidos,
+            }
+        except Exception as exc:
+            self._anotar_error(exc)
+            return {}
 
     def fin_tarea(self, **campos: Any) -> None:
         """Fila con el motivo de fin de la tarea, se resuelva o no, y lo que quedó en vuelo."""
@@ -735,11 +942,14 @@ class Registro:
         colgada = campos.get("clase") == CLASE_TAREA_COLGADA
         self.evento(
             "tarea_fin",
-            peticiones=self.peticiones,
-            en_vuelo=pendientes,
-            con_tope=self.con_tope,
-            par_faltante=colgada,
-            **campos,
+            **{
+                "peticiones": self.peticiones,
+                "en_vuelo": pendientes,
+                "con_tope": self.con_tope,
+                "par_faltante": colgada,
+                **self._causa_y_canceladas(campos.get("clase")),
+                **campos,
+            },
         )
         if not colgada:
             self.colgadas_seguidas = 0

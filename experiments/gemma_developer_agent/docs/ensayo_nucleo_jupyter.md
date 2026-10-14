@@ -22,6 +22,11 @@ anteriores ya no son las vigentes**, y el ensayo corre ahora con las ruedas real
 [su sección](#arnés-0211-y-guardas-de-versiones-195), que además fija la versión de `ipykernel` medida en
 Kaggle (6.17.1).
 
+El #215 añadió una quinta capa el 2026-10-14: el registro escribe además el muestreo de cada petición, la
+causa del fin de cada tarea y el rastro de las peticiones canceladas. Cambia el texto de los enganches, y
+con él **la huella de todos los notebooks**; está en
+[su sección](#muestreo-causa-del-fin-y-peticiones-canceladas-215).
+
 La vuelta 40 del experimento Kaggle decidió que la iteración 08 no se sube sin tres cosas: el rescate que
 mira bytes (#156), el notebook con su registro y un ensayo local que demuestre que ese registro explica un
 corte. Este documento cubre las dos últimas.
@@ -2288,6 +2293,151 @@ problema). El armado se volvió a correr al final y `armado.json` y `armado_razo
 Las ruedas reales están en la carpeta de instrumentos del checkout principal (`arnes_2026-10-12/ruedas/`),
 con el listado del conjunto que guardó el orquestador (`listado_ruedas_2026-10-12.txt`, 41 ruedas y un
 archivo más). No se versionan.
+
+## Muestreo, causa del fin y peticiones canceladas (#215)
+
+**Nada de esto se subió ni se envió a Kaggle, y no gastó cuota.** Es un cambio del registro, ensayado en
+Docker con un servidor falso el 2026-10-14 (UTC). El ensayo dice si los campos nuevos quedan escritos; no
+mide la calidad del agente.
+
+El concilio 48 leyó las seis sesiones del bloque R1 y halló tres cosas que el registro no decía. El #215 las
+añade a `scripts/kaggle_registro_enganches.py` (la celda 8 del notebook) y a su lector, sin tocar el kit, el
+agente, sus topes ni las otras once celdas.
+
+| Hueco | Qué se escribe ahora | Dónde |
+|---|---|---|
+| Con qué muestreo sale cada petición | `temperatura`, `top_p` y `tope_tokens_salida`, junto al `presupuesto_razonamiento` que ya estaba. Solo números; `null` si la petición no lo lleva | `peticion_inicio` |
+| Lo mismo, del cuerpo que litellm armó para el servidor | `muestreo_del_cuerpo` | `cb_antes` |
+| Por qué terminó la sesión del agente | `causa_fin` y `clase_contradice_causa` | `tarea_fin` |
+| Qué llevaba una petición cancelada | `canceladas` (número, segundos y caracteres de entrada de cada una) y `tokens_sin_respuesta` | `tarea_fin` |
+
+`diagnosticar` los devuelve: `muestreo` (cada muestreo distinto y cuántas peticiones lo llevaron), y por
+tarea `causa_fin`, `clase_contradice_causa`, `canceladas` y `tokens_sin_respuesta`; en `sesion`,
+`causas_de_fin` y `tareas_con_clase_que_contradice_la_causa`. Ningún código de salida cambia.
+
+### La causa del fin
+
+`causa_del_fin` es la única definición. Lee el error que el arnés dejó en `agente_fin`, que es el que el
+arnés descarta de la fila cuando el parche pasa:
+
+| `causa_fin` | Cuándo |
+|---|---|
+| `tiempo`, `llamadas`, `turnos`, `servidor` | El error nombra ese tope, o que el servidor dejó de responder |
+| `otro_error` | Cualquier otro error, o una excepción del arnés |
+| `entrega`, `sin_entrega` | Sin error: el agente entregó, o no |
+| `fin_sin_error` | Sin error y sin saber si entregó |
+| `tarea_colgada` | La cortó el tope por tarea del notebook |
+| `sin_agente_fin` | La tarea no dejó su `agente_fin` |
+
+El lector usa la misma tabla (`TOPES_DE_TAREA` sale de `CAUSAS_POR_TEXTO`) y, en un registro anterior, que
+no trae `causa_fin`, la calcula con la misma función. Sobre las seis sesiones reales del bloque R1 da 50
+tareas cortadas por tiempo, 9 de ellas con `tarea_fin.error` nulo, que es lo que contó el forense.
+
+**La `clase` del notebook no se cambió.** La calcula la celda 10 (`clase_fallo`), que mira primero el
+número de llamadas: llama `llamadas_agotadas` a toda tarea no resuelta que acabó a una llamada del tope,
+también si la cortó el tiempo o si entregó. En el brazo de 28 llamadas del bloque R1 son cuatro tareas: dos
+cortadas por tiempo y dos entregadas. Corregirla es mover dos líneas de la celda 10, y cambiaría el
+significado de `clase` respecto de todas las sesiones ya medidas. El #215 deja la clase como está y marca
+la contradicción: `clase_contradice_causa` es `true` cuando la clase nombra un tope y la causa es otra.
+**Quien cuente cortes debe contar por `causa_fin`, no por `clase`.**
+
+### Lo que queda de una petición cancelada
+
+El arnés no usa streaming: cuando el tope de tiempo cancela una petición, el cliente no ha recibido nada.
+Lo que sí existe es el contador del servidor (`vllm:generation_tokens_total` en `/metrics`), que sube con
+cada token generado. El registro lo lee al empezar y al terminar cada tarea, y resta lo que entregaron las
+respuestas de esa tarea (la suma de sus `completion_tokens`):
+
+`tokens_sin_respuesta` = contador al terminar − contador al empezar − tokens respondidos.
+
+- **Solo se lee entre tareas**, nunca con el agente corriendo: dos lecturas por tarea, fuera de su tope de
+  tiempo. Leerlo en cada petición le quitaría tiempo al agente.
+- **Es de la tarea, no de la petición.** Una tarea cortada por tiempo tiene una sola cancelada, la última,
+  así que el número es el de esa petición. Si hubiera dos, sería la suma.
+- **Sin contador no es cero.** Si el servidor no publica el contador o no responde, los tres campos de
+  tokens valen `null` y `canceladas` trae igualmente los segundos.
+- **Que el contador cuenta los tokens de una petición cancelada está medido en las seis sesiones reales**,
+  no supuesto: al final de cada una el contador (lo imprime la celda 11) supera a la suma de los
+  `completion_tokens` del registro en 1 919 a 12 485 tokens, que repartidos entre los segundos que duraron
+  sus peticiones canceladas dan 31,1 a 35,0 tokens por segundo, la velocidad que el propio servidor anota
+  en su log. En total, 36 655 tokens en 50 peticiones canceladas y 1 085 s.
+- **No queda el texto.** Guardarlo exigiría pedir las respuestas en streaming, que cambia la ruta por la que
+  el arnés llama al modelo.
+
+### El ensayo del #215
+
+Los notebooks vigentes se rearmaron cambiando solo el texto de los enganches en la celda 8
+(`armar_215.py`). El guion de ensayo deriva del de los cortes del bloque R1 por reemplazos que casan una
+vez: el servidor falso publica el contador (40 tokens por respuesta entregada y 321 en la petición que
+retiene más allá del tope) y el ensayo compara lo que dice el registro con lo que el servidor vio.
+
+Cuatro corridas, una tras otra, cada una en un contenedor sin red, con las ruedas del 2026-10-12 19:51 UTC
+y `ipykernel` 6.17.1, entre las 00:22 y las 00:58 UTC del 2026-10-14. Las cuatro pasan sin problemas
+anotados, y el registro no tuvo errores propios en ninguna.
+
+| Escenario | Notebook | Peticiones | Causa del fin, por tarea | Tokens sin respuesta, por tarea | Diagnóstico |
+|---|---|---|---|---|---|
+| `completa` | base (`i1`) | 18 | `entrega` × 6 | 0 × 6 | 0 |
+| `corte_tiempo` | base (`i1`) | 8 | `entrega`, `tiempo`, `entrega` | 0, **321**, 0 | 0 |
+| `corte_llamadas` | candidato 1 (`c1`) | 40 | `entrega`, `llamadas`, `entrega` | 0, 0, 0 | 0 |
+| `tarea_colgada` | base (`i1`) | 3 | `entrega`, `tarea_colgada` | 0, 0 | 3 |
+
+- **Muestreo.** En las 69 peticiones, `peticion_inicio` y `muestreo_del_cuerpo` dicen lo mismo que el cuerpo
+  que recibió el servidor, petición a petición: temperatura 0,2, `top_p` 0,95, tope de 8 192 tokens de
+  salida y presupuesto de razonamiento de 4 096.
+- **Petición cancelada.** En `corte_tiempo` la tarea cortada trae una cancelada, de 270,6 s (el tope del
+  kit es de 4,5 minutos) y 18 465 caracteres de entrada, y 321 tokens sin respuesta: los que el servidor
+  falso dice haber generado para ella. Las tareas sin corte dan 0.
+- **Causa con el error descartado.** El modelo falso aplica el parche de referencia antes de forzar el
+  corte, así que la tarea cortada sale `resuelta` y el arnés descarta su error. `tarea_fin` dice igualmente
+  `tiempo` o `llamadas`.
+- **Lecturas del contador.** Dos por tarea y ninguna con una petición del agente en curso: el servidor
+  recibió 13, 7, 7 y 4 lecturas de `/metrics` (la que sobra en las tres primeras es de la celda 11). Cada
+  lectura costó de 2 a 7 ms de media.
+
+Lo que el ensayo no dice:
+
+- **La clase contradicha no ocurrió en el ensayo.** El modelo falso no produce una tarea no resuelta a una
+  llamada del tope. Ese caso está en las pruebas versionadas y en la relectura de las seis sesiones reales.
+- **`muestreo_del_cuerpo` se vio con litellm 1.104.0**, el de la imagen del ensayo. Kaggle trae 1.82.4: no
+  está comprobado que ahí la retrollamada traiga el cuerpo. Si no lo trae, el campo no se escribe y queda
+  el de `peticion_inicio`, que no depende de litellm.
+- **El contador del ensayo es del servidor falso.** Que vLLM lo publica y cuenta lo cancelado sale de las
+  sesiones reales, no de aquí. No está medido cuánto tarda `/metrics` en el servidor real.
+- **Si el puntuador de la competencia usa este muestreo.** El registro anota lo que nuestro kit envía en
+  nuestras sesiones.
+
+Pruebas versionadas: `tests/test_kaggle_registro_215.py` (61). Regresión: los 100 registros distintos
+guardados en los rescates y en los ensayos anteriores dan, con el lector nuevo, el mismo código y el mismo
+informe que con el de `origin/main`, salvo las claves añadidas.
+
+### Huellas del #215
+
+Los instrumentos no se versionan. Están en `…/instrumentos/issue_215_registro/` del árbol donde se
+construyó el #215, con `HUELLAS.txt` (86 archivos).
+
+| Archivo | SHA-256 |
+|---|---|
+| `scripts/kaggle_registro_enganches.py` (texto de la celda 8), antes | `8fdaa24e976726a633692fdff7335bf3601129921127735527f0e0d40720e56b` |
+| `scripts/kaggle_registro_enganches.py`, después | `c05a1b1d2851224b58bb74f83c6b2edd734f912c0f92b303be8b54db67ac8a17` |
+| `kernel_iteracion_08_a0_p1/iteracion.ipynb` (antes `1a4b1c7f…`) | `b8476a5c2df2d6ae710449d581835a38a5915c6f974806304ce47c1650062351` |
+| `kernel_iteracion_08_br1_i1/iteracion.ipynb` (antes `cedfc5cc…`) | `02557feb460a1755b6d0bb4272bf691de49afea8889f7f43ea195f8ad165fe7a` |
+| `kernel_iteracion_08_br1_i2/iteracion.ipynb` (antes `2f6bc97b…`) | `d5262598a4e8bcbdc70bde271b40881bf497811343184d5720b8918c2f84e1b3` |
+| `kernel_iteracion_08_br1_c1/iteracion.ipynb` (antes `92064bdb…`) | `25999fc41ce0ec790e96fcda03efd72c996e2a76a5de7de16022fae749da8912` |
+| `kernel_iteracion_08_br1_c2/iteracion.ipynb` (antes `cc927f21…`) | `0274fd3b53e5f528e01a00e5e85197fb40ddd32843708b8d2004b6ef79759677` |
+| `kernel_iteracion_08_br1_c3/iteracion.ipynb` (antes `5fb84df0…`) | `111cd1d04edea0d29b3672b8d87c42661e0054906781f1d77fe742d158a32f39` |
+| `kernel_iteracion_08_br1_c4/iteracion.ipynb` (antes `26c28e82…`) | `4d0e45c191b341e13e541d27a4268f14b9437550b98f77c76337358750a9adf6` |
+| `etapa/iteracion_08/ensayo_nucleo.py` (derivado de `d5b2e70b…`) | `872ac2c79e01c4bc155e25eeba5d5136594489a8d97fa55f766098274c9ecb48` |
+| `ens/completa_i1/informe.json` | `674c792185b8283f5923013e8a64147aae2863011bfcf28647a1fa57a6b80e1f` |
+| `ens/corte_tiempo_i1/informe.json` | `4dfe7c85eace943a92e97c1a7882cc5f6546df7ea15704f12cc6dac76336be6e` |
+| `ens/corte_llamadas_c1/informe.json` | `a57bce6a5d3e5b87d2f2b59bf2bf959d2689edac6007a5dbedd6ba73244ec18f` |
+| `ens/tarea_colgada_i1/informe.json` | `ac33a900f8946022b59ce0a0d666b13a63bde3f53575a2d7373001ce6feb77fe` |
+
+En cada notebook cambia solo la celda 8, en 16 líneas que salen y 226 que entran, que son las del archivo
+de enganches; las otras once celdas y `kernel-metadata.json` conservan su huella, y deshaciendo el cambio
+se recupera el notebook de partida byte a byte (`armado_215.json`). Los notebooks conservan su nombre: son
+los vigentes con otro registro, no una corrida nueva. **Los que ya corrieron en Kaggle no cambian**; quien
+arme la próxima tanda parte de estos.
 
 ## Cómo repetirlo
 
