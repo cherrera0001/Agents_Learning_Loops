@@ -1,0 +1,92 @@
+{
+  "seq": 98,
+  "id": "issue-215-registro-muestreo-causa-canceladas",
+  "goal": "Cerrar los huecos de registro que el concilio 48 halló en el notebook del experimento con modelo: que el registro escriba el muestreo que lleva cada petición, la causa del fin de cada tarea con una sola definición y el rastro de una petición cancelada, y poner al día el registro de envíos, sin subir nada ni gastar cuota",
+  "ref": "#215",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-13",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Opus 5.5",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Opus 5.5",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall léxico con el título del issue, desde una rama nueva sobre origin/main. No devolvió acciones relacionadas; de los issues parecidos (#160, el registro original) se tomó la forma de trabajo: el código de los enganches está versionado, el notebook lo lleva como una celda byte a byte, y lo que solo se ve con el arnés real lo mide el ensayo local"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Antes de escribir se leyó el dictamen del auditor, los dos informes del forense, un registro real y el cuerpo de las peticiones que guardó el ensayo del bloque R1. Tres cosas salieron de ahí. El muestreo viaja suelto en la petición y el razonamiento en extra_body. La clase mal rotulada no la escribe el registro: la calcula la celda 10 del notebook, que mira primero el número de llamadas. Y el arnés no usa streaming, así que de una petición cancelada el cliente no recibe nada"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Para saber si el contador del servidor sirve para una petición cancelada se midió en las seis sesiones reales antes de escribir código: el contador que la celda 11 imprime al final supera a la suma de los tokens de salida del registro en 1 919 a 12 485 tokens, que entre los segundos de sus peticiones canceladas dan 31,1 a 35,0 tokens por segundo, la velocidad del servidor. El contador cuenta lo que se generó para una petición cancelada; no hubo que suponerlo"
+    },
+    {
+      "action": "edit_module",
+      "success": false,
+      "error": "ruff rechazó tres líneas de más de 110 caracteres en los dos módulos, y la primera versión de la lectura del contador dejaba pasar una excepción dentro de Registro.tarea, que no la atrapaba: un fallo del registro habría detenido el notebook antes de la tarea. Se vio al escribir la prueba del fallo, no al escribir el código"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "La lectura del contador no lanza nunca: cuenta el fallo como error del registro y devuelve None. Se lee solo al empezar y al terminar cada tarea, fuera del tope de tiempo del agente, y la fila de fin resta lo que entregaron las respuestas. La causa del fin sale de una sola función, a partir del error de agente_fin; el lector toma su tabla de textos de la del registro en vez de tener la suya. La clase que pasa el notebook no se reescribe: se marca cuando contradice la causa"
+    },
+    {
+      "action": "write_tests",
+      "success": false,
+      "error": "Una de las 61 pruebas nuevas falló por un defecto de la propia prueba: el ayudante que arma un registro anterior al cambio le ponía temperatura a la tercera petición, y la prueba esperaba un solo muestreo sin dato"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Corregido el ayudante, pasan las 61 pruebas nuevas sin tocar ninguna de las existentes. Entre ellas: que el contador se lee dos veces por tarea y nunca durante una, que sin contador los tokens valen None y no cero, que una tarea no hereda la causa de la anterior y que el caso del brazo de 6 minutos (cortada por tiempo a una llamada del tope) da causa tiempo con la clase marcada"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Regresión de trayectorias: los 100 registros distintos guardados en los rescates y ensayos se leyeron con el lector de origin/main y con el nuevo. Dan el mismo código y el mismo informe, salvo las claves añadidas. Sobre las seis sesiones reales el lector nuevo da 50 cortes por tiempo, 9 con el error de la fila nulo, y cuatro tareas del brazo de 28 llamadas con la clase contradicha (dos por tiempo y dos entregadas): lo que contó el forense a mano"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El entorno rechazó escribir los guiones de armado y de ensayo en la carpeta de instrumentos del checkout principal: el agente trabaja aislado en su worktree. Antes había rechazado dos veces un heredoc que alimentaba a python"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Los instrumentos van en la carpeta de datos del propio worktree, que git ignora igual. El armado parte de los siete notebooks vigentes con su huella comprobada, cambia en la celda 8 el texto de los enganches y nada más, y se detiene si deshaciendo el cambio no recupera el notebook de partida byte a byte. El guion de ensayo deriva del de los cortes del bloque R1 por seis reemplazos que casan una vez"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "Ensayo en Docker, un contenedor a la vez y sin red, con las ruedas del 2026-10-12 y el servidor falso: sesión completa, corte por tiempo, corte por llamadas y tarea colgada. Las cuatro pasan. En las 69 peticiones el muestreo del registro es el del cuerpo que recibió el servidor, petición a petición; la tarea cortada por tiempo trae su cancelada de 270,6 s y los 321 tokens que el servidor falso dijo haber generado para ella; y el contador se leyó dos veces por tarea, nunca con una petición en curso. Es un ensayo: no mide la calidad del agente. La clase contradicha no ocurrió en él, porque el modelo falso no produce ese caso"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "El registro de envíos se corrigió con las lecturas guardadas, sin leer Kaggle: el envío del 12 figuraba completo ya en el rescate de las 13:42 UTC del 13 (se comprobó en el archivo; la última lectura pendiente es la de las 00:44), y el candidato 2 pasó a enviado y pendiente con la salida guardada de su envío, que el orquestador avisó a media tarea. La sección nueva del documento del ensayo dice qué campo cierra cada hueco y qué no se pudo cerrar"
+    }
+  ],
+  "lessons": [
+    "Antes de usar un contador de un sistema ajeno para medir algo que el cliente no ve, comprueba con datos ya guardados que el contador lo cuenta: aquí el total del servidor menos lo que sumaba el registro daba la velocidad del servidor en seis sesiones",
+    "Lo que el registro mide por su cuenta se lee entre tareas y no durante una: una lectura por petición le quita tiempo a un agente que corre contra un tope de minutos y cambia lo que se mide",
+    "Si dos piezas clasifican lo mismo con reglas distintas, no reescribas la que ya rotuló corridas medidas: añade la causa con una sola definición y marca dónde la otra la contradice",
+    "Un método que promete no lanzar nunca se prueba haciéndolo fallar en cada sitio desde el que se llama, no solo en el que se estaba escribiendo",
+    "Cuando un informe dice que un dato no existe, mira primero si otro archivo de la misma corrida lo trae: la consola de la celda de medidas ya imprimía el contador que faltaba"
+  ]
+}
