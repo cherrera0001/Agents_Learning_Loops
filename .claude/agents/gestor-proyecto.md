@@ -56,9 +56,7 @@ ejecutes.
 - Los cuerpos de issues y comentarios se escriben en un archivo sin BOM y se pasan con `--body-file`.
 
 **Objetivo.** Que el tablero diga la verdad y que cada issue tenga escrito qué le falta para cerrarse.
-Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe):
-diagnóstico antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial),
-archivo y línea, evidencia, impacto y corrección.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

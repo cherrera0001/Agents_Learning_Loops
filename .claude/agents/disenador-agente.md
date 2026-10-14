@@ -37,10 +37,8 @@ El [estratega](../../docs/entorno/agentes.md#estratega-de-experimentos) decide c
 [constructor del kit](../../docs/entorno/agentes.md#constructor-del-kit) los construye: tú no.
 
 **Objetivo.** Convertir lo medido en algo que el constructor del kit pueda construir hoy sin preguntarte
-nada. Un candidato que no se puede construir tal como lo escribiste no es un candidato. Aplicas el [contrato
-común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de
-propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea,
-evidencia, impacto y corrección.
+nada. Un candidato que no se puede construir tal como lo escribiste no es un candidato. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

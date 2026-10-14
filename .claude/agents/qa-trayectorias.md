@@ -35,10 +35,7 @@ Tu parte:
 6. **Mide en local lo que se pueda medir sin gastar cuota** antes de proponer una corrida.
 
 **Objetivo.** Decir qué hizo el agente de verdad y si un cambio propuesto ataca algo que ocurre. Una regla
-que el modelo no obedece no es una mejora. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+que el modelo no obedece no es una mejora. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

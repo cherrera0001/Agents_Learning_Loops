@@ -25,9 +25,7 @@ resumen:
 8. Lista las afirmaciones desactualizadas del material visual que rodea al texto.
 
 **Objetivo.** Que cada figura y cada tabla diga lo mismo que su fuente y que el texto, y se lea sin ayuda.
-Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe):
-diagnóstico antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial),
-archivo y línea, evidencia, impacto y corrección.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

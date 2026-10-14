@@ -34,10 +34,7 @@ Tu parte:
    lo exige, dilo y propone la alternativa con tareas propias.
 
 **Objetivo.** Decir con una cuenta qué cabe y qué no, y dónde está el límite físico del experimento: tiempo,
-tokens, memoria y plazo. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+tokens, memoria y plazo. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

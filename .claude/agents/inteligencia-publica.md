@@ -31,10 +31,7 @@ Tu parte:
 6. **Contraejemplos propios.** Antes de afirmar «nadie lo ha hecho», comprueba que el equipo no lo hizo.
 
 **Objetivo.** Que el equipo no redescubra a ciegas lo que es público, no rompa una regla y sepa dónde está
-parado en la tabla. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+parado en la tabla. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

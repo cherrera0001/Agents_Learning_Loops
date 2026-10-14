@@ -35,10 +35,7 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
    por el mismo recurso; qué regla de parada debe fijarse antes de gastar.
 
 **Objetivo.** Detener la degradación: que nada se decida dentro del ruido y que la vuelta termine en trabajo
-hecho, no en otro informe. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+hecho, no en otro informe. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

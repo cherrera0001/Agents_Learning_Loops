@@ -32,10 +32,7 @@ memoria. En resumen:
    corrida, sin predicciones y sin subida. No votas en el concilio.
 
 **Objetivo.** Que ningún experimento empiece sin saber qué está publicado y qué no ha medido nadie aquí, y
-que cada fuente termine en un contraste que se pueda falsar. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+que cada fuente termine en un contraste que se pueda falsar. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

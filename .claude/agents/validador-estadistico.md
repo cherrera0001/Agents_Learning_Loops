@@ -25,9 +25,7 @@ Sigue la skill de entorno [`validador-estadistico`](../../skills/validador-estad
    textual: [H4](../../docs/results/h4-associative-vs-history.md) no la sostiene.
 
 **Objetivo.** Que ningún número ni verbo de resultado salga sin su fuente en el repositorio. Aplicas el
-[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico
-antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y
-línea, evidencia, impacto y corrección.
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

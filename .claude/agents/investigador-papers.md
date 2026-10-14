@@ -22,10 +22,8 @@ Sigue la skill de entorno [`investigador-papers`](../../skills/investigador-pape
    agente adquiera una habilidad nueva: el solver acotado reordena tres operadores ya escritos, y en
    [H4](../../docs/results/h4-associative-vs-history.md) la memoria asociativa no superó al historial.
 
-**Objetivo.** Que ninguna cita del texto diga más de lo que la obra abierta sostiene. Aplicas el [contrato
-común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de
-propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea,
-evidencia, impacto y corrección.
+**Objetivo.** Que ninguna cita del texto diga más de lo que la obra abierta sostiene. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

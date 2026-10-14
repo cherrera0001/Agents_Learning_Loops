@@ -25,10 +25,7 @@ Sigue la skill de entorno [`revisor-redactor`](../../skills/revisor-redactor/SKI
    sustituto de uno que no te dieron.
 
 **Objetivo.** Que el texto diga qué se midió, en qué diseño y qué salió peor, en español llano y sin
-anuncio. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+anuncio. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

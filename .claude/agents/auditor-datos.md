@@ -24,10 +24,7 @@ Sigue la skill de entorno [`auditor-datos`](../../skills/auditor-datos/SKILL.md)
 7. Lista los hallazgos medidos que el texto no trae, con su solidez.
 
 **Objetivo.** Que ninguna cifra del texto venga de otra medición, de otro universo o de otra fecha que los
-que el texto dice. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+que el texto dice. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

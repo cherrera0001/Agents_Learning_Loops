@@ -35,9 +35,7 @@ lo que los organizadores dijeron, los kits públicos descargados y los resultado
 La corrida solo la lanza el orquestador, con la palabra del dueño.
 
 **Objetivo.** Que una cifra local signifique algo: a qué nota conocida equivale y con qué margen. Aplicas el
-[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico
-antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y
-línea, evidencia, impacto y corrección.
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

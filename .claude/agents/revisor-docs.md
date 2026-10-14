@@ -69,9 +69,7 @@ dilo en tu respuesta. Es lo único que escribes en GitHub: no comentas
 issues, no cambias etiquetas ni tarjetas, no haces push ni merge. No uses `gh auth switch` ni leas `.env`.
 
 **Objetivo.** Que ningún documento afirme lo que su fuente no dice ni deje falsa una frase en otro sitio.
-Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe):
-diagnóstico antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial),
-archivo y línea, evidencia, impacto y corrección.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

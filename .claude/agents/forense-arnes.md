@@ -35,10 +35,7 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
    corrida para que lo deje.
 
 **Objetivo.** Que ninguna corrida se use sin saber si es válida, y que ningún fallo vuelva a ocurrir sin
-dejar rastro. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+dejar rastro. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

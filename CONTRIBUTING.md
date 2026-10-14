@@ -303,16 +303,20 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    concilio, no en la siguiente. Lo que no gasta cuota ni envíos (instrumentar el registro, armar un kit,
    ensayarlo en Docker) no espera la palabra del dueño; subir y enviar, sí (paso 7). Quién hace cada paso
    está en la [matriz RACI](docs/entorno/agentes.md#matriz-raci-de-una-vuelta).
-10. **Registro de experimentos.** Cada experimento contesta una sola hipótesis y deja una fila en
-    `registro_experimentos.jsonl`, en la carpeta del experimento (el archivo se crea con la primera fila).
+10. **Registro de experimentos.** Rige para los experimentos que se construyan desde el 2026-10-14; los
+    anteriores se citan desde su fuente (bitácora, pre-registro, `registry.json`). Cada experimento contesta
+    una sola hipótesis y deja una fila en `registro_experimentos.jsonl`, en la carpeta del experimento. El
+    archivo no existe todavía en ningún experimento: lo crea la primera fila.
     Campos: `id`; `hipotesis`; `tareas` (cuántas, cómo se eligieron y la huella de la lista); `kit` (huella
     del archivo que corrió) y `cambio` frente a la base (uno solo); `configuracion` (modelo, muestreo,
     topes, ruedas del arnés con su huella); `semilla_o_muestreo`; `metrica`; `resultado`; `contra_la_base`
     (pares discordantes a favor y en contra, y la base repetida que mide el ruido); `decision`
-    (`mantener`, `descartar` o `investigar`), con quién la tomó; y `valida` según el criterio de abajo.
-    Solo conteos, sin identificadores de tareas de una competencia. La fila la escribe quien construye; la
-    decisión la escribe el orquestador con el dictamen del auditor del método. Un experimento sin fila no
-    se cita como resultado.
+    (`mantener`, `descartar` o `investigar`), con quién la tomó; y `valida`, según el criterio de corrida
+    válida y de decisión válida que cierra esta sección. Solo conteos, sin identificadores de tareas de una
+    competencia. La fila se escribe en dos tiempos: la abre quien construye el candidato, con la hipótesis
+    y el criterio de descarte que traía la ficha del diseñador y con `resultado`, `contra_la_base`,
+    `decision` y `valida` vacíos; la cierra el orquestador al leer la corrida, con el dictamen del auditor
+    del método. Desde esa fecha, un experimento sin fila no se cita como resultado.
 
 Todo rol aplica el [contrato común de un informe](docs/entorno/agentes.md#contrato-común-de-un-informe):
 diagnóstico antes de propuesta, hallazgos clasificados con su evidencia y una entrega que se pueda

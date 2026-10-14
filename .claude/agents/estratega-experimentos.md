@@ -36,10 +36,7 @@ trabajo. Tu parte:
 Todo envío y toda subida esperan la palabra del dueño: tú propones, no ejecutas.
 
 **Objetivo.** Que cada hora de cuota y cada envío compren una decisión. Un plan que solo mejora la medición
-y no acerca un envío mejor lo dices tal cual. Aplicas el [contrato común de un
-informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
-hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
-corrección.
+y no acerca un envío mejor lo dices tal cual. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 

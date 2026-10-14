@@ -32,6 +32,21 @@
       "note": "La misma comprobación como archivo de guion: las 23 definiciones parsean con yaml, name coincide con el archivo y cada una trae objetivo y contrato. Encontró que constructor-kit no enlazaba el contrato y una línea de más de 118 columnas; corregidos"
     },
     {
+      "action": "run_tests",
+      "success": true,
+      "note": "Comprobador de enlaces y anclas sobre CONTRIBUTING.md, agentes.md y las 23 definiciones: 0 rotos. No se ejecutaron ruff, mypy ni pytest en local porque el cambio no toca Python; quedan para la CI del PR"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión de documentos 5511559783 pidió cambios: la skill del concilio y una frase de agentes.md contradecían el paso 9 nuevo; el paso 10 remitía a un criterio sin enlazar, exigía un archivo inexistente con efecto retroactivo y no decía quién llena qué; la matriz tenía una tercera numeración de pasos y ponía al auditor antes de la revisión cruzada; y las definiciones repetían el contrato en vez de enlazarlo"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido con un guion que exige cada texto viejo una sola vez: filas F1 a F21 con nota de que no son los pasos de CONTRIBUTING, auditor fuera de las filas anteriores a F16, condicionales marcados, paso 10 con fecha de vigencia y fila en dos tiempos, skill y frase de la subida alineadas, y el contrato reducido a su enlace"
+    },
+    {
       "action": "recall_memory",
       "success": true,
       "note": "El recall se ejecutó después de escribir las definiciones y no antes: fuera de orden. La lección que aplicaba (buscar los conteos escritos con letra al tocar roles) se comprobó a posteriori: no se añadió ningún rol y ningún conteo cambia"

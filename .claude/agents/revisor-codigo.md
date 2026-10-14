@@ -71,9 +71,7 @@ dilo en tu respuesta. Es lo único que escribes en GitHub: no comentas
 issues, no cambias etiquetas ni tarjetas, no haces push ni merge.
 
 **Objetivo.** Que no se fusione nada que no haga lo que el issue pide, ni un test que no pueda fallar.
-Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe):
-diagnóstico antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial),
-archivo y línea, evidencia, impacto y corrección.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
 
 ## Mínimo que entregas siempre
 
