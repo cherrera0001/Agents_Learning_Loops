@@ -6,8 +6,8 @@
   "steps": [
     {
       "action": "recall_memory",
-      "success": true,
-      "note": "Recall con la pregunta de la vuelta, desde una rama que no estaba al día con origin/main y sin anotarlo en la bitácora; el auditor lo señaló después como recall inexistente"
+      "success": false,
+      "error": "El recall de la vuelta se ejecutó desde una rama que no estaba al día con origin/main y no se anotó en la bitácora; el auditor lo señaló después como recall inexistente"
     },
     {
       "action": "analyze_results",
@@ -43,6 +43,11 @@
       "action": "review_code",
       "success": true,
       "note": "Revisión cruzada sin firmas de los cinco roles, después el diseñador del agente con tres candidatos estructurales y el auditor del método con el dictamen: todas las comparaciones del bloque son exploratorias, el candidato de edición temprana es otra lectura de la base, y el orden separa lo que no gasta cuota de lo que sí"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Fallos del orquestador que listó el auditor y que no se corrigieron en la vuelta: las cuentas de tiempo y de tipos de tarea y un mensaje del dueño llegaron después de la revisión cruzada y no fueron a ningún rol de medición; nadie, tampoco el orquestador, leyó los criterios de descarte que la adenda del concilio 47 había fijado para cada candidato, y de uno de ellos dependía si el candidato de edición temprana era mejora o lectura; y ocho hallazgos anteriores siguen en estado medido"
     },
     {
       "action": "analyze_results",

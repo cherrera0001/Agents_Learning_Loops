@@ -37,7 +37,7 @@
     },
     {
       "id": "subagente_sin_resolver",
-      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 7 sesiones (0 de 7 resueltas; mediana del 65 % del tope); 145 sesiones es el universo, no donde aparece. Vuelta 47: en el bloque de seis sesiones lo llaman 8 sesiones de tarea de 60 (un brazo no lo trae), ninguna resuelta; gasta 91 s en cada una, y los 6 rechazos por contexto del bloque ocurren dentro de él.",
+      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 7 sesiones (0 de 7 resueltas; mediana del 65 % del tope); 145 sesiones es el universo, no donde aparece. Vuelta 47: lo llaman 8 de las 60 sesiones de tarea de los cinco brazos que lo traen, ninguna resuelta; gasta 91 s en cada una, y los 6 rechazos por contexto del bloque ocurren dentro de él.",
       "primera_vuelta": 38,
       "primera_fecha": "2026-10-07",
       "vueltas_medido": [38, 42, 47],
@@ -408,14 +408,14 @@
     },
     {
       "id": "instrucciones_de_texto_no_obedecidas",
-      "que_se_midio": "En los cuatro candidatos del bloque, leído en las trazas por QA de trayectorias: de las tres frases que pedían una conducta (editar antes en dos candidatos, triaje del enunciado corto en otro) ninguna la cambió: sesiones con la primera edición en la llamada 10 o antes, 2 y 2 frente a 3 y 3 en las dos pasadas de la base. Sí se cumplió la prohibición de las herramientas de grafo (0 llamadas frente a 5 a 7), y el tope de pensamiento se aplicó sin mover el tiempo por tarea.",
+      "que_se_midio": "En los cuatro candidatos del bloque, leído en las trazas por QA de trayectorias y vuelto a contar por el auditor. Las dos frases que pedían editar antes no adelantaron la primera edición: 2 y 2 sesiones con la primera edición en la llamada 10 o antes en esos dos candidatos, frente a 3 y 3 en las dos pasadas de la base; el candidato de triaje, que no lo pedía, tuvo 5. La frase de triaje no bajó las llamadas en las tareas de enunciado corto: mediana de 36,5 frente a 35,0 de la base. Sí se cumplió la prohibición de las herramientas de grafo (0 llamadas frente a 5 a 7), y el tope de pensamiento se aplicó sin mover el tiempo por tarea.",
       "primera_vuelta": 47,
       "primera_fecha": "2026-10-13",
       "vueltas_medido": [47],
       "estado": "decidido",
       "decision": {
-        "texto": "No se construyen más candidatos que solo cambien el texto de la instrucción. Los siguientes cambian lo que el agente puede hacer: herramientas declaradas, subagente y estado que viaja en la instrucción.",
-        "quien": "orquestador, con el dictamen del concilio 48",
+        "texto": "No se construyen más candidatos que solo cambien el texto de la instrucción. Los siguientes cambian lo que el agente puede hacer: herramientas declaradas, subagente y estado que viaja en la instrucción. Es una decisión del orquestador, apoyada en el veredicto de QA y en el orden final del arquitecto; el dictamen del auditor no la trae.",
+        "quien": "orquestador",
         "vuelta": 47,
         "fecha": "2026-10-13"
       },
@@ -473,7 +473,7 @@
       "vueltas_medido": [47],
       "estado": "decidido",
       "decision": {
-        "texto": "Ningún candidato sustituye a la base. El de 6 minutos queda descartado por la regla de envío escrita antes de los datos. El de edición temprana se envió una vez, rotulado como lectura y no como mejora. Antes de medir otro candidato se corre la base en las 48 tareas restantes del sorteo.",
+        "texto": "Ningún candidato sustituye a la base. El de 6 minutos queda descartado por la regla de envío escrita antes de los datos. El de edición temprana se envió una vez, rotulado como lectura y no como mejora. Antes de medir otro candidato se corre la base en las 48 tareas restantes del sorteo: esa acción la propuso el auditor después de ver los datos y ningún rol la revisó.",
         "quien": "orquestador, con el dictamen del concilio 48",
         "vuelta": 47,
         "fecha": "2026-10-13"
