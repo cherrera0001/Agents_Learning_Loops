@@ -47,7 +47,14 @@ envío falla sin explicación.
    ([orden de la vuelta](../../docs/entorno/agentes.md#una-vuelta-de-competencia)). Después, con lo
    medido, entra el diseñador del agente (candidatos a partir de los fallos); con sus candidatos, y antes
    de gastar cuota en más de un brazo, el estratega de experimentos. El constructor del kit construye
-   más tarde, en un PR, con lo que el dueño decida. Ninguno de los tres va en esta primera ronda.
+   en la misma vuelta, en un PR, y ensaya en local
+   ([regla](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 9); lo que espera la decisión
+   del dueño es subir y enviar. Ninguno de los tres va en esta primera ronda.
+   Si la pregunta es adoptar un método que no está medido aquí, el
+   [investigador de fuentes](../../docs/entorno/agentes.md#investigador-de-fuentes) entra antes del
+   diseñador del agente y le entrega su parecer
+   ([regla](../../CONTRIBUTING.md#investigación-antes-del-experimento)). No entra en la primera ronda de
+   medición y no vota.
 3. **Da a cada rol los archivos, no tu conclusión.** El encargo dice la pregunta, las rutas, las
    prohibiciones y la carpeta de trabajo. Un rol al que se le entrega la hipótesis la devuelve confirmada.
    Todos reciben la misma pregunta, la del dueño, además de la parte de su oficio, y una duda final: la

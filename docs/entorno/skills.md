@@ -41,6 +41,7 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`proteger-evidencia`](../../skills/proteger-evidencia/SKILL.md) | `evidence/README.md`, *Leakage boundary* del protocolo |
 | [`corrida-valida`](../../skills/corrida-valida/SKILL.md) | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
 | [`concilio-de-experimento`](../../skills/concilio-de-experimento/SKILL.md) | `CONTRIBUTING.md` (*Vuelta de un experimento con modelo*) |
+| [`investigar-antes-de-desafio`](../../skills/investigar-antes-de-desafio/SKILL.md) | `CONTRIBUTING.md` (*Investigación antes del experimento*) |
 | [`investigador-papers`](../../skills/investigador-papers/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`revisor-redactor`](../../skills/revisor-redactor/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
 | [`validador-estadistico`](../../skills/validador-estadistico/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*) |
@@ -49,4 +50,4 @@ Si una skill y su fuente divergen, prevalece la fuente y la skill se corrige.
 | [`revisar-manuscrito`](../../skills/revisar-manuscrito/SKILL.md) | `CONTRIBUTING.md` (*Revisión de un texto público*), `scripts/paper_check.py` |
 | [`maquetar-apa`](../../skills/maquetar-apa/SKILL.md) | `scripts/paper_pdf.py` |
 
-De `investigador-papers` a `revisor-figuras-tablas` son los cinco roles del staff de texto público; `revisar-manuscrito` los orquesta y `maquetar-apa` produce el PDF. `corrida-valida` y `concilio-de-experimento` son las del [staff de experimento](agentes.md#staff-de-experimento). Ninguna es un nodo Skill de la memoria.
+De `investigador-papers` a `revisor-figuras-tablas` son los cinco roles del staff de texto público; `revisar-manuscrito` los orquesta y `maquetar-apa` produce el PDF. `corrida-valida` y `concilio-de-experimento` son las del [staff de experimento](agentes.md#staff-de-experimento). `investigar-antes-de-desafio` es la del [investigador de fuentes](agentes.md#investigador-de-fuentes); su regla está en la sección *Investigación antes del experimento* de `CONTRIBUTING.md`. Ninguna es un nodo Skill de la memoria.

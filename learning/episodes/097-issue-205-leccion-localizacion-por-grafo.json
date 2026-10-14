@@ -1,0 +1,46 @@
+{
+  "seq": 97,
+  "id": "issue-205-leccion-localizacion-por-grafo",
+  "goal": "Registrar lo aprendido al leer el foro de la competencia del artículo: el agente del caso Kaggle solo resuelve cuando el enunciado le da el lugar de la edición, y la dirección que el dueño fijó al inicio (recuperación por grafo con el mecanismo del propio repositorio) era la que atacaba ese fallo",
+  "ref": "#205",
+  "steps": [
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Al preguntar el dueño si convenía montar grafos o una recuperación al estilo HippoRAG, se le contestó «todavía no» citando un resultado del solver acotado (la memoria asociativa no superó al historial). Ese resultado es de otro experimento y no dice nada de localizar código en un agente con modelo; la propuesta no se comprobó"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "La lectura de lo público cubría un solo foro. El guion de rescate tenía fijo el nombre de una de las dos competencias y nadie, tampoco el rol de inteligencia pública ni el orquestador, leyó el foro de la otra, donde un participante había publicado un benchmark de localización sobre las mismas tareas"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "En la vuelta 42 se decidió quitar las herramientas de grafo porque la búsqueda por similitud devolvía vacío en 300 de 300 llamadas. Nadie leyó cómo define el arnés su argumento: es un nombre de símbolo, y la instrucción del kit pedía palabras clave. La herramienta se dio por muerta cuando estaba mal pedida"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Leído el foro entero y bajada la salida del benchmark público. Cruce con nuestros resultados del bloque de seis sesiones: donde el sitio de la edición queda entre los 5 primeros candidatos, 23 de 30 sesiones resuelven; donde no, 6 de 42. Donde el enunciado nombra la función exacta, 18 de 24; donde no, 6 de 30. De 362 consultas a la búsqueda por similitud en todas las corridas, 175 son texto libre"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Lanzados en la misma vuelta: un experimento sin modelo que aplica la siembra y la activación propagada del repositorio al grafo de código de cada tarea pública y mide si el sitio queda arriba (issue #221), la ficha de un candidato de kit que localiza por el grafo, y una lectura completa de los dos foros"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Registro de hallazgos: la decisión de quitar el grafo queda revocada y entra el cruce con el benchmark público como hallazgo medido, con lo que no permite concluir"
+    }
+  ],
+  "lessons": [
+    "Cuando el dueño propone un mecanismo, haz primero la comprobación más barata de ese mecanismo sobre este caso; no lo aplaces con un resultado de otro experimento",
+    "Un resultado del solver acotado no se generaliza a un agente con modelo: di de qué experimento sale cada conclusión antes de usarla para decidir en otro",
+    "Si un caso tiene dos competencias o dos foros, el rescate de lo público los nombra a los dos: un guion con un nombre fijo deja sin leer el otro",
+    "Antes de retirar una herramienta que devuelve vacío, lee en el código cómo se define su argumento y qué le está pasando el agente",
+    "Si el agente solo resuelve cuando el enunciado nombra el lugar, el fallo es de localización: mide la localización sin modelo antes de tocar la edición o los topes",
+    "Cruza los resultados propios por tarea con los benchmarks públicos por tarea en cuanto existan: es una medición independiente que no gasta cuota"
+  ]
+}

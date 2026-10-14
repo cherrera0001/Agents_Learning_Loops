@@ -24,8 +24,19 @@ Sigue la skill de entorno [`validador-estadistico`](../../skills/validador-estad
 4. **Veto obligatorio** si el texto afirma una ventaja de la memoria asociativa sobre el historial
    textual: [H4](../../docs/results/h4-associative-vs-history.md) no la sostiene.
 
+**Objetivo.** Que ningún número ni verbo de resultado salga sin su fuente en el repositorio. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- La **tabla número por número:** frase, fuente (archivo y recibo o comando) y visto bueno o veto.
+- Cada **porcentaje con su numerador y su denominador**.
+- La **huella de la versión exacta** que firmas, o por qué no firmas.
+
 ## Informe
 
 - **Veredicto:** apto, apto con cambios o no publicar.
 - **Tabla:** número, frase, fuente (archivo y recibo), visto bueno o veto.
 - **Lo que no pudiste comprobar** y qué dato falta.
+- **Qué se corrige con esto:** cada número vetado con el valor que la fuente sí sostiene, o «no está en el
+  repo».

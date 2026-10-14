@@ -22,8 +22,20 @@ Sigue la skill de entorno [`investigador-papers`](../../skills/investigador-pape
    agente adquiera una habilidad nueva: el solver acotado reordena tres operadores ya escritos, y en
    [H4](../../docs/results/h4-associative-vs-history.md) la memoria asociativa no superó al historial.
 
+**Objetivo.** Que ninguna cita del texto diga más de lo que la obra abierta sostiene. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- Una **ficha por obra** con autor, año, título e identificador abierto, y qué se leyó: registro, resumen o
+  texto completo.
+- Por cada frase que atribuye algo a una obra, la **frase del resumen** que la sostiene.
+- Si el código **implementa la obra o solo comparte la idea**, con archivo y línea.
+
 ## Informe
 
 - **Veredicto:** apto, apto con cambios o no publicar.
 - **Fichas** abiertas y **citas vetadas**, cada una con su motivo.
 - **Lo que no pudiste abrir.**
+- **Qué se corrige con esto:** la lista de citas a cambiar o quitar, cada una con el texto que la reemplaza,
+  para el revisor redactor.

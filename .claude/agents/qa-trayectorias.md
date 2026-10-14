@@ -34,6 +34,19 @@ Tu parte:
    las trayectorias y qué brazo lo comprobaría.
 6. **Mide en local lo que se pueda medir sin gastar cuota** antes de proponer una corrida.
 
+**Objetivo.** Decir qué hizo el agente de verdad y si un cambio propuesto ataca algo que ocurre. Una regla
+que el modelo no obedece no es una mejora. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- La **tabla de desenlaces**: clase de cada parche (vacío, solo archivos nuevos, archivo equivocado, lógica
+  incompleta, sintaxis rota, correcto) cruzada con el tipo de tarea.
+- **Obediencia:** por cada instrucción que el kit añadió o cambió, en cuántas sesiones el modelo hizo lo que
+  pedía, leído en la traza.
+- **Cuándo llega la primera edición de un archivo fuente**, en llamadas y en segundos, y qué se hizo antes.
+- **En qué se gastan los tokens de salida:** razonamiento, argumentos de escritura o edición, y texto.
+- La **señal disponible:** cuántos parches malos delatarían las pruebas que el agente puede ver.
+
 ## Informe
 
 - **Medido** (con el guion y la ruta), **juicio de QA** y **no medido**, por separado.
@@ -41,3 +54,5 @@ Tu parte:
 - **Veredicto** sobre el cambio propuesto: probar, no probar o no medido, con cuánto puede recuperar y
   cuánto puede romper.
 - **Qué refutaría tu veredicto**, con un umbral escrito antes de medir.
+- **Qué se construye con esto:** para el diseñador del agente, qué conducta cambiaría más desenlaces y si
+  hay evidencia de que una instrucción la cambie.

@@ -179,6 +179,46 @@ otra firma. La skill [`revisar-manuscrito`](skills/revisar-manuscrito/SKILL.md) 
 `python -m scripts.paper_check comprobar <manuscrito>`, que encuentra sin agentes lo mecánico (extensión,
 citas sin entrada, tablas sin nota, cifras del resumen sin respaldo).
 
+## Investigación antes del experimento
+
+Ante un desafío nuevo (un método que se propone adoptar, un fallo sin mecanismo conocido, una pregunta que
+el repositorio todavía no midió), el orden es fijo y lo ejecuta el
+[investigador de fuentes](docs/entorno/agentes.md#investigador-de-fuentes), un agente de entorno, sobre el
+área [`investigacion/`](investigacion/README.md). Esta sección es la fuente de la regla; el área guarda las
+fichas y el índice.
+
+1. **Buscar** en [`investigacion/fuentes/indice.jsonl`](investigacion/fuentes/indice.jsonl) y en el código.
+   Si el código ya nombra el mecanismo, se dice y se para: la cita la hace el investigador de papers
+   ([revisión de un texto público](#revisión-de-un-texto-público)).
+2. **Abrir** la obra (DOI, arXiv o URL del editor) o el video (título, descripción y, si la página la da,
+   la transcripción). Lo que no abre no se cita, y su ficha queda `no_abierto` con el motivo. Autor, año
+   y título se copian del registro (arXiv, Crossref o la página del editor), no de memoria. No se pega
+   una transcripción entera: de un video se anotan notas propias.
+3. **Clasificar.** *Biblioteca*: identificador abierto, una frase de qué haría el mecanismo en este
+   repositorio y una medición de ese mecanismo aquí. *Océano*: cualquier otro caso. No hay ficha con
+   identificador abierto; o ni `docs/results/` ni el registro de hallazgos de un experimento con modelo
+   (hoy, `experiments/gemma_developer_agent/hallazgos.json`) tienen una medición de ese mecanismo en el
+   solver acotado ni en el kit. Una obra abierta cuyo mecanismo no está medido aquí es océano. El campo
+   `mecanismo` de la ficha dice si es un hueco que medir o si no aplica a este repositorio: lo segundo
+   no es un hueco. Una cifra de un paper o de un video es de su autor: no es un resultado de este
+   repositorio.
+4. **Proponer al concilio** un parecer de una página: el mecanismo, la ficha, si el código ya lo nombra,
+   qué medición de este repositorio lo toca y un solo contraste, con el resultado que lo descartaría. El
+   parecer no trae un diseño de corrida ni una subida.
+5. **Experimentar solo después**, con los protocolos que ya existen:
+   [`specs/software_learning_protocol.md`](specs/software_learning_protocol.md),
+   [`specs/loop_protocol.md`](specs/loop_protocol.md) y la
+   [vuelta de un experimento con modelo](#vuelta-de-un-experimento-con-modelo). Esta sección no los
+   duplica.
+
+El investigador de fuentes solo informa: no edita el repositorio, no hace commit, no publica, no inicia
+sesión en un sistema externo, no recoge datos personales, no escribe predicciones, no lee
+`benchmark/private/` y no toca el harness de experimento. Quien incorpora sus fichas al área es un
+implementador, por PR. No reemplaza al investigador de papers: aquel abre la obra que el código ya nombra y
+veta citas de un texto público; este busca antes, en lo publicado y en lo que aquí nadie ha medido.
+
+Skill de entorno: [`investigar-antes-de-desafio`](skills/investigar-antes-de-desafio/SKILL.md).
+
 ## Vuelta de un experimento con modelo
 
 Una **vuelta** es un ciclo de un experimento que corre un modelo de lenguaje en un sistema que cuesta
@@ -206,6 +246,9 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
      suman QA de trayectorias (si se propone cambiar la conducta del agente), el arquitecto de IA (si se
      propone cambiar el modelo, el presupuesto o el cómputo, o adoptar un método ajeno) e inteligencia
      pública (si el experimento se mide en un sistema externo).
+   - Si la pregunta es adoptar un método que no está medido aquí, el
+     [investigador de fuentes](#investigación-antes-del-experimento) entra antes del diseñador del agente
+     y le entrega su parecer. No entra en la primera ronda de medición y no vota.
    - Cuando una corrida o un envío falla sin explicación, el forense del arnés se convoca de inmediato,
      sin esperar a que alguien lo pida.
    - El orquestador da a cada rol la pregunta, las rutas y las prohibiciones, no su conclusión: un rol al
@@ -253,6 +296,31 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    calle no lo exime. Además comprueba que la lista `estados` del archivo sea una lista y no nombre un
    estado que el validador no conoce (no exige que los traiga todos), y que la fecha de una decisión no sea
    anterior a la `primera_fecha` del hallazgo.
+
+9. **Conversión.** Una vuelta que mide y no construye no está cerrada. Termina con al menos un candidato
+   construido por PR y ensayado en local, o con el motivo escrito en la bitácora de por qué no se
+   construyó nada. El diseñador del agente y el constructor del kit entran en la misma vuelta que el
+   concilio, no en la siguiente. Lo que no gasta cuota ni envíos (instrumentar el registro, armar un kit,
+   ensayarlo en Docker) no espera la palabra del dueño; subir y enviar, sí (paso 7). Quién hace cada actividad
+   está en la [matriz RACI](docs/entorno/agentes.md#matriz-raci-de-una-vuelta).
+10. **Registro de experimentos.** Rige para los experimentos que se construyan desde el 2026-10-14; los
+    anteriores se citan desde su fuente (bitácora, pre-registro, `registry.json`). Cada experimento contesta
+    una sola hipótesis y deja una fila en `registro_experimentos.jsonl`, en la carpeta del experimento. El
+    archivo no existe todavía en ningún experimento: lo crea la primera fila.
+    Campos: `id`; `hipotesis`; `tareas` (cuántas, cómo se eligieron y la huella de la lista); `kit` (huella
+    del archivo que corrió) y `cambio` frente a la base (uno solo); `configuracion` (modelo, muestreo,
+    topes, ruedas del arnés con su huella); `semilla_o_muestreo`; `metrica`; `resultado`; `contra_la_base`
+    (pares discordantes a favor y en contra, y la base repetida que mide el ruido); `decision`
+    (`mantener`, `descartar` o `investigar`), con quién la tomó; y `valida`, según el criterio de corrida
+    válida y de decisión válida que cierra esta sección. Solo conteos, sin identificadores de tareas de una
+    competencia. La fila se escribe en dos tiempos: la abre quien construye el candidato, con la hipótesis
+    y el criterio de descarte que traía la ficha del diseñador y con `resultado`, `contra_la_base`,
+    `decision` y `valida` vacíos; la cierra el orquestador al leer la corrida, con el dictamen del auditor
+    del método. Desde esa fecha, un experimento sin fila no se cita como resultado.
+
+Todo rol aplica el [contrato común de un informe](docs/entorno/agentes.md#contrato-común-de-un-informe):
+diagnóstico antes de propuesta, hallazgos clasificados con su evidencia y una entrega que se pueda
+construir.
 
 Tras cada rescate, `python -m scripts.kaggle_rescate_y_cuenta --destino <directorio ignorado>` hace el rescate
 y la cuenta por llamada (`scripts/kaggle_cuenta_llamadas.py`): qué devolvió cada llamada, cuáles se repiten

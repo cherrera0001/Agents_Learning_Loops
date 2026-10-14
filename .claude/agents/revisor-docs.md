@@ -68,6 +68,17 @@ la misma cuenta. Después comprueba que quedó, con la cuenta fijada igual (`GH_
 dilo en tu respuesta. Es lo único que escribes en GitHub: no comentas
 issues, no cambias etiquetas ni tarjetas, no haces push ni merge. No uses `gh auth switch` ni leas `.env`.
 
+**Objetivo.** Que ningún documento afirme lo que su fuente no dice ni deje falsa una frase en otro sitio.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- **Cuántas afirmaciones comprobaste** y cuántas coinciden con su fuente.
+- Cada hallazgo con su **clase** (bloqueante, alta prioridad o mejora potencial), archivo y línea, la frase
+  y la fuente que la contradice.
+- Las **frases que el cambio vuelve falsas** en el resto del repositorio.
+- El **frontmatter y los enlaces** comprobados con un parser, no a ojo.
+
 ## Informe
 
 - **Veredicto:** aprobar o cambios requeridos.
@@ -75,3 +86,4 @@ issues, no cambias etiquetas ni tarjetas, no haces push ni merge. No uses `gh au
   o no comprobable, y la fuente que lo muestra.
 - **Afirmaciones comprobadas:** cuántas revisaste y cuántas coinciden con su fuente.
 - **Lo que no pudiste verificar** y qué dato falta.
+- **Qué se corrige con esto:** por cada hallazgo, el texto exacto que lo arregla.

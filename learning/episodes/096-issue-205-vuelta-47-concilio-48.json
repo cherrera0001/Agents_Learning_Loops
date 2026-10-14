@@ -1,0 +1,77 @@
+{
+  "seq": 96,
+  "id": "issue-205-vuelta-47-concilio-48",
+  "goal": "Leer el bloque R1 completo (la base dos veces y cuatro candidatos en 12 tareas) con un concilio de roles, decidir cómo avanzar en el caso Kaggle y convertir el dictamen en trabajo construido en la misma vuelta",
+  "ref": "#205",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "El recall de la vuelta se ejecutó desde una rama que no estaba al día con origin/main y no se anotó en la bitácora; el auditor lo señaló después como recall inexistente"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Afirmé en el encargo del concilio que un envío había pasado de pendiente a completo en la lectura de las 23:35 UTC. Ya figuraba completo en los archivos de dos rescates del mismo día: no los leí antes de afirmar un estado remoto. Lo corrigieron el forense, inteligencia pública y el auditor, cada uno por su cuenta"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Rescate de la tercera tanda con su prueba de bytes y comprobación por pasada en 0. Primera ronda en paralelo con la pregunta literal del dueño: analista de datos, QA de trayectorias, forense del arnés, inteligencia pública y arquitecto de IA. Los cinco dan las mismas resueltas (5, 5, 5, 6, 3 y 5 de 12) y 0 pares discordantes entre las dos pasadas de la base"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Mientras corría la ronda 1 leí el arnés y conté los parches por clase, y lo llevé a la ronda 2 como «hecho nuevo». El texto traía un juicio y nombraba mecanismos; cuatro de los cinco órdenes finales incluyen acciones nacidas ahí. El auditor lo marcó como siembra del encuadre"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Presenté al dueño como hallazgo fuerte que las sesiones que no editan la fuente no resuelven. Estaba en el registro de hallazgos desde la vuelta 12, medido tres veces y descartado como causa atacable en la vuelta 43. No busqué en el registro antes de anunciarlo"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Mostré al dueño una tabla de resultado por repositorio sobre todas las corridas como si dijera algo del kit vigente. El auditor la vetó: 27 de las 33 tareas nunca resueltas solo se vieron con kits viejos y un repositorio solo corrió en dos corridas antiguas"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Modelo de tiempo de una petición ajustado sobre 1 953 peticiones del bloque (0,25 s más 28,49 ms por token de salida más 0,033 ms por token de entrada, R cuadrado 0,996), vuelto a contar por el auditor y el diseñador: una tarea dispone de unos 9 400 tokens de salida y leer casi no cuesta. Mi cifra de 97 % de espera al modelo era 93,9 %"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisión cruzada sin firmas de los cinco roles, después el diseñador del agente con tres candidatos estructurales y el auditor del método con el dictamen: todas las comparaciones del bloque son exploratorias, el candidato de edición temprana es otra lectura de la base, y el orden separa lo que no gasta cuota de lo que sí"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Fallos del orquestador que listó el auditor y que no se corrigieron en la vuelta: las cuentas de tiempo y de tipos de tarea y un mensaje del dueño llegaron después de la revisión cruzada y no fueron a ningún rol de medición; nadie, tampoco el orquestador, leyó los criterios de descarte que la adenda del concilio 47 había fijado para cada candidato, y de uno de ellos dependía si el candidato de edición temprana era mejora o lectura; y ocho hallazgos anteriores siguen en estado medido"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Contraste con la auditoría de un agente de otra familia de modelos: coincide en que se pierde antes de editar, en retirar el grafo y el subagente y en no entrenar un adaptador. Su cambio recomendado (más llamadas en el candidato de 6 minutos) se apoya en una clase que rotula el notebook y no el arnés: en las cuatro tareas el parche llegó a evaluarse y no pasó"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Conversión en la misma vuelta: cuatro issues con un constructor del kit cada uno y sin gastar cuota (registro del notebook, sonda de caudal concurrente, tres candidatos estructurales y la base en las 48 tareas restantes). Se envió a la competencia el candidato de edición temprana, rotulado como lectura, con la libertad de decidir que dio el dueño"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Seis hallazgos nuevos y dos actualizados en el registro, validados; sección 23 del pre-registro con los desenlaces de las predicciones 84 a 98 copiados de los roles; bitácora del caso con el dictamen, la corrección y la salida literal del envío"
+    }
+  ],
+  "lessons": [
+    "Antes de afirmar el estado de un envío o de una corrida remota, abre los archivos de los rescates anteriores del mismo día: el estado puede llevar horas ahí",
+    "Antes de anunciar un hallazgo, busca su idea en el registro de hallazgos: puede estar medido y descartado, y entonces lo nuevo es solo la cifra de esta vuelta",
+    "Un dato que el orquestador lleva a la ronda cruzada va como cuenta con su guion, sin adjetivos ni nombres de mecanismos: si trae juicio, los roles lo devuelven como propio",
+    "Una tabla que junta corridas con kits distintos no dice nada del kit vigente: di con cuáles kits se vio cada tarea antes de leerla",
+    "Si las dos pasadas de la base no discrepan y solo cambian 3 tareas de 12, el bloque no puede distinguir ningún candidato: corre primero la base en más tareas",
+    "La clase de fin que escribe el propio notebook no es la del arnés: antes de proponer un tope nuevo, lee el error que da el arnés y si el parche llegó a evaluarse",
+    "Una vuelta que solo mide no cierra: lanza a los constructores con lo que no gasta cuota en cuanto el orden de acciones coincide, sin esperar otro turno"
+  ]
+}

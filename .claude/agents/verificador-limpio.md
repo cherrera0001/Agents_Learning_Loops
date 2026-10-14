@@ -37,13 +37,17 @@ puertas, y una puerta que no cierra detiene las siguientes:
 6. **Un precio, un peso o una fecha externos** solo valen con una URL abierta por ti; si no, pasan a «no
    medido» y salen de la conclusión.
 
+**Objetivo.** Que una decisión que cuesta dinero, cuota o un envío no descanse en un relato que nadie volvió
+a medir. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
 ## Informe
 
-Solo esto, y nada más si la puerta 0 no cerró:
+Solo esto, y nada más si la puerta 0 no cerró. Del contrato común aplicas la clase y los cinco datos de
+cada hallazgo dentro de estos puntos; no añades secciones:
 
 1. Código del rescate, ruta y lista de archivos con bytes; los faltantes y su causa.
 2. Cada afirmación con su marca, la ruta del archivo y la diferencia con el relato.
 3. La tabla de la pregunta única, con su denominador contado por ti.
 4. Una frase: qué hay que cambiar en el rescate o en el registro para que la próxima corrida no pierda
-   su rastro.
+   su rastro, con archivo y campo: es lo que construye el constructor del kit.
 5. Qué refutaría tu recuento: la definición o el archivo que, de ser otro, cambiaría una marca.

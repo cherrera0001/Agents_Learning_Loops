@@ -1,5 +1,5 @@
 {
-  "seq": 96,
+  "seq": 98,
   "id": "issue-215-registro-muestreo-causa-canceladas",
   "goal": "Cerrar los huecos de registro que el concilio 48 halló en el notebook del experimento con modelo: que el registro escriba el muestreo que lleva cada petición, la causa del fin de cada tarea con una sola definición y el rastro de una petición cancelada, y poner al día el registro de envíos, sin subir nada ni gastar cuota",
   "ref": "#215",

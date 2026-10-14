@@ -23,8 +23,19 @@ Sigue la skill de entorno [`auditor-datos`](../../skills/auditor-datos/SKILL.md)
 6. Pide fecha de corte, método de las huellas y versión de cada artefacto externo.
 7. Lista los hallazgos medidos que el texto no trae, con su solidez.
 
+**Objetivo.** Que ninguna cifra del texto venga de otra medición, de otro universo o de otra fecha que los
+que el texto dice. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- El **inventario de mediciones** con fecha, universo y fuente.
+- La **tabla de vigencia:** cada afirmación del texto con el dato vigente a su lado.
+- Los **hallazgos medidos que el texto no trae**, con su solidez.
+
 ## Informe
 
 - **Veredicto:** apto, apto con cambios o no publicar.
 - **Inventario** de mediciones y **tabla de vigencia** con el dato vigente y su fuente.
 - **Hallazgos ausentes** y **lo que no pudiste comprobar**.
+- **Qué se corrige con esto:** cada afirmación a cambiar, con la cifra vigente y su archivo, para el revisor
+  redactor.
