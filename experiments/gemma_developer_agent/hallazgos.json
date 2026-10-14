@@ -21,16 +21,16 @@
     },
     {
       "id": "busqueda_por_similitud_vacia",
-      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 19: 386 avisos de «no se pudo obtener el embedding» en el log frente a 196 llamadas a la herramienta. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54; se recomendó no quitarla, porque la herramienta se anuncia en el mensaje de tarea y llamar a una no declarada terminaba la tarea con parche vacío. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente).",
+      "que_se_midio": "Búsquedas por similitud que devuelven vacío. Vuelta 19: 386 avisos de «no se pudo obtener el embedding» en el log frente a 196 llamadas a la herramienta. Vuelta 38: 78 de 78, 56 de 56, 14 de 14 y 54 de 54; se recomendó no quitarla, porque la herramienta se anuncia en el mensaje de tarea y llamar a una no declarada terminaba la tarea con parche vacío. Vuelta 42: 300 de 300 (124 del agente principal y 176 del subagente). Vuelta 47, leído en el código del arnés: el argumento de la búsqueda es una ruta de símbolo o su sufijo, no texto libre, y la instrucción del kit de base pedía usarla con palabras clave del mensaje de error. En todas las corridas rescatadas, de 362 consultas, 175 son texto libre de dos palabras o más y 168 tienen forma de símbolo. En el bloque de seis sesiones la herramienta devolvió resultados alguna vez y vacío la mayoría (cuenta gruesa, por texto de las trazas). En una sesión de la base el agente hizo 7 búsquedas frente a 140 órdenes de consola y 134 lecturas.",
       "primera_vuelta": 19,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [19, 38, 42],
+      "vueltas_medido": [19, 38, 42, 47],
       "estado": "decidido",
       "decision": {
-        "texto": "La vuelta 42 decidió quitarla en el kit «interfaz limpia» (sin las tres herramientas de grafo y sin la línea 11 de la instrucción). Decidido, todavía no aplicado.",
-        "quien": "concilio 42",
-        "vuelta": 42,
-        "fecha": "2026-10-09"
+        "texto": "Se revoca la decisión de la vuelta 42 de quitar las herramientas de grafo: no estaban muertas, estaban mal pedidas. El candidato siguiente corrige cómo se le dice al agente que las use y se mide antes en local, sin modelo.",
+        "quien": "orquestador",
+        "vuelta": 47,
+        "fecha": "2026-10-13"
       },
       "motivo_descarte": null,
       "por_que_sigue_abierto": null
@@ -480,6 +480,17 @@
       },
       "motivo_descarte": null,
       "por_que_sigue_abierto": null
+    },
+    {
+      "id": "resultado_segun_localizacion_del_sitio",
+      "que_se_midio": "Cruce de nuestros resultados por tarea con un benchmark público de un tercero, publicado en el foro de la competencia del artículo, que mide sin modelo qué tan fácil es localizar el sitio de la edición de referencia en el grafo de código. Nuestras 49 tareas están en ese benchmark. Bloque de seis sesiones: donde la fusión de señales pone el sitio entre los 5 primeros, 23 de 30 sesiones resuelven y 26 editan fuente; donde no, 6 de 42 resuelven y 12 editan fuente. Donde el enunciado nombra la función exacta, 18 de 24 resuelven; donde no, 6 de 30. En todas las corridas, con kits distintos: 39 de 74 frente a 36 de 167. Por distancia en el grafo desde un símbolo del enunciado: a 2 saltos o menos, 50 de 109; a 3 o más, 9 de 77. El benchmark no se volvió a ejecutar: se usó su salida.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Es una correlación entre corridas, no un experimento. Falta medir en local, sin modelo, si la activación propagada del repositorio sobre el grafo de código pone el sitio arriba, y después si un kit que localiza por el grafo resuelve más."
     }
   ]
 }
