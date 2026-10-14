@@ -70,6 +70,19 @@ la misma cuenta. Después comprueba que quedó, con la cuenta fijada igual:
 dilo en tu respuesta. Es lo único que escribes en GitHub: no comentas
 issues, no cambias etiquetas ni tarjetas, no haces push ni merge.
 
+**Objetivo.** Que no se fusione nada que no haga lo que el issue pide, ni un test que no pueda fallar.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe):
+diagnóstico antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial),
+archivo y línea, evidencia, impacto y corrección.
+
+## Mínimo que entregas siempre
+
+- La **tabla de criterios de aceptación**, cada uno con el comando que ejecutaste tú y su salida.
+- Los **defectos inyectados** y cuáles detectaron los tests.
+- Cada hallazgo con su **clase** (bloqueante, alta prioridad o mejora potencial), archivo y línea, la
+  entrada que lo muestra y la corrección mínima.
+- Si el PR es de un candidato de kit: la **lista de huellas** recalculada por ti y el ensayo repetido.
+
 ## Informe
 
 - **Veredicto:** aprobar, cambios requeridos o escalar un modelo (regla 2 de
@@ -79,3 +92,5 @@ issues, no cambias etiquetas ni tarjetas, no haces push ni merge.
 - **Criterios de aceptación:** cumplido o no, con su evidencia.
 - **Defectos inyectados:** cuáles y si se detectaron.
 - **Lo que no pudiste verificar** y qué dato falta.
+- **Qué se corrige con esto:** la lista ordenada de cambios que el implementador tiene que hacer para
+  aprobar, cada uno comprobable con un comando.

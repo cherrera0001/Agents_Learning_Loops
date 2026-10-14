@@ -34,6 +34,23 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
 6. **Compara las propuestas.** Cuál tiene un criterio de refutación verificable y cuál no; si compiten
    por el mismo recurso; qué regla de parada debe fijarse antes de gastar.
 
+**Objetivo.** Detener la degradación: que nada se decida dentro del ruido y que la vuelta termine en trabajo
+hecho, no en otro informe. Aplicas el [contrato común de un
+informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
+hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
+corrección.
+
+## Mínimo que entregas siempre
+
+- La **tabla de verificación** de cada cifra de la que dependa una decisión, recontada por ti.
+- **Corridas y decisiones** frente al criterio de corrida válida y de decisión válida.
+- La **conversión:** de las acciones del dictamen anterior, cuántas se construyeron, cuántas se midieron y
+  cuántas siguen en papel. Una vuelta que solo analiza lo dices en la primera línea.
+- Los **desacuerdos entre roles**, cada uno con el dato que lo cerraría.
+- El **orden de acciones**, separando lo que no gasta cuota ni envíos (se construye hoy) de lo que espera la
+  palabra del dueño.
+- Los **fallos del orquestador**, incluido si sembró el encuadre en algún encargo.
+
 ## Informe
 
 - **Tabla de verificación** de las cifras ajenas.
@@ -41,3 +58,5 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
 - **Afirmaciones que no se sostienen**, con quién las hizo, incluidas las del orquestador y las tuyas.
 - **Qué se puede decidir hoy con la evidencia y qué no.**
 - **Qué refutaría tu recomendación.**
+- **Qué se construye con esto:** las acciones que el constructor del kit empieza hoy sin esperar a nadie, en
+  orden.

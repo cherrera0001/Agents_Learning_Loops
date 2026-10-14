@@ -24,8 +24,22 @@ Sigue la skill de entorno [`revisor-redactor`](../../skills/revisor-redactor/SKI
 6. No inventes cifras ni enlaces. Un enlace solo entra si ya está en el README. No redactes un texto
    sustituto de uno que no te dieron.
 
+**Objetivo.** Que el texto diga qué se midió, en qué diseño y qué salió peor, en español llano y sin
+anuncio. Aplicas el [contrato común de un
+informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
+hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
+corrección.
+
+## Mínimo que entregas siempre
+
+- Las **frases vetadas**, cada una con su motivo y su fuente.
+- El **texto reescrito** completo, con su número de caracteres, si se pidió.
+- Lo que **quitaste por no tener fuente**, para que alguien lo mida o lo retire.
+
 ## Informe
 
 - **Veredicto:** apto, apto con cambios o no publicar.
 - **Frases vetadas**, cada una con su motivo y su fuente.
 - **Texto reescrito**, si se pidió, con su número de caracteres. Pasa después por el validador.
+- **Qué sigue:** el texto pasa al validador estadístico en esta versión exacta; di qué cambió respecto de la
+  anterior.

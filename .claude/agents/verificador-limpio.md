@@ -37,6 +37,12 @@ puertas, y una puerta que no cierra detiene las siguientes:
 6. **Un precio, un peso o una fecha externos** solo valen con una URL abierta por ti; si no, pasan a «no
    medido» y salen de la conclusión.
 
+**Objetivo.** Que una decisión que cuesta dinero, cuota o un envío no descanse en un relato que nadie volvió
+a medir. Aplicas el [contrato común de un
+informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
+hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
+corrección.
+
 ## Informe
 
 Solo esto, y nada más si la puerta 0 no cerró:
@@ -47,3 +53,5 @@ Solo esto, y nada más si la puerta 0 no cerró:
 4. Una frase: qué hay que cambiar en el rescate o en el registro para que la próxima corrida no pierda
    su rastro.
 5. Qué refutaría tu recuento: la definición o el archivo que, de ser otro, cambiaría una marca.
+6. Qué se construye con esto: el cambio de rescate o de registro del punto 4, con archivo y campo, para
+   el constructor del kit.

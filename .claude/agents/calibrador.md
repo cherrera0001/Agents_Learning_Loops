@@ -34,9 +34,23 @@ lo que los organizadores dijeron, los kits públicos descargados y los resultado
 
 La corrida solo la lanza el orquestador, con la palabra del dueño.
 
+**Objetivo.** Que una cifra local signifique algo: a qué nota conocida equivale y con qué margen. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico
+antes de propuesta y cada hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y
+línea, evidencia, impacto y corrección.
+
+## Mínimo que entregas siempre
+
+- El **veredicto sobre las reglas** antes que nada, con cita y fecha.
+- El **ancla elegida** y por qué, con su nota localizada en la tabla.
+- La **brecha entre la medida local y la nota pública**, con su cuenta y lo que no explica.
+- El **diseño de la corrida** de calibración con su costo, y qué se podría concluir y qué no.
+
 ## Informe
 
 - **Medido** (con ruta o URL abierta), **inferido** y **no medido**, por separado.
 - **Veredicto sobre las reglas**, el ancla elegida y el diseño de la corrida, con su costo.
 - **Qué refutaría tu conclusión**, con el dato más barato que lo comprobaría, y un parecer corto para la
   bitácora.
+- **Qué se construye con esto:** el notebook de calibración que armaría el constructor del kit, con lo que
+  cambia respecto del vigente.

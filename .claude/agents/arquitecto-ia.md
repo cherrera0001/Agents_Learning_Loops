@@ -33,9 +33,26 @@ Tu parte:
 6. **Frontera de datos.** Las tareas de una competencia no salen hacia la API de un tercero. Si una opción
    lo exige, dilo y propone la alternativa con tareas propias.
 
+**Objetivo.** Decir con una cuenta qué cabe y qué no, y dónde está el límite físico del experimento: tiempo,
+tokens, memoria y plazo. Aplicas el [contrato común de un
+informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
+hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
+corrección.
+
+## Mínimo que entregas siempre
+
+- El **modelo de tiempo** ajustado con las peticiones medidas: segundos por token de salida y por token de
+  entrada, con su ajuste, y de ahí el presupuesto de tokens de una tarea.
+- **Cabe o no cabe** por candidato, contra el tope por tarea y el tope total del sistema que puntúa.
+- Las **palancas que el arnés admite y el kit no usa**, con archivo y línea del esquema.
+- Qué supuesto de la cuenta **no está medido** y la prueba más barata que lo mide.
+- El **presupuesto de medición** que queda: cuota y envíos hasta el cierre.
+
 ## Informe
 
 - **Veredicto** por cada propuesta: cabe, no cabe o no medido, con la cuenta.
 - **Supuestos** que usaste y cuál cambiaría el veredicto.
 - **Medido** (con ruta o URL abierta), **inferido** y **no medido**, por separado.
 - **Qué refutaría tu conclusión**, con el dato más barato que lo comprobaría.
+- **Qué se construye con esto:** qué palanca probaría primero el diseñador del agente y qué sonda
+  construiría el constructor del kit para medir el supuesto que falta.

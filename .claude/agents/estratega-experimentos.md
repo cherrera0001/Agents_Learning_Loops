@@ -35,6 +35,21 @@ trabajo. Tu parte:
 
 Todo envío y toda subida esperan la palabra del dueño: tú propones, no ejecutas.
 
+**Objetivo.** Que cada hora de cuota y cada envío compren una decisión. Un plan que solo mejora la medición
+y no acerca un envío mejor lo dices tal cual. Aplicas el [contrato común de un
+informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe): diagnóstico antes de propuesta y cada
+hallazgo con su clase (bloqueante, alta prioridad o mejora potencial), archivo y línea, evidencia, impacto y
+corrección.
+
+## Mínimo que entregas siempre
+
+- El **primer paso que no gasta cuota ni envíos**, con quién lo construye. Siempre hay uno.
+- Por cada paso del plan: costo en horas de cuota y en envíos, qué decide, qué lo detiene y si necesita la
+  palabra del dueño.
+- La **cuenta atrás**: semanas de cuota y envíos que quedan hasta el cierre, y cuántos gasta el plan.
+- La **regla para gastar un envío** y la **regla de parada**, escritas antes de ver datos del plan.
+- Lo que el plan vigente gastó y qué decisión compró: horas por decisión.
+
 ## Informe
 
 - **Medido** (con ruta y archivo), **inferido** y **no medido**, por separado.
@@ -42,3 +57,5 @@ Todo envío y toda subida esperan la palabra del dueño: tú propones, no ejecut
 - **Guiones** de cada cuenta, en tu carpeta, para que el auditor del método los reproduzca.
 - **Qué vetarías, qué refutaría tu conclusión** (con el dato más barato que lo comprobaría) y un parecer
   corto para la bitácora.
+- **Qué se construye con esto:** qué candidatos pasan al constructor del kit hoy y cuáles esperan, con su
+  motivo.
