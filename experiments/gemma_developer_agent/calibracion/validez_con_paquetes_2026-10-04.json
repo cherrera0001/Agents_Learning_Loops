@@ -1,0 +1,68 @@
+{
+  "schema_version": "kaggle-validity-aggregate/1",
+  "fecha": "2026-10-04",
+  "que_es": "La misma medición de validez de las 129 tareas públicas, en el sandbox del notebook, después de instalar en el entorno tres paquetes que solo usan las pruebas. Conteos por repositorio.",
+  "entorno": {
+    "notebook": "cs4all/validez-con-paquetes (privado)",
+    "acelerador": "ninguno",
+    "sandbox": "subprocess",
+    "arnes": "swegemma 0.2.7",
+    "paquetes_instalados": [
+      "inline_snapshot 0.36.0",
+      "dirty_equals 0.11",
+      "executing 2.2.1"
+    ],
+    "paquetes_que_ya_estaban_y_no_cambiaron": [
+      "asttokens 3.0.1",
+      "pytest 8.4.2",
+      "rich 13.9.4"
+    ]
+  },
+  "fuente": {
+    "archivo_local": "validez_con_paquetes.json (no se versiona: lleva un resultado por tarea)",
+    "sha256": "35ed8c29aabec42cc9cb7a8699e58366ac0e9a361db718d9b94b988fb111dd57",
+    "completo": true
+  },
+  "por_repositorio": {
+    "fastapi": {
+      "tareas": 67,
+      "discrimina": 60,
+      "pasa_sin_parche": 2,
+      "dorado_falla": 5
+    },
+    "requests": {
+      "tareas": 13,
+      "dorado_falla": 12,
+      "pasa_sin_parche": 1
+    },
+    "rich": {
+      "tareas": 48,
+      "discrimina": 43,
+      "dorado_falla": 5
+    },
+    "httpx": {
+      "tareas": 1,
+      "dorado_falla": 1
+    }
+  },
+  "total": {
+    "tareas": 129,
+    "discrimina": 103
+  },
+  "cambios_frente_a_la_medicion_sin_paquetes": {
+    "discrimina -> discrimina": 71,
+    "dorado_falla -> discrimina": 32,
+    "dorado_falla -> dorado_falla": 23,
+    "pasa_sin_parche -> pasa_sin_parche": 3
+  },
+  "con_60_s_por_comando_cambian_de_veredicto": 0,
+  "segundos_por_verificacion": {
+    "mediana": 5.0,
+    "maximo": 16.5
+  },
+  "limites": [
+    "Una sola medición. Una tarea de rich cambió de clase sin que nada la tocara.",
+    "Medir con paquetes añadidos ya no es medir en el entorno idéntico al del notebook oficial.",
+    "No dice nada sobre la evaluación oculta."
+  ]
+}
