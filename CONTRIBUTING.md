@@ -191,12 +191,17 @@ fichas y el índice.
    Si el código ya nombra el mecanismo, se dice y se para: la cita la hace el investigador de papers
    ([revisión de un texto público](#revisión-de-un-texto-público)).
 2. **Abrir** la obra (DOI, arXiv o URL del editor) o el video (título, descripción y, si la página la da,
-   la transcripción). Lo que no abre no se cita, y su ficha queda `no_abierto` con el motivo.
-3. **Clasificar.** *Biblioteca*: identificador abierto y una frase de qué haría el mecanismo en este
-   repositorio. *Océano*: no hay ficha con identificador abierto, o `docs/results/` no tiene una medición
-   de ese mecanismo en el solver acotado ni en el kit del experimento con modelo. Una ficha que cumple las
-   dos definiciones (obra abierta, mecanismo sin medir aquí) se anota océano: el hueco manda. Una cifra de
-   un paper o de un video es de su autor: no es un resultado de este repositorio.
+   la transcripción). Lo que no abre no se cita, y su ficha queda `no_abierto` con el motivo. Autor, año
+   y título se copian del registro (arXiv, Crossref o la página del editor), no de memoria. No se pega
+   una transcripción entera: de un video se anotan notas propias.
+3. **Clasificar.** *Biblioteca*: identificador abierto, una frase de qué haría el mecanismo en este
+   repositorio y una medición de ese mecanismo aquí. *Océano*: cualquier otro caso. No hay ficha con
+   identificador abierto; o ni `docs/results/` ni el registro de hallazgos de un experimento con modelo
+   (hoy, `experiments/gemma_developer_agent/hallazgos.json`) tienen una medición de ese mecanismo en el
+   solver acotado ni en el kit. Una obra abierta cuyo mecanismo no está medido aquí es océano. El campo
+   `mecanismo` de la ficha dice si es un hueco que medir o si no aplica a este repositorio: lo segundo
+   no es un hueco. Una cifra de un paper o de un video es de su autor: no es un resultado de este
+   repositorio.
 4. **Proponer al concilio** un parecer de una página: el mecanismo, la ficha, si el código ya lo nombra,
    qué medición de este repositorio lo toca y un solo contraste, con el resultado que lo descartaría. El
    parecer no trae un diseño de corrida ni una subida.
@@ -207,7 +212,8 @@ fichas y el índice.
    duplica.
 
 El investigador de fuentes solo informa: no edita el repositorio, no hace commit, no publica, no inicia
-sesión en un sistema externo y no recoge datos personales. Quien incorpora sus fichas al área es un
+sesión en un sistema externo, no recoge datos personales, no escribe predicciones, no lee
+`benchmark/private/` y no toca el harness de experimento. Quien incorpora sus fichas al área es un
 implementador, por PR. No reemplaza al investigador de papers: aquel abre la obra que el código ya nombra y
 veta citas de un texto público; este busca antes, en lo publicado y en lo que aquí nadie ha medido.
 

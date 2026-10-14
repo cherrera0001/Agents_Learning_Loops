@@ -35,5 +35,5 @@ experiments/gemma_developer_agent/submissions/*.zip
 experiments/azar/data/
 *.ipynb_checkpoints
 
-# Area de investigacion: texto completo de terceros, copia local de consulta (no se versiona)
+# Área de investigación: texto completo de terceros, copia local de consulta (no se versiona)
 investigacion/local/

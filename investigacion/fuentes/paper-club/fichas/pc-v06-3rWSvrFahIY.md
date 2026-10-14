@@ -40,7 +40,7 @@ Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y n
 - **En este repositorio:** No aplica: el enunciado de cada tarea llega entero y no hay latencia percibida que reducir.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### TorchLean: Formalizing Neural Networks in Lean
 
@@ -54,4 +54,4 @@ Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y n
 - **En este repositorio:** No aplica: el repositorio no verifica formalmente ningún modelo.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.

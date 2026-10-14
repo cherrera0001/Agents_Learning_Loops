@@ -35,7 +35,7 @@ Ficha `pc-v04` · video 4 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **Mecanismo:** Tratar el razonamiento como variable latente y quedarse con los pasos de razonamiento que predicen la acción correcta, en vez de una plantilla fija. Según la charla, cada traza se puntúa por tres cosas (que sea corta, que no sea trivial y que prediga la acción) y el razonamiento puede omitirse al ejecutar.
 - **En este repositorio:** Solo la idea, sin entrenamiento: quitar de la instrucción del kit los pasos de razonamiento obligatorios cuya presencia en la trayectoria no distingue las sesiones resueltas de las demás.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
-- **Medición local:** experiments/gemma_developer_agent/hallazgos.json: dos pasos obligatorios propuestos y descartados en la vuelta 42 («reproductor_antes_de_editar», «guion_mapa_al_inicio»). Se midió cada paso por separado, no una selección por lo que predice la acción. Nada en docs/results/.
+- **Medición local:** experiments/gemma_developer_agent/hallazgos.json: dos brazos propuestos y vetados en la vuelta 42 («reproductor_antes_de_editar», «guion_mapa_al_inicio»). Lo que miden es el costo de cada uno y cuántas veces el reproductor sale verde antes de editar, no si el paso distingue las sesiones resueltas. Nada en docs/results/.
 - **Contraste que lo descarta:** En las trayectorias ya rescatadas, ningún paso de razonamiento que la instrucción pide aparece con frecuencia distinta en las sesiones resueltas y en las no resueltas de las mismas tareas: no hay nada que seleccionar. Con ese resultado se descarta.
 
 ### SimToolReal: An Object-Centric Policy for Zero-Shot Dexterous Tool Manipulation
@@ -49,7 +49,7 @@ Ficha `pc-v04` · video 4 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica: robótica; aquí no hay simulación física ni política entrenada.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ## Lo que dice la transcripción
 

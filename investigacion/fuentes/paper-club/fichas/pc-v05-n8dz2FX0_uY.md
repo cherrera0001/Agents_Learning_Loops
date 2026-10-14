@@ -27,7 +27,7 @@ Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y n
 - **En este repositorio:** No aplica: el repositorio no escribe kernels de GPU.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### Intelligence per Watt: Measuring Intelligence Efficiency of Local AI
 
@@ -41,7 +41,7 @@ Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y n
 - **En este repositorio:** Sería una métrica, no un cambio del agente: los recibos no registran tokens ni costo (CONTRIBUTING.md) y el sistema donde se mide no da una lectura de potencia.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ## Lo que dice la transcripción
 

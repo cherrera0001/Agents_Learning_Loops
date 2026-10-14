@@ -38,7 +38,7 @@ Cada línea de `indice.jsonl` es un objeto con estos trece campos, todos de text
 | Campo | Qué lleva |
 |---|---|
 | `id` | Identificador corto y estable de la ficha. |
-| `clase` | `biblioteca` u `oceano`, con la definición de `CONTRIBUTING.md`. Una obra abierta cuyo mecanismo no está medido aquí es `oceano`. |
+| `clase` | `biblioteca` u `oceano`, con la definición de `CONTRIBUTING.md`. Una obra abierta cuyo mecanismo no está medido aquí es `oceano`; también lo es una que no aplica a este repositorio, y el campo `mecanismo` lo dice. |
 | `tipo` | `paper`, `video`, `foro` u `otro`. |
 | `titulo` | Tal como lo da el registro de la obra o la página del video. |
 | `url` | Dirección que se abrió. Vacía si no se abrió ninguna. |
@@ -49,7 +49,7 @@ Cada línea de `indice.jsonl` es un objeto con estos trece campos, todos de text
 | `mecanismo` | Una frase con el mecanismo y otra con qué haría en este repositorio, o por qué no aplica. |
 | `donde_lo_nombra_el_codigo` | Archivo que lo nombra, o que no lo nombra y con qué búsqueda se comprobó. |
 | `medicion_local` | Qué medición de este repositorio lo toca, con su ruta, o que no hay ninguna. |
-| `contraste_que_lo_descarta` | Un contraste y el resultado que descartaría el mecanismo. Vacío si no se propone. |
+| `contraste_que_lo_descarta` | Un contraste y el resultado que descartaría el mecanismo. Vacío si no se propone; el motivo va en `mecanismo`. |
 
 Reglas de una ficha:
 

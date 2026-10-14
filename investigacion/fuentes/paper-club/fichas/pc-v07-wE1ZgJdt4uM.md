@@ -23,7 +23,7 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica hoy: cambia el motor de inferencia, que el kit del experimento con modelo no controla.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### Diffusion Model Predictive Control
 
@@ -36,7 +36,7 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica: ni el solver acotado ni el kit planifican con un modelo de dinámica aprendido.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels
 
@@ -50,7 +50,7 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica: aquí no se entrena ningún modelo ni hay entrada de píxeles.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### Deep Learning is Not So Mysterious or Different
 
@@ -63,7 +63,7 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica: es una posición teórica sobre generalización, sin nada que medir en este repositorio.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
 
 ### Pre-training under infinite compute
 
@@ -76,4 +76,4 @@ Ficha `pc-v07` · video 7 de 7 de la lista Paper Club · consultada el 2026-10-1
 - **En este repositorio:** No aplica: aquí no se preentrena ningún modelo.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
-- **Contraste que lo descarta:** no se propone: sin frase de qué haría en este repositorio
+- **Contraste que lo descarta:** no se propone.
