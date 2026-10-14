@@ -10,7 +10,8 @@
     "points": 1,
     "uncertainty": 2,
     "risk": 2,
-    "planned_model": "ninguno; decide la persona dueña del proyecto"
+    "planned_model": "ninguno; decide la persona dueña del proyecto",
+    "planned_effort": "no aplica"
   },
   "outcome": {
     "used_model": "Otro agente (sesión de Cursor)",
