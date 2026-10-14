@@ -505,14 +505,14 @@
     },
     {
       "id": "sesiones_de_12_tareas_del_bundle_contract_first",
-      "que_se_midio": "Dos sesiones de 12 tareas del bloque R1, con el modelo real, sobre el bundle público contract-first: el bundle exacto resolvió 4 de 12 (270 s de reloj medio por tarea) y el mismo bundle sin write_file, 4 de 12 (269 s). Hubo 1 par discordante en cada sentido. La base razonada había resuelto 5 y 5 en las mismas 12 tareas y el candidato C2, 6. Todo cae dentro del ruido de 12 tareas y ninguna comparación alcanza el criterio de decisión válida. Es el recuento del orquestador; el analista de datos tiene que volver a hacerlo y el auditor no lo recontó.",
+      "que_se_midio": "Dos sesiones de 12 tareas del bloque R1, con el modelo real, sobre el bundle público contract-first: el bundle exacto resolvió 4 de 12 (270 s de reloj medio por tarea) y el mismo bundle sin write_file, 4 de 12 (269 s). Hubo 1 par discordante en cada sentido. La base razonada había resuelto 5 y 5 en las mismas 12 tareas y el candidato C2, 6. Todo cae dentro del ruido de 12 tareas y ninguna comparación alcanza el criterio de decisión válida. Recontado por el analista de datos, que coincide con el recuento del orquestador: McNemar exacto p = 1,0, 269,9 y 268,6 s de media, y las dos sesiones son válidas (12 de 12 tareas con fin, sin colgadas). La prueba tiene potencia casi nula: la regla del envío se cumplía el 86 % de las veces si los brazos eran iguales y el 56 % si el sin write_file fuera un 25 % peor. La comparación con R1 no es limpia: cambian a la vez prompt, topes y herramientas. En cada sesión una tarea llamó a submit_patch con parche de tamaño 0 51 veces (exacta) y 49 (sin write_file); es una falla del kit que no aparece en R1 (como mucho 5 por tarea) y cuesta 1 de 12 por sesión. El auditor no recontó estas cifras.",
       "primera_vuelta": 48,
       "primera_fecha": "2026-10-14",
       "vueltas_medido": [48],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Falta el recuento del analista de datos y una lectura de la tabla pública para el bundle: la sesión de 12 tareas no es una lectura de la tabla. Con ella, la rama (2) del envío del día 15 se cumple (4 frente a 4 menos 1), pero el dictamen del concilio 50 rotula ese envío como lectura y no como mejora."
+      "por_que_sigue_abierto": "La sesión de 12 tareas no es una lectura de la tabla pública. La rama (2) de la regla del envío del día 15 se cumplía para el 0,24 sin write_file (4 frente a 4 menos 1), pero a las 13:10 UTC del mismo día se retiró ese candidato y la rama (2) pasó al kit propio ALL-1; el bucle de submit_patch vacío es lo que ALL-1 ataca."
     },
     {
       "id": "sin_write_file_se_crea_archivo_por_shell",
@@ -527,14 +527,14 @@
     },
     {
       "id": "el_arnes_vigente_acepta_un_adaptador_lora",
-      "que_se_midio": "Sin GPU, con las ruedas vigentes: un zip con el bundle público más un adaptador PEFT de rango 16 en las proyecciones q y o de las 60 capas (240 tensores, 28 672 000 parámetros; lora_B en ceros, así que el efecto es nulo por construcción) pasa la validación del arnés, que descubre el adaptador con rango 16, arma la orden de vLLM con --enable-lora, --max-loras 1 y --max-lora-rank 16, y compila el agente con el nombre del adaptador como modelo: las peticiones salen con ese nombre. El zip pesa 566 067 bytes (tope de 3 GiB desempacados); el control sin adaptador no activa LoRA. No medido: que vLLM arranque con LoRA sobre este modelo cuantizado y que lo aplique, que el puntuador lo acepte, y el costo en tokens por segundo y en caché KV. Antecedentes públicos recontados por el auditor: en el puntuador, 0 éxitos y 2 fallos; en cuaderno, 1 sí y 1 no; de beneficio, 1 medición y fue negativa (2 de 32 frente a 4 de 32). No hay evidencia de efecto en el puntuador.",
+      "que_se_midio": "Primero sin GPU, con las ruedas vigentes: un zip con el bundle público más un adaptador PEFT de rango 16 en las proyecciones q y o de las 60 capas (240 tensores, 28 672 000 parámetros; lora_B en ceros, así que el efecto es nulo por construcción) pasa la validación del arnés, que descubre el adaptador con rango 16, arma la orden de vLLM con --enable-lora, --max-loras 1 y --max-lora-rank 16, y compila el agente con el nombre del adaptador como modelo: las peticiones salen con ese nombre. El zip pesa 566 067 bytes (tope de 3 GiB desempacados); el control sin adaptador no activa LoRA. Medido en cuaderno con la sonda G2 (2026-10-14, GPU, vLLM del arnés con tres adaptadores, 0,80 de memoria): arrancó en 427 s; el adaptador de ceros quedó dentro de la deriva de la base en 5 de 5 indicaciones; el adaptador con ruido N(0, 1) movió el primer token entre 12,2 y 16,5 nats en 5 de 5 (deriva máxima 0,19 nats); decodificó a 35,4 tokens por segundo frente a 37,9 de la base (6,5 % más lento); la caché KV quedó en 26 768 tokens. El criterio estaba escrito antes de los datos y se cumplió. No medido: que el puntuador acepte un zip con adaptador (E2), que un adaptador entrenado mejore la nota y el costo de entrenarlo (G3). Antecedentes públicos recontados por el auditor: en el puntuador, 0 éxitos y 2 fallos; en cuaderno, 1 sí y 1 no; de beneficio, 1 medición y fue negativa (2 de 32 frente a 4 de 32). No hay evidencia de efecto en el puntuador.",
       "primera_vuelta": 48,
       "primera_fecha": "2026-10-14",
       "vueltas_medido": [48],
       "estado": "medido",
       "decision": null,
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Lo cierra la sonda G2 (sesión de GPU subida el 2026-10-14, en curso): si vLLM aplica el adaptador y mueve los logits más que la deriva entre dos corridas de la base. Lo de la aceptación por el puntuador lo cierra E2."
+      "por_que_sigue_abierto": "G2 pasó en cuaderno. Falta E2, la aceptación por el puntuador, que espera la palabra del dueño y el primer cupo libre tras puntuar el envío del día 15, y G3 (tokens por segundo de entrenamiento), relanzada."
     },
     {
       "id": "estrategia_del_concilio_50",
@@ -544,7 +544,7 @@
       "vueltas_medido": [48],
       "estado": "decidido",
       "decision": {
-        "texto": "Un suelo propio de la familia contract-first en la tabla y una sola apuesta de techo, un adaptador LoRA entrenado con episodios de Gemma, detrás de tres puertas baratas: G2 (efecto en los logits), E2 (aceptación en el puntuador) y G3 (tokens por segundo de entrenamiento). Los dos envíos finales se eligen por la media de varias lecturas. Parada el 2026-11-14 si ningún brazo promedia 13 tareas o más en 3 lecturas. Veto 1: la rama (3) del envío del día 15 vuelve a C1 sin tocar, porque enviar el bundle público exacto es una copia. La decisión de cambiar de base al 0,24 queda exploratoria hasta tener 3 lecturas propias. Ninguna decisión que gaste la cuota de la semana del 17 o envíos posteriores al 15 es válida hasta que el analista, el forense y la revisión cruzada hayan leído el dictamen. Texto completo en docs/estrategia_concilio_50.md.",
+        "texto": "Un suelo propio de la familia contract-first en la tabla y una sola apuesta de techo, un adaptador LoRA entrenado con episodios de Gemma, detrás de tres puertas baratas: G2 (efecto en los logits), E2 (aceptación en el puntuador) y G3 (tokens por segundo de entrenamiento). Los dos envíos finales se eligen por la media de varias lecturas. Parada el 2026-11-14 si ningún brazo promedia 13 tareas o más en 3 lecturas. Veto 1: la rama (3) del envío del día 15 vuelve a C1 sin tocar, porque enviar el bundle público exacto es una copia. Ajuste posterior del orquestador, el mismo día, antes de cualquier dato del kit: el 0,24 sin write_file se retira como candidato y la rama (2) pasa al kit propio ALL-1 (texto propio y las skills localizar y entregar), si su sesión de 12 tareas termina completa, sin colgadas y con 4 resueltas o más. G2 pasó el 2026-10-14. La decisión de cambiar de base al 0,24 queda exploratoria hasta tener 3 lecturas propias. Ninguna decisión que gaste la cuota de la semana del 17 o envíos posteriores al 15 es válida hasta que el analista, el forense y la revisión cruzada hayan leído el dictamen. Texto completo en docs/estrategia_concilio_50.md.",
         "quien": "auditor del método, concilio 50",
         "vuelta": 48,
         "fecha": "2026-10-14"

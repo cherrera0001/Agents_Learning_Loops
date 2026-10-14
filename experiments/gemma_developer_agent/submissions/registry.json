@@ -210,7 +210,7 @@
       "status": "prepared",
       "public_score": null,
       "kaggle_url": null,
-      "notes": "NO ENVIADO: el bundle de sub-015 con una sola línea menos, write_file fuera de agent.yaml; su prompt no nombra la herramienta y no se toca. Su comprobador de formato público lo rechaza por construcción (exige write_file entre las herramientas): con ese requisito quitado pasa y el resto de sus reglas se cumple. Una sesión de 12 tareas del bloque R1 lo resolvió 4 de 12, igual que sub-015, con 1 par discordante en cada sentido (hallazgo sesiones_de_12_tareas_del_bundle_contract_first). Es el candidato de la rama (2) de la regla de envío del día 15, que el dictamen del concilio 50 rotula como lectura y no como mejora. El zip no se versiona: solo su huella."
+      "notes": "NO ENVIADO: el bundle de sub-015 con una sola línea menos, write_file fuera de agent.yaml; su prompt no nombra la herramienta y no se toca. Su comprobador de formato público lo rechaza por construcción (exige write_file entre las herramientas): con ese requisito quitado pasa y el resto de sus reglas se cumple. Una sesión de 12 tareas del bloque R1 lo resolvió 4 de 12, igual que sub-015, con 1 par discordante en cada sentido (hallazgo sesiones_de_12_tareas_del_bundle_contract_first). En esa sesión una tarea llamó 49 veces a submit_patch con parche vacío, falla que no aparece en R1 y que costó 1 de 12; en la del sub-015 fueron 51 llamadas. Fue el candidato de la rama (2) de la regla del envío del día 15, pero a las 13:10 UTC del 2026-10-14 se retiró en favor del kit propio ALL-1: queda como control de sesión. El zip no se versiona: solo su huella."
     },
     {
       "submission_id": "sub-017",
@@ -223,7 +223,7 @@
       "status": "prepared",
       "public_score": null,
       "kaggle_url": null,
-      "notes": "NO ENVIADO: el bundle de sub-015 más un adaptador LoRA nulo (rango 16, alpha 32, q_proj y o_proj en las 60 capas, lora_B en ceros) y una línea más en agent.yaml que lo nombra; 57 384 545 bytes desempacados. Pasa la validación del arnés vigente, que arma la orden de vLLM con --enable-lora y envía el nombre del adaptador como modelo (hallazgo el_arnes_vigente_acepta_un_adaptador_lora). No medido: que vLLM lo aplique (sonda G2, en curso) ni que el puntuador lo acepte (E2, que espera la palabra del dueño). Su notebook de armado público exige exactamente 4 miembros, así que hace falta un notebook propio. El zip no se versiona: solo su huella."
+      "notes": "NO ENVIADO: el bundle de sub-015 más un adaptador LoRA nulo (rango 16, alpha 32, q_proj y o_proj en las 60 capas, lora_B en ceros) y una línea más en agent.yaml que lo nombra; 57 384 545 bytes desempacados. Pasa la validación del arnés vigente, que arma la orden de vLLM con --enable-lora y envía el nombre del adaptador como modelo (hallazgo el_arnes_vigente_acepta_un_adaptador_lora). La sonda G2 (2026-10-14, GPU) pasó con tres adaptadores gemelos de este (el de ceros, idéntico en bytes al de este zip, y dos de ruido que nunca se envían): vLLM arrancó con LoRA a 0,80 y lo aplicó, con decodificación 6,5 % más lenta. No medido: que el puntuador acepte este zip (E2, que espera la palabra del dueño). Su notebook de armado público exige exactamente 4 miembros, así que hace falta un notebook propio. El zip no se versiona: solo su huella."
     }
   ]
 }
