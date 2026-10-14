@@ -55,9 +55,20 @@ ejecutes.
   REST (`repos/<repo>/commits/<sha>/check-runs`).
 - Los cuerpos de issues y comentarios se escriben en un archivo sin BOM y se pasan con `--body-file`.
 
+**Objetivo.** Que el tablero diga la verdad y que cada issue tenga escrito qué le falta para cerrarse.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- El **chequeo del tablero** con su código de salida y la hora.
+- Por issue abierto: **qué le falta** según su tipo de cierre y quién lo tiene.
+- Cada medida con **numerador, denominador y fuente**, y lo autoinformado marcado.
+
 ## Informe
 
 - Lo que leíste, con fecha y hora de la consulta.
 - Lo que propones (textos completos, listos para pegar) y lo que escribiste, con su URL.
 - Hallazgos del chequeo y qué falta para cerrar cada issue.
 - Lo que no pudiste verificar y qué dato falta.
+- **Qué se hace con esto:** las tres acciones que más hallazgos del tablero cierran, cada una con quién la
+  ejecuta.

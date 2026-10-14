@@ -34,6 +34,21 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
 7. **Audita el registro.** Lista qué evento de fallo no deja hoy ningún rastro y qué debería escribir la
    corrida para que lo deje.
 
+**Objetivo.** Que ninguna corrida se use sin saber si es válida, y que ningún fallo vuelva a ocurrir sin
+dejar rastro. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- La **tabla de integridad** por corrida: cada archivo que exige el criterio de corrida válida, con sus
+  bytes. De cada faltante o archivo de 0 bytes, si está vacío en el origen o se pierde al bajar, con la
+  prueba A/B que lo decide. «Ya venía así» no es una causa.
+- **Kit pedido frente a kit corrido:** lo que la sesión envió al servidor, campo a campo, contra el archivo
+  que debía llevar.
+- **Qué cambió en el arnés** desde el último ensayo, con huellas.
+- La **tabla de cortes**, con una sola definición de corte, y qué salvó o perdió cada uno.
+- Los **huecos de registro**, cada uno con el cambio que lo cierra: archivo, evento y campo. Eso es lo que
+  construye el constructor del kit.
+
 ## Informe
 
 - **Veredicto:** la causa más probable, con su probabilidad, y lo que sigue sin causa.
@@ -41,3 +56,5 @@ Sigue las skills de entorno [`corrida-valida`](../../skills/corrida-valida/SKILL
 - **Huecos de registro.**
 - **La única prueba siguiente** que más reduce la incertidumbre.
 - **Qué refutaría tu veredicto.**
+- **Qué se construye con esto:** la lista de cambios de registro para el constructor del kit, en orden, y la
+  prueba más barata que falta.

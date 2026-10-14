@@ -24,8 +24,19 @@ resumen:
 7. Describe en dos líneas la figura que falta; no la dibujes.
 8. Lista las afirmaciones desactualizadas del material visual que rodea al texto.
 
+**Objetivo.** Que cada figura y cada tabla diga lo mismo que su fuente y que el texto, y se lea sin ayuda.
+Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- La **tabla de correspondencia** entre lo que el texto cita y lo que existe versionado.
+- Los **valores comprobados** celda a celda contra su fuente: cuántos revisaste y cuántos coinciden.
+- Las **figuras huérfanas y las que faltan**.
+
 ## Informe
 
 - **Veredicto:** apto, apto con cambios o no publicar.
 - **Tabla de correspondencia** y **hallazgos** por gravedad, con archivo y ubicación.
 - **Figuras que faltan**, **afirmaciones desactualizadas** y **qué no pudiste ver**.
+- **Qué se corrige con esto:** por cada elemento, el cambio exacto (celda, título, eje o generador) y quién
+  lo hace.

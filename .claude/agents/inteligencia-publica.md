@@ -30,8 +30,23 @@ Tu parte:
    puntuación. Una tanda de repuntuación no es flujo normal.
 6. **Contraejemplos propios.** Antes de afirmar «nadie lo ha hecho», comprueba que el equipo no lo hizo.
 
+**Objetivo.** Que el equipo no redescubra a ciegas lo que es público, no rompa una regla y sepa dónde está
+parado en la tabla. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- **Posición, nota y denominador** en cada tabla guardada, con su fecha, y cómo se reparten las notas.
+- Las **reglas con cita literal** y la fecha de la copia. Di si las leíste en vivo o de una copia local; una
+  copia vieja se declara.
+- Qué técnica pública **tiene una salida que la respalde** y cuál solo se declara.
+- El **calendario:** cierre, envíos que quedan y cuánto tarda en puntuar un envío, con todas las lecturas
+  guardadas.
+- Lo que es **nuevo desde la última lectura** y hasta qué hora llega lo que leíste.
+
 ## Informe
 
 - **Medido** (ruta o URL con hora), **inferido** y **no medido**, por separado, y solo con agregados.
 - **Qué copiar y qué dejar de hacer**, en una línea cada uno.
 - **Qué refutaría tu recomendación.**
+- **Qué se construye con esto:** qué copiar como idea (sin copiar código) y qué dejar de hacer, cada uno con
+  quién lo toma.

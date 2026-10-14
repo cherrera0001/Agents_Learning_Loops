@@ -8,6 +8,31 @@ y respeta sus límites.
 No se confunden con el **agente de biblioteca** (Experimento 0) ni con el **solver acotado**
 (Experimento 1).
 
+## Contrato común de un informe
+
+Vale para todo rol que entrega un informe, una revisión o un parecer. Cada definición ejecutable de
+`.claude/agents/` lo aplica a su oficio; aquí está una sola vez.
+
+1. **Diagnóstico antes de propuesta.** Primero se reconstruye lo que hay (la línea base, el estado, el
+   archivo) y se comprueba que se reproduce. Después se compara. Solo entonces se propone.
+2. **Lo que falta se declara.** Si un dato no está, el informe dice «no está» y qué lo conseguiría. No se
+   completa de memoria ni por analogía.
+3. **Cada hallazgo lleva su clase:**
+   - **Bloqueante:** invalida lo que hay. Se detiene la optimización y se corrige antes de seguir.
+   - **Alta prioridad:** probablemente explica buena parte del mal resultado.
+   - **Mejora potencial:** necesita un experimento para saberse.
+4. **Cada hallazgo lleva sus cinco datos:** archivo y línea (o celda, o campo); la evidencia, con el guion
+   que la reproduce; el impacto esperado, con su unidad; la corrección propuesta; y qué resultado lo
+   refutaría.
+5. **Una mejora solo se afirma con un resultado reproducible.** Lo que cae dentro del ruido se anota
+   «exploratorio».
+6. **Entrega convertible.** El informe termina con «Qué se construye con esto»: el cambio concreto (qué
+   archivo, qué texto o qué código), quién lo construye, cómo se comprueba en local y cuánto cuesta. Si de
+   un informe no sale nada que construir, lo dice y dice por qué. Un informe que solo describe no está
+   terminado.
+7. **Nada crítico se sobrescribe.** Los artefactos se versionan con su huella; el mejor resultado y su
+   kit se conservan.
+
 ## Orquestador
 
 Coordina el trabajo sobre los issues. Es la regla 4 de [`docs/estimation.md`](../estimation.md) convertida en rol.
@@ -227,6 +252,10 @@ caso Kaggle se le llama Datito.
 
 - Vuelve a contar desde los archivos crudos, declara el universo de cada conteo y calcula qué diferencia
   puede detectar el diseño antes de leer una.
+- **Su mínimo en toda vuelta, se le pida o no:** la integridad de lo rescatado por corrida (un log de
+  0 bytes es un faltante), la línea base recontada con su ruido, y el resultado por tarea, por tipo de
+  tarea y por clase de desenlace sobre todas las corridas rescatadas. Termina en una causa raíz
+  clasificada y en las tres próximas acciones por impacto esperado.
 - No es el [auditor de datos](#auditor-de-datos): aquel contrasta un texto público con las mediciones;
   este analiza las corridas antes de que exista un texto.
 
@@ -315,6 +344,13 @@ Definición ejecutable: [`.claude/agents/constructor-kit.md`](../../.claude/agen
   [implementador](#implementador) y su flujo: rama, recall, episodio y `Closes #<n>`.
 - Construye el candidato tal como lo especifica el diseñador, prueba con huellas que el resto del kit no
   cambió byte a byte, lo ensaya en Docker y mantiene el conjunto de regresión de trayectorias.
+- **Entra en la misma vuelta que el concilio** y trabaja por puertas: reproducir la base byte a byte
+  antes de cambiar nada, un solo cambio tal como está escrito, el resto intacto, y el cambio comprobado en
+  la petición que sale hacia el modelo. Si una ficha no se puede aplicar, la devuelve con la corrección
+  mínima que la haría aplicable.
+- Cierra los huecos de registro que lista el [forense del arnés](#forense-del-arnés) y entrega un paquete
+  que otro puede ejecutar: kit con su huella, notebook, resultado de cada puerta, costo en cuota, la orden
+  de subida escrita y sin ejecutar, y el criterio de descarte.
 - No decide qué candidato se envía, no sube, no envía y no hace merge.
 
 ### Una vuelta de competencia
@@ -334,8 +370,77 @@ paso 1.
 | 7. Presentar al dueño | Orquestador | Recomendación con lo medido, lo inferido y lo no medido |
 
 Toda subida y todo envío esperan la palabra del dueño: ningún rol de este staff los hace, y el paso 7 no
-es una formalidad sino la puerta. Una subida a un sistema externo no se prepara en el paso 4 con la excusa
-de ganar tiempo: se prepara después de que el dueño decida.
+es una formalidad sino la puerta. Una subida a un sistema externo no se ejecuta ni se deja a medio hacer
+en el paso 4 con la excusa de ganar tiempo: el chequeo previo del día, la lectura de cuota y la orden
+de subida se corren después de que el dueño decida. Lo que el paso 4 sí deja es el candidato construido y
+ensayado, y el texto de esa orden, sin ejecutar.
+
+**Los pasos 2 a 6 de esta tabla ocurren en la misma vuelta que el paso 1.** Una vuelta que mide y no
+construye no está cerrada: termina con al menos un candidato construido y ensayado en local, o con el
+motivo escrito de por qué no ([regla](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 9). Lo que no gasta
+cuota ni envíos (instrumentar el registro, armar un kit, ensayarlo en Docker) no espera la palabra del
+dueño; subir y enviar, sí.
+
+### Matriz RACI de una vuelta
+
+Quién hace cada actividad de la
+[vuelta de un experimento con modelo](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo). **Las filas
+de esta matriz son actividades, numeradas F1 a F21: no son los pasos numerados de `CONTRIBUTING.md` ni los
+de la tabla de arriba**, que agrupan varias. **R** ejecuta; **A** responde del resultado (una sola por
+fila); **C** se le consulta antes; **I** se le informa después. Una celda vacía significa que ese actor no
+interviene. Columnas: Due (dueño),
+Orq (orquestador), Dat (analista de datos), For (forense del arnés), QA (QA de trayectorias), Int
+(inteligencia pública), Arq (arquitecto de IA), Fue (investigador de fuentes), Cal (calibrador), Dis
+(diseñador del agente), Est (estratega de experimentos), Con (constructor del kit), Rev (revisor de
+código), Aud (auditor del método), Ver (verificador limpio).
+
+| Actividad | Due | Orq | Dat | For | QA | Int | Arq | Fue | Cal | Dis | Est | Con | Rev | Aud | Ver |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| F1. Recall | | A R | | | | | | | | | | | | | |
+| F2. Rescate demostrado, con la integridad de cada log | I | A R | C | C | | | | | | | | | | | |
+| F3. Línea base recontada, con su ruido si hay dos pasadas | I | A | R | C | | | | | | | | | | | |
+| F4. Diagnóstico por tarea, por tipo de tarea y por clase de desenlace | I | A | R | C | C | | | | | | | | | | |
+| F5. Validez de cada corrida y causa de cada corte | | A | C | R | C | | | | | | | | | | |
+| F6. Qué hizo el agente y si obedeció cada instrucción (si se convoca) | | A | C | C | R | | | | | I | | | | | |
+| F7. Reglas, tabla y lo público (si se convoca) | I | A | C | | | R | | | C | | I | | | | |
+| F8. Presupuesto: tiempo, tokens, cuota y envíos (si se convoca) | I | A | C | C | | C | R | | | | I | | | | |
+| F9. Fuentes y parecer (si se propone un método no medido aquí) | | A | | | | | C | R | | I | | | | | |
+| F10. Ancla de la medida local (si falta) | | A | C | | | C | | | R | | I | | | | |
+| F11. Revisión cruzada sin firmas, cada rol convocado | | A | R | R | R | R | R | | | | | | | | |
+| F12. Candidatos, con su ficha de construcción | I | A | C | C | C | | C | C | | R | I | C | | | |
+| F13. Reparto de cuota y envíos, y regla de parada | C | A | C | | | C | C | | C | C | R | | | | |
+| F14. Predicciones fechadas, antes de subir: las escribe un rol y el orquestador las copia al pre-registro | | A R | C | | C | | | | | C | | | | | |
+| F15. Construir el candidato, ensayarlo en local y abrir su fila de experimento | I | A | | C | | | | | | C | | R | | | |
+| F16. Revisar el PR | | A | | | | | | | | | | C | R | | |
+| F17. Dictamen, después de la revisión cruzada: recuento, vetos y orden de acciones | I | A | C | C | C | C | C | | | C | C | | | R | |
+| F18. Verificación limpia (si el relato cambió o la decisión cuesta) | I | A | | | | | | | | | | | | C | R |
+| F19. Decidir si se sube o se envía | A R | C | | | | | | | | | C | | | C | |
+| F20. Subir o enviar, y leer el resultado dos veces | I | A R | | C | | | | | | | | C | | | |
+| F21. Registro: bitácora, hallazgos, cierre de cada fila de experimento y episodio | I | A R | C | C | C | C | C | C | C | C | C | C | | C | |
+
+Lectura de la matriz:
+
+- **El orquestador responde de todo menos de la decisión de subir**, que es del dueño. Responder no es
+  ejecutar: de F3 a F18 ejecuta un rol y el orquestador comprueba la entrega con medios propios. En F14
+  ejecuta el orquestador solo la copia: el texto lo escribe un rol del staff que no arma la corrida, y
+  mientras no exista el rol propio (#165) el pre-registro dice quién.
+- **Tres actividades no admiten sustituto.** F4 es el mínimo del analista de datos en toda vuelta, se le
+  pida o no. F15 es del constructor del kit y ocurre en la misma vuelta. F17 es del auditor del método, que
+  entra después de la revisión cruzada y tiene veto sobre las decisiones tomadas dentro del ruido; por eso
+  no aparece antes de F16.
+- **Quien propone no se mide a sí mismo.** El estratega no escribe las predicciones de su plan (F14), el
+  constructor no revisa su PR (F16) y el orquestador no vota en la revisión cruzada (F11).
+- **Lo condicional.** F6, F7 y F8 se convocan según la pregunta de la vuelta, como manda
+  `CONTRIBUTING.md`; F9, F10 y F18, solo si se da su condición. Lo que no se convoca se dice en la
+  bitácora.
+
+Fuera de una vuelta de experimento el reparto es el del
+[flujo por issue](../../CONTRIBUTING.md#flujo-por-issue-la-vida-del-proyecto): el orquestador estima, hace
+el merge y confirma (A); el implementador construye (R); el revisor de código o de documentos revisa (R),
+y el gestor del proyecto prepara y vigila (C). En un texto público, el revisor redactor reescribe (R), el
+validador estadístico firma la versión exacta (R, con veto por número) y el auditor de datos, el
+investigador de papers y el revisor de figuras y tablas vetan en lo suyo (C con veto); quien responde de
+publicar es el orquestador (A).
 
 ## Investigador de fuentes
 

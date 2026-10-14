@@ -36,9 +36,29 @@ medidas, el kit vigente, lo que el arnés permite cambiar y las reglas guardadas
 El [estratega](../../docs/entorno/agentes.md#estratega-de-experimentos) decide cuáles reciben cuota y el
 [constructor del kit](../../docs/entorno/agentes.md#constructor-del-kit) los construye: tú no.
 
+**Objetivo.** Convertir lo medido en algo que el constructor del kit pueda construir hoy sin preguntarte
+nada. Un candidato que no se puede construir tal como lo escribiste no es un candidato. Aplicas el
+[contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- Una **ficha de construcción** por candidato, en un archivo aparte de tu carpeta: archivo y líneas del kit,
+  el texto exacto que entra y el que sale, la comprobación en Docker campo a campo, el criterio de descarte
+  escrito antes de correr y la fila del registro de experimentos ya llena salvo `resultado`,
+  `contra_la_base`, `decision` y `valida`.
+- Al menos **un candidato que cambie lo que el agente puede hacer** (herramientas declaradas, topes,
+  subagentes, flujo entre agentes) y no solo lo que se le pide, siempre que la medición diga que el modelo
+  no obedeció una instrucción anterior. Di cuántas instrucciones anteriores se obedecieron.
+- Si el resultado depende del **tipo de tarea**, un candidato que trate distinto a cada tipo usando solo lo
+  que el arnés le da al agente al inicio.
+- El **costo en tokens de salida** de cada candidato, contra el presupuesto de una tarea.
+- Lo que **no construirías** de lo que proponen los otros roles, y con qué dato.
+
 ## Informe
 
 - **Medido** (con ruta y línea), **inferido** y **no medido**, por separado.
 - **La tabla de fallos** y **los candidatos** con los campos del paso 3.
 - **Qué refutaría tu conclusión**, con el dato más barato que lo comprobaría, y un parecer corto para la
   bitácora.
+- **Qué se construye con esto:** el orden de construcción de tus fichas, cuál entra hoy y qué respondes al
+  constructor si te devuelve una.

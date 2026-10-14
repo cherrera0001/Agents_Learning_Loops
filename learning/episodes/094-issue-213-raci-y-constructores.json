@@ -1,0 +1,61 @@
+{
+  "seq": 94,
+  "id": "issue-213-raci-y-constructores",
+  "goal": "Definir mejor cada rol de agente de entorno y su responsabilidad en el ciclo de evaluación: matriz RACI de la vuelta, contrato común de un informe, y definiciones de agentes con objetivo, mínimo obligatorio y entrega convertible, reforzando a los que construyen",
+  "ref": "#213",
+  "estimate": {"version": 1, "date": "2026-10-13", "size": "M", "points": 3, "uncertainty": 2, "risk": 2, "planned_model": "Opus 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Opus 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se leyeron las 23 definiciones de .claude/agents/ antes de tocar ninguna. Las del staff de experimento ya traían un orden de trabajo; a todas les faltaba decir para qué sirve el rol, qué entrega siempre aunque no se le pida y qué se construye con su informe"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Contrato común de un informe y matriz RACI de 21 pasos en docs/entorno/agentes.md; pasos 9 (conversión) y 10 (registro de experimentos) en CONTRIBUTING.md. La regla nueva va primero en su texto canónico y las definiciones la enlazan"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Reescritas analista-datos y constructor-kit; los tres implementadores cambiados con un guion que exige que el texto viejo aparezca una sola vez; las otras dieciocho reciben objetivo, mínimo y entrega con otro guion, a partir de un diccionario por rol"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "La comprobación del frontmatter escrita como python -c dentro de una orden de bash falló con SyntaxError: una barra invertida dentro de comillas simples quedó sin cerrar al pasar por el shell. No comprobó nada, y la orden siguiente de la cadena tampoco corrió"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "La misma comprobación como archivo de guion: las 23 definiciones parsean con yaml, name coincide con el archivo y cada una trae objetivo y contrato. Encontró que constructor-kit no enlazaba el contrato y una línea de más de 118 columnas; corregidos"
+    },
+    {
+      "action": "run_tests",
+      "success": true,
+      "note": "Comprobador de enlaces y anclas sobre CONTRIBUTING.md, agentes.md y las 23 definiciones: 0 rotos. No se ejecutaron ruff, mypy ni pytest en local porque el cambio no toca Python; quedan para la CI del PR"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión de documentos 5511559783 pidió cambios: la skill del concilio y una frase de agentes.md contradecían el paso 9 nuevo; el paso 10 remitía a un criterio sin enlazar, exigía un archivo inexistente con efecto retroactivo y no decía quién llena qué; la matriz tenía una tercera numeración de pasos y ponía al auditor antes de la revisión cruzada; y las definiciones repetían el contrato en vez de enlazarlo"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido con un guion que exige cada texto viejo una sola vez: filas F1 a F21 con nota de que no son los pasos de CONTRIBUTING, auditor fuera de las filas anteriores a F16, condicionales marcados, paso 10 con fecha de vigencia y fila en dos tiempos, skill y frase de la subida alineadas, y el contrato reducido a su enlace"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "El recall se ejecutó después de escribir las definiciones y no antes: fuera de orden. La lección que aplicaba (buscar los conteos escritos con letra al tocar roles) se comprobó a posteriori: no se añadió ningún rol y ningún conteo cambia"
+    }
+  ],
+  "lessons": [
+    "Una comprobación con comillas y barras invertidas no se escribe como python -c dentro de bash: se escribe en un archivo de guion desde el principio; en una cadena con && el fallo además se lleva por delante la comprobación siguiente",
+    "Cuando el mismo cambio va a varios archivos casi iguales, un guion que exige que el texto viejo aparezca exactamente una vez evita que una copia quede distinta de las otras",
+    "Una definición de agente que solo dice cómo trabajar no dice qué entregar: añade lo mínimo que el rol entrega siempre y qué se construye con su informe, o el ciclo produce análisis y nada construido",
+    "El recall va antes de leer y de escribir, también en un issue de documentación abierto a mitad de una sesión: hecho después solo sirve para comprobar"
+  ]
+}

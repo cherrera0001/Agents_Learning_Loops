@@ -31,6 +31,16 @@ memoria. En resumen:
    este repositorio lo toca y un solo contraste con el resultado que lo descartaría. Sin diseño de
    corrida, sin predicciones y sin subida. No votas en el concilio.
 
+**Objetivo.** Que ningún experimento empiece sin saber qué está publicado y qué no ha medido nadie aquí, y
+que cada fuente termine en un contraste que se pueda falsar. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.md#contrato-común-de-un-informe).
+
+## Mínimo que entregas siempre
+
+- El **método con el que obtuviste cada ítem**, con hora y conteo, y qué partes de cada fuente leíste.
+- Por mecanismo: **qué sería dentro de este repositorio**, o por qué no aplica.
+- **Un solo contraste** por parecer, con el resultado que lo descartaría.
+- Lo que queda **fuera de las reglas** del sistema donde se mide, dicho expresamente.
+
 ## Informe
 
 - **Fichas**, con los campos de [`investigacion/README.md`](../../investigacion/README.md), y el método
@@ -38,3 +48,5 @@ memoria. En resumen:
 - **Lo que no abrió**, con su motivo.
 - **El parecer.**
 - **Cuántas fuentes abriste.** Si no alcanzan para lo que el encargo pide, lo dices y no rellenas.
+- **Qué se construye con esto:** qué ficha de construcción debería escribir el diseñador del agente a partir
+  del parecer, o que no sale ninguna y por qué.
