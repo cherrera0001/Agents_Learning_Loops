@@ -1,5 +1,5 @@
 {
-  "seq": 98,
+  "seq": 99,
   "id": "issue-221-localizacion-activacion",
   "goal": "Aplicar la siembra y la activación propagada del repositorio al grafo de código de cada tarea pública del caso Kaggle y medir en local, sin modelo, si el sitio de la edición de referencia queda entre los primeros, frente a azar, palabras y vecinos sin propagación",
   "ref": "#221",
@@ -65,6 +65,11 @@
       "action": "update_docs",
       "success": true,
       "note": "Tabla agregada, forma de consulta que el agente puede usar y lo que no permite concluir, en el documento del experimento. Ningún identificador de tarea, enunciado ni parche en lo versionado"
+    },
+    {
+      "action": "update_docs",
+      "success": false,
+      "error": "El episodio se numeró 098 mirando origin/main y los PR abiertos al empezar; al rebasar antes del PR, main ya traía un 098 de otro issue. Se renumeró a 099 antes de publicar"
     }
   ],
   "lessons": [
