@@ -73,6 +73,9 @@ No se ha enviado ninguna lectura de C1. La cuarta no se recomienda: no hay tres 
 
 `CAMPAÑA NO COMPARABLE; REQUIERE REINICIO CONTROLADO`
 
+**Estrategia posterior.** La estrategia vigente después de esta decisión, con C1 como respaldo del envío del
+día 15, está en [`estrategia_concilio_50.md`](estrategia_concilio_50.md).
+
 **Única acción siguiente.** Que el dueño decida el envío de la primera lectura de C1 (el zip de la tabla de
 arriba, sin tocar), alternando después un día C1 y un día la base, para que las dos series se lean sobre el
 mismo arnés; la regla se aplica entonces a las lecturas de C1 contra las lecturas nuevas de la base.

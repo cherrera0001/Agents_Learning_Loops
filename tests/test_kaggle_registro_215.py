@@ -588,7 +588,7 @@ def test_una_tarea_sin_fin_no_tiene_causa() -> None:
 def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     datos = json.loads(REGISTRO_DE_ENVIOS.read_text(encoding="utf-8"))
     filas = {s["submission_id"]: s for s in datos["submissions"]}
-    assert len(filas) == len(datos["submissions"]) == 12
+    assert len(filas) == len(datos["submissions"]) == 17
     for fila in filas.values():
         SubmissionRecord(**fila)
     assert datos["last_updated"] == "2026-10-14"
@@ -617,6 +617,11 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
         "sub-009",
         "sub-011",
         "sub-012",
+        "sub-013",
+        "sub-014",
+        "sub-015",
+        "sub-016",
+        "sub-017",
     ]
     assert {k: filas[k]["public_score"] for k in ("sub-002", "sub-003", "sub-005", "sub-006")} == {
         "sub-002": 0.06,
