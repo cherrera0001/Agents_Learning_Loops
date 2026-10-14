@@ -37,10 +37,10 @@
     },
     {
       "id": "subagente_sin_resolver",
-      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 7 sesiones (0 de 7 resueltas; mediana del 65 % del tope); 145 sesiones es el universo, no donde aparece.",
+      "que_se_midio": "Sesiones y llamadas del subagente. Vuelta 38: 6 sesiones, 0 resueltas. Vuelta 42: 198 llamadas del subagente en 7 sesiones (0 de 7 resueltas; mediana del 65 % del tope); 145 sesiones es el universo, no donde aparece. Vuelta 47: lo llaman 8 de las 60 sesiones de tarea de los cinco brazos que lo traen, ninguna resuelta; gasta 91 s en cada una, y los 6 rechazos por contexto del bloque ocurren dentro de él.",
       "primera_vuelta": 38,
       "primera_fecha": "2026-10-07",
-      "vueltas_medido": [38, 42],
+      "vueltas_medido": [38, 42, 47],
       "estado": "decidido",
       "decision": {
         "texto": "Se quita en el kit «interfaz limpia». Decidido, todavía no aplicado.",
@@ -160,10 +160,10 @@
     },
     {
       "id": "sesiones_sin_edicion_de_fuente",
-      "que_se_midio": "Sesiones que no editan código fuente. La primera tabla de sesiones sin edición es la de la vuelta 12. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta. No es lo mismo que «tope agotado sin editar» (vueltas 11, 12, 25 y 32), que mide otra cosa. Vuelta 43, tres definiciones: 37 de 145 con parche vacío (recontado por el auditor), 58 sin código fuente en el parche final (dos roles) y 54 en el recuento de la vuelta 42.",
+      "que_se_midio": "Sesiones que no editan código fuente. La primera tabla de sesiones sin edición es la de la vuelta 12. Vuelta 42: 54 de 145 contadas por el parche final (37 con parche vacío), ninguna resuelta. No es lo mismo que «tope agotado sin editar» (vueltas 11, 12, 25 y 32), que mide otra cosa. Vuelta 43, tres definiciones: 37 de 145 con parche vacío (recontado por el auditor), 58 sin código fuente en el parche final (dos roles) y 54 en el recuento de la vuelta 42. Vuelta 47, con el arnés del 12 de octubre y por la clase del parche que evaluó el arnés: 34 de 72 sin editar fuente (17 con parche vacío y 17 que solo crean archivos nuevos), ninguna resuelta; 29 de las 38 que editan resuelven. De las 34, 28 caen en las 6 tareas que ningún brazo resuelve. El orquestador lo presentó como hallazgo nuevo sin haber leído esta entrada.",
       "primera_vuelta": 12,
       "primera_fecha": "2026-10-05",
-      "vueltas_medido": [12, 42, 43],
+      "vueltas_medido": [12, 42, 43, 47],
       "estado": "descartado",
       "decision": {
         "texto": "No se trata como palanca.",
@@ -394,6 +394,92 @@
       "decision": null,
       "motivo_descarte": null,
       "por_que_sigue_abierto": "Fuera del alcance del issue 195, que solo lo documenta. Falta medirlo en la primera corrida con el arnés nuevo: cuántas tareas tienen un diff al cierre distinto del parche, y decidir si la comparación entre pasadas debe usar el parche filtrado."
+    },
+    {
+      "id": "presupuesto_de_tokens_de_salida",
+      "que_se_midio": "Modelo de tiempo de una petición al modelo, ajustado por mínimos cuadrados sobre las 1 953 peticiones terminadas del mismo bloque: 0,25 s fijos, 28,49 ms por token de salida y 0,033 ms por token de entrada, con R cuadrado 0,996. Unos 35 tokens de salida por segundo y unos 9 400 por tarea de 4,5 minutos. La espera al modelo es el 93,9 % de la tarea (mediana, peticiones terminadas). Tarea resuelta, mediana de 4 576 tokens de salida; no resuelta, 8 532. Vuelto a contar por el auditor y por el diseñador.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Todo se midió con una sola petición en curso. Falta el caudal total del servidor con dos y con cuatro peticiones a la vez; la sonda que lo mide está en construcción."
+    },
+    {
+      "id": "instrucciones_de_texto_no_obedecidas",
+      "que_se_midio": "En los cuatro candidatos del bloque, leído en las trazas por QA de trayectorias y vuelto a contar por el auditor. Las dos frases que pedían editar antes no adelantaron la primera edición: 2 y 2 sesiones con la primera edición en la llamada 10 o antes en esos dos candidatos, frente a 3 y 3 en las dos pasadas de la base; el candidato de triaje, que no lo pedía, tuvo 5. La frase de triaje no bajó las llamadas en las tareas de enunciado corto: mediana de 36,5 frente a 35,0 de la base. Sí se cumplió la prohibición de las herramientas de grafo (0 llamadas frente a 5 a 7), y el tope de pensamiento se aplicó sin mover el tiempo por tarea.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "decidido",
+      "decision": {
+        "texto": "No se construyen más candidatos que solo cambien el texto de la instrucción. Los siguientes cambian lo que el agente puede hacer: herramientas declaradas, subagente y estado que viaja en la instrucción. Es una decisión del orquestador, apoyada en el veredicto de QA y en el orden final del arquitecto; el dictamen del auditor no la trae.",
+        "quien": "orquestador",
+        "vuelta": 47,
+        "fecha": "2026-10-13"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "ciclo_de_guion_propio",
+      "que_se_midio": "Tokens de salida por la herramienta que llama cada paso, contado por el diseñador del agente en las 72 sesiones del bloque: el ciclo de escribir un guion en la raíz, ejecutarlo y editarlo se lleva el 35 % de la salida en las 29 resueltas y el 26 % en las 43 no resueltas. La herramienta de escribir archivos no escribió nunca bajo un paquete: 0 de 244 llamadas en todas las corridas. De las 25 sesiones no resueltas que usan ese ciclo antes de editar, 20 no editan nunca la fuente; las 29 resueltas también lo usan.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "No está medido si quitar la herramienta adelanta la edición o impide el diagnóstico. Es el candidato de más varianza de los tres en construcción."
+    },
+    {
+      "id": "logs_por_tarea_vacios_en_el_origen",
+      "que_se_midio": "Los 145 logs por tarea de cinco corridas antiguas pesan 0 bytes. El auditor comprobó que están vacíos en el origen: cada uno es un miembro de su archivo comprimido con tamaño 0, los archivos pasan su comprobación y tienen la misma huella en 13 a 20 bajadas. Esas corridas tampoco dejaron log del servidor ni registro por petición. Desde la primera corrida con registro por petición hay 96 logs por tarea de 96 con bytes.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "decidido",
+      "decision": {
+        "texto": "No son recuperables. El rescate de toda la cuenta seguirá saliendo con el código de faltantes por esos 145; la comprobación se lee por pasada y se dice.",
+        "quien": "orquestador, con el dictamen del concilio 48",
+        "vuelta": 47,
+        "fecha": "2026-10-13"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "clase_de_fin_mal_rotulada",
+      "que_se_midio": "En el candidato de 6 minutos, el notebook rotuló cuatro tareas como llamadas agotadas con parche. El registro del arnés dice otra cosa de las cuatro: dos terminaron por el tope de tiempo y dos sin error y con entrega. En las cuatro el parche llegó a evaluarse y no pasó. Hallado por el forense del arnés y vuelto a contar por el orquestador.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Corregir la clase que escribe el notebook y registrar la causa del fin con una sola definición.",
+        "quien": "orquestador, con el dictamen del concilio 48",
+        "vuelta": 47,
+        "fecha": "2026-10-13"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "cuatro_candidatos_de_texto_del_bloque",
+      "que_se_midio": "Resueltas de 12 en el bloque: 5 y 5 las dos pasadas de la base, con 0 pares discordantes entre ellas; 5, 6, 3 y 5 los cuatro candidatos. Netos frente a la primera pasada de la base: 0, más 1, menos 2 y 0. Solo 3 de las 12 tareas cambian de resultado entre brazos. Fuera del ruido queda una cosa: el candidato de 6 minutos tarda 55 s más por tarea (297 s de media). Ninguna comparación alcanza el criterio de decisión válida.",
+      "primera_vuelta": 47,
+      "primera_fecha": "2026-10-13",
+      "vueltas_medido": [47],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Ningún candidato sustituye a la base. El de 6 minutos queda descartado por la regla de envío escrita antes de los datos. El de edición temprana se envió una vez, rotulado como lectura y no como mejora. Antes de medir otro candidato se corre la base en las 48 tareas restantes del sorteo: esa acción la propuso el auditor después de ver los datos y ningún rol la revisó.",
+        "quien": "orquestador, con el dictamen del concilio 48",
+        "vuelta": 47,
+        "fecha": "2026-10-13"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
     }
   ]
 }

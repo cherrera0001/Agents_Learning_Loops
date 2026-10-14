@@ -1023,3 +1023,65 @@ Tras cada tanda se leen las dos sesiones y la cuota. **No se lanza la siguiente*
   evaluable»; (3) los «±15 s» de la 95 no dicen si incluyen el extremo: se
   leen con la definición C de 22.5 («entre a y b» incluye los extremos), y si el valor cae exactamente
   en el borde se dice al marcar.
+
+## 23. Desenlaces del bloque R1 (predicciones 84 a 98), registrados el 2026-10-14
+
+Las seis sesiones del bloque terminaron completas el 2026-10-13 (lecturas y rescates en la bitácora del
+caso). Los desenlaces los marcaron tres roles del concilio 48, cada uno desde los archivos crudos y sin ver
+a los otros; el auditor del método los contrastó después. Se copian tal cual; no los marcó el orquestador.
+Originales, sin versionar, en `.scratch/concilio_memoria/fase2/concilio_48/`:
+
+- analista de datos, `analista/informe.md`, sha256 `2b9940d74b2fbb64a83175cdbec8e41f3cbc0f9405f95838c26065de522f4c61`;
+- QA de trayectorias, `qa/informe.md`, sha256 `8bcd62a6bffef516ec5d8a4467012eefda127fde0e048ba1d033558c0ca49a22`;
+- forense del arnés, `forense/informe.md`, sha256 `b8b27fef4a12a82e68b03e0c64cd0faa6e019b3fc1bfcc1a78460ecec37d8fd0`;
+- auditor del método, `auditor/dictamen.md`, sha256 `5148b85f468993cb0a6824b686d888b6bf7fbcf19af5c240b593fe588317328d`.
+
+### 23.1 Marcado del analista de datos (copiado tal cual)
+
+> - 84 (1 a 5 discordantes): **no ocurrió** (0). 85 (2 a 6 resueltas por pasada): ocurrió (5, 5).
+> - 86 (C1 ≤262 s): **no ocurrió** (297,2). 87 (0 colgadas): ocurrió en los 4.
+> - 88 (neto ≥−1): ocurrió en C1, C2, C4; **no en C3**. 89 (regla completa): C1 no (tiempo), C2 sí, C3 no, C4 sí. 90 (rangos): ocurrió ×4.
+> - 91 (cuota 9,0 a 12,5 h): ocurrió, 11,87 h de cuota (2,77 a 14,64; `subida_r1_tanda1`, `lectura_tanda3`). 92: no evaluable (nada enviado).
+> - Diseñador (solo lo del json): 93 y 98 ocurrieron; 97 mediana de llamadas en cortas ≤10 y suma ≤600 s no ocurrieron (36,5; 1 102 s); 96 pierde tarea de ambas bases sí. Las (T) no las evalué.
+
+### 23.2 Marcado de QA de trayectorias, con las líneas que exigen las trazas (copiado tal cual)
+
+| Pred. | Línea | Resultado |
+|---|---|---|
+| 93 | base media 215-245 s; resueltas 3-5 por pasada | ocurrió (241,7; 5 y 5) |
+| 94 | C1 media 235-280 / pasa de 262 | no ocurrió (297,2) / ocurrió |
+| 94 | C1 resueltas ≥ base−1 / más que la mejor pasada | ocurrió (5) / no |
+| 94 (T) | C1 edición ≤10 en ≥6 sesiones | no (2) |
+| 94 (T) | subagente retirado ≥1 / grafo ≤3 | no (0) / ocurrió (0) |
+| 95 | C2 media ±15 s; pasa de 262; resueltas ±1 | ocurrió (7,0 s); no; ocurrió (+1) |
+| 95 (T) | C2 ≥2 sesiones más que la base con edición ≤10 | no (2 contra 3) |
+| 96 (T) | C3 ningún paso ≥2000 (máx. 1911 en traza y en registro) y base ≥1 | ocurrió |
+| 96 | C3 media menor / pasa de 262 / pierde tarea de las dos bases | ocurrió (−6 s) / no / ocurrió (2) |
+| 97 | C4 mediana de llamadas en cortas ≤10 (36,5); base ≥15 (35,0) | no; ocurrió |
+| 97 | C4 segundos en cortas ≤600 (1101); base ≥850 (1103) | no; ocurrió |
+| 97 | C4 media menor / pasa de 262 | ocurrió (236,0) / no |
+| 97 (T) | no corta entregada ≤ llamada 8 y no resuelta | no (0) |
+| 97 | C4 resueltas ±1; alguna corta resuelta | ocurrió; no |
+| 98 | ninguno difiere más de 2 de la base | ocurrió (C3 está en el borde: −2) |
+
+### 23.3 Marcado del forense del arnés (copiado tal cual)
+
+> Ocurrió: 85; 87; 88 en c1, c2 y c4; 90; 91 (11,87 h de cuota); 93; 95 media y resueltas; 96 (c3 máximo 1 911 tokens, la base 8 respuestas largas, media menor, pierde tarea); 97 media y resueltas; 98. No ocurrió: 84; 86; 88 en c3; 94 media y subagente (0 llamadas). 89: pasan c2 y c4. 92: no evaluable. El resto queda para analista y QA.
+
+### 23.4 Contraste del auditor del método (copiado tal cual)
+
+> Mi marcado coincide con el de los roles; no hallé contradicción entre ellos. No ocurrieron: 84 (dada a 0,80), 86, 88 en C3, 94 (media, edición, subagente), 95 (T) y 97 (llamadas, segundos, corta resuelta). 92, no evaluable. Rehíce las (T): primera edición ≤ 10 en 3, 3, 2, 2, 3, 5 sesiones.
+
+### 23.5 Notas del orquestador (no son de los autores)
+
+- **Recuento.** De las ocho predicciones del analista (84 a 91), ocurrieron la 85, la 87, la 90 y la 91;
+  no ocurrieron la 84 (dada a 0,80) ni la 86; la 88 y la 89 se cumplen en unos candidatos y no en otros,
+  como dice su marcado. No se calcula ninguna puntuación de calibración: son pocas y de enunciado compuesto.
+- **La 92 sigue sin poder evaluarse.** Exige al menos tres candidatos enviados; el 2026-10-14 se envió uno,
+  el de edición temprana, rotulado como lectura y no como mejora.
+- **Las tres observaciones abiertas de 22.6.** (1) La 96 se marcó con la traza y el registro da el mismo
+  máximo, según QA. (2) y (3) Ningún rol informa de una diferencia entre las dos lecturas de la primera
+  edición ni de un valor en el borde de los ±15 s; no lo comprobó nadie más.
+- **Lo que el bloque no permitió decidir.** Las dos pasadas de la base dieron 0 pares discordantes y solo
+  3 de las 12 tareas cambian de resultado entre brazos: ninguna comparación alcanza el criterio de decisión
+  válida de `CONTRIBUTING.md`. Todas quedan exploratorias, como dictaminó el auditor.
