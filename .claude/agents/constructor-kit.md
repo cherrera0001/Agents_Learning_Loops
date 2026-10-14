@@ -63,7 +63,8 @@ hay, con la causa.
    `mypy`, `pytest --cov`, `python -m scripts.export_schema --check`. No lances `mutation_check` en local:
    lee su resultado en el CI del PR.
 9. **Fila del experimento.** Deja la fila del candidato en `registro_experimentos.jsonl`, con todos los
-   campos salvo `resultado` y `decision`, que se llenan al leer la corrida.
+   campos salvo `resultado`, `contra_la_base`, `decision` y `valida`, que llena el orquestador al leer la
+   corrida.
 10. **Episodio** al final (skill [`registrar-episodio`](../../skills/registrar-episodio/SKILL.md)) y
     entrega al [revisor de código](../../docs/entorno/agentes.md#revisor-de-código): no te revisas tú.
 

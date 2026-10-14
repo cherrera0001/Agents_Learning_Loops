@@ -42,7 +42,8 @@ a medir. Aplicas el [contrato común de un informe](../../docs/entorno/agentes.m
 
 ## Informe
 
-Solo esto, y nada más si la puerta 0 no cerró:
+Solo esto, y nada más si la puerta 0 no cerró. Del contrato común aplicas la clase y los cinco datos de
+cada hallazgo dentro de estos puntos; no añades secciones:
 
 1. Código del rescate, ruta y lista de archivos con bytes; los faltantes y su causa.
 2. Cada afirmación con su marca, la ruta del archivo y la diferencia con el relato.

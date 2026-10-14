@@ -301,7 +301,7 @@ biblioteca ni el solver acotado. Lo ejecuta el orquestador con el
    construido por PR y ensayado en local, o con el motivo escrito en la bitácora de por qué no se
    construyó nada. El diseñador del agente y el constructor del kit entran en la misma vuelta que el
    concilio, no en la siguiente. Lo que no gasta cuota ni envíos (instrumentar el registro, armar un kit,
-   ensayarlo en Docker) no espera la palabra del dueño; subir y enviar, sí (paso 7). Quién hace cada paso
+   ensayarlo en Docker) no espera la palabra del dueño; subir y enviar, sí (paso 7). Quién hace cada actividad
    está en la [matriz RACI](docs/entorno/agentes.md#matriz-raci-de-una-vuelta).
 10. **Registro de experimentos.** Rige para los experimentos que se construyan desde el 2026-10-14; los
     anteriores se citan desde su fuente (bitácora, pre-registro, `registry.json`). Cada experimento contesta

@@ -44,7 +44,8 @@ nada. Un candidato que no se puede construir tal como lo escribiste no es un can
 
 - Una **ficha de construcción** por candidato, en un archivo aparte de tu carpeta: archivo y líneas del kit,
   el texto exacto que entra y el que sale, la comprobación en Docker campo a campo, el criterio de descarte
-  escrito antes de correr y la fila del registro de experimentos ya llena salvo `resultado` y `decision`.
+  escrito antes de correr y la fila del registro de experimentos ya llena salvo `resultado`,
+  `contra_la_base`, `decision` y `valida`.
 - Al menos **un candidato que cambie lo que el agente puede hacer** (herramientas declaradas, topes,
   subagentes, flujo entre agentes) y no solo lo que se le pide, siempre que la medición diga que el modelo
   no obedeció una instrucción anterior. Di cuántas instrucciones anteriores se obedecieron.

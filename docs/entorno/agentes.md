@@ -376,8 +376,8 @@ de subida se corren después de que el dueño decida. Lo que el paso 4 sí deja 
 ensayado, y el texto de esa orden, sin ejecutar.
 
 **Los pasos 2 a 6 de esta tabla ocurren en la misma vuelta que el paso 1.** Una vuelta que mide y no
-construye no está cerrada: termina con al menos un candidato construido y ensayado en local, o con el motivo escrito de por
-qué no ([regla](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 9). Lo que no gasta
+construye no está cerrada: termina con al menos un candidato construido y ensayado en local, o con el
+motivo escrito de por qué no ([regla](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo), paso 9). Lo que no gasta
 cuota ni envíos (instrumentar el registro, armar un kit, ensayarlo en Docker) no espera la palabra del
 dueño; subir y enviar, sí.
 
