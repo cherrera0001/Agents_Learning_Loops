@@ -253,8 +253,9 @@ previsto; *Modelo usado*, el real, autoinformado); las excepciones están en la 
   ID de la tabla (`claude-haiku-4-5`, `claude-sonnet-5-5` o `claude-opus-5-5`) junto con el esfuerzo de esa
   fila. En Claude Code, el lugar que fija el modelo de un rol es el frontmatter `model:` de
   `.claude/agents/<rol>.md`; el repositorio versiona `implementador-haiku`, `implementador-sonnet` e
-  `implementador-opus`, y dieciocho que no construyen (`revisor-codigo`, `revisor-docs`, `gestor-proyecto`,
-  los cinco del staff de texto público y diez del staff de experimento), más `constructor-kit`, que sí
+  `implementador-opus`, y diecinueve que no construyen (`revisor-codigo`, `revisor-docs`, `gestor-proyecto`,
+  los cinco del staff de texto público, diez del staff de experimento y el investigador de fuentes, que
+  no es de ningún staff), más `constructor-kit`, que sí
   construye: [`docs/entorno/agentes.md`](docs/entorno/agentes.md);
   todas declaran el alias del modelo pero no el esfuerzo (el modelo que ejecuta se comprueba en la
   transcripción). En Cursor, la persona elige el modelo del chat
@@ -1096,6 +1097,7 @@ El contrato de entorno ([`docs/entorno/`](docs/entorno/README.md)) es documentac
 │   └── entorno/               # contrato de entorno: glosario, agentes, harness, skills, enrutamiento.md
 │       └── caso-real-contacto-vt.md  # caso observacional del sitio público (no es evidencia del Experimento 1)
 ├── skills/                    # skills de entorno (SKILL.md), proyección de procedimientos ya fijados
+├── investigacion/             # área de investigación: índice de fuentes, fichas y pareceres (no es evidencia)
 ├── AGENTS.md                  # entrada para agentes de entorno (CLAUDE.md y .cursor/rules/ remiten aquí)
 ├── learning/                  # episodios de desarrollo y memoria derivada
 ├── scripts/                   # devlog, export_schema, mutation_check, verify_experiment1

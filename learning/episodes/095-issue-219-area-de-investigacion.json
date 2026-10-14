@@ -1,0 +1,67 @@
+{
+  "seq": 95,
+  "id": "issue-219-area-de-investigacion",
+  "goal": "Dejar el área de investigación: la regla «Investigación antes del experimento», el rol investigador de fuentes, su skill de entorno y un índice de fichas con dos fuentes (la lista Paper Club y el sitio Root Access)",
+  "ref": "#219",
+  "estimate": {"version": 1, "date": "2026-10-14", "size": "M", "points": 3, "uncertainty": 2, "risk": 1, "planned_model": "Opus 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Opus 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Se leyeron AGENTS.md, CONTRIBUTING.md, agentes.md, skills.md, el glosario y la definición del investigador de papers antes de escribir. No se abrió un issue ni se ejecutó el recall: el encargo fijaba la rama sin número y se tomó como permiso para saltarse el flujo"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "La herramienta de lectura web devolvió de la lista de videos solo el título y cero entradas, igual que una lectura anterior: la página arma su lista con un bloque de datos incrustado que la conversión a texto descarta"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Se descargó el HTML con cabecera de navegador y un guion fuera del repositorio leyó el bloque de datos incrustado: 7 entradas, las mismas 7 que la página declara. Otro guion leyó la página de cada video y otro los registros de arXiv"
+    },
+    {
+      "action": "analyze_results",
+      "success": false,
+      "error": "Las pistas de subtítulos de los 7 videos respondieron HTTP 429, también con yt-dlp y con imitación de navegador: ningún subtítulo abrió y 5 fichas de video quedaron sin contenido"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "El sitio que dos descripciones enlazan como transcripción tiene una API pública de archivo: dio 3 transcripciones de la lista (una que la descripción no enlaza, confirmada porque la entrada incrusta el mismo video) y una entrada con ocho obras enlazadas. El texto completo se dejó en una carpeta ignorada por git"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "Un parche del generador escrito como heredoc hacia python fue rechazado por la guarda previa; la lección ya estaba anotada y no se consultó"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "El mismo cambio con la herramienta de edición. El índice y las fichas se generan desde los datos descargados; lo escrito a mano son las notas, la frase de mecanismo, la medición local y el contraste"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Sección nueva en CONTRIBUTING.md, skill, rol, definición ejecutable, README del área, dos manifiestos, 8 fichas y un parecer. PR abierto sin issue, sin estimación y sin episodio"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "La revisión de documentos 5511642630 pidió cambios: añadir una definición dejó falso el conteo «dieciocho que no construyen» en README.md y enrutamiento.md y sin fila de modelo en estimation.md; faltaban issue, estimación y episodio; la skill traía tres reglas que su sección fuente no tenía; y la definición de océano miraba solo docs/results/, donde el kit no se mide"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Corregido: conteo y fila de modelo, issue #219 abierto a posteriori con su estimación marcada como tal, este episodio, las tres reglas subidas a CONTRIBUTING.md, océano con el registro de hallazgos, el campo de contraste vacío cuando no se propone y una frase que atribuía a hallazgos.json algo que no dice"
+    }
+  ],
+  "lessons": [
+    "Un encargo que fija el nombre de la rama no exime del flujo: abre el issue, estima y ejecuta el recall antes de escribir, o di antes de empezar que no lo vas a hacer y por qué",
+    "Al añadir una definición de agente, busca los conteos escritos con letra (dieciocho, diez, cinco) en README.md, enrutamiento.md y la tabla de modelos de estimation.md: quedan falsos fuera del diff",
+    "Cuando una herramienta de lectura web devuelve una página sin su lista, descarga el HTML y lee el bloque de datos incrustado antes de concluir que la lista está vacía",
+    "Si una regla clasifica según «lo medido aquí», nombra todos los sitios donde este repositorio guarda mediciones; con uno solo la regla no ve las demás",
+    "Una skill de entorno no lleva reglas que su sección fuente no tenga: si al escribir la skill aparece una regla nueva, va primero a CONTRIBUTING.md"
+  ]
+}

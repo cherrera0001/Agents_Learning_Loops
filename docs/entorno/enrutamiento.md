@@ -68,7 +68,9 @@ Por herramienta:
   de subagentes no lo permite) ni el modelo de la sesión ya abierta. `.gitignore` ignora el resto de
   `.claude/`.
 
-  Hay además dieciocho definiciones que no construyen ([roles](agentes.md)). Tres son del flujo por issue:
+  Hay además diecinueve definiciones que no construyen ([roles](agentes.md)). Una es el
+  [`investigador-fuentes`](../../.claude/agents/investigador-fuentes.md) (alias `sonnet`), que no es de
+  ningún staff ([regla](../../CONTRIBUTING.md#investigación-antes-del-experimento)). Tres son del flujo por issue:
   [`revisor-codigo`](../../.claude/agents/revisor-codigo.md) (alias `opus`),
   [`revisor-docs`](../../.claude/agents/revisor-docs.md) (alias `sonnet`) y
   [`gestor-proyecto`](../../.claude/agents/gestor-proyecto.md) (alias `sonnet`). Por qué esos modelos, y

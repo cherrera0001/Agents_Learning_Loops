@@ -337,6 +337,36 @@ Toda subida y todo envío esperan la palabra del dueño: ningún rol de este sta
 es una formalidad sino la puerta. Una subida a un sistema externo no se prepara en el paso 4 con la excusa
 de ganar tiempo: se prepara después de que el dueño decida.
 
+## Investigador de fuentes
+
+Skill: [`investigar-antes-de-desafio`](../../skills/investigar-antes-de-desafio/SKILL.md). Definición
+ejecutable: [`.claude/agents/investigador-fuentes.md`](../../.claude/agents/investigador-fuentes.md).
+Regla: [`CONTRIBUTING.md`](../../CONTRIBUTING.md#investigación-antes-del-experimento). Área:
+[`investigacion/`](../../investigacion/README.md).
+
+Es un agente de entorno. No es el agente de biblioteca ni el solver acotado, y tampoco el agente que un
+experimento evalúa. Su procedimiento es una skill de entorno, no una skill de memoria: no crea nodos ni
+toca el esquema de la memoria. No modifica el harness de experimento y trabaja dentro del
+[harness de entorno](harness.md).
+
+- Ante un desafío nuevo busca en `investigacion/fuentes/indice.jsonl` y en el código, abre la obra o el
+  video que falta, clasifica cada ficha como biblioteca u océano y entrega al concilio un parecer de una
+  página con un solo contraste y el resultado que lo descartaría.
+- **Solo informa.** Escribe únicamente en la carpeta de trabajo que el encargo le da. No edita el
+  repositorio, no hace commit, no publica, no inicia sesión en un sistema externo y no recoge datos
+  personales. Herramientas: Read, Grep, Glob, WebFetch, WebSearch y Write. Como en el staff de
+  experimento, el límite de Write es de la definición y no de la herramienta: el orquestador lo comprueba
+  con `git status`. Las fichas entran al área por el PR de un [implementador](#implementador).
+- En una [vuelta de un experimento con modelo](../../CONTRIBUTING.md#vuelta-de-un-experimento-con-modelo)
+  entra antes del [diseñador del agente](#diseñador-del-agente), cuando la pregunta es adoptar un método
+  que no está medido aquí. No entra en la primera ronda de medición, no vota y no es uno de los once roles
+  del [staff de experimento](#staff-de-experimento).
+- No es el [investigador de papers](#investigador-de-papers): aquel abre la obra que el código ya nombra
+  y veta citas de un texto público; este busca antes, en lo publicado y en lo que aquí nadie ha medido.
+  Si el código ya nombra el mecanismo, lo dice y para.
+- No es [inteligencia pública](#inteligencia-pública): aquella lee las reglas, el foro y la tabla del
+  sistema donde se mide un experimento; este lee obras y videos sobre mecanismos.
+
 ## Cierre
 
 Decide el estado final de un issue después de su comprobación.
