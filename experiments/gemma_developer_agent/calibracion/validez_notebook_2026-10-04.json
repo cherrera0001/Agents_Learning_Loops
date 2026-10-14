@@ -49,17 +49,24 @@
     "tareas_que_discriminan_medidas_tambien_con_60_s": 71,
     "cambian_de_veredicto": 0
   },
-  "limites": "Una sola medición, en un entorno. No dice por qué falla el parche de referencia ni si esas tareas serían válidas en la evaluación oculta.",
+  "limites": "Una sola medición, en un entorno. En 35 de las 55 tareas donde el parche de referencia no pasa, pytest termina con código 2 con y sin parche: los tests no llegaron a ejecutarse. No dice si esas tareas serían válidas en la evaluación oculta.",
   "detalle": {
     "discrimina_fallo_sin_parche": {
-      "tests_fallidos": 68,
+      "codigo_pytest_1": 66,
+      "codigo_pytest_2": 2,
       "tiempo_agotado": 3
     },
     "dorado_falla": {
-      "tests_fallidos": 54,
+      "codigo_pytest_2_con_y_sin_parche": 35,
+      "codigo_pytest_1": 19,
       "error_del_entorno": 1,
       "tiempo_agotado": 0
     },
-    "segundos_maximos_con_parche_y_limite_de_60_s": 7.6
+    "segundos_maximos_con_parche_y_limite_de_60_s": 7.6,
+    "codigo_pytest_2_por_repositorio": {
+      "fastapi": 34,
+      "httpx": 1
+    },
+    "nota_codigos": "Código 1 de pytest: hubo tests que fallaron. Código 2: la ejecución se interrumpió; es el que da pytest cuando no puede recolectar los tests, por ejemplo por un error de importación. La salida de pytest no se conservó, así que la causa del código 2 no está leída. Corrección del 2026-10-04: una versión anterior de este archivo contaba los 54 casos de código 1 y 2 como «tests_fallidos»."
   }
 }
