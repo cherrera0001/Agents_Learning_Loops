@@ -1,0 +1,54 @@
+{
+  "seq": 51,
+  "id": "decision-computo-paper-track",
+  "goal": "Resolver la decisión de cómputo (Kaggle L4x4, 30 h semanales) y la participación en el Paper Track para desbloquear el issue #101; la transferencia de los parámetros a la línea base A (#103) se preparó pero no se aplicó, porque #103 se cerró como no planificado el 2026-10-14",
+  "ref": "https://github.com/cherrera0001/Agents_Learning_Loops/issues/101",
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-02",
+    "size": "XS",
+    "points": 1,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "ninguno; decide la persona dueña del proyecto"
+  },
+  "outcome": {
+    "used_model": "Otro agente (sesión de Cursor)",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 1
+  },
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall de lecciones: evitar horas supuestas o inventadas; basar el presupuesto en mediciones del panel oficial y formalizar decisiones humanas como evidencia inmutable."
+    },
+    {
+      "action": "verify_api",
+      "success": true,
+      "note": "Verificar por la API de Kaggle la inscripción en ambos tracks: Code Track (id 149921, userHasEntered: true) y Paper Track (id 163111, userHasEntered: true)."
+    },
+    {
+      "action": "human_decision",
+      "success": true,
+      "note": "El dueño decidió el 2026-10-02 usar notebooks de Kaggle con L4x4 y aceptar las reglas del Paper Track. La cuota (30,00 h de GPU semanales, 0,00 h usadas) la leyó Codex el 2026-10-03 con kaggle quota; la API no informa si la cuenta ve el selector L4x4, y eso quedó para el ensayo de notebook de #103, que no se hizo."
+    },
+    {
+      "action": "calculate_budget",
+      "success": true,
+      "note": "Ejecutar python -m scripts.kaggle_prereg computo con 30 h, factor 2.0 y reinicio en sábado desde 2026-10-03: 60,00 h utilizables de L4x4 hasta el corte del 2026-11-05. Selecciona el escalón 1: fastapi/fastapi con 3 réplicas de A (54,27 h de L4x4)."
+    },
+    {
+      "action": "prepare_transfer",
+      "success": true,
+      "note": "Se preparó el bloque de cuota para linea_base_a.json (sección E.1 de #103) y el comentario de cierre de #101. El bloque no se versionó: #103 se cerró como no planificado el 2026-10-14."
+    }
+  ],
+  "lessons": [
+    "Las decisiones humanas sobre recursos físicos y cuotas deben documentar fecha, fuente y canal de confirmación para que la fórmula de presupuesto sea determinista.",
+    "El factor de consumo del acelerador (2x en 4x L4) y el calendario de reinicios semanales determinan el escalón y el número de réplicas posibles; la disponibilidad del acelerador en la cuenta no se supone: se comprueba con el ensayo.",
+    "Un traslado de parámetros a otro issue puede quedar sin objeto si ese issue se cierra: el episodio registra qué se preparó, no que se aplicó."
+  ]
+}
