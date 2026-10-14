@@ -24,19 +24,24 @@ compara versiones (los armados antes de ese día) recibe un ``[AVISO]``, que no 
 
 Desde el 2026-10-14 (#100, sonda G3: tres subidas fallidas) añade cuatro controles que bloquean:
 
-- ``--referencia <dir de un kernel que ya corrió en Kaggle>``: las celdas que instalan ruedas con ``pip``
-  deben ser idénticas a las de la referencia (se comparan sin comentarios ni líneas en blanco). Un
-  subconjunto de ruedas elegido a mano, o una celda cambiada, falla con el diff. Sin ``--referencia`` en un
-  notebook que instala ruedas: ``[AVISO]``.
-- ``from_pretrained(..., device_map=...)`` sin ``max_memory`` falla (salvo ``"cpu"`` o un dict literal).
+- ``--referencia <dir de un kernel que ya corrió en Kaggle>``: cada celda de la referencia que instala ruedas
+  con ``pip`` debe aparecer entera (líneas seguidas, sin comentarios ni blancos) en el notebook. Un
+  subconjunto elegido a mano, o una celda cambiada, falla con el diff; lo que el notebook añade alrededor
+  es un ``[AVISO]``. Sin ``--referencia``, en un kernel con GPU que instala ruedas falla; en uno sin GPU es
+  ``[AVISO]``. ``--aceptado-por <quién>`` acepta con nombre esa falta y la de ``--imagen``.
+- ``from_pretrained(..., device_map=...)`` sin ``max_memory`` falla (salvo ``"cpu"``, ``"cuda..."``, un
+  entero o un dict literal). Un reparto ``"auto"``/``"balanced"``/``"sequential"`` con un modelo comprimido
+  (compressed-tensors, w4a16, int4) falla aunque lleve ``max_memory``: la v2 de la sonda lo llevaba y dio
+  OOM porque el reparto usa el tamaño comprimido. No ve un ``device_map`` armado por partes en otro sitio.
 - ``--imagen <imagen_paquetes.json>`` (``{distribución: versión}``, el inventario que escribe la sonda G3) y
   ``--ruedas``: el cierre de ``Requires-Dist`` (sin extras, con los marcadores evaluados para Linux y Python
   3.12) de todas las ``.whl`` de ``--ruedas`` contra la imagen más esas ruedas; falla si falta una
   distribución o su versión no cumple el requisito, y si se da un conflicto conocido (``peft<0.20`` con
   ``torchao<0.16``). No ve conflictos opcionales ni nuevos que no estén en la lista, ni lo que una rueda
   nueva rompe en un paquete de la imagen; supone que el notebook instala todas las ``.whl`` de ``--ruedas``.
-- Un ``INFORME.md`` en el directorio con una línea «sin comprobar» y sin una línea «Aceptado por:» en la misma
-  línea o en la anterior o siguiente (sin contar las vacías) falla: un hueco declarado no se sube solo.
+- Un informe (``--informe``, o ``INFORME.md`` del directorio o de su padre) con «sin comprobar» o «sin
+  verificar» y sin «Aceptado por: <quién>» en la misma línea o en la anterior o siguiente (sin contar las
+  vacías) falla: un hueco declarado no se sube solo. «Aceptado por: nadie» no cuenta.
 
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
@@ -340,7 +345,7 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
         else _bien("Ninguna celda escribe una ruta fija bajo /kaggle/input.")
     )
     out += comprobar_guardia(fuentes[0])
-    out.append(comprobar_device_map(fuentes))
+    out += comprobar_device_map(fuentes)
     if re.search(r"VllmServer|TransformersServer", todo):
         out.append(
             _bien("Si el servidor del modelo falla, el notebook toma la causa de la salida de la excepción.")
@@ -360,14 +365,34 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
     return out
 
 
-def comprobar_device_map(fuentes: list[str]) -> Hallazgo:
-    """``from_pretrained(..., device_map=...)`` sin ``max_memory`` es un fallo (OOM de la sonda G3).
+REPARTO_AUTOMATICO = re.compile(r"""device_map['"]?\s*\]?\s*[=:]\s*['"](auto|balanced\w*|sequential)['"]""")
+MODELO_COMPRIMIDO = re.compile(r"CompressedTensors|compressed[-_]tensors|w4a16|int4", re.IGNORECASE)
 
-    ``device_map="auto"`` reparte según el tamaño comprimido de los pesos y una GPU se queda sin memoria al
-    descomprimir. Se exceptúan ``device_map="cpu"``, ``None`` y un dict escrito en la llamada. Un mapa que
-    viene de una variable o de una llamada también falla: se pasa ``max_memory`` igualmente. Una llamada con
-    ``**kwargs`` falla porque no se ve si lleva ``max_memory``. Las celdas que no compilan no se miran.
+
+def _reparto_automatico(fuente: str) -> bool:
+    """Hay un ``device_map`` automático fuera de los comentarios, también en código escrito como cadena
+    (con ``\\n`` literales). Un comentario que lo cita no cuenta."""
+    for linea in fuente.replace("\\n", "\n").splitlines():
+        m = REPARTO_AUTOMATICO.search(linea)
+        if m and "#" not in linea[: m.start()]:
+            return True
+    return False
+
+
+def comprobar_device_map(fuentes: list[str]) -> list[Hallazgo]:
+    """Dos controles de ``device_map`` (OOM de la sonda G3, dos subidas seguidas).
+
+    1. ``from_pretrained(..., device_map=...)`` sin ``max_memory`` es un fallo. Se exceptúan
+       ``device_map="cpu"``, ``None``, un entero, ``"cuda..."`` y un dict escrito en la llamada. Un mapa que
+       viene de una variable o de una llamada también falla; una llamada con ``**kwargs`` y ``device_map``
+       explícito también, porque no se ve si lleva ``max_memory``. Las celdas que no compilan no se miran.
+    2. Un reparto automático (``"auto"``, ``"balanced..."``, ``"sequential"``) escrito como valor de
+       ``device_map`` en un notebook que carga un modelo comprimido (compressed-tensors, w4a16, int4) falla
+       **aunque lleve** ``max_memory``: el reparto usa el tamaño comprimido y cada GPU descomprime después
+       (la v2 de la sonda lo llevaba y dio OOM). El mapa se calcula con ``infer_auto_device_map`` sobre el
+       modelo denso. Esta segunda regla lee el texto, así que ve también código escrito como cadena.
     """
+    out: list[Hallazgo] = []
     sitios: list[str] = []
     for numero, fuente in enumerate(fuentes, 1):
         try:
@@ -386,24 +411,48 @@ def comprobar_device_map(fuentes: list[str]) -> Hallazgo:
                 continue
             valor = claves["device_map"]
             if isinstance(valor, ast.Dict) or (
-                isinstance(valor, ast.Constant) and (valor.value is None or valor.value == "cpu")
+                isinstance(valor, ast.Constant)
+                and (
+                    valor.value is None
+                    or isinstance(valor.value, int)
+                    or (
+                        isinstance(valor.value, str)
+                        and (valor.value == "cpu" or valor.value.startswith("cuda"))
+                    )
+                )
             ):
                 continue
             sitios.append(f"celda {numero}, línea {nodo.lineno}")
     if sitios:
-        return _mal(
-            "from_pretrained(device_map=...) sin max_memory en "
-            + "; ".join(sitios)
-            + ": device_map reparte según el tamaño comprimido y una GPU se queda sin memoria al "
-            "descomprimir (OOM de la sonda G3). Pasa max_memory={i: tope_por_gpu} o un device_map literal."
+        out.append(
+            _mal(
+                "from_pretrained(device_map=...) sin max_memory en "
+                + "; ".join(sitios)
+                + ": pasa max_memory={i: tope_por_gpu} o un device_map literal."
+            )
         )
-    return _bien("Ninguna llamada from_pretrained pasa device_map sin max_memory.")
+    else:
+        out.append(_bien("Ninguna llamada from_pretrained pasa device_map sin max_memory."))
+    todo = "\n".join(fuentes)
+    reparto = [f"celda {n}" for n, f in enumerate(fuentes, 1) if _reparto_automatico(f)]
+    if reparto and MODELO_COMPRIMIDO.search(todo):
+        out.append(
+            _mal(
+                "Reparto automático de device_map con un modelo comprimido en "
+                + ", ".join(reparto)
+                + ": reparte según el tamaño comprimido (int4) y cada GPU descomprime después a bf16, con "
+                "o sin max_memory (OOM de la sonda G3 v2). Calcula el mapa con infer_auto_device_map sobre "
+                "el modelo denso."
+            )
+        )
+    return out
 
 
 # --- Ruedas: la celda de instalación probada, el cierre de dependencias y los conflictos conocidos (#100) ---
 
-INSTALA_CON_PIP = re.compile(r"""pip['"]?\s*[,\s]\s*['"]?install""")
-MENCIONA_RUEDAS = re.compile(r"\.whl|wheel", re.IGNORECASE)
+INSTALA_CON_PIP = re.compile(r"""pip3?['"]?\s*[,\s]\s*['"]?install""")
+MENCIONA_RUEDAS = re.compile(r"\.whl|wheel|find-links|--no-index", re.IGNORECASE)
+USA_PAQUETES_DE_LA_IMAGEN = re.compile(r"^\s*(?:import|from)\s+(?:peft|torchao|bitsandbytes)\b", re.MULTILINE)
 MAX_LINEAS_DIFF = 40
 # Para evaluar los marcadores de Requires-Dist: la máquina de Kaggle, no la de quien comprueba. La versión de
 # Python es la que se fija en la imagen del kernel (3.12).
@@ -416,6 +465,8 @@ ENTORNO_IMAGEN = {
     "platform_python_implementation": "CPython",
     "python_version": "3.12",
     "python_full_version": "3.12.0",
+    "platform_release": "",
+    "platform_version": "",
     "extra": "",
 }
 # (distribución, versiones afectadas, otra distribución, versiones afectadas, explicación): falla si las dos
@@ -459,27 +510,67 @@ def leer_celdas_del_directorio(directorio: Path) -> list[str] | None:
         return None
 
 
-def comprobar_instalacion_de_ruedas(celdas: list[str], referencia: list[str] | None) -> list[Hallazgo]:
+def _contiene_bloque(celda: list[str], bloque: list[str]) -> bool:
+    """``bloque`` aparece en ``celda`` como líneas seguidas y en el mismo orden."""
+    n = len(bloque)
+    return n > 0 and any(celda[i : i + n] == bloque for i in range(len(celda) - n + 1))
+
+
+def _falta_de_control(texto: str, exigir: bool, aceptado_por: str | None) -> Hallazgo:
+    """Un control no hecho: en un kernel con GPU bloquea salvo que alguien con nombre lo acepte."""
+    if not exigir:
+        return _aviso(texto)
+    if aceptado_por:
+        return _aviso(f"{texto} Aceptado por: {aceptado_por}.")
+    return _mal(
+        f"{texto} En un kernel con GPU bloquea la subida; --aceptado-por <quién> lo acepta con nombre."
+    )
+
+
+def comprobar_instalacion_de_ruedas(
+    celdas: list[str],
+    referencia: list[str] | None,
+    *,
+    exigir: bool = False,
+    aceptado_por: str | None = None,
+) -> list[Hallazgo]:
     """Las celdas de instalación del notebook contra las de un kernel que ya corrió en Kaggle.
 
     La sonda G3 (2026-10-14) instaló a mano cinco ruedas del conjunto en lugar de la celda probada, que
-    instala el conjunto entero, y faltó ``loguru``. Una celda distinta de la probada es un fallo con el diff.
+    instala el conjunto entero, y faltó ``loguru``. Cada celda de instalación de la referencia debe aparecer
+    entera en el notebook, con sus líneas seguidas y en el mismo orden; lo que el notebook añade alrededor
+    se avisa (``[AVISO]``) y se enumera. Una celda cambiada o reducida es un fallo con el diff. Con ``exigir``
+    (kernel con GPU) la falta de referencia es un fallo salvo ``aceptado_por``.
     """
-    propias = celdas_de_instalacion(celdas)
+    propias = [c.splitlines() for c in celdas_de_instalacion(celdas)]
     if not propias:
         return [_bien("El notebook no instala ruedas con pip: no hay celda de instalación que comparar.")]
     if referencia is None:
         return [
-            _aviso(
+            _falta_de_control(
                 "El notebook instala ruedas con pip y no se dio --referencia <directorio de un kernel que "
-                "ya corrió en Kaggle>: no se comprobó que la celda de instalación sea la probada."
+                "ya corrió en Kaggle>: no se comprobó que la celda de instalación sea la probada.",
+                exigir,
+                aceptado_por,
             )
         ]
-    probadas = celdas_de_instalacion(referencia)
+    probadas = [c.splitlines() for c in celdas_de_instalacion(referencia)]
     if not probadas:
         return [_mal("La referencia no tiene celda de instalación de ruedas: no sirve para comparar.")]
-    if propias == probadas:
-        return [_bien(f"Las {len(propias)} celdas de instalación de ruedas son las de la referencia.")]
+    if all(any(_contiene_bloque(p, r) for p in propias) for r in probadas):
+        anadidas = sum(len(p) for p in propias) - sum(len(r) for r in probadas)
+        if anadidas <= 0:
+            return [
+                _bien(f"Las {len(probadas)} celdas de instalación de ruedas de la referencia están enteras.")
+            ]
+        return [
+            _aviso(
+                f"La celda de instalación de la referencia está entera en el notebook, que instala/ejecuta "
+                f"{anadidas} líneas más alrededor: revisa que no instalen un subconjunto a mano."
+            )
+        ]
+    probadas = ["\n".join(c) for c in probadas]
+    propias = ["\n".join(c) for c in propias]
     diff = list(
         difflib.unified_diff(
             "\n".join(probadas).splitlines(),
@@ -569,7 +660,8 @@ def comprobar_cierre_contra_imagen(imagen: dict[str, str], ruedas: Path | None) 
             try:
                 ok = Requirement(linea).specifier.contains(Version(efectivo[nombre]), prereleases=True)
             except InvalidVersion:
-                ok = True
+                incumplen.append(f"{rueda} pide {linea} y la versión {efectivo[nombre]!r} no se puede leer")
+                continue
             if not ok:
                 incumplen.append(f"{rueda} pide {linea} y hay {efectivo[nombre]}")
         if faltan:
@@ -610,34 +702,50 @@ def comprobar_cierre_contra_imagen(imagen: dict[str, str], ruedas: Path | None) 
             ):
                 out.append(_mal(f"Conflicto conocido: {a} {va} con {b} {vb}. {explicacion}"))
         except InvalidVersion:
-            continue
-    if not any(not h.ok and h.texto.startswith("Conflicto conocido") for h in out):
+            out.append(
+                _mal(f"Versión ilegible de {a} ({va!r}) o de {b} ({vb!r}): no se puede mirar el conflicto.")
+            )
+    if not any(not h.ok and h.texto.startswith(("Conflicto conocido", "Versión ilegible")) for h in out):
         out.append(
             _bien(f"Ninguno de los conflictos conocidos de la lista ({len(CONFLICTOS_CONOCIDOS)}) se da.")
         )
     return out
 
 
-def comprobar_informe(directorio: Path) -> list[Hallazgo]:
-    """Un ``INFORME.md`` con «sin comprobar» y sin «Aceptado por:» al lado bloquea la subida.
+HUECO_DECLARADO = re.compile(r"sin\s+(?:comprobar|verificar)", re.IGNORECASE)
+ACEPTADO_POR = re.compile(r"aceptado por:\s*(?!(?:nadie|ninguno|ninguna|n/a|-+)(?:\W|$))\S", re.IGNORECASE)
+
+
+def comprobar_informe(directorio: Path, informe: Path | None = None) -> list[Hallazgo]:
+    """Un informe con «sin comprobar» y sin «Aceptado por:» al lado bloquea la subida.
 
     El 2026-10-14 el constructor declaró «sin comprobar CUDA ni memoria» y la subida siguió. Un hueco
-    declarado necesita a alguien que lo acepte con nombre: ``Aceptado por: <quién>`` en la misma línea o en la
-    línea anterior o siguiente (sin contar las vacías).
+    declarado necesita a alguien que lo acepte con nombre: ``Aceptado por: <quién>`` (no «nadie» ni vacío) en
+    la misma línea o en la línea anterior o siguiente (sin contar las vacías). Cuenta también «sin verificar»
+    y la frase partida en dos líneas. El informe es ``--informe``, o ``INFORME.md`` del directorio, o el del
+    directorio padre (donde lo deja el constructor del kit); sin ninguno no hay nada que leer.
     """
-    ruta = directorio / "INFORME.md"
-    if not ruta.is_file():
-        return []
+    if informe is not None:
+        ruta = informe
+        if not ruta.is_file():
+            return [_mal(f"--informe {informe} no es un archivo.")]
+    else:
+        ruta = next(
+            (r for r in (directorio / "INFORME.md", directorio.parent / "INFORME.md") if r.is_file()), None
+        )
+        if ruta is None:
+            return []
     try:
-        lineas = ruta.read_text(encoding="utf-8-sig").splitlines()
+        texto = ruta.read_text(encoding="utf-8-sig")
     except (OSError, UnicodeDecodeError) as exc:
-        return [_mal(f"No se pudo leer INFORME.md: {type(exc).__name__}")]
-    aceptado = re.compile(r"aceptado por:\s*\S", re.IGNORECASE)
+        return [_mal(f"No se pudo leer {ruta.name}: {type(exc).__name__}")]
+    lineas = texto.splitlines()
+    aceptado = ACEPTADO_POR
     no_vacias = [i for i, x in enumerate(lineas) if x.strip()]
     huecos = []
-    for i, x in enumerate(lineas):
-        if "sin comprobar" not in x.lower():
-            continue
+    sitios = sorted({texto.count("\n", 0, m.start()) for m in HUECO_DECLARADO.finditer(texto)})
+    for i in sitios:
+        x = lineas[i]
         pos = no_vacias.index(i)
         vecinas = [i] + [no_vacias[p] for p in (pos - 1, pos + 1) if 0 <= p < len(no_vacias)]
         if not any(aceptado.search(lineas[j]) for j in vecinas):
@@ -645,38 +753,55 @@ def comprobar_informe(directorio: Path) -> list[Hallazgo]:
     if huecos:
         return [
             _mal(
-                "INFORME.md declara algo sin comprobar y nadie lo aceptó (falta «Aceptado por: <quién>» al "
+                f"{ruta.name} declara algo sin comprobar y nadie lo aceptó (falta «Aceptado por: <quién>» al "
                 "lado): " + "; ".join(huecos)
             )
         ]
-    return [_bien("INFORME.md no declara huecos sin aceptar.")]
+    return [_bien(f"{ruta.name} no declara huecos sin aceptar.")]
 
 
 def comprobar_instalacion(
-    directorio: Path, ruedas: Path | None, referencia: Path | None, imagen: Path | None
+    directorio: Path,
+    ruedas: Path | None,
+    referencia: Path | None,
+    imagen: Path | None,
+    aceptado_por: str | None = None,
 ) -> list[Hallazgo]:
-    """Los controles de ruedas (#100) sobre el notebook del directorio. Si no se puede leer, no añade nada."""
+    """Los controles de ruedas (#100) sobre el notebook del directorio. Si no se puede leer, no añade nada.
+
+    En un kernel con GPU que instala ruedas o importa ``peft``/``torchao``/``bitsandbytes`` de la imagen, la
+    falta de ``--referencia`` (si instala) o de ``--imagen`` bloquea salvo ``aceptado_por``; en uno sin GPU
+    es un ``[AVISO]``.
+    """
     celdas = leer_celdas_del_directorio(directorio)
     if celdas is None:
         return []
+    try:
+        gpu = json.loads((directorio / "kernel-metadata.json").read_text(encoding="utf-8")).get("enable_gpu")
+    except (OSError, UnicodeDecodeError, ValueError, AttributeError):
+        gpu = None
+    exigir = gpu is True
     out: list[Hallazgo] = []
     celdas_ref = None
     if referencia is not None:
         celdas_ref = leer_celdas_del_directorio(referencia)
         if celdas_ref is None:
             return [_mal(f"No se pudo leer el notebook de --referencia {referencia}.")]
-    out += comprobar_instalacion_de_ruedas(celdas, celdas_ref)
+    out += comprobar_instalacion_de_ruedas(celdas, celdas_ref, exigir=exigir, aceptado_por=aceptado_por)
     if imagen is not None:
         try:
             inventario = leer_imagen(imagen)
         except (OSError, UnicodeDecodeError, ValueError) as exc:
             return [*out, _mal(f"No se pudo leer --imagen: {type(exc).__name__}")]
         out += comprobar_cierre_contra_imagen(inventario, ruedas)
-    elif celdas_de_instalacion(celdas):
+    elif celdas_de_instalacion(celdas) or USA_PAQUETES_DE_LA_IMAGEN.search("\n".join(celdas)):
         out.append(
-            _aviso(
-                "El notebook instala ruedas y no se dio --imagen <imagen_paquetes.json>: no se comprobó el "
-                "cierre de dependencias ni los conflictos conocidos."
+            _falta_de_control(
+                "El notebook instala ruedas o importa paquetes de la imagen (peft, torchao, bitsandbytes) y "
+                "no se dio --imagen <imagen_paquetes.json>: no se comprobó el cierre de dependencias ni los "
+                "conflictos conocidos.",
+                exigir,
+                aceptado_por,
             )
         )
     return out
@@ -822,10 +947,10 @@ def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None
     return out
 
 
-def comprobar(directorio: Path, tope_min: int) -> list[Hallazgo]:
+def comprobar(directorio: Path, tope_min: int, informe: Path | None = None) -> list[Hallazgo]:
     """Los hallazgos del directorio solo (metadatos, celdas, guardia). No mira el arnés: para decidir una
     subida se usa ``comprobar_para_subir``, que añade ``comprobar_arnes``."""
-    out: list[Hallazgo] = comprobar_informe(directorio)
+    out: list[Hallazgo] = comprobar_informe(directorio, informe)
     out.append(
         _bien(f"Tope de ejecución: {tope_min} min.")
         if 0 < tope_min <= TOPE_MAXIMO_MIN
@@ -867,6 +992,9 @@ def comprobar_para_subir(
     listado: Path | None = None,
     referencia: Path | None = None,
     imagen: Path | None = None,
+    informe: Path | None = None,
+    aceptado_por: str | None = None,
+    ruedas_instaladas: Path | None = None,
 ) -> list[Hallazgo]:
     """Lo que decide la orden de subida: el directorio (``comprobar``), el arnés (``comprobar_arnes``) y
     las ruedas (``comprobar_instalacion``: referencia, imagen y conflictos conocidos).
@@ -875,9 +1003,9 @@ def comprobar_para_subir(
     ``ruedas``.
     """
     return (
-        comprobar(directorio, tope_min)
+        comprobar(directorio, tope_min, informe)
         + comprobar_arnes_del_directorio(directorio, ruedas, listado)
-        + comprobar_instalacion(directorio, ruedas, referencia, imagen)
+        + comprobar_instalacion(directorio, ruedas_instaladas or ruedas, referencia, imagen, aceptado_por)
     )
 
 
@@ -920,10 +1048,36 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="imagen_paquetes.json: inventario {distribución: versión} de la imagen (sonda G3).",
     )
+    p.add_argument(
+        "--ruedas-instaladas",
+        type=Path,
+        default=None,
+        help="Carpeta con las .whl que el notebook instala, para el cierre de --imagen, sin activar el "
+        "control del arnés. Por defecto, --ruedas.",
+    )
+    p.add_argument(
+        "--informe",
+        type=Path,
+        default=None,
+        help="Informe del constructor; por defecto INFORME.md del directorio o de su padre.",
+    )
+    p.add_argument(
+        "--aceptado-por",
+        default=None,
+        help="Quién acepta subir un kernel con GPU sin --referencia o sin --imagen (queda en la salida).",
+    )
     args = parser.parse_args(argv)
 
     hallazgos = comprobar_para_subir(
-        args.directorio, args.tope_min, args.ruedas, args.listado, args.referencia, args.imagen
+        args.directorio,
+        args.tope_min,
+        args.ruedas,
+        args.listado,
+        args.referencia,
+        args.imagen,
+        args.informe,
+        args.aceptado_por,
+        args.ruedas_instaladas,
     )
     for h in hallazgos:
         print(f"[{'AVISO' if h.aviso else 'OK' if h.ok else 'FALLA'}] {h.texto}")

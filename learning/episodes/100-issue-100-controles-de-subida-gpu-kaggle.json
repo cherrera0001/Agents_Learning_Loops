@@ -14,7 +14,7 @@
     {
       "action": "run_experiment",
       "success": false,
-      "error": "Segunda subida de la sonda G3 a Kaggle: OOM en una GPU al cargar el modelo con transformers. La carga usaba device_map=\"auto\" sin max_memory: reparte según el tamaño comprimido (int4) de los pesos y cada GPU descomprime a bf16 por encima de su memoria"
+      "error": "Segunda subida de la sonda G3 a Kaggle: OOM en una GPU al cargar el modelo con transformers. La carga usaba device_map=\"auto\" (con max_memory de 16 GiB, como se vio después al leer el código): reparte según el tamaño comprimido (int4) de los pesos y cada GPU descomprime a bf16 por encima de su memoria. El arreglo fue calcular el mapa con infer_auto_device_map sobre el modelo denso, no añadir max_memory"
     },
     {
       "action": "run_experiment",
@@ -34,7 +34,7 @@
     {
       "action": "write_tests",
       "success": true,
-      "note": "Pruebas de los cuatro controles escritas contra ruedas sintéticas con METADATA y un inventario de imagen; los casos del peft/torchao salen del inventario real de la sonda"
+      "note": "Pruebas de los cuatro controles escritas contra ruedas sintéticas con METADATA y un inventario de imagen; los casos del peft/torchao salen del inventario real de la sonda. La estimación del bloque estimate es la del encargo: #100 es una épica sin Estimación v1 propia"
     },
     {
       "action": "run_tests",
@@ -42,9 +42,19 @@
       "error": "La prueba del cierre completo falló al pasar --ruedas a comprobar_para_subir: esa opción también activa el control del arnés, que exige guarda de versiones e imports de swegemma, y mezclaba dos controles. Se probó el cierre llamando a comprobar_instalacion, que es el punto que lo decide"
     },
     {
-      "action": "run_experiment",
+      "action": "run_tests",
+      "success": true,
+      "note": "Mutación de los controles nuevos: nueve cambios al código y las pruebas cayeron en los nueve. El revisor independiente inyectó 37 y 8 sobrevivían; se añadieron pruebas para ellos"
+    },
+    {
+      "action": "review_code",
       "success": false,
-      "error": "Mutación de los controles nuevos: nueve cambios al código (device_map siempre ignorado, celda siempre igual, aceptado siempre válido, conflicto sin la segunda condición, dependencia faltante ignorada, versión no cumplida ignorada, versión de la rueda ignorada, marcador siempre aplicado, aviso sin referencia anulado) y las pruebas cayeron en los nueve"
+      "error": "El revisor encontró que el control de device_map del primer PR no habría frenado el OOM real: la v2 ya pasaba max_memory y el fallo era el reparto automático con un modelo comprimido; que la lección 2 del episodio era falsa; que sin --referencia o --imagen solo había un aviso que no impedía subir (el mismo patrón del hueco declarado); y que el control del INFORME no leía el informe real, que estaba en el directorio padre. Se había afirmado que el control cubría el OOM sin leer el código de la v2"
+    },
+    {
+      "action": "edit_module",
+      "success": true,
+      "note": "Reparto automático con modelo comprimido bloquea con o sin max_memory (ignora comentarios); en un kernel con GPU la falta de --referencia o --imagen bloquea salvo --aceptado-por; la referencia se compara como bloque contenido; el informe se busca en el directorio y su padre o con --informe; --ruedas-instaladas evita el ruido del control del arnés. Contra el cuaderno real de la sonda solo queda un fallo: el INFORME con tres «Sin comprobar» sin aceptar"
     },
     {
       "action": "run_experiment",
@@ -54,7 +64,7 @@
   ],
   "lessons": [
     "Antes de subir un cuaderno de GPU a Kaggle, compara su celda de instalación de ruedas con la de un kernel que ya corrió allí: instalar a mano un subconjunto del wheelhouse dejó sin loguru la primera subida de la sonda LoRA",
-    "Antes de subir un cuaderno de GPU a Kaggle para entrenar LoRA, exige max_memory junto a device_map al cargar el modelo con transformers: device_map=\"auto\" reparte por el tamaño comprimido y la GPU se queda sin memoria al descomprimir",
+    "Antes de subir un cuaderno de GPU a Kaggle para entrenar LoRA con un modelo comprimido, no cargues con device_map=\"auto\" ni con max_memory: reparte por el tamaño comprimido y la GPU se queda sin memoria al descomprimir; calcula el mapa con infer_auto_device_map sobre el modelo denso",
     "Antes de subir un cuaderno que entrena LoRA con peft, cruza el inventario de paquetes de la imagen con las ruedas que instala: peft 0.19.1 rechaza torchao 0.10.0 y eso solo se ve en Kaggle si no se cruzan",
     "Antes de subir un cuaderno de GPU a Kaggle para entrenar LoRA, un «sin comprobar CUDA ni memoria» en el informe del constructor bloquea la subida hasta que alguien escriba «Aceptado por:» al lado",
     "Cuando una opción de un comprobador activa dos controles, prueba cada uno llamando a su función y no por la entrada común, o una prueba pasará o caerá por el control equivocado"
