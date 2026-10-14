@@ -132,7 +132,7 @@
       "status": "submitted",
       "public_score": null,
       "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions",
-      "notes": "Ref. Kaggle 57160374, enviado 2026-10-14 00:07:20 UTC (hora de Kaggle), con la descripción «C2 edicion temprana (zip aa0750f0): lectura, no mejora; regla de envio del concilio 47». Estado PENDING y sin nota en la lectura de las 00:07 UTC del 2026-10-14, hecha justo después de enviar; no hay lectura posterior en este registro. Es una lectura, no una mejora: el concilio 48 no halló diferencia fuera del ruido entre este kit y la base en 12 tareas. Hasta el envío esta entrada decía «prepared» con fecha 2026-10-13. Escrito a mano desde la salida guardada del envío (el issue 215 no leyó ni escribió en Kaggle). Candidato 2 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: tres viñetas de edición temprana después de la línea 14 (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad. Escrito a mano. El zip no se versiona: solo su huella."
+      "notes": "Ref. Kaggle 57160374, enviado 2026-10-14 00:07:20 UTC (hora de Kaggle), con la descripción «C2 edicion temprana (zip aa0750f0): lectura, no mejora; regla de envio del concilio 47». Estado PENDING y sin nota en la lectura de las 00:07 UTC del 2026-10-14, hecha justo después de enviar; la última lectura anotada en la bitácora es la de las 09:30 UTC del mismo día (reloj de la máquina): PENDING, 9,4 h después del envío. Sigue sin nota. Es una lectura, no una mejora: el concilio 48 no halló diferencia fuera del ruido entre este kit y la base en 12 tareas. Hasta el envío esta entrada decía «prepared» con fecha 2026-10-13. Escrito a mano desde la salida guardada del envío (el issue 215 no leyó ni escribió en Kaggle). Candidato 2 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: tres viñetas de edición temprana después de la línea 14 (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad. Escrito a mano. El zip no se versiona: solo su huella."
     },
     {
       "submission_id": "sub-011",
@@ -159,6 +159,71 @@
       "public_score": null,
       "kaggle_url": null,
       "notes": "NO ENVIADO: candidato 4 del bloque R1 (concilio 47, issue 205). Es el zip que razona (SHA-256 65a02160…) con un miembro cambiado, prompts/system.md: un bloque nuevo de 15 líneas («Step 0», triaje de enunciados que no describen el problema) entre el párrafo de «Core Objective» y «## Workflow» (el texto es del diseñador). Los otros 5 miembros conservan su registro comprimido byte a byte. Ensayado en local con un servidor falso: no mide calidad ni si el modelo obedece. Escrito a mano. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-013",
+      "date": "2026-10-14",
+      "condition": "R018",
+      "zip_filename": "submission_receta_018_exacta.zip",
+      "sha256": "4ac5ac329aad2280d13f4ba7842e97e6725a5ceb9e16a7fe5437af5cd17ac1a6",
+      "size_bytes": 3014,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: control de la receta pública de 0,18, armada byte a byte desde el diccionario FILES del notebook público (leído con ast, sin ejecutarlo; fecha de cada miembro fijada a 1980-01-01 para que la huella sea reproducible). Sin sesión de GPU prevista desde que la base pasó al bundle de 0,24. Ensayado en Docker con un modelo falso: mide la mecánica y no la calidad. Preflight 26 de 26 en OK. Informe del constructor, con el diff miembro a miembro: instrumentos/receta_publica_018/INFORME.md. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-014",
+      "date": "2026-10-14",
+      "condition": "R018-sinWF",
+      "zip_filename": "submission_receta_sin_write_file.zip",
+      "sha256": "085ce81ea63d033e9452e2eccadebb572df1990eaeeeb7ae4511f438c90f3ede",
+      "size_bytes": 3003,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: la receta de 0,18 (sub-013) con write_file fuera de agent.yaml y la línea del prompt que lo nombra reescrita para nombrar solo la herramienta de edición; los otros dos miembros son idénticos byte a byte. Sin sesión de GPU prevista. Misma mecánica de ensayo que sub-013. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-015",
+      "date": "2026-10-14",
+      "condition": "P24",
+      "zip_filename": "submission_publico_024_exacta.zip",
+      "sha256": "1fd1c07332da9470eccc9a925727d718863eea3c5f9098a8c18e9082ef63df14",
+      "size_bytes": 2398,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: control del bundle público contract-first (0,24), armado como sub-013. Es el bundle público sin cambios: el dueño ordenó el 2026-10-14 que el envío sea un zip propio y no una copia, así que este zip es un control de sesión y no un candidato a enviar (veto 1 del dictamen del concilio 50). Una sesión de 12 tareas del bloque R1 lo resolvió 4 de 12 (hallazgo sesiones_de_12_tareas_del_bundle_contract_first); no es una lectura de la tabla. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-016",
+      "date": "2026-10-14",
+      "condition": "P24-sinWF",
+      "zip_filename": "submission_024_sin_write_file.zip",
+      "sha256": "b1f904c816a0a0a44e56fcb95c521a7befb571a2f5660b1e111a6b60980f1a21",
+      "size_bytes": 2392,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: el bundle de sub-015 con una sola línea menos, write_file fuera de agent.yaml; su prompt no nombra la herramienta y no se toca. Su comprobador de formato público lo rechaza por construcción (exige write_file entre las herramientas): con ese requisito quitado pasa y el resto de sus reglas se cumple. Una sesión de 12 tareas del bloque R1 lo resolvió 4 de 12, igual que sub-015, con 1 par discordante en cada sentido (hallazgo sesiones_de_12_tareas_del_bundle_contract_first). En esa sesión una tarea llamó 49 veces a submit_patch con parche vacío, falla que no aparece en R1 y que costó 1 de 12; en la del sub-015 fueron 51 llamadas. Fue el candidato de la rama (2) de la regla del envío del día 15, pero a las 13:10 UTC del 2026-10-14 se retiró en favor del kit propio ALL-1: queda como control de sesión. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-017",
+      "date": "2026-10-14",
+      "condition": "P24-LoRA0",
+      "zip_filename": "submission_024_lora_nulo.zip",
+      "sha256": "409f58feb294884ce3bdf65251d57615453f007a15889f3835f37314f416a3e8",
+      "size_bytes": 566067,
+      "is_exploratory": true,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "NO ENVIADO: el bundle de sub-015 más un adaptador LoRA nulo (rango 16, alpha 32, q_proj y o_proj en las 60 capas, lora_B en ceros) y una línea más en agent.yaml que lo nombra; 57 384 545 bytes desempacados. Pasa la validación del arnés vigente, que arma la orden de vLLM con --enable-lora y envía el nombre del adaptador como modelo (hallazgo el_arnes_vigente_acepta_un_adaptador_lora). La sonda G2 (2026-10-14, GPU) pasó con tres adaptadores gemelos de este (el de ceros, idéntico en bytes al de este zip, y dos de ruido que nunca se envían): vLLM arrancó con LoRA a 0,80 y lo aplicó, con decodificación 6,5 % más lenta. No medido: que el puntuador acepte este zip (E2, que espera la palabra del dueño). Su notebook de armado público exige exactamente 4 miembros, así que hace falta un notebook propio. El zip no se versiona: solo su huella."
     }
   ]
 }
