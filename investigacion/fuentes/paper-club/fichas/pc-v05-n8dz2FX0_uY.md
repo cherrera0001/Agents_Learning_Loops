@@ -38,7 +38,7 @@ Otros enlaces de la descripción, sin DOI ni arXiv (no son obras del índice y n
 - **Qué se leyó:** el registro y el resumen. El texto completo no.
 - **Nota:** las cifras que da la charla no coinciden con las del resumen de la versión vigente del registro (v7). Unas y otras son de sus autores; aquí no se usa ninguna.
 - **Mecanismo:** Una métrica: exactitud de la tarea por unidad de potencia, para comparar configuraciones de modelo y acelerador en inferencia local. La charla añade la variante por unidad de energía de la carga completa.
-- **En este repositorio:** Sería una métrica, no un cambio del agente: los recibos no registran tokens ni costo (CONTRIBUTING.md) y el sistema donde se mide no da una lectura de potencia.
+- **En este repositorio:** No aplica como cambio del agente; sería una métrica: los recibos no registran tokens ni costo (CONTRIBUTING.md) y el sistema donde se mide no da una lectura de potencia.
 - **Dónde lo nombra el código:** no lo nombra (git grep del nombre y de sus términos, sin resultados en texto, 2026-10-13).
 - **Medición local:** ninguna en docs/results/
 - **Contraste que lo descarta:** no se propone.
