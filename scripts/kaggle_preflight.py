@@ -22,9 +22,27 @@ SHA-256 esperados de las ruedas del arnés, exige que sean los de ``kaggle_arnes
 que las ``.whl`` de ``--ruedas`` los tengan, y dice los dos valores cuando no. Un notebook cuya guarda solo
 compara versiones (los armados antes de ese día) recibe un ``[AVISO]``, que no impide la orden de subida.
 
+Desde el 2026-10-14 (#100, sonda G3: tres subidas fallidas) añade cuatro controles que bloquean:
+
+- ``--referencia <dir de un kernel que ya corrió en Kaggle>``: las celdas que instalan ruedas con ``pip``
+  deben ser idénticas a las de la referencia (se comparan sin comentarios ni líneas en blanco). Un
+  subconjunto de ruedas elegido a mano, o una celda cambiada, falla con el diff. Sin ``--referencia`` en un
+  notebook que instala ruedas: ``[AVISO]``.
+- ``from_pretrained(..., device_map=...)`` sin ``max_memory`` falla (salvo ``"cpu"`` o un dict literal).
+- ``--imagen <imagen_paquetes.json>`` (``{distribución: versión}``, el inventario que escribe la sonda G3) y
+  ``--ruedas``: el cierre de ``Requires-Dist`` (sin extras, con los marcadores evaluados para Linux y Python
+  3.12) de todas las ``.whl`` de ``--ruedas`` contra la imagen más esas ruedas; falla si falta una
+  distribución o su versión no cumple el requisito, y si se da un conflicto conocido (``peft<0.20`` con
+  ``torchao<0.16``). No ve conflictos opcionales ni nuevos que no estén en la lista, ni lo que una rueda
+  nueva rompe en un paquete de la imagen; supone que el notebook instala todas las ``.whl`` de ``--ruedas``.
+- Un ``INFORME.md`` en el directorio con una línea «sin comprobar» y sin una línea «Aceptado por:» en la misma
+  línea o en la anterior o siguiente (sin contar las vacías) falla: un hueco declarado no se sube solo.
+
 Uso:
     python -m scripts.kaggle_preflight comprobar <directorio> --tope-min 75
     python -m scripts.kaggle_preflight comprobar <dir> --tope-min 75 --ruedas <carpeta> [--listado <archivo>]
+    python -m scripts.kaggle_preflight comprobar <dir> --tope-min 75 --referencia <dir-que-ya-corrió>
+    python -m scripts.kaggle_preflight comprobar <dir> --tope-min 75 --imagen <json> --ruedas <carpeta>
 
 ``<directorio>`` es el que recibe ``kaggle kernels push -p``: contiene ``kernel-metadata.json`` y el
 notebook. Con todo en orden imprime la orden exacta de subida y sale con 0; con algún fallo sale con 2 y
@@ -34,12 +52,16 @@ no imprime la orden. La subida se encadena a este comando con ``&&``.
 from __future__ import annotations
 
 import argparse
+import ast
+import difflib
 import json
 import re
 import subprocess
 import sys
 import tempfile
+import zipfile
 from dataclasses import dataclass
+from email.parser import Parser
 from pathlib import Path
 from typing import Any
 
@@ -318,6 +340,7 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
         else _bien("Ninguna celda escribe una ruta fija bajo /kaggle/input.")
     )
     out += comprobar_guardia(fuentes[0])
+    out.append(comprobar_device_map(fuentes))
     if re.search(r"VllmServer|TransformersServer", todo):
         out.append(
             _bien("Si el servidor del modelo falla, el notebook toma la causa de la salida de la excepción.")
@@ -333,6 +356,328 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
             _bien("El notebook imprime la GPU asignada.")
             if "nvidia-smi" in todo
             else _mal("Con GPU, el notebook debe ejecutar nvidia-smi para dejar constancia de la máquina.")
+        )
+    return out
+
+
+def comprobar_device_map(fuentes: list[str]) -> Hallazgo:
+    """``from_pretrained(..., device_map=...)`` sin ``max_memory`` es un fallo (OOM de la sonda G3).
+
+    ``device_map="auto"`` reparte según el tamaño comprimido de los pesos y una GPU se queda sin memoria al
+    descomprimir. Se exceptúan ``device_map="cpu"``, ``None`` y un dict escrito en la llamada. Un mapa que
+    viene de una variable o de una llamada también falla: se pasa ``max_memory`` igualmente. Una llamada con
+    ``**kwargs`` falla porque no se ve si lleva ``max_memory``. Las celdas que no compilan no se miran.
+    """
+    sitios: list[str] = []
+    for numero, fuente in enumerate(fuentes, 1):
+        try:
+            arbol = ast.parse(codigo_comprobable(fuente))
+        except (SyntaxError, ValueError):
+            continue
+        for nodo in ast.walk(arbol):
+            if not isinstance(nodo, ast.Call):
+                continue
+            f = nodo.func
+            nombre = f.attr if isinstance(f, ast.Attribute) else f.id if isinstance(f, ast.Name) else None
+            if nombre != "from_pretrained":
+                continue
+            claves = {k.arg: k.value for k in nodo.keywords}
+            if "device_map" not in claves or "max_memory" in claves:
+                continue
+            valor = claves["device_map"]
+            if isinstance(valor, ast.Dict) or (
+                isinstance(valor, ast.Constant) and (valor.value is None or valor.value == "cpu")
+            ):
+                continue
+            sitios.append(f"celda {numero}, línea {nodo.lineno}")
+    if sitios:
+        return _mal(
+            "from_pretrained(device_map=...) sin max_memory en "
+            + "; ".join(sitios)
+            + ": device_map reparte según el tamaño comprimido y una GPU se queda sin memoria al "
+            "descomprimir (OOM de la sonda G3). Pasa max_memory={i: tope_por_gpu} o un device_map literal."
+        )
+    return _bien("Ninguna llamada from_pretrained pasa device_map sin max_memory.")
+
+
+# --- Ruedas: la celda de instalación probada, el cierre de dependencias y los conflictos conocidos (#100) ---
+
+INSTALA_CON_PIP = re.compile(r"""pip['"]?\s*[,\s]\s*['"]?install""")
+MENCIONA_RUEDAS = re.compile(r"\.whl|wheel", re.IGNORECASE)
+MAX_LINEAS_DIFF = 40
+# Para evaluar los marcadores de Requires-Dist: la máquina de Kaggle, no la de quien comprueba. La versión de
+# Python es la que se fija en la imagen del kernel (3.12).
+ENTORNO_IMAGEN = {
+    "sys_platform": "linux",
+    "platform_system": "Linux",
+    "os_name": "posix",
+    "platform_machine": "x86_64",
+    "implementation_name": "cpython",
+    "platform_python_implementation": "CPython",
+    "python_version": "3.12",
+    "python_full_version": "3.12.0",
+    "extra": "",
+}
+# (distribución, versiones afectadas, otra distribución, versiones afectadas, explicación): falla si las dos
+# están presentes con esas versiones. Solo lo que ya falló en una subida; no se deduce nada más.
+CONFLICTOS_CONOCIDOS = (
+    (
+        "peft",
+        "<0.20",
+        "torchao",
+        "<0.16",
+        "peft<0.20 rechaza torchao<0.16 al importarse (sonda G3, 2026-10-14: peft 0.19.1 de la imagen con "
+        "torchao 0.10.0). Sube torchao a 0.16 o más, o quítalo de la imagen, antes de subir.",
+    ),
+)
+
+
+def _normalizado(texto: str) -> str:
+    """El código de una celda sin comentarios de línea completa ni líneas en blanco, sin espacios al final."""
+    lineas = [x.rstrip() for x in texto.splitlines()]
+    return "\n".join(x for x in lineas if x.strip() and not x.lstrip().startswith("#"))
+
+
+def celdas_de_instalacion(celdas: list[str]) -> list[str]:
+    """Las celdas que corren ``pip install`` con ruedas, normalizadas, en orden."""
+    return [_normalizado(c) for c in celdas if INSTALA_CON_PIP.search(c) and MENCIONA_RUEDAS.search(c)]
+
+
+def leer_celdas_del_directorio(directorio: Path) -> list[str] | None:
+    """Las celdas de código del notebook de un directorio de kernel; ``None`` si no se puede leer."""
+    try:
+        meta = json.loads((directorio / "kernel-metadata.json").read_text(encoding="utf-8"))
+        ruta = directorio / meta["code_file"]
+    except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError):
+        otros = sorted(directorio.glob("*.ipynb")) if directorio.is_dir() else []
+        if len(otros) != 1:
+            return None
+        ruta = otros[0]
+    try:
+        return kaggle_arnes.celdas_de_codigo(json.loads(ruta.read_text(encoding="utf-8")))
+    except (OSError, UnicodeDecodeError, ValueError):
+        return None
+
+
+def comprobar_instalacion_de_ruedas(celdas: list[str], referencia: list[str] | None) -> list[Hallazgo]:
+    """Las celdas de instalación del notebook contra las de un kernel que ya corrió en Kaggle.
+
+    La sonda G3 (2026-10-14) instaló a mano cinco ruedas del conjunto en lugar de la celda probada, que
+    instala el conjunto entero, y faltó ``loguru``. Una celda distinta de la probada es un fallo con el diff.
+    """
+    propias = celdas_de_instalacion(celdas)
+    if not propias:
+        return [_bien("El notebook no instala ruedas con pip: no hay celda de instalación que comparar.")]
+    if referencia is None:
+        return [
+            _aviso(
+                "El notebook instala ruedas con pip y no se dio --referencia <directorio de un kernel que "
+                "ya corrió en Kaggle>: no se comprobó que la celda de instalación sea la probada."
+            )
+        ]
+    probadas = celdas_de_instalacion(referencia)
+    if not probadas:
+        return [_mal("La referencia no tiene celda de instalación de ruedas: no sirve para comparar.")]
+    if propias == probadas:
+        return [_bien(f"Las {len(propias)} celdas de instalación de ruedas son las de la referencia.")]
+    diff = list(
+        difflib.unified_diff(
+            "\n".join(probadas).splitlines(),
+            "\n".join(propias).splitlines(),
+            "referencia",
+            "notebook",
+            lineterm="",
+            n=1,
+        )
+    )
+    corte = diff[:MAX_LINEAS_DIFF] + (
+        [f"... ({len(diff) - MAX_LINEAS_DIFF} líneas más)"] if len(diff) > MAX_LINEAS_DIFF else []
+    )
+    return [
+        _mal(
+            "La celda de instalación de ruedas no es la de la referencia (un subconjunto elegido a mano "
+            "dejó sin instalar loguru en la sonda G3). Diff:\n" + "\n".join(corte)
+        )
+    ]
+
+
+def leer_imagen(ruta: Path) -> dict[str, str]:
+    """``{distribución normalizada: versión}`` de un ``imagen_paquetes.json``; ``ValueError`` si no lo es."""
+    datos = json.loads(ruta.read_text(encoding="utf-8-sig"))
+    if not isinstance(datos, dict) or not all(isinstance(v, str) for v in datos.values()):
+        raise ValueError("el inventario debe ser un objeto {distribución: versión}")
+    return {kaggle_arnes.normalizar_dist(k): v for k, v in datos.items()}
+
+
+def requisitos_de_rueda(ruta: Path) -> tuple[str, str, list[str]] | None:
+    """``(distribución, versión, Requires-Dist)`` del METADATA de la ``.whl``; ``None`` si no lo tiene."""
+    try:
+        with zipfile.ZipFile(ruta) as z:
+            nombre = next((n for n in z.namelist() if n.endswith(".dist-info/METADATA")), None)
+            if nombre is None:
+                return None
+            meta = Parser().parsestr(z.read(nombre).decode("utf-8", errors="replace"))
+    except (OSError, zipfile.BadZipFile):
+        return None
+    if not meta["Name"] or not meta["Version"]:
+        return None
+    return meta["Name"], meta["Version"], meta.get_all("Requires-Dist") or []
+
+
+def comprobar_cierre_contra_imagen(imagen: dict[str, str], ruedas: Path | None) -> list[Hallazgo]:
+    """Cierre de ``Requires-Dist`` de las ``.whl`` de ``ruedas`` contra la imagen más esas ruedas.
+
+    ``pip install --no-deps`` no resuelve nada: una dependencia que ni la imagen ni las ruedas traen se
+    descubre al importar, ya dentro de Kaggle. Los conflictos conocidos se miran sobre el mismo conjunto.
+    """
+    from packaging.requirements import InvalidRequirement, Requirement
+    from packaging.specifiers import SpecifierSet
+    from packaging.version import InvalidVersion, Version
+
+    efectivo = dict(imagen)
+    pedidas: list[tuple[str, str, str]] = []  # (rueda, requisito, texto)
+    out: list[Hallazgo] = []
+    if ruedas is not None:
+        archivos = sorted(ruedas.glob("*.whl"))
+        leidas = [(a, requisitos_de_rueda(a)) for a in archivos]
+        ilegibles = [a.name for a, r in leidas if r is None]
+        if not archivos:
+            return [_mal(f"--ruedas {ruedas} no tiene ningún .whl: no hay cierre que calcular.")]
+        if ilegibles:
+            out.append(_mal("Ruedas sin METADATA legible: " + ", ".join(ilegibles) + "."))
+        for _a, r in leidas:
+            if r is not None:
+                efectivo[kaggle_arnes.normalizar_dist(r[0])] = r[1]
+        for _a, r in leidas:
+            if r is None:
+                continue
+            for linea in r[2]:
+                try:
+                    req = Requirement(linea)
+                    aplica = req.marker is None or req.marker.evaluate(ENTORNO_IMAGEN)
+                except InvalidRequirement:
+                    out.append(_mal(f"Requires-Dist ilegible en {r[0]}: {linea!r}."))
+                    continue
+                if aplica:
+                    pedidas.append((r[0], kaggle_arnes.normalizar_dist(req.name), linea))
+        faltan: dict[str, list[str]] = {}
+        incumplen: list[str] = []
+        for rueda, nombre, linea in pedidas:
+            if nombre not in efectivo:
+                faltan.setdefault(nombre, []).append(rueda)
+                continue
+            try:
+                ok = Requirement(linea).specifier.contains(Version(efectivo[nombre]), prereleases=True)
+            except InvalidVersion:
+                ok = True
+            if not ok:
+                incumplen.append(f"{rueda} pide {linea} y hay {efectivo[nombre]}")
+        if faltan:
+            out.append(
+                _mal(
+                    "Dependencias que ni la imagen ni las ruedas traen (sin internet no se instalan): "
+                    + "; ".join(
+                        f"{n} (pedida por {', '.join(sorted(set(v)))})" for n, v in sorted(faltan.items())
+                    )
+                    + "."
+                )
+            )
+        if incumplen:
+            out.append(
+                _mal("Requisitos que la versión disponible no cumple: " + "; ".join(sorted(incumplen)) + ".")
+            )
+        if not faltan and not incumplen and not any(not h.ok for h in out):
+            out.append(
+                _bien(
+                    f"Cierre de dependencias: las {len(archivos)} ruedas piden {len(pedidas)} requisitos y "
+                    "todos están en la imagen o en las ruedas con versión válida."
+                )
+            )
+    else:
+        out.append(
+            _aviso(
+                "Se dio --imagen sin --ruedas: no se calculó el cierre de dependencias, solo los conflictos."
+            )
+        )
+    for a, spec_a, b, spec_b, explicacion in CONFLICTOS_CONOCIDOS:
+        va, vb = efectivo.get(a), efectivo.get(b)
+        try:
+            if (
+                va is not None
+                and vb is not None
+                and SpecifierSet(spec_a).contains(Version(va), prereleases=True)
+                and SpecifierSet(spec_b).contains(Version(vb), prereleases=True)
+            ):
+                out.append(_mal(f"Conflicto conocido: {a} {va} con {b} {vb}. {explicacion}"))
+        except InvalidVersion:
+            continue
+    if not any(not h.ok and h.texto.startswith("Conflicto conocido") for h in out):
+        out.append(
+            _bien(f"Ninguno de los conflictos conocidos de la lista ({len(CONFLICTOS_CONOCIDOS)}) se da.")
+        )
+    return out
+
+
+def comprobar_informe(directorio: Path) -> list[Hallazgo]:
+    """Un ``INFORME.md`` con «sin comprobar» y sin «Aceptado por:» al lado bloquea la subida.
+
+    El 2026-10-14 el constructor declaró «sin comprobar CUDA ni memoria» y la subida siguió. Un hueco
+    declarado necesita a alguien que lo acepte con nombre: ``Aceptado por: <quién>`` en la misma línea o en la
+    línea anterior o siguiente (sin contar las vacías).
+    """
+    ruta = directorio / "INFORME.md"
+    if not ruta.is_file():
+        return []
+    try:
+        lineas = ruta.read_text(encoding="utf-8-sig").splitlines()
+    except (OSError, UnicodeDecodeError) as exc:
+        return [_mal(f"No se pudo leer INFORME.md: {type(exc).__name__}")]
+    aceptado = re.compile(r"aceptado por:\s*\S", re.IGNORECASE)
+    no_vacias = [i for i, x in enumerate(lineas) if x.strip()]
+    huecos = []
+    for i, x in enumerate(lineas):
+        if "sin comprobar" not in x.lower():
+            continue
+        pos = no_vacias.index(i)
+        vecinas = [i] + [no_vacias[p] for p in (pos - 1, pos + 1) if 0 <= p < len(no_vacias)]
+        if not any(aceptado.search(lineas[j]) for j in vecinas):
+            huecos.append(f"línea {i + 1}: {x.strip()}")
+    if huecos:
+        return [
+            _mal(
+                "INFORME.md declara algo sin comprobar y nadie lo aceptó (falta «Aceptado por: <quién>» al "
+                "lado): " + "; ".join(huecos)
+            )
+        ]
+    return [_bien("INFORME.md no declara huecos sin aceptar.")]
+
+
+def comprobar_instalacion(
+    directorio: Path, ruedas: Path | None, referencia: Path | None, imagen: Path | None
+) -> list[Hallazgo]:
+    """Los controles de ruedas (#100) sobre el notebook del directorio. Si no se puede leer, no añade nada."""
+    celdas = leer_celdas_del_directorio(directorio)
+    if celdas is None:
+        return []
+    out: list[Hallazgo] = []
+    celdas_ref = None
+    if referencia is not None:
+        celdas_ref = leer_celdas_del_directorio(referencia)
+        if celdas_ref is None:
+            return [_mal(f"No se pudo leer el notebook de --referencia {referencia}.")]
+    out += comprobar_instalacion_de_ruedas(celdas, celdas_ref)
+    if imagen is not None:
+        try:
+            inventario = leer_imagen(imagen)
+        except (OSError, UnicodeDecodeError, ValueError) as exc:
+            return [*out, _mal(f"No se pudo leer --imagen: {type(exc).__name__}")]
+        out += comprobar_cierre_contra_imagen(inventario, ruedas)
+    elif celdas_de_instalacion(celdas):
+        out.append(
+            _aviso(
+                "El notebook instala ruedas y no se dio --imagen <imagen_paquetes.json>: no se comprobó el "
+                "cierre de dependencias ni los conflictos conocidos."
+            )
         )
     return out
 
@@ -480,7 +825,7 @@ def comprobar_arnes(celdas: list[str], ruedas: Path | None, listado: Path | None
 def comprobar(directorio: Path, tope_min: int) -> list[Hallazgo]:
     """Los hallazgos del directorio solo (metadatos, celdas, guardia). No mira el arnés: para decidir una
     subida se usa ``comprobar_para_subir``, que añade ``comprobar_arnes``."""
-    out: list[Hallazgo] = []
+    out: list[Hallazgo] = comprobar_informe(directorio)
     out.append(
         _bien(f"Tope de ejecución: {tope_min} min.")
         if 0 < tope_min <= TOPE_MAXIMO_MIN
@@ -516,14 +861,24 @@ def comprobar_arnes_del_directorio(
 
 
 def comprobar_para_subir(
-    directorio: Path, tope_min: int, ruedas: Path | None = None, listado: Path | None = None
+    directorio: Path,
+    tope_min: int,
+    ruedas: Path | None = None,
+    listado: Path | None = None,
+    referencia: Path | None = None,
+    imagen: Path | None = None,
 ) -> list[Hallazgo]:
-    """Lo que decide la orden de subida: el directorio (``comprobar``) y el arnés (``comprobar_arnes``).
+    """Lo que decide la orden de subida: el directorio (``comprobar``), el arnés (``comprobar_arnes``) y
+    las ruedas (``comprobar_instalacion``: referencia, imagen y conflictos conocidos).
 
     Ninguno ``ok=False`` significa que se puede subir. Un notebook que importa el arnés no pasa sin
     ``ruedas``.
     """
-    return comprobar(directorio, tope_min) + comprobar_arnes_del_directorio(directorio, ruedas, listado)
+    return (
+        comprobar(directorio, tope_min)
+        + comprobar_arnes_del_directorio(directorio, ruedas, listado)
+        + comprobar_instalacion(directorio, ruedas, referencia, imagen)
+    )
 
 
 def orden_de_subida(directorio: Path, meta: dict[str, Any], tope_min: int) -> str:
@@ -553,9 +908,23 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Listado del conjunto de ruedas: listado_ruedas.json del rescate o la salida de la CLI.",
     )
+    p.add_argument(
+        "--referencia",
+        type=Path,
+        default=None,
+        help="Directorio de un kernel que ya corrió en Kaggle: su celda de instalación es la probada.",
+    )
+    p.add_argument(
+        "--imagen",
+        type=Path,
+        default=None,
+        help="imagen_paquetes.json: inventario {distribución: versión} de la imagen (sonda G3).",
+    )
     args = parser.parse_args(argv)
 
-    hallazgos = comprobar_para_subir(args.directorio, args.tope_min, args.ruedas, args.listado)
+    hallazgos = comprobar_para_subir(
+        args.directorio, args.tope_min, args.ruedas, args.listado, args.referencia, args.imagen
+    )
     for h in hallazgos:
         print(f"[{'AVISO' if h.aviso else 'OK' if h.ok else 'FALLA'}] {h.texto}")
     fallos = sum(1 for h in hallazgos if not h.ok)

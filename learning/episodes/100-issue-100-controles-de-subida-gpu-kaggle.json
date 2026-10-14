@@ -1,0 +1,62 @@
+{
+  "seq": 100,
+  "id": "issue-100-controles-de-subida-gpu-kaggle",
+  "goal": "Convertir en controles que bloquean los tres fallos de la sonda G3 (cuaderno de GPU que entrena LoRA en Kaggle) y el hueco declarado que no frenó la subida: celda de instalación contra una referencia, device_map sin max_memory, cierre de dependencias y conflictos conocidos contra la imagen, e INFORME.md con un «sin comprobar» sin aceptar",
+  "ref": "#100",
+  "estimate": {"version": 1, "date": "2026-10-14", "size": "M", "points": 3, "uncertainty": 2, "risk": 2, "planned_model": "Sonnet 5.5", "planned_effort": "medium"},
+  "outcome": {"used_model": "Sonnet 5.5", "model_source": "self-reported", "escalated": false, "estimate_revisions": 0, "prs": 1},
+  "steps": [
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Primera subida de la sonda G3 (cuaderno de GPU que entrena LoRA con peft) a Kaggle: falló con ModuleNotFoundError: loguru. La celda instalaba a mano cinco ruedas del wheelhouse en lugar de la celda de instalación probada, que instala el wheelhouse completo; loguru 0.7.3 estaba en él desde el 4 de octubre"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Segunda subida de la sonda G3 a Kaggle: OOM en una GPU al cargar el modelo con transformers. La carga usaba device_map=\"auto\" sin max_memory: reparte según el tamaño comprimido (int4) de los pesos y cada GPU descomprime a bf16 por encima de su memoria"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Tercera subida de la sonda G3 a Kaggle: peft 0.19.1 de la imagen rechazó torchao 0.10.0, otro paquete que trae la imagen. Nadie había cruzado las versiones del inventario de la imagen con lo que el cuaderno instalaba o importaba"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "El constructor declaró en su informe «sin comprobar CUDA ni memoria» y la subida de GPU siguió: el hueco era texto y ninguna comprobación local lo leía"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Recall antes de leer el código: devolvió la lección de la ruta fija bajo /kaggle/input y la de una subida por resultado; ninguna cubría ruedas, memoria ni versiones de la imagen"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Pruebas de los cuatro controles escritas contra ruedas sintéticas con METADATA y un inventario de imagen; los casos del peft/torchao salen del inventario real de la sonda"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "La prueba del cierre completo falló al pasar --ruedas a comprobar_para_subir: esa opción también activa el control del arnés, que exige guarda de versiones e imports de swegemma, y mezclaba dos controles. Se probó el cierre llamando a comprobar_instalacion, que es el punto que lo decide"
+    },
+    {
+      "action": "run_experiment",
+      "success": false,
+      "error": "Mutación de los controles nuevos: nueve cambios al código (device_map siempre ignorado, celda siempre igual, aceptado siempre válido, conflicto sin la segunda condición, dependencia faltante ignorada, versión no cumplida ignorada, versión de la rueda ignorada, marcador siempre aplicado, aviso sin referencia anulado) y las pruebas cayeron en los nueve"
+    },
+    {
+      "action": "run_experiment",
+      "success": true,
+      "note": "El comprobador contra el cuaderno real de la sonda: con la imagen sola marca el conflicto peft 0.19.1 con torchao 0.10.0; con las ruedas del dataset (peft 0.21.2) el cierre de 17 requisitos pasa; contra la referencia iteracion-03 marca la celda de instalación distinta con su diff"
+    }
+  ],
+  "lessons": [
+    "Antes de subir un cuaderno de GPU a Kaggle, compara su celda de instalación de ruedas con la de un kernel que ya corrió allí: instalar a mano un subconjunto del wheelhouse dejó sin loguru la primera subida de la sonda LoRA",
+    "Antes de subir un cuaderno de GPU a Kaggle para entrenar LoRA, exige max_memory junto a device_map al cargar el modelo con transformers: device_map=\"auto\" reparte por el tamaño comprimido y la GPU se queda sin memoria al descomprimir",
+    "Antes de subir un cuaderno que entrena LoRA con peft, cruza el inventario de paquetes de la imagen con las ruedas que instala: peft 0.19.1 rechaza torchao 0.10.0 y eso solo se ve en Kaggle si no se cruzan",
+    "Antes de subir un cuaderno de GPU a Kaggle para entrenar LoRA, un «sin comprobar CUDA ni memoria» en el informe del constructor bloquea la subida hasta que alguien escriba «Aceptado por:» al lado",
+    "Cuando una opción de un comprobador activa dos controles, prueba cada uno llamando a su función y no por la entrada común, o una prueba pasará o caerá por el control equivocado"
+  ]
+}

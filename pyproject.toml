@@ -20,9 +20,10 @@ embeddings = ["fastembed>=0.4"]
 paper = ["matplotlib>=3.8"]
 # scripts/kaggle_submission.py: lee el YAML del envío igual que el compilador del organizador. Sin él,
 # `verify` falla cerrado (la comprobación de herramientas no puede correr).
-kaggle = ["pyyaml>=6.0"]
+kaggle = ["pyyaml>=6.0", "packaging>=23.0"]
 dev = [
     "pyyaml>=6.0",
+    "packaging>=23.0",
     "pytest>=8.0",
     "pytest-cov>=5.0",
     "hypothesis>=6.0",
