@@ -1,33 +1,33 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~14:30 UTC (sesión matutina Kimi Code, sin GPU). **Bloqueo de cuota GPU
-sigue vigente** (reinicio semanal; fecha exacta por confirmar — el lunes 2026-10-19 es lo esperado).
+Actualizado: 2026-10-16 ~16:00 UTC (sesión de documentación Kimi Code, sin GPU). **Bloqueo de
+cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado).
 
 ## Ahora (estado real)
 - **Réplica 1/3 = COMPLETE**: 4/20 (20,0%), huella OK, validada. Réplicas 2-3 esperando cuota.
-- **Minería de fallos de réplica 1 (offline) = hecha**: `docs/c7_fallos_r1.md` (commit 1bfe833).
-  Corrección de premisa: `sin_parche` ≠ no parche (5/16 con parche real; 2 enviados no resueltos,
-  2 parche vacío por anomalía de extracción, 1 revertido por tiempo). Conteos: 9 presupuesto
-  agotado, 3 anomalía de arnés, 2 llegó-no-editó, 1 bucle, 1 no-llegó-a-relevante. Transversal:
-  0 usos de herramientas de grafo en 16 tareas; el cuello es convertir ubicación→edit dentro del
-  presupuesto de 270 s, no la búsqueda. Anomalías A1-A3 documentadas para investigar antes de
-  gastar cuota.
-- **Variante navegación-primero = LISTA, sin correr** (WIP, commit 3c915db): `replicas_c7_nav/`,
-  único cambio = `prompts/system.md` con el procedimiento; huella nueva `af8cca829561`
-  (original `0f52de0b84cb`); `armar_notebook_nav.py` verifica prompt byte a byte y recomputa la
-  huella antes de escribir; preflight 24/24. Kernel previsto `cs4all/c7-navegacion-condicion-7`.
-  **No se ha subido ni corrido nada.**
+- **Minería de fallos + A1/A3 = CERRADA** (`docs/c7_fallos_r1.md` + addendum, commits 1bfe833 y
+  9d826c5): el «parche vacío» era `clase_fallo` leyendo `generated_patch`, atributo que no existe
+  (`TaskResult.agent_patch` es el campo; `swegemma/models/task.py:162`). Taxonomía corregida:
+  4/16 parche enviado y evaluado no resuelto; 12/16 sin parche contra el muro de 4,5 min (10 sin
+  editar, 2 con ediciones nunca enviadas). 4/20 **no subcuenta** parches evaluados. Transversal:
+  0 usos de herramientas de grafo; el cuello es ubicación→edit dentro del presupuesto.
+- **Variante navegación-primero = LISTA** (WIP `3c915db`+`c28aca6`): huella `af8cca829561`.
+- **Variante conciencia-de-presupuesto = LISTA** (WIP `75ff644`): huella `52ba08ceac25`; reglas
+  motivadas en la minería (tope exploración 1/3, no repetir llamadas, verificar una vez, endgame
+  submit). Ambas: preflight 24/24, **nada subido ni corrido**.
+- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`, añadir clase
+  `parche_no_resuelto`) antes de réplicas 2-3. No cambia la huella; rompe la identidad estricta
+  del paquete con réplica 1. Documentado en el addendum.
 
 ## Lunes (cuota reiniciada), en orden
-1. Réplicas 2 y 3 de la condición 7 (push v7/v8 de `replicas_c7/`, poller, pull a
+1. Decidir el fix de `clase_fallo` (recomendado: aplicar — la clase actual no mide nada).
+2. Réplicas 2 y 3 de la condición 7 (push v7/v8 de `replicas_c7/`, poller, pull a
    `replica_2/`,`replica_3/`, commits) — resume exacto abajo en «Siguiente».
-2. **Contraste A vs navegación sobre las mismas 20 tareas**: 1 corrida de `replicas_c7_nav/`
-   (huella `af8cca829561`) contra la réplica 1. Antes de lanzarla, leer `docs/c7_fallos_r1.md`
-   §Lectura: los datos de réplica 1 sugieren que el cuello es tiempo/razonamiento y anomalías de
-   parche, no búsqueda; si el dueño quiere una hipótesis con más masa, candidato alternativo =
-   intervención de conciencia de presupuesto. Decisión del dueño.
-3. Investigar anomalías A1 (`generated_patch` vacío tras submit; sospecha: scratch `repro.py` en
-   el parche) y A3 (re-clasificar réplicas 2-3 con el log de kernel, la agregación es binaria).
+3. **Contraste sobre las mismas 20 tareas**: condición 7 (`replicas_c7/`) vs navegación-primero
+   (`af8cca829561`) vs presupuesto (`52ba08ceac25`). La minería sugiere que presupuesto ataca el
+   cuello medido (12/16 muro de tiempo); navegación ataca 1-2/16. Correr de una o dos variantes
+   es decisión del dueño y su presupuesto de cuota (~1,5-2,5 h por corrida L4×4).
+4. Con 3 réplicas: `docs/c7_ruido.md` + episodio devlog + STATUS COMPLETE.
 4. Con 3 réplicas: `docs/c7_ruido.md` + episodio 101 + STATUS COMPLETE.
 
 ## Siguiente (resume EXACTO para la sesión que reanude, tras el reinicio semanal de cuota GPU)
