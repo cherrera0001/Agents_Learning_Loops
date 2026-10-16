@@ -1,8 +1,31 @@
 {
   "ids_19": null,
-  "estado": "no_recuperable_desde_el_repositorio",
+  "estado": "sustituto_fijado_por_el_dueeno_2026-10-16",
   "que_falta": "Los identificadores exactos de las 19 tareas del 9/19 original (las 12 juzgadas resolubles de la §4.4 del manuscrito + las 7 resueltas antes) solo existian en notebooks borrados antes del primer rescate (2026-10-04T16:28Z) y en la bitacora de predicciones que estuvo fuera del control de versiones (manuscrito §3, Deviations; README §7.3).",
   "busqueda_hecha": "Todas las carpetas de rescate (2026-10-04 a 2026-10-15) y los datos locales se escanearon buscando una pasada de 19 tareas con 9 resueltas: ninguna salida rescatada la contiene (las pasadas rescatadas son de 15, 20, 12, 8-11, 7 y 3 tareas). El registro de envios si tiene las lecturas de estado (ver docs/c7_replicas.md).",
   "como_se_usa": "El dueño pega los 19 identificadores en la celda «tareas» de notebook_c7.py (IDS_TAREAS_C7) o sube este archivo con ids_19 relleno como entrada del notebook (se lee de /kaggle/input/tareas_c7.json). Sin eso el notebook se detiene antes de gastar cuota.",
-  "alternativa_si_no_aparecen": "Reconstruir el criterio con datos disponibles cambia el objeto medido (seria otra seleccion, no la misma); si el dueño lo aprueba, candidatos: las 20 de ensayo_kaggle/ids_rich_provisional.txt (solo rich, 20 no 19) o el universo de 30 (15 rich + 15 fastapi) del manuscrito §3. Ninguno reproduce el 9/19 y hay que declararlo como desviacion."
+  "alternativa_si_no_aparecen": "Reconstruir el criterio con datos disponibles cambia el objeto medido (seria otra seleccion, no la misma); si el dueño lo aprueba, candidatos: las 20 de ensayo_kaggle/ids_rich_provisional.txt (solo rich, 20 no 19) o el universo de 30 (15 rich + 15 fastapi) del manuscrito §3. Ninguno reproduce el 9/19 y hay que declararlo como desviacion.",
+  "ids_20_rich": [
+    "rich_3894",
+    "rich_3535",
+    "rich_3772",
+    "rich_3278",
+    "rich_4076",
+    "rich_3905",
+    "rich_3472",
+    "rich_4079",
+    "rich_3470",
+    "rich_3180",
+    "rich_3130",
+    "rich_3486",
+    "rich_3938",
+    "rich_3061",
+    "rich_3521",
+    "rich_3782",
+    "rich_3296",
+    "rich_3043",
+    "rich_3675",
+    "rich_3953"
+  ],
+  "desviacion": "Conjunto sustituto: las 20 tareas rich rescatadas (ids_rich_provisional.txt; la pasada real 'sesion-unica-a' corrio estas 20 con el modelo real). NO son las 19 mixtas del 9/19 original (irrecuperables); resultados NO comparables tarea a tarea con el 9/19, solo banda de ruido de la condicion en este conjunto."
 }

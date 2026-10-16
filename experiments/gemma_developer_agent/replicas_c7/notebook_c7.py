@@ -130,7 +130,28 @@ if HUELLA != "0f52de0b84cb":
 # ==== CELDA: tareas ====
 # Las 19 tareas del 9/19 original no se recuperan desde el repositorio (tareas_c7.json).
 # El dueño pega aquí los identificadores exactos (o sube tareas_c7.json como entrada y se leen).
-IDS_TAREAS_C7 = []  # <- PEGAR LAS 19, p. ej. ["rich_3894", ...]
+IDS_TAREAS_C7 = [
+    "rich_3894",
+    "rich_3535",
+    "rich_3772",
+    "rich_3278",
+    "rich_4076",
+    "rich_3905",
+    "rich_3472",
+    "rich_4079",
+    "rich_3470",
+    "rich_3180",
+    "rich_3130",
+    "rich_3486",
+    "rich_3938",
+    "rich_3061",
+    "rich_3521",
+    "rich_3782",
+    "rich_3296",
+    "rich_3043",
+    "rich_3675",
+    "rich_3953",
+]  # sustituto fijado 2026-10-16 (ver tareas_c7.json)
 
 import json as _json
 
@@ -143,8 +164,8 @@ if not IDS_TAREAS_C7:
     raise RuntimeError(
         "TAREAS: faltan los identificadores de las 19 tareas; se detiene antes de gastar cuota"
     )
-if len(IDS_TAREAS_C7) != 19:
-    raise RuntimeError(f"TAREAS: se esperan 19 identificadores y hay {len(IDS_TAREAS_C7)}")
+if len(IDS_TAREAS_C7) != 20:
+    raise RuntimeError(f"TAREAS: se esperan 20 identificadores y hay {len(IDS_TAREAS_C7)}")
 
 from swegemma.models import load_tasks
 
