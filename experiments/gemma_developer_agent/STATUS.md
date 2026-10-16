@@ -1,11 +1,19 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~20:00 UTC (sesión de dos vías Kimi Code: paquete de envío nav + preguntas
-del dataset; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
+Actualizado: 2026-10-16 ~15:35 UTC (sesión corta: subida de sub-018 a petición expresa del
+dueño; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
 2026-10-19 es lo esperado).
 
 ## Ahora (estado real)
-- **PAQUETE DE ENVÍO NAV = LISTO PARA QUE EL DUEÑO LO SUBA HOY** (veredicto de gates abajo):
+- **sub-018 (NAV) = ENVIADO** 2026-10-16 15:30:14 UTC, ref **57274153**, estado inicial PENDING
+  (slot diario consumido: «0 submissions remaining today»). El API rechazó el nombre
+  `submission_nav_2026-10-16.zip` (regla de plataforma: «Submission files must be named
+  submission.zip»); se subió copia desde `/tmp/submission.zip`, contenido idéntico
+  (sha256 `648d312c…49682`). Score: pendiente (los envíos previos tardaron horas-días).
+  Registro actualizado en `submissions/registry.json` (status → submitted). Subida hecha
+  por el agente por instrucción expresa del dueño de esta sesión; regla «el agente no
+  sube» queda reemplazada mientras el dueño lo disponga expresamente.
+- **PAQUETE DE ENVÍO NAV** (veredicto de gates al prepararlo):
   - Zip: `data/envios/submission_nav_2026-10-16.zip` (3.932 B), construido por el pipeline
     establecido (`scripts.kaggle_submission pack`), compilado con `adk-submission 0.2.13`
     oficial (en venv desechable `/tmp/venv_pack`, para no tocar `.venv-linux`), validación
