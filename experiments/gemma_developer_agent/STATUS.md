@@ -1,8 +1,8 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~16:30 UTC (sesión: subida de sub-018 + pasada de verificación V1-V5;
-sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
-2026-10-19 es lo esperado).
+Actualizado: 2026-10-16 ~23:55 UTC (sesión de retoma conservadora: inspección local + una consulta
+de solo lectura del estado de sub-018; sin GPU, sin commits). **Bloqueo de cuota GPU sigue vigente**
+(reinicio semanal; el lunes 2026-10-19 es lo esperado).
 
 ## Verified 2026-10-16 (pasada V1–V5, sesión ~16:25 UTC)
 
@@ -42,6 +42,14 @@ sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
   Registro actualizado en `submissions/registry.json` (status → submitted). Subida hecha
   por el agente por instrucción expresa del dueño de esta sesión; regla «el agente no
   sube» queda reemplazada mientras el dueño lo disponga expresamente.
+- **Consulta de estado 2026-10-16 23:54 UTC (solo lectura): sub-018 sigue PENDING**, sin
+  publicScore/privateScore; ~8,4 h transcurridas, dentro del rango histórico (envíos
+  previos tardaron horas-días en puntuar). Registro SIN cambios (correcto: nada que
+  actualizar hasta que haya score). Reanudar con:
+  `.venv-linux/bin/kaggle competitions submissions -c gemma-4-developer-agent | grep 57274153`
+  y, si aparece scored, seguir los pasos 1-5 del protocolo de la sesión 2026-10-16
+  (esquema SubmissionRecord → campos existentes + notes → test focalizado → STATUS;
+  commit solo con autorización explícita).
 - **PAQUETE DE ENVÍO NAV** (veredicto de gates al prepararlo):
   - Zip: `data/envios/submission_nav_2026-10-16.zip` (3.932 B), construido por el pipeline
     establecido (`scripts.kaggle_submission pack`), compilado con `adk-submission 0.2.13`
