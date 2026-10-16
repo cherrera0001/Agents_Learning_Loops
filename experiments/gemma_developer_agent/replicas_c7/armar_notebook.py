@@ -50,7 +50,7 @@ def main() -> int:
     for i, m in enumerate(matches):
         fin = matches[i + 1].start() if i + 1 < len(matches) else len(fuente)
         celdas[m.group(1)] = fuente[m.start() : fin].strip() + "\n"
-    for nombre in ("guardia", "versiones", "kit", "tareas", "servidor", "evaluacion"):
+    for nombre in ("guardia", "instalacion", "versiones", "kit", "tareas", "servidor", "evaluacion"):
         if nombre not in celdas:
             print(f"error: falta la celda {nombre!r} en notebook_c7.py", file=sys.stderr)
             return 2
@@ -61,7 +61,7 @@ def main() -> int:
         print("error: la guarda generada no trae la marca de versiones", file=sys.stderr)
         return 2
     celdas["versiones"] = guarda
-    orden = ["guardia", "versiones", "kit", "tareas", "servidor", "evaluacion"]
+    orden = ["guardia", "instalacion", "versiones", "kit", "tareas", "servidor", "evaluacion"]
     ipynb = {
         "nbformat": 4,
         "nbformat_minor": 5,

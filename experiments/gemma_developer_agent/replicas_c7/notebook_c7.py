@@ -79,6 +79,24 @@ if not any(f.endswith((".safetensors", ".bin")) for f in os.listdir(M)):
     raise RuntimeError("GUARDIA modelo: el directorio no tiene pesos; se detiene antes de gastar cuota")
 print("GUARDIA completa: ruedas, datos (con graphs, embeddings y snapshots) y modelo localizados")
 
+# ==== CELDA: instalacion ====
+import glob
+import subprocess
+import sys
+
+_ruedas = sorted(glob.glob(os.path.join(W, "*.whl")))
+print("INSTALACION ruedas:", len(_ruedas))
+_proceso = subprocess.run(
+    [sys.executable, "-m", "pip", "install", "-q", "--no-index", "--no-cache-dir", *_ruedas],
+    capture_output=True,
+    text=True,
+)
+print("INSTALACION rc:", _proceso.returncode)
+if _proceso.returncode != 0:
+    (WORKING_DIR := Path("/kaggle/working")).mkdir(exist_ok=True)
+    (WORKING_DIR / "instalacion_error.txt").write_text(_proceso.stderr[-4000:], encoding="utf-8")
+    raise RuntimeError("INSTALACION: pip fallo; se detiene antes de gastar cuota")
+
 # ==== CELDA: versiones ====
 # ARMAR_NOTEBOOK_INSERTA_AQUI_LA_GUARDA_DE_VERSIONES
 
