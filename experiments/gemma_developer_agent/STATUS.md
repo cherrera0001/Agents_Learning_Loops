@@ -11,7 +11,11 @@ del dataset; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal;
     oficial (en venv desechable `/tmp/venv_pack`, para no tocar `.venv-linux`), validación
     estricta `verify` = VÁLIDO, registro **sub-018** en `submissions/registry.json`.
   - **SHA-256: `648d312cd5349522f0fdf85ad50477dc3a9845bb0b4d3a9a4bbe4f2107497682`** — sin
-    colisión con los 17 envíos previos (sub-001..017).
+    colisión con los 17 envíos previos (sub-001..017). El directorio de ensamblaje
+    `data/envios/nav_kit/` se ELIMINÓ tras empaquetar (el verificador trata `data/` como
+    referencia y un duplicado del system.md versionado allí es colisión); para reempaquetar:
+    copiar `data/replicas_c7/replica_1/c7_submission` sin `adapters/` + `replicas_c7_nav/
+    kit_nav/prompts/system.md`, comprobar huella `af8cca829561` y repetir `pack`.
   - Kit: los 6 archivos del kit verificado de réplica 1 + `prompts/system.md` de navegación;
     huella de configuración `af8cca829561` recomputada y EXACTA antes de empaquetar. Sin
     `adapters/`, sin archivos de plantilla extra: el zip trae exactamente los 6 archivos.
