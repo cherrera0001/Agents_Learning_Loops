@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-14",
+  "last_updated": "2026-10-16",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -224,6 +224,19 @@
       "public_score": null,
       "kaggle_url": null,
       "notes": "NO ENVIADO: el bundle de sub-015 más un adaptador LoRA nulo (rango 16, alpha 32, q_proj y o_proj en las 60 capas, lora_B en ceros) y una línea más en agent.yaml que lo nombra; 57 384 545 bytes desempacados. Pasa la validación del arnés vigente, que arma la orden de vLLM con --enable-lora y envía el nombre del adaptador como modelo (hallazgo el_arnes_vigente_acepta_un_adaptador_lora). La sonda G2 (2026-10-14, GPU) pasó con tres adaptadores gemelos de este (el de ceros, idéntico en bytes al de este zip, y dos de ruido que nunca se envían): vLLM arrancó con LoRA a 0,80 y lo aplicó, con decodificación 6,5 % más lenta. No medido: que el puntuador acepte este zip (E2, que espera la palabra del dueño). Su notebook de armado público exige exactamente 4 miembros, así que hace falta un notebook propio. El zip no se versiona: solo su huella."
+    },
+    {
+      "submission_id": "sub-018",
+      "date": "2026-10-16",
+      "condition": "NAV",
+      "zip_filename": "submission_nav_2026-10-16.zip",
+      "sha256": "648d312cd5349522f0fdf85ad50477dc3a9845bb0b4d3a9a4bbe4f2107497682",
+      "size_bytes": 3932,
+      "is_exploratory": false,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "Variante navegacion-primero: unico cambio prompts/system.md (procedimiento identificadores->search_similar_code multi-palabra->get_code_neighbors->leer->editar) sobre kit condicion 7; fingerprint de configuracion af8cca829561. Listo para subida por el dueno (instrucciones en STATUS.md)."
     }
   ]
 }

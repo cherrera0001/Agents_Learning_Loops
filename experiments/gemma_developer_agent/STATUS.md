@@ -1,26 +1,69 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~18:00 UTC (sesión de contrato del arnés Kimi Code, sin GPU). **Bloqueo de
-cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado).
+Actualizado: 2026-10-16 ~20:00 UTC (sesión de dos vías Kimi Code: paquete de envío nav + preguntas
+del dataset; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
+2026-10-19 es lo esperado).
 
 ## Ahora (estado real)
+- **PAQUETE DE ENVÍO NAV = LISTO PARA QUE EL DUEÑO LO SUBA HOY** (veredicto de gates abajo):
+  - Zip: `data/envios/submission_nav_2026-10-16.zip` (3.932 B), construido por el pipeline
+    establecido (`scripts.kaggle_submission pack`), compilado con `adk-submission 0.2.13`
+    oficial (en venv desechable `/tmp/venv_pack`, para no tocar `.venv-linux`), validación
+    estricta `verify` = VÁLIDO, registro **sub-018** en `submissions/registry.json`.
+  - **SHA-256: `648d312cd5349522f0fdf85ad50477dc3a9845bb0b4d3a9a4bbe4f2107497682`** — sin
+    colisión con los 17 envíos previos (sub-001..017).
+  - Kit: los 6 archivos del kit verificado de réplica 1 + `prompts/system.md` de navegación;
+    huella de configuración `af8cca829561` recomputada y EXACTA antes de empaquetar. Sin
+    `adapters/`, sin archivos de plantilla extra: el zip trae exactamente los 6 archivos.
+  - **Instrucciones de subida (dueño, Kaggle UI):** (1) abrir
+    https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions → «Submit
+    Predictions»; (2) subir `submission_nav_2026-10-16.zip` (mantener ese nombre); (3) en
+    Description: «Navigation-first instruction variant of condition 7 (reasoning on, 60 tool
+    calls, 4.5 min/task); single change: system instructions (identifier extraction →
+    multi-word search_similar_code → get_code_neighbors → read → edit best candidate).
+    Configuration fingerprint af8cca829561. Method and replication package:
+    https://github.com/cherrera0001/Agents_Learning_Loops»; (4) tras la subida, anotar el
+    submission id y la puntuación en `submissions/registry.json` (sub-018, status →
+    submitted/scored). **El agente NO sube nada: la subida la hace el dueño.**
 - **Réplica 1/3 = COMPLETE**: 4/20 (20,0%), huella OK, validada. Réplicas 2-3 esperando cuota.
-- **Minería de fallos + A1/A3 = CERRADA** (`docs/c7_fallos_r1.md` + addendum): 4/16 parche
-  enviado y evaluado no resuelto; 12/16 sin parche contra el muro de 4,5 min. 0 usos de
-  herramientas de grafo; el cuello es ubicación→edit dentro del presupuesto.
-- **Tres variantes LISTAS, sin correr** (todas preflight 24/24, nada subido):
-  navegación-primero `af8cca829561` (`3c915db`+`c28aca6`); conciencia-de-presupuesto
-  `52ba08ceac25` (`75ff644`); **thinking `9d0db7b946e7`** (`ddfc537`, dos deltas: sampling
-  thinking_budget 1024/include_thoughts false + system.md con hechos de herramientas gratis).
-- **Veredicto candidato «env-packages» (paquetes de prueba en el envío): MUERTO.** El contrato
-  de envío es declarativo-only (HARNESS_README §2.1-2.4): YAML compilado en sandbox cerrado,
-  sin entrypoints Python, extensiones permitidas estrictas (.yaml/.yml/.md/.txt/.py de skills
-  ADK/.json/.safetensors) — **sin ningún gancho de entorno ni de dependencias**; la Phase 2
-  «instala dependencias de prueba cacheadas» es del lado del arnés, en sandbox air-gapped. No
-  existe forma contractual de añadir los 3 paquetes de prueba a un envío: el candidato
-  condición-7+paquetes queda descartado, y con él la motivación del Gate 1 de la Fase 1.5.
-- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`) antes de
-  réplicas 2-3. Recomendado: aplicar — la clase actual no mide nada.
+- **Tres variantes LISTAS, sin correr** (preflight 24/24, nada subido a Kernels):
+  navegación-primero `af8cca829561` (ahora también empaquetada como envío, sub-018);
+  conciencia-de-presupuesto `52ba08ceac25` (`75ff644`); thinking `9d0db7b946e7` (`ddfc537`).
+- **Veredicto candidato «env-packages» (paquetes de prueba en el ENVÍO): MUERTO** (contrato
+  declarativo-only, sin gancho de entorno; HARNESS_README §2.1-2.4). Nuevo matiz del Track C(i):
+  el WHEELHOUSE del dataset oficial (lado datos, no envío) trae typing_inspection y
+  python_multipart pero **no** h11 ni dirty_equals.
+- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`) antes de réplicas
+  2-3. Recomendado: aplicar — la clase actual no mide nada.
+
+## Track C: preguntas del dataset (22 GB, fuera del repo; `data/` cubierto por .gitignore)
+
+**(i) ¿Los 3 paquetes de test del apunte 71→103 están en el wheelhouse? VEREDICTO: palanca
+MUERTA confirmada (2 de 4 candidatos presentes, los 2 test-only ausentes).** El único conjunto
+candidato trazable es el del lock de desviaciones (`docs/desviaciones_entorno_wheels.lock`,
+2026-10-03): typing-inspection 0.4.4, h11 0.16.0, dirty-equals 0.11 (faltantes entonces) +
+python-multipart 0.0.18 (ya presente). Listado de `data/wheels/` (115 ruedas): **typing_inspection
+0.4.4 SÍ**, **python_multipart 0.0.18 SÍ**, **h11 NO**, **dirty_equals NO**. Caveat: el trio
+exacto de la nota 71→103 no se nombra en ningún archivo commiteado; con los candidatos
+trazables, la medición 71→103 no es reproducible desde el wheelhouse mientras falten h11 y
+dirty_equals (starlette ya sube a 0.50.0 — el entorno evolucionó desde el lock).
+
+**(ii) tasks.jsonl: 129 tareas** — repos: fastapi/fastapi 67, Textualize/rich 48, psf/requests 13,
+encode/httpx 1. `hints_text`: presente como campo en las 129 pero **VACÍO en todas** (el arnés
+soporta `{hints}` en instrucciones, HARNESS_README §2.3, pero el dataset público no trae ninguna).
+Mediana de caracteres del enunciado: fastapi 677, rich **146** (confirma el problema de
+enunciados-casi-título del manuscrito), requests 406, httpx 243. Entrada para un mejor conjunto
+de medición que las 20 rich: priorizar enunciados largos y tareas que discriminen (validez
+71/103), y considerar fastapi (mediana 677) si el objetivo es separación agente↔tarea; las 20
+rich actuales miden el peor caso (enunciado corto). Solo informe; no se cambia nada.
+
+## Flags de verificación pendientes
+- **Presupuesto de 12 h de evaluación: FUENTE NO VERIFICADA.** El dato «12 h / ~120 tareas»
+  usado en la §3 del manuscrito (aritmética ~6 min/tarea) procede de la página de reglas, que no
+  fue legible desde aquí (JS/cookies); el HARNESS_README fija los mecanismos por tarea pero no
+  el total. Marcar como UNVERIFIED hasta que el dueño lo lea de las reglas. Mismo estatus para el
+  **límite diario de envíos** y las **horas consumidas** (gates 3-4 de envío). Subir el nav hoy
+  es decisión del dueño con esos datos aún no verificados.
 
 ## Lunes (cuota reiniciada): contraste de CUATRO brazos
 1. Decidir el fix de `clase_fallo` (recomendado: aplicar).
