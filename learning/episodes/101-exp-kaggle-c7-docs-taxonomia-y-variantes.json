@@ -1,0 +1,62 @@
+{
+  "seq": 101,
+  "id": "exp-kaggle-c7-docs-taxonomia-y-variantes",
+  "goal": "Sesión de documentación/papel: integrar en el manuscrito la calibración offline, la réplica verificada de la condición 7 y su taxonomía de fallos con la premisa corregida; cerrar las anomalías A1/A3 de réplica 1; construir la variante conciencia-de-presupuesto sin gastar GPU",
+  "ref": "rama exp/kaggle-c7-replicates + main (merge de exp/offline-calibration)",
+  "steps": [
+    {
+      "action": "merge_branch",
+      "success": true,
+      "note": "exp/offline-calibration (pre-registro f0ee4e0, harness+tests, resultado negativo, episodio 100) mergeada a main en fast-forward sin conflictos; rama conservada"
+    },
+    {
+      "action": "investigate_logs",
+      "success": false,
+      "error": "Hipótesis inicial del propio informe de minería: 'parche vacío por anomalía de extracción del arnés (sospecha: scratch repro.py incluido en el parche)'. Al desempaquetar la rueda swegemma-0.2.11 se comprobó que el parche se colecciona en el submit y lo aplica verify_task (verification.py:470); la pérdida no estaba ahí"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Causa real (A1/A3): clase_fallo() del notebook de réplica lee getattr(res, 'generated_patch', ''), atributo que NO existe en TaskResult (swegemma/models/task.py:154 define agent_patch, línea 162). Todo no-resuelto sin flag de presupuesto caía en sin_parche: la clase nunca distinguió 'sin parche' de 'parche no resuelto'. Las 4 tareas de final normal enviaron parche (submit ok, 465-1248 B) y perdieron en grading; 4/20 no subcuenta parches evaluados"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Addendum en docs/c7_fallos_r1.md con los 4 hechos (submits ok, atributo inexistente, re-clasificación con log de kernel: 13 timeouts / 4 sin-parche confirmadas por el arnés / 4 finales normales, taxonomía corregida 4+12) y fix propuesto para réplicas 2-3 pendiente de decisión del dueño (rompe la identidad estricta del paquete con réplica 1)"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Variante conciencia-de-presupuesto (replicas_c7_presupuesto/): único cambio = sección Budget Awareness en prompts/system.md (tope de exploración 1/3, nunca repetir llamada idéntica, verificar una vez, reintento único ante read con rango ignorado, endgame: submit). Motivada en la minería: 12/16 fallos murieron por el muro de 4,5 min. Huella nueva 52ba08ceac25 (original 0f52de0b84cb), armar verifica prompt byte a byte y monta el kit de huella desde la descarga local sin versionar nada de la competencia; preflight 24/24; nada subido"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "docs/paper/manuscript_en.md: abstract extendido; §4.2 confirma que el 'error' del envío fue de la plataforma Kaggle (0,08/56895202 y 0,13/56916129); nuevas §4.5 (réplica verificada 4/20, sin corte 5.563 s de 9.000, conjunto sustituto declarado), §4.6 (taxonomía corregida con la premisa sin_parche != no parche, 0 usos de búsqueda, cuello ubicación->edit) y §4.7 (calibración offline pre-registrada, negativa); §5/§6/§7 actualizados con fingerprints de variantes y nota post-cut-off. README §7.3 añade el bloque 'Después del corte' y §7.4 resume la calibración"
+    }
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-16",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Kimi Code (agente no Claude; §2.3 de docs/estimation.md)",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Kimi Code",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 0
+  },
+  "lessons": [
+    "Un getattr con default silencioso convirtió toda la taxonomía de fallos de una campaña en ruido: el clasificador leía generated_patch donde el arnés define agent_patch. Antes de teorizar sobre anomalías del pipeline, lee el modelo de datos de la versión exacta que corrió (la rueda local desempaquetada respondió en minutos)",
+    "La hipótesis interesante ('el arnés pierde parches con scratch incluido') era la incorrecta: las 4 tareas enviaron parche y perdieron en grading. Registrar submit_patch con su observación (patch_size, files_changed) en la traza habría acotado el diagnóstico desde el primer día",
+    "Corregir la premisa también corre las cifras que de ella dependen: '9 presupuesto agotado, 3 anomalías de arnés' se convirtió en '4 parche-no-resuelto + 12 sin parche'; la intervención que los datos apoyan cambió de búsqueda a conciencia de presupuesto",
+    "Las variantes de instrucciones se construyen con la misma disciplina que una réplica: un solo cambio trazable en prompts/system.md, huella nueva asertada localmente, preflight verde y nada subido sin cuota; los archivos de plantilla de la competencia no se versionan aunque el verificador actual no los detecte",
+    "Separar commits por destino (docs a main, paquetes de variante a la rama del experimento) mantiene main publicable sin arrastrar paquetes sin correr"
+  ]
+}

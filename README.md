@@ -791,6 +791,20 @@ Fuente de las cinco primeras filas: el manuscrito, [`docs/paper/manuscript_en.md
 límites en el
 [documento de entrada del experimento](experiments/gemma_developer_agent/README.md#1-en-pocas-líneas).
 
+**Después del corte (2026-10-16).** Réplica verificada de la séptima condición (huella `0f52de0b84cb`
+exacta, asertada antes de cargar el modelo): 4 de 20 tareas resueltas en una corrida sin corte de sesión;
+las 19 tareas originales no se recuperaron y el conjunto sustituto (20 rich) se declara como desviación.
+Minería de los 16 fallos con premisa corregida: `sin_parche` ≠ «sin parche» — el clasificador de la réplica
+lee un atributo que no existe (`generated_patch`; el campo del arnés es `agent_patch`); corregido, 4 de 16
+enviaron parche que el verificador rechazó y 12 de 16 chocaron con el muro de 4,5 minutos sin editar (2 con
+ediciones reales nunca enviadas); las herramientas de búsqueda del grafo no se usaron en ninguna de las 16
+y en 13 de 16 el archivo relevante se alcanzó en las 3 primeras llamadas. Diagnóstico del envío caído: el
+estado «error» fue de la plataforma de Kaggle; ambos envíos puntuaron (0,08 y 0,13). Dos variantes de
+instrucciones preparadas y sin correr (navegación-primero `af8cca829561`, conciencia-de-presupuesto
+`52ba08ceac25`). Detalle: [`docs/c7_fallos_r1.md`](experiments/gemma_developer_agent/docs/c7_fallos_r1.md)
+y el manuscrito § 4.5-§ 4.6. [PENDIENTE — lunes: réplicas 2-3 (cuota GPU semanal agotada), corrida de
+variante(s) y fix del clasificador.]
+
 **Qué dice esto del principio de ALL.** Sobre si la memoria ayuda, nada: no se probó. Sobre el proceso, algo
 en contra: el experimento no se condujo con el bucle de ALL.
 
@@ -810,6 +824,25 @@ en contra: el experimento no se condujo con el bucle de ALL.
   [episodio 064](learning/episodes/064-issue-103-estado-medido-y-ciclo-kaggle.json) devuelven las 5; esa
   segunda cifra no prueba nada, porque las lecciones se escribieron conociendo las consultas (el episodio
   cita las tres).
+
+### 7.4 Calibración offline de parámetros de recuperación (pre-registrada, negativa)
+
+La memoria del devlog tiene tres parámetros de recuperación (η_h, α y τ_seed; defaults 0,3 / 0,7 / 0,25).
+Se pre-registró (`f0ee4e0`, antes de implementar y de correr) una calibración offline: reproducir los
+97 episodios de `learning/episodes/`, split temporal (~70 % calibra / ~30 % valida), grid 3×3×3, y
+cambiar los defaults solo si la ganadora reduce la tasa de fallo repetido ≥ 5 pp en validación.
+
+**Resultado: negativo, defaults conservados** (la decisión de cambiarlos, si alguna día se reconsidera,
+es del dueño; este trabajo no tocó la biblioteca). La ganadora por calibración (τ_seed = 0,4; 51,9 % vs
+56,9 % de los defaults) invirtió en validación: 57,3 % (67/117) vs 56,4 % (66/117), Δ = −0,9 pp
+(IC95 bootstrap [−10,7; +9,3]). El grid colapsó a tres comportamientos: con el embedder léxico α es
+exactamente inerte (ambos canales de la siembra computan el mismo coseno, verificado numéricamente),
+η_h no movió la métrica y solo τ_seed importó — con las dos ventanas en desacuerdo (τ = 0,1: peor en
+calibración, mejor en validación). Denominadores por ventana: 160 fallos de causa conocida en
+calibración (46 sin clase, 21,6 %) y 117 en validación (27, 18,8 %). La ventana de calibración hubiera
+coronado una configuración que la de validación rechaza: el split hizo el trabajo que una sola ventana
+no habría hecho. Detalle: [`docs/results/offline-calibration.md`](docs/results/offline-calibration.md)
+(episodio 100; harness `scripts/offline_calibration.py` con 9 tests).
 
 ## 8. Aseguramiento de calidad
 
