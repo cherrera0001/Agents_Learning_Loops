@@ -1,6 +1,30 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 (lote nocturno, sesión Kimi Code).
+Actualizado: 2026-10-16 ~07:15 UTC (lote nocturno, sesión Kimi Code). **PARADO POR CUOTA GPU —
+ver «Ahora» y «Bloqueo».**
+
+## Ahora (estado real al parar)
+- **Réplica 1/3 = COMPLETE** (kernel v6, corrida `c7_20261016T0459Z`): 4/20 resueltas (20,0%),
+  16 `sin_parche`, 0 errores de sesión, `cortado_por: null`, sesión 5.563 s (~93 min). Huella
+  `0f52de0b84cb`, guardas de versiones/sha256 OK. Outputs bajados y validados en
+  `data/replicas_c7/replica_1/` (gitignored). Resumen agregado commiteado en
+  `docs/replicas_c7_progreso.md`.
+- **Réplicas 2 y 3 NO LANZADAS**: push de v7 devolvió
+  `Kernel push error: Maximum weekly GPU quota of 30.00 hours reached.` (cuota semanal de 30 h
+  de la cuenta agotada). Bloqueo duro; no hay workaround legítimo (cambiar de acelerador rompe
+  la comparabilidad con la condición; la cuota es por cuenta/semana). No se reintentó en bucle.
+
+## Siguiente (resume EXACTO para la sesión que reanude, tras el reinicio semanal de cuota GPU)
+1. `cd '/mnt/f/Code/Agents Learning Loops' && git switch exp/kaggle-c7-replicates` (ya estará).
+2. Verificar cuota disponible: ` .venv-linux/bin/kaggle kernels push -p experiments/gemma_developer_agent/replicas_c7 -t 9000 --accelerator NvidiaL4` — si da error de cuota otra vez, parar y esperar.
+3. Ese mismo push crea la versión v7 = **réplica 2/3** (código idéntico, ya commiteado). Poner un poller en background (sleep 240 + `kaggle kernels status -k cs4all/c7-replica-condicion-7` cada 5 min, hasta estado terminal, timeout 14.400 s).
+4. Al COMPLETE: ` .venv-linux/bin/kaggle kernels output -k cs4all/c7-replica-condicion-7 -p experiments/gemma_developer_agent/data/replicas_c7/replica_2 -o -q`; validar `salida__*.json` (20 filas, huella `0f52de0b84cb`, cortado_por null); actualizar `docs/replicas_c7_progreso.md`; commit.
+5. Repetir push v8 = réplica 3 → poller → pull a `replica_3/` → commit.
+6. Con las 3 réplicas: escribir `docs/c7_ruido.md` (formato del repo; (a) resueltas por réplica,
+   (b) flips por tarea = banda de ruido, (c) dónde cae el 9/19 original — declarando que el conjunto
+   es sustituto y no comparable tarea a tarea, (d) denominadores explícitos 20 y 19); commit.
+7. Episodio `learning/episodes/101-exp-kaggle-c7-replicas.json` (learning/README.md; estimate M,
+   outcome real: v1–v6 fallos+fixes, 1 réplica, bloqueo de cuota); commit. STATUS → COMPLETE.
 
 ## Hecho
 - T1 (diagnóstico envío caído): error de plataforma de Kaggle («A system error. Please try
