@@ -55,7 +55,7 @@ def main() -> int:
             print(f"error: falta la celda {nombre!r} en notebook_c7.py", file=sys.stderr)
             return 2
     guarda = kaggle_arnes.celda_de_versiones(
-        "versiones_arnes.json", sha256=kaggle_arnes.RUEDAS_ESPERADAS_SHA256
+        "resultados_c7/versiones_arnes.json", sha256=kaggle_arnes.RUEDAS_ESPERADAS_SHA256
     )
     if MARCA_VERSIONES not in guarda:
         print("error: la guarda generada no trae la marca de versiones", file=sys.stderr)
