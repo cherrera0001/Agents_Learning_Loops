@@ -1,8 +1,37 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~15:35 UTC (sesión corta: subida de sub-018 a petición expresa del
-dueño; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
+Actualizado: 2026-10-16 ~16:30 UTC (sesión: subida de sub-018 + pasada de verificación V1-V5;
+sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
 2026-10-19 es lo esperado).
+
+## Verified 2026-10-16 (pasada V1–V5, sesión ~16:25 UTC)
+
+- **V1 integridad del registro: PASS.** sha256 del zip recalculado =
+  `648d312c…49682` (coincide con registry sub-018). Campos cruzados registry ↔ STATUS.md
+  sin inconsistencias (status submitted, ref 57274153, 2026-10-16 15:30:14 UTC).
+- **V2 estado en vivo: PENDING.** sub-018 (ref 57274153) sigue `SubmissionStatus.PENDING`;
+  ~53 min transcurridos a las 16:23 UTC. Sin score → registro sin cambios por V2.
+- **V3 lunes sin tocar: PASS.** Los 4 armar_notebook corren y los 3 de variantes recomputan
+  huella exacta (nav af8cca829561, presupuesto 52ba08ceac25, thinking 9d0db7b946e7; el brazo A
+  guarda en runtime el kit 0f52de0b84cb y su base 3b0e87556166 está documentada en
+  docs/c7_replicas.md). Preflight 24/24 «Se puede subir» en las 4 carpetas. Set fijo de 20
+  tareas: ids embebidas en los 4 notebooks == `tareas_c7.json` ids_20_rich. Cuota GPU sigue
+  bloqueada (nota de reinicio semanal; sin push de prueba). Coste lunes: 6 corridas × 93 min =
+  9,3 h ≤ 30 h de cuota.
+- **V4 salud del repo: PASS con un fix necesario (hecho, no silencioso).** `ruff format`
+  exigía reformat en las 3 fuentes `notebook_c7_*.py` de variantes (diff cosmético: una línea
+  en blanco y un raise envuelto; strings intactos) → formateadas, notebooks regenerados con
+  armar (huellas re-aseguradas, preflight re-corridas 24/24), y los 3 `.ipynb` generados
+  añadidos a `extend-exclude` de ruff (mismo precedente que el notebook base; `.codex/`
+  excluido también: es local del dueño y no trackeado). Un test del repo
+  (`test_kaggle_registro_215`) fijaba el registry en 17 entradas/2026-10-14: actualizado a
+  18/2026-10-16 con bloque sub-018 en el estilo del archivo; la sesión anterior había añadido
+  a sub-018 tres claves ajenas al esquema (`kaggle_ref`, `submitted_at_utc`,
+  `platform_filename`) — movidas a notes, que es el patrón establecido (sub-008/sub-010).
+  ruff check: 0 errores. ruff format --check: 391 archivos OK. mypy (a pelo): sin issues en
+  15 archivos. devlog rebuild: 97 goals / 2246 conceptos. pytest completo: **3479 passed,
+  5 skipped, 0 failed** (4:27).
+- **V5:** sin submissions, sin pushes a Kernels, sin GPU; main intacto.
 
 ## Ahora (estado real)
 - **sub-018 (NAV) = ENVIADO** 2026-10-16 15:30:14 UTC, ref **57274153**, estado inicial PENDING

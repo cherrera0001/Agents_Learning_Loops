@@ -52,6 +52,12 @@ extend-exclude = [
     # Generado por replicas_c7/armar_notebook.py (su fuente notebook_c7.py sí se lintea; el
     # artefacto se valida con kaggle_preflight antes de subir).
     "experiments/gemma_developer_agent/replicas_c7/notebook_c7.ipynb",
+    # Mismo caso para los notebooks generados de las tres variantes (fuentes notebook_c7_*.py).
+    "experiments/gemma_developer_agent/replicas_c7_nav/notebook_c7_nav.ipynb",
+    "experiments/gemma_developer_agent/replicas_c7_presupuesto/notebook_c7_presupuesto.ipynb",
+    "experiments/gemma_developer_agent/replicas_c7_thinking/notebook_c7_thinking.ipynb",
+    # Directorio local de hooks de Codex; no está trackeado (CI no lo ve) y no es fuente del repo.
+    ".codex",
 ]
 
 [tool.ruff.lint]

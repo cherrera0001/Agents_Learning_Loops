@@ -588,10 +588,10 @@ def test_una_tarea_sin_fin_no_tiene_causa() -> None:
 def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     datos = json.loads(REGISTRO_DE_ENVIOS.read_text(encoding="utf-8"))
     filas = {s["submission_id"]: s for s in datos["submissions"]}
-    assert len(filas) == len(datos["submissions"]) == 17
+    assert len(filas) == len(datos["submissions"]) == 18
     for fila in filas.values():
         SubmissionRecord(**fila)
-    assert datos["last_updated"] == "2026-10-14"
+    assert datos["last_updated"] == "2026-10-16"
 
     # El envío del 12: completo con nota, y la hora de la primera lectura que lo vio así
     leido = filas["sub-008"]
@@ -607,9 +607,16 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "57160374" in enviado["notes"] and "2026-10-14 00:07:20 UTC" in enviado["notes"]
     assert "PENDING" in enviado["notes"] and "lectura, no mejora" in enviado["notes"]
 
-    # Solo esos dos cambian de estado: los demás candidatos del bloque siguen sin enviar
+    # El envío del 16: variante navegación, enviado y pendiente de puntuación
+    nav = filas["sub-018"]
+    assert (nav["status"], nav["public_score"], nav["date"]) == ("submitted", None, "2026-10-16")
+    assert nav["sha256"].startswith("648d312c") and nav["condition"] == "NAV"
+    assert "57274153" in nav["notes"] and "2026-10-16 15:30:14 UTC" in nav["notes"]
+    assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
+
+    # Los cambios de estado quedan en los tres enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
-    assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010"]
+    assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010", "sub-018"]
     assert [k for k, v in estados.items() if v == "prepared"] == [
         "sub-001",
         "sub-004",

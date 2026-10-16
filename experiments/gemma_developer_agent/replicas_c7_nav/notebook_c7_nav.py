@@ -198,7 +198,6 @@ _SYSTEM_NAV = 'You are an expert autonomous software engineer assigned to resolv
 (AGENT_DIR / "prompts" / "system.md").write_text(_SYSTEM_NAV, encoding="utf-8")
 
 
-
 def huella_config(directorio):
     """Fingerprint del manuscrito §«Data availability»: SHA-256 de los base64 de los archivos,
     ordenados como cadenas y concatenados sin nombres ni separadores, 12 hex."""
@@ -216,7 +215,9 @@ print(
     "(variante navegacion: af8cca829561; condicion 7: 0f52de0b84cb)",
 )
 if HUELLA != "af8cca829561":
-    raise RuntimeError("GUARDIA configuracion: no reproduce la variante navegacion af8cca829561; se detiene antes de gastar cuota")
+    raise RuntimeError(
+        "GUARDIA configuracion: no reproduce la variante navegacion af8cca829561; se detiene antes de gastar cuota"
+    )
 
 # ==== CELDA: tareas ====
 # Las 19 tareas del 9/19 original no se recuperan desde el repositorio (tareas_c7.json).

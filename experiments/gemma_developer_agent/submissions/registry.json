@@ -235,10 +235,7 @@
       "is_exploratory": false,
       "status": "submitted",
       "public_score": null,
-      "kaggle_url": "https://www.kaggle.com/competitions/gemma-4-developer-agent/submissions?sortBy=date&group=all&page=1",
-      "kaggle_ref": "57274153",
-      "submitted_at_utc": "2026-10-16T15:30:14Z",
-      "platform_filename": "submission.zip",
+      "kaggle_url": null,
       "notes": "Variante navegacion-primero: unico cambio prompts/system.md (procedimiento identificadores->search_similar_code multi-palabra->get_code_neighbors->leer->editar) sobre kit condicion 7; fingerprint de configuracion af8cca829561. ENVIADO 2026-10-16 15:30:14 UTC (ref 57274153, estado inicial PENDING) por decision expresa del dueno; la plataforma exige el nombre submission.zip, asi que se subio una copia desde /tmp con ese nombre (contenido identico, mismo sha256). Slot diario consumido ('0 submissions remaining today'). Score pendiente."
     }
   ]

@@ -180,7 +180,7 @@ for _f in ("agent.yaml", "sub_agents/code_analyzer.yaml"):
     "evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 60\n  max_time_minutes: 4.5\n  max_turns: 100\n",
     encoding="utf-8",
 )
-_SAMPLING_THINK = 'temperature: 0.2\ntop_p: 0.95\nmax_output_tokens: 8192\nthinking_config:\n  thinking_budget: 1024\n  include_thoughts: false\n'
+_SAMPLING_THINK = "temperature: 0.2\ntop_p: 0.95\nmax_output_tokens: 8192\nthinking_config:\n  thinking_budget: 1024\n  include_thoughts: false\n"
 
 
 (AGENT_DIR / "configs" / "sampling.yaml").write_text(_SAMPLING_THINK, encoding="utf-8")
@@ -211,7 +211,9 @@ print(
     "(variante thinking: 9d0db7b946e7; condicion 7: 0f52de0b84cb)",
 )
 if HUELLA != "9d0db7b946e7":
-    raise RuntimeError("GUARDIA configuracion: no reproduce la variante thinking 9d0db7b946e7; se detiene antes de gastar cuota")
+    raise RuntimeError(
+        "GUARDIA configuracion: no reproduce la variante thinking 9d0db7b946e7; se detiene antes de gastar cuota"
+    )
 
 # ==== CELDA: tareas ====
 # Las 19 tareas del 9/19 original no se recuperan desde el repositorio (tareas_c7.json).
