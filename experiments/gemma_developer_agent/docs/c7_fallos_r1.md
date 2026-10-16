@@ -97,3 +97,41 @@ Leyenda — Relev.: «sí» = alcanzó archivo(es) relevantes; Fin: presupuesto 
 - **A3.** `clase_fallo` binario en esta campaña: no distingue «sin parche», «parche sin submit» y
   «parche no resuelto»; para el informe de ruido convendría re-clasificar las réplicas 2-3 con el
   log de kernel, no con la agregación.
+
+## Addendum (2026-10-16): A1/A3 resueltas — el «parche vacío» era un atributo mal leído, no una pérdida
+
+Investigación offline sobre la traza + el código del arnés 0.2.11 (rueda desempaquetada localmente,
+`swegemma/models/task.py` y `swegemma/evaluate.py`). Cuatro hechos:
+
+1. **Las 4 tareas de final normal enviaron parche y el arnés lo aceptó.** `submit_patch` devolvió
+   `status: ok` con patch_size y files_changed: rich_3535 (465 B, 1 archivo), rich_3130
+   (1.248 B, 2 — `markdown.py` + un `repro.py` scratch en la raíz), rich_3296 (504 B, 1),
+   rich_3675 (723 B, 1). El parche se colecciona en el submit y lo aplica `verify_task`
+   (`swegemma/harness/verification.py:470`); no hay evidencia de fallo de extracción.
+2. **`clase_fallo` lee un atributo que no existe.** `TaskResult` (`swegemma/models/task.py:154`)
+   define `agent_patch` (línea 162); no existe `generated_patch`. El `clase_fallo()` de
+   `replicas_c7/notebook_c7.py:459` hace `getattr(res, "generated_patch", "")` → siempre `''` →
+   toda tarea no resuelta sin flag de presupuesto cae en `sin_parche`. **El agregado de clases de
+   esta campaña no distingue «sin parche» de «parche enviado no resuelto»** (tampoco pudo emitir
+   `pruebas_fallan` nunca). Es un bug de nuestro notebook de réplica, no del arnés. A1 se
+   re-diagnostica: anomalía de medición local, no de pipeline de parche.
+3. **Re-clasificación con el log de kernel (A3):** 13 tareas con «agent timed out» (incluida
+   rich_3043, que resolvió pese al aviso — el submit fue anterior al timeout); 4 con
+   «completed without explicit submit_patch call and no working tree modifications»
+   (rich_3472, rich_3180, rich_3521, rich_3782 → sin parche confirmado por el propio arnés);
+   4 finales normales con submit ok (las del punto 1).
+4. **Taxonomía corregida de las 16:** 4 «parche enviado y evaluado, no resuelto»
+   (3535, 3130, 3296, 3675); 12 sin parche, todas contra el muro de 4,5 min: 10 sin editar
+   (una en bucle: 3521; una que nunca llegó al archivo: 4076) y 2 con ediciones reales en el
+   árbol nunca enviadas (3772 —se puso a revertir el fix ya verificado—; 3953 —deliberando sobre
+   tests existentes—).
+
+**¿Subcuenta 4/20?** No en parches evaluados: los 4 parches se evaluaron y perdieron. Sí en la
+etiqueta: 16 `sin_parche` ≠ 16 «sin parche». Si alguno de los 4 «merecía» resolverse no es
+determinable offline (los parches no se guardan, por la frontera de datos; haría falta re-correr
+con captura de parche o recibos con hash).
+
+**Fix propuesto para réplicas 2-3 (decisión del dueño):** leer `res.agent_patch` en `clase_fallo`
+y añadir `clase = "parche_no_resuelto"` cuando haya parche sin resolución, registrando también
+`res.error`. No cambia la huella (es código del notebook, no del kit) pero rompe la identidad
+estricta del paquete de réplica con la réplica 1; por eso queda pendiente y no aplicado.
