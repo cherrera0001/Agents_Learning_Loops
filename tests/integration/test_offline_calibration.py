@@ -163,6 +163,33 @@ def test_select_best_uses_calibration_window() -> None:
         oc.select_best([{**configs[0], "windows": {"validation": {}}}])
 
 
+def test_compare_counts_only_discordant_mcnemar_pairs() -> None:
+    def row(seq: int, step: int, repeated_default: bool, repeated_best: bool) -> list[dict[str, Any]]:
+        base = {
+            "seq": seq,
+            "step": step,
+            "action": "edit_module",
+            "class": "Entorno",
+            "hit_visible": False,
+            "window": "validation",
+        }
+        d = {**base, "known": True, "repeated": repeated_default}
+        w = {**base, "known": True, "repeated": repeated_best}
+        return [d, w]
+
+    rows_d, rows_w = [], []
+    for pair in [(True, True), (True, False), (False, True), (False, False)]:
+        d, w = row(len(rows_d) + 1, 0, *pair)
+        rows_d.append(d)
+        rows_w.append(w)
+    result = oc.compare(rows_d, rows_w, resamples=100, seed=1)
+    assert result["paired_known_cause_failures"] == 4
+    assert result["default_repeated"] == 2
+    assert result["calibrated_repeated"] == 2
+    assert result["mcnemar"] == {"repeated_only_default": 1, "repeated_only_calibrated": 1}
+    assert result["delta_pp"] == 0.0
+
+
 def test_decide_applies_the_preregistered_threshold() -> None:
     assert oc.decide(5.0) is True
     assert oc.decide(4.9) is False

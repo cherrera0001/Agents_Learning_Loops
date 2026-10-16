@@ -209,10 +209,13 @@ def compare(
 ) -> dict[str, Any]:
     """Diferencia pareada (default − ganadora) en puntos porcentuales sobre validación, con IC bootstrap."""
     paired = _paired_validation_rows(default_rows, best_rows)
-    b = sum(1 for d, _ in paired if d["repeated"])
-    c = sum(1 for _, w in paired if w["repeated"])
-    default_rate = b / len(paired) if paired else None
-    best_rate = c / len(paired) if paired else None
+    default_repeated = sum(1 for d, _ in paired if d["repeated"])
+    calibrated_repeated = sum(1 for _, w in paired if w["repeated"])
+    # Discordantes de McNemar: repetido bajo una sola de las dos configs.
+    b = sum(1 for d, w in paired if d["repeated"] and not w["repeated"])
+    c = sum(1 for d, w in paired if w["repeated"] and not d["repeated"])
+    default_rate = default_repeated / len(paired) if paired else None
+    best_rate = calibrated_repeated / len(paired) if paired else None
     delta_pp = None if default_rate is None or best_rate is None else (default_rate - best_rate) * 100
     rng = random.Random(seed)
     deltas: list[float] = []
@@ -236,8 +239,8 @@ def compare(
         ci = [lo, hi]
     return {
         "paired_known_cause_failures": len(paired),
-        "default_repeated": b,
-        "calibrated_repeated": c,
+        "default_repeated": default_repeated,
+        "calibrated_repeated": calibrated_repeated,
         "default_rate": default_rate,
         "calibrated_rate": best_rate,
         "delta_pp": delta_pp,
