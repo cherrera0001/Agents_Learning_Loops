@@ -1,18 +1,34 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~07:15 UTC (lote nocturno, sesión Kimi Code). **PARADO POR CUOTA GPU —
-ver «Ahora» y «Bloqueo».**
+Actualizado: 2026-10-16 ~14:30 UTC (sesión matutina Kimi Code, sin GPU). **Bloqueo de cuota GPU
+sigue vigente** (reinicio semanal; fecha exacta por confirmar — el lunes 2026-10-19 es lo esperado).
 
-## Ahora (estado real al parar)
-- **Réplica 1/3 = COMPLETE** (kernel v6, corrida `c7_20261016T0459Z`): 4/20 resueltas (20,0%),
-  16 `sin_parche`, 0 errores de sesión, `cortado_por: null`, sesión 5.563 s (~93 min). Huella
-  `0f52de0b84cb`, guardas de versiones/sha256 OK. Outputs bajados y validados en
-  `data/replicas_c7/replica_1/` (gitignored). Resumen agregado commiteado en
-  `docs/replicas_c7_progreso.md`.
-- **Réplicas 2 y 3 NO LANZADAS**: push de v7 devolvió
-  `Kernel push error: Maximum weekly GPU quota of 30.00 hours reached.` (cuota semanal de 30 h
-  de la cuenta agotada). Bloqueo duro; no hay workaround legítimo (cambiar de acelerador rompe
-  la comparabilidad con la condición; la cuota es por cuenta/semana). No se reintentó en bucle.
+## Ahora (estado real)
+- **Réplica 1/3 = COMPLETE**: 4/20 (20,0%), huella OK, validada. Réplicas 2-3 esperando cuota.
+- **Minería de fallos de réplica 1 (offline) = hecha**: `docs/c7_fallos_r1.md` (commit 1bfe833).
+  Corrección de premisa: `sin_parche` ≠ no parche (5/16 con parche real; 2 enviados no resueltos,
+  2 parche vacío por anomalía de extracción, 1 revertido por tiempo). Conteos: 9 presupuesto
+  agotado, 3 anomalía de arnés, 2 llegó-no-editó, 1 bucle, 1 no-llegó-a-relevante. Transversal:
+  0 usos de herramientas de grafo en 16 tareas; el cuello es convertir ubicación→edit dentro del
+  presupuesto de 270 s, no la búsqueda. Anomalías A1-A3 documentadas para investigar antes de
+  gastar cuota.
+- **Variante navegación-primero = LISTA, sin correr** (WIP, commit 3c915db): `replicas_c7_nav/`,
+  único cambio = `prompts/system.md` con el procedimiento; huella nueva `af8cca829561`
+  (original `0f52de0b84cb`); `armar_notebook_nav.py` verifica prompt byte a byte y recomputa la
+  huella antes de escribir; preflight 24/24. Kernel previsto `cs4all/c7-navegacion-condicion-7`.
+  **No se ha subido ni corrido nada.**
+
+## Lunes (cuota reiniciada), en orden
+1. Réplicas 2 y 3 de la condición 7 (push v7/v8 de `replicas_c7/`, poller, pull a
+   `replica_2/`,`replica_3/`, commits) — resume exacto abajo en «Siguiente».
+2. **Contraste A vs navegación sobre las mismas 20 tareas**: 1 corrida de `replicas_c7_nav/`
+   (huella `af8cca829561`) contra la réplica 1. Antes de lanzarla, leer `docs/c7_fallos_r1.md`
+   §Lectura: los datos de réplica 1 sugieren que el cuello es tiempo/razonamiento y anomalías de
+   parche, no búsqueda; si el dueño quiere una hipótesis con más masa, candidato alternativo =
+   intervención de conciencia de presupuesto. Decisión del dueño.
+3. Investigar anomalías A1 (`generated_patch` vacío tras submit; sospecha: scratch `repro.py` en
+   el parche) y A3 (re-clasificar réplicas 2-3 con el log de kernel, la agregación es binaria).
+4. Con 3 réplicas: `docs/c7_ruido.md` + episodio 101 + STATUS COMPLETE.
 
 ## Siguiente (resume EXACTO para la sesión que reanude, tras el reinicio semanal de cuota GPU)
 1. `cd '/mnt/f/Code/Agents Learning Loops' && git switch exp/kaggle-c7-replicates` (ya estará).
