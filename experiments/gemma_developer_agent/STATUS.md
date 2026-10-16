@@ -1,34 +1,41 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~16:00 UTC (sesión de documentación Kimi Code, sin GPU). **Bloqueo de
+Actualizado: 2026-10-16 ~18:00 UTC (sesión de contrato del arnés Kimi Code, sin GPU). **Bloqueo de
 cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado).
 
 ## Ahora (estado real)
 - **Réplica 1/3 = COMPLETE**: 4/20 (20,0%), huella OK, validada. Réplicas 2-3 esperando cuota.
-- **Minería de fallos + A1/A3 = CERRADA** (`docs/c7_fallos_r1.md` + addendum, commits 1bfe833 y
-  9d826c5): el «parche vacío» era `clase_fallo` leyendo `generated_patch`, atributo que no existe
-  (`TaskResult.agent_patch` es el campo; `swegemma/models/task.py:162`). Taxonomía corregida:
-  4/16 parche enviado y evaluado no resuelto; 12/16 sin parche contra el muro de 4,5 min (10 sin
-  editar, 2 con ediciones nunca enviadas). 4/20 **no subcuenta** parches evaluados. Transversal:
-  0 usos de herramientas de grafo; el cuello es ubicación→edit dentro del presupuesto.
-- **Variante navegación-primero = LISTA** (WIP `3c915db`+`c28aca6`): huella `af8cca829561`.
-- **Variante conciencia-de-presupuesto = LISTA** (WIP `75ff644`): huella `52ba08ceac25`; reglas
-  motivadas en la minería (tope exploración 1/3, no repetir llamadas, verificar una vez, endgame
-  submit). Ambas: preflight 24/24, **nada subido ni corrido**.
-- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`, añadir clase
-  `parche_no_resuelto`) antes de réplicas 2-3. No cambia la huella; rompe la identidad estricta
-  del paquete con réplica 1. Documentado en el addendum.
+- **Minería de fallos + A1/A3 = CERRADA** (`docs/c7_fallos_r1.md` + addendum): 4/16 parche
+  enviado y evaluado no resuelto; 12/16 sin parche contra el muro de 4,5 min. 0 usos de
+  herramientas de grafo; el cuello es ubicación→edit dentro del presupuesto.
+- **Tres variantes LISTAS, sin correr** (todas preflight 24/24, nada subido):
+  navegación-primero `af8cca829561` (`3c915db`+`c28aca6`); conciencia-de-presupuesto
+  `52ba08ceac25` (`75ff644`); **thinking `9d0db7b946e7`** (`ddfc537`, dos deltas: sampling
+  thinking_budget 1024/include_thoughts false + system.md con hechos de herramientas gratis).
+- **Veredicto candidato «env-packages» (paquetes de prueba en el envío): MUERTO.** El contrato
+  de envío es declarativo-only (HARNESS_README §2.1-2.4): YAML compilado en sandbox cerrado,
+  sin entrypoints Python, extensiones permitidas estrictas (.yaml/.yml/.md/.txt/.py de skills
+  ADK/.json/.safetensors) — **sin ningún gancho de entorno ni de dependencias**; la Phase 2
+  «instala dependencias de prueba cacheadas» es del lado del arnés, en sandbox air-gapped. No
+  existe forma contractual de añadir los 3 paquetes de prueba a un envío: el candidato
+  condición-7+paquetes queda descartado, y con él la motivación del Gate 1 de la Fase 1.5.
+- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`) antes de
+  réplicas 2-3. Recomendado: aplicar — la clase actual no mide nada.
 
-## Lunes (cuota reiniciada), en orden
-1. Decidir el fix de `clase_fallo` (recomendado: aplicar — la clase actual no mide nada).
-2. Réplicas 2 y 3 de la condición 7 (push v7/v8 de `replicas_c7/`, poller, pull a
-   `replica_2/`,`replica_3/`, commits) — resume exacto abajo en «Siguiente».
-3. **Contraste sobre las mismas 20 tareas**: condición 7 (`replicas_c7/`) vs navegación-primero
-   (`af8cca829561`) vs presupuesto (`52ba08ceac25`). La minería sugiere que presupuesto ataca el
-   cuello medido (12/16 muro de tiempo); navegación ataca 1-2/16. Correr de una o dos variantes
-   es decisión del dueño y su presupuesto de cuota (~1,5-2,5 h por corrida L4×4).
-4. Con 3 réplicas: `docs/c7_ruido.md` + episodio devlog + STATUS COMPLETE.
-4. Con 3 réplicas: `docs/c7_ruido.md` + episodio 101 + STATUS COMPLETE.
+## Lunes (cuota reiniciada): contraste de CUATRO brazos
+1. Decidir el fix de `clase_fallo` (recomendado: aplicar).
+2. Réplicas 2 y 3 de la condición 7 (brazo A; push v7/v8 de `replicas_c7/`, poller, pull,
+   commits) → miden la **banda de ruido**.
+3. Un run de cada variante sobre las mismas 20 tareas: navegación (`af8cca829561`), presupuesto
+   (`52ba08ceac25`), thinking (`9d0db7b946e7`).
+4. **Coste estimado: 4 brazos × 1 run × 20 tareas ≈ 6,5 h de GPU en total** (≈1,5-1,7 h por
+   corrida con carga de modelo ~6-19 min + 20 × 4,5 min + márgenes), dentro de los 30 h
+   semanales con margen para reintentos.
+5. **Regla de decisión (fijada antes de correr)**: cualquier brazo que supere a A en más de la
+   banda de ruido (medida en las réplicas 2-3; si la banda resulta ≥3 tareas, ninguna
+   decisión) pasa a ser **candidato de envío para la semana siguiente**, sujeto a las gates de
+   envío vigentes (reglas del concurso, horas consumidas del presupuesto de 12 h, límite diario).
+6. Con todo: `docs/c7_ruido.md` + informe del contraste + episodio devlog + STATUS COMPLETE.
 
 ## Siguiente (resume EXACTO para la sesión que reanude, tras el reinicio semanal de cuota GPU)
 1. `cd '/mnt/f/Code/Agents Learning Loops' && git switch exp/kaggle-c7-replicates` (ya estará).
