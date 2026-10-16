@@ -163,10 +163,8 @@ shutil.copytree(KIT_ORIGEN, AGENT_DIR)
 shutil.rmtree(AGENT_DIR / "adapters", ignore_errors=True)
 for _f in ("agent.yaml", "sub_agents/code_analyzer.yaml"):
     _p = AGENT_DIR / _f
-    _p.write_text(
-        "".join(l for l in _p.read_text(encoding="utf-8").splitlines(keepends=True) if not l.startswith("adapter:")),
-        encoding="utf-8",
-    )
+    _lineas = _p.read_text(encoding="utf-8").splitlines(keepends=True)
+    _p.write_text("".join(l for l in _lineas if not l.startswith("adapter:")), encoding="utf-8")
 
 # La condición 7 son exactamente tres valores distintos del kit original (registry.json,
 # sub-005): eval_config.yaml (60 llamadas, 4,5 min) e include_thoughts: true en el muestreo.
