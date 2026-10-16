@@ -16,8 +16,8 @@ las 20 tareas, topes, cortes de seguridad— es byte a byte el de la condición 
 | Archivo | Rol |
 |---|---|
 | `notebook_c7_nav.py` | Guion del notebook (fuente de verdad). Copia de `replicas_c7/notebook_c7.py`: la celda «kit» además sobrescribe `prompts/system.md` con `_SYSTEM_NAV` y la guarda exige la huella nueva. |
-| `armar_notebook_nav.py` | Genera `notebook_c7_nav.ipynb` + `kernel-metadata.json`. Antes escribe nada, verifica que `_SYSTEM_NAV` == `kit_nav/prompts/system.md` (byte a byte) y que la huella recomputada sobre `kit_nav/` == `HUELLA_NAV`. Sale 2 si no. |
-| `kit_nav/` | Copia del kit verificado de réplica 1 (los 6 archivos, sin `adapters/`) con el `system.md` de navegación. Es sobre lo que se calcula la huella local. |
+| `armar_notebook_nav.py` | Genera `notebook_c7_nav.ipynb` + `kernel-metadata.json`. Antes escribe nada, verifica que `_SYSTEM_NAV` == `kit_nav/prompts/system.md` (byte a byte), monta el kit de referencia desde la descarga local de réplica 1 (gitignored) sin `adapters/` con el `system.md` de navegación, y exige que la huella recomputada == `HUELLA_NAV`. Sale 2 si no. |
+| `kit_nav/prompts/system.md` | Único archivo del kit que se versiona: el bloque de instrucciones con el procedimiento de navegación (texto nuestro). Los otros 5 archivos del kit no se versionan —los tres de plantilla son contenido de la competencia, y `eval_config.yaml`/`sampling.yaml` ya van como literales en la celda «kit»—; en Kaggle el kit se reconstruye desde `sample_submission` igual que en la condición 7. |
 | `huella_nav.txt` | Registro: huella original ↔ huella variante. |
 
 ## Estado

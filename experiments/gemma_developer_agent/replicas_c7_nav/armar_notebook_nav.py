@@ -4,9 +4,16 @@ Igual que ``replicas_c7/armar_notebook.py`` (del que es copia) con tres adicione
 
 1. Lee el guion ``notebook_c7_nav.py`` y escribe ``notebook_c7_nav.ipynb`` + ``kernel-metadata.json``.
 2. Antes de armar, verifica que el literal ``_SYSTEM_NAV`` del guion sea idéntico byte a byte a
-   ``kit_nav/prompts/system.md`` (única fuente de verdad del bloque de instrucciones).
-3. Recomputa la huella de configuración sobre ``kit_nav/`` con la fórmula del manuscrito y exige
-   que coincida con ``HUELLA_NAV``. Si algo difiere, sale 2 sin escribir nada.
+   ``kit_nav/prompts/system.md`` (única pieza del kit que se versiona: es texto nuestro).
+3. Recomputa la huella de configuración con la fórmula del manuscrito sobre un kit de referencia
+   que se monta al vuelo: la descarga local de réplica 1 (gitignored, proveniencia verificada)
+   sin ``adapters/``, con ``prompts/system.md`` sustituido por el de navegación. Exige que
+   coincida con ``HUELLA_NAV``. Si algo difiere, sale 2 sin escribir nada.
+
+Los otros 5 archivos del kit (agent.yaml, analyzer.md, code_analyzer.yaml, eval_config.yaml,
+sampling.yaml) NO se versionan: los tres primeros son plantilla de la competencia y los dos
+últimos ya van como literales en la celda «kit» del notebook; en Kaggle el kit se reconstruye
+desde sample_submission igual que en la condición 7.
 
 Salida 0; 2 si falta un marcador, si el prompt difiere o si la huella no cuadra.
 """
@@ -18,7 +25,9 @@ import base64
 import hashlib
 import json
 import re
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 from scripts import kaggle_arnes
@@ -27,6 +36,7 @@ AQUI = Path(__file__).resolve().parent
 MARCADOR = re.compile(r"^# ==== CELDA: (\w+) ====$", re.M)
 MARCA_VERSIONES = "# Versiones del arnes (#195)"
 HUELLA_NAV = "af8cca829561"
+FUENTE_KIT = AQUI.parent / "data/replicas_c7/replica_1/c7_submission"
 
 KERNEL_METADATA = {
     "id": "cs4all/c7-navegacion-condicion-7",
@@ -58,6 +68,20 @@ def huella_config(directorio: Path) -> str:
     return hashlib.sha256("".join(sorted(partes)).encode()).hexdigest()[:12]
 
 
+def kit_para_huella(prompt_nav: str) -> Path:
+    """Monta el kit de referencia: descarga de réplica 1 sin adapters + system.md de navegación."""
+    if not FUENTE_KIT.exists():
+        raise FileNotFoundError(
+            f"no se encuentra {FUENTE_KIT}; se necesita la descarga local de réplica 1 "
+            "(gitignored) para recomputar la huella sin versionar contenido de la competencia"
+        )
+    tmp = Path(tempfile.mkdtemp(prefix="kit_nav_huella_")) / "kit"
+    shutil.copytree(FUENTE_KIT, tmp)
+    shutil.rmtree(tmp / "adapters", ignore_errors=True)
+    (tmp / "prompts/system.md").write_text(prompt_nav, encoding="utf-8")
+    return tmp
+
+
 def literal_system_nav(fuente: str) -> str:
     arbol = ast.parse(fuente)
     for nodo in ast.walk(arbol):
@@ -74,9 +98,13 @@ def main() -> int:
     if literal_system_nav(guion) != prompt_archivo:
         print("error: _SYSTEM_NAV del guion != kit_nav/prompts/system.md", file=sys.stderr)
         return 2
-    huella = huella_config(AQUI / "kit_nav")
+    try:
+        huella = huella_config(kit_para_huella(prompt_archivo))
+    except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     if huella != HUELLA_NAV:
-        print(f"error: huella de kit_nav = {huella}, se esperaba {HUELLA_NAV}", file=sys.stderr)
+        print(f"error: huella del kit de referencia = {huella}, se esperaba {HUELLA_NAV}", file=sys.stderr)
         return 2
 
     celdas: dict[str, str] = {}
