@@ -80,22 +80,68 @@ if not any(f.endswith((".safetensors", ".bin")) for f in os.listdir(M)):
 print("GUARDIA completa: ruedas, datos (con graphs, embeddings y snapshots) y modelo localizados")
 
 # ==== CELDA: instalacion ====
+import contextlib
 import glob
+import importlib
+import os
 import subprocess
 import sys
 
-_ruedas = sorted(glob.glob(os.path.join(W, "*.whl")))
-print("INSTALACION ruedas:", len(_ruedas))
+# Entorno offline de vLLM/LiteLLM (patron de las sesiones rescatadas).
+os.environ["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+os.environ["TRANSFORMERS_NO_TF"] = "1"
+os.environ["VLLM_WORKER_MULTIPROC_METHOD"] = "spawn"
+os.environ["VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS"] = "1"
+os.environ["VLLM_ENGINE_READY_TIMEOUT_S"] = "1200"
+os.environ["VLLM_NO_USAGE_STATS"] = "1"
+os.environ["OTEL_SDK_DISABLED"] = "true"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
+WHEELHOUSE_DIR = Path(W)
+
+# Quitar hooks .pth de cutlass rotos si existen.
+for pth_pattern in (
+    "/usr/local/lib/python*/dist-packages/*cutlass*.pth",
+    "/usr/local/lib/python*/site-packages/*cutlass*.pth",
+):
+    for pth in glob.glob(pth_pattern):
+        with contextlib.suppress(OSError):
+            os.unlink(pth)
+
+# Restaurar nombres PEP 440 '+cu128' que las subidas de Kaggle pelan.
+tmp_whl = Path("/tmp/wheelhouse")
+tmp_whl.mkdir(parents=True, exist_ok=True)
+for w in WHEELHOUSE_DIR.glob("*.whl"):
+    if "cutlass" in w.name.lower():
+        continue
+    target_name = w.name.replace("cu128", "+cu128") if ("cu128" in w.name and "+" not in w.name) else w.name
+    target = tmp_whl / target_name
+    if not target.exists():
+        os.symlink(w, target)
+
+wheels = sorted(str(w) for w in tmp_whl.glob("*.whl"))
+print("INSTALACION ruedas:", len(wheels))
 _proceso = subprocess.run(
-    [sys.executable, "-m", "pip", "install", "-q", "--no-index", "--no-cache-dir", *_ruedas],
+    [sys.executable, "-m", "pip", "install", "-q", "--no-deps", "--force-reinstall", *wheels],
     capture_output=True,
     text=True,
 )
-print("INSTALACION rc:", _proceso.returncode)
 if _proceso.returncode != 0:
-    (WORKING_DIR := Path("/kaggle/working")).mkdir(exist_ok=True)
-    (WORKING_DIR / "instalacion_error.txt").write_text(_proceso.stderr[-4000:], encoding="utf-8")
+    Path("/kaggle/working").mkdir(exist_ok=True)
+    Path("/kaggle/working/instalacion_error.txt").write_text(_proceso.stderr[-4000:], encoding="utf-8")
     raise RuntimeError("INSTALACION: pip fallo; se detiene antes de gastar cuota")
+importlib.invalidate_caches()
+
+_fallidas = []
+for _rueda in sorted(f for f in os.listdir(W) if f.endswith(".whl")):
+    _nombre = _rueda.split("-")[0]
+    try:
+        importlib.metadata.version(_nombre)
+    except importlib.metadata.PackageNotFoundError:
+        _fallidas.append(_nombre)
+print("INSTALACION comprobacion:", "todas instaladas" if not _fallidas else f"faltan {_fallidas}")
+if _fallidas:
+    raise RuntimeError(f"INSTALACION: {_fallidas} no quedaron instaladas; se detiene antes de la GPU")
 
 # ==== CELDA: versiones ====
 # ARMAR_NOTEBOOK_INSERTA_AQUI_LA_GUARDA_DE_VERSIONES
