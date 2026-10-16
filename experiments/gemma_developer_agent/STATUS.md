@@ -12,6 +12,10 @@ Actualizado: 2026-10-16 (lote nocturno, sesión Kimi Code).
 - Verificador de datos: **0 colisiones** de contenido. INCOMPLETO solo por 4 `.safetensors` de
   `data/` propiedad de root con `rw-------` sobre /mnt/f (drvfs no aplica chmod; sudo -n tampoco
   cambia perms en drvfs). Sin impacto en los archivos versionados.
+- Reejecución de `verify_no_competition_data.py` en Windows con red/API Kaggle deshabilitada:
+  manifiesto 8 hashes + datos locales 6.617 hashes; 47 archivos versionados, 0 colisiones por
+  ruta/nombre y 0 por SHA-256; `[VERIFICADO]`. No se reutilizó el token expuesto. Esta corrida local
+  completa no sustituye una comprobación por nombres de la API.
 - Conjunto de 19 tareas original: irrecuperable (evidencia en replicas_c7/tareas_c7.json).
 
 ## Ahora
@@ -26,6 +30,11 @@ Si la sesión se interrumpe: leer este archivo; continuar en el paso «Ahora». 
 corrida se anota abajo en cuanto exista.
 
 ## Corridas lanzadas
+- v1 ERROR: makedirs('') en guarda de versiones. v2 ERROR: sin celda de instalacion. v3 ERROR:
+  pip resolvia deps (httpx2 ausente). v4 ERROR: huella 9fd49638 != 0f52de0b84cb (sample_submission
+  trae adapters/; el zip enviado no). Todos pararon ANTES de la GPU; cada uno fixeado y commiteado.
+- **c7-replica-1 = v5** (push ~04:50 UTC): instalacion --no-deps + guardas de versiones/sha256 OK
+  en v4; huella corregida quitando adapters/.
 - **v1 ERROR (~25 s, sin GPU)**: la guarda de versiones llamaba `makedirs(dirname('versiones_arnes.json'))`
   = `makedirs('')` → FileNotFoundError. La guarda detuvo ANTES de la GPU, como se diseñó. Fix:
   `resultados_c7/versiones_arnes.json` (commit «fix(kaggle): guarda de versiones…»).
@@ -46,3 +55,25 @@ corrida se anota abajo en cuanto exista.
   presupuesto (cuota GPU del dueño, separada). Si el dueño confirma reglas + horas, el candidato
   sigue siendo condición-7 + 3 paquetes de prueba (huella a calcular ANTES de subir; nunca un zip
   hash-igual a sub-005/006/008).
+
+## Comprobación de continuidad (2026-10-16)
+- Preflight local repetido después de los commits `7e57936` y `8cd8b8e`: pasó; notebook de 7
+  celdas y todas las comprobaciones listadas verdes, con cuatro ruedas del arnés verificadas.
+- Consulta remota de solo lectura: `cs4all/c7-replica-condicion-7` está `RUNNING`. El estado de Kaggle
+  no expone aquí el número de versión; el dueño reporta que es v3 (réplica 1 de 3).
+- Poller observado en WSL (PID 28996 al comprobar): espera 90 s y luego consulta el estado cada
+  300 s, hasta 36 veces. **Solo imprime el estado y sale al terminar/error/cancelación**: no descarga
+  outputs, no valida filas, no hace commit ni lanza v4/v5. Por tanto la cadena no es automática pese
+  al mensaje anterior. No cerrar la sesión WSL/Kimi que lo aloja.
+- No se envió nada al concurso. La decisión sigue bloqueada por reglas de paquetes adicionales,
+  horas consumidas desconocidas y límite diario desconocido.
+- Próximo paso exacto al despertar: consultar estado con
+  `cd '/mnt/f/Code/Agents Learning Loops' && .venv-linux/bin/kaggle kernels status -k cs4all/c7-replica-condicion-7`.
+  Si COMPLETE, descargar a `experiments/gemma_developer_agent/data/replicas_c7/replica_1` con
+  `.venv-linux/bin/kaggle kernels output -k cs4all/c7-replica-condicion-7 -p <directorio> -o -q`,
+  verificar los 20 IDs/resultados y registrar el estado antes de subir la siguiente versión. Si
+  ERROR/CANCEL o faltan filas, detenerse; no lanzar la siguiente réplica automáticamente.
+- Reanudar: “Lee AGENTS.md y STATUS.md; permanece en `exp/kaggle-c7-replicates`; no toques main,
+  `eval_config.yaml` ni defaults; no muestres ni uses secretos. Primero verifica el estado real del
+  kernel y su salida. Si COMPLETE, baja y valida los resultados de la réplica 1 antes de registrar
+  o lanzar réplica 2; actualiza STATUS.md con hecho/siguiente/paso exacto.”
