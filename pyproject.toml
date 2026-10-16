@@ -47,7 +47,12 @@ markers = [
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-extend-exclude = ["learning"]
+extend-exclude = [
+    "learning",
+    # Generado por replicas_c7/armar_notebook.py (su fuente notebook_c7.py sí se lintea; el
+    # artefacto se valida con kaggle_preflight antes de subir).
+    "experiments/gemma_developer_agent/replicas_c7/notebook_c7.ipynb",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
