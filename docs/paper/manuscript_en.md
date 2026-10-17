@@ -145,13 +145,31 @@ After the data cut-off we replicated the seventh condition (reasoning on, 60 too
 
 The label sin_parche does not mean "no patch". The run's classifier reads a non-existent result attribute (generated_patch; the harness field is agent_patch), so every unresolved task that did not exhaust its budget was recorded as "no patch" regardless of whether a patch existed. Reading the per-task traces against the harness log corrects the premise: four of the 16 failures submitted a patch that grading rejected (patch sizes 465 to 1,248 bytes, one of them including a scratch reproduction script); the other 12 hit the 4.5-minute wall without a submitted patch, 10 of them without any edit to the repository — one looping on identical re-reads, one never reaching the file that had to change — and two with real edits in the working tree that were never submitted, one of them after the agent had verified the fix and started reverting it to demonstrate the bug. The 4-of-20 count does not undercount graded patches; the failure label does undercount patches, and the classifier fix is pending. [PENDING — Monday: classifier fix and re-classification of replicas 2-3.]
 
-Across all 16 failures, the code-intelligence tools were never called, and in 13 of 16 the relevant file was reached within the first three calls. The bottleneck is converting a located file into an edit inside the budget, not search. Three changes that answer this reading were prepared but not run: a navigation-first procedure (fingerprint af8cca829561), a budget-awareness rule set (fingerprint 52ba08ceac25), and short, silent reasoning with thinking budget 1,024 and no visible thoughts (fingerprint 9d0db7b946e7), each changing only instructions or sampling. [PENDING — Monday: run the three variants against the same 20 tasks; the decision rule is fixed before the runs — an arm counts only if it beats the condition by more than the run-to-run noise band.]
+Across all 16 failures, the code-intelligence tools were never called, and in 13 of 16 the relevant file was reached within the first three calls. The bottleneck is converting a located file into an edit inside the budget, not search. Three changes that answer this reading were prepared but not run: a navigation-first procedure (fingerprint af8cca829561), a budget-awareness rule set (fingerprint 52ba08ceac25), and short, silent reasoning with thinking budget 1,024 and no visible thoughts (fingerprint 9d0db7b946e7), each changing only instructions or sampling. [PENDING — Monday: run the three variants and the foraging arm (§ 4.8) against the same 20 tasks — seven runs in total including two noise replicas of the condition (≈10.9 GPU-hours of the 30 h weekly quota); the decision rule is fixed before the runs — an arm counts only if it beats the condition by more than the run-to-run noise band.]
 
 ### 4.7 Offline calibration of the memory loop, preregistered and negative
 
 The same repository develops an associative-memory loop whose retrieval is governed by three parameters (η_h, α and τ_seed; defaults 0.3, 0.7 and 0.25). We preregistered an offline calibration (committed before any run): replay the 97 recorded development episodes, split temporally (first ~70% to calibrate, last ~30% to validate), search a 3×3×3 grid, and change the defaults only if the best configuration reduced the repeated-failure rate by at least 5 percentage points on validation, with the calibration-window rate of the winner reported beside its validation rate.
 
 The grid collapsed to three distinct behaviors. With the lexical embedder, α is exactly inert (both channels of the hybrid seeding compute the same cosine, verified numerically), η_h did not move the metric in this replay, and only τ_seed mattered. The calibration winner (τ_seed = 0.4, 51.9% against the default's 56.9% on the calibration window) reversed on validation (57.3% against 56.4%; Δ = −0.9 pp, paired bootstrap CI95 [−10.7, +9.3]), while the best validation rate belonged to a different value (τ_seed = 0.1, 53.0%). Per-window denominators: 160 known-cause failures in calibration (46 unclassified, 21.6%) and 117 in validation (27, 18.8%). Under the preregistered rule the defaults were kept, and this negative result is reported as measured. The calibration window would have crowned a configuration the validation window rejects; the split did the work a single window would not have.
+
+### 4.8 Discussion: Levels of autonomy, biological precedent
+
+A fifth intervention arm was designed from a research summary on autonomous worms (the owner’s reading of the open literature to October 13, 2026, unpublished), as an explicit analogical transfer. That literature grades autonomy into four engineering levels — an external script driving actuators, a physical oscillator sustaining the gait, onboard compute with the sequence still written, and action changed by an onboard sensor — over an organizational sense (the organism maintained far from equilibrium by its own activity) that only the living animal meets (Bechtel & Bich, 2023). The swegemma agent is level four by construction (tool observations feed the multi-turn loop), so the arm varies only the policy layer, the instruction file. The mapping that produced it:
+
+| Worm level (source) | Harness counterpart | Our arm |
+|---|---|---|
+| Roaming/dwelling bistable states, minute-long bouts (Flavell et al., 2020; Haley & Chalasani, 2024) | One instruction file held for the whole task | Foraging: local-first “dwelling”, clock-scheduled “roaming” |
+| Local search ≈15 min, then global (fixed off-food sequence) | Budget-clocked escalation; `get_status()` is free | Foraging: escalate at ~⅓ of the 4.5 min |
+| Pirouette + dorsoventral bias when the gradient falls; the reorient decision sits in the network (AVA), not the sensor (AWC) | Reorientation after two unproductive retrievals, decided by the policy text, not the search tool | Navigation-first + foraging reorient rule |
+| Habituation: massed taps do not retain; four spaced blocks give 24 h memory, GLR-1-dependent (Ardiel & Rankin, 2010; Rose & Rankin, 2001) | Failure memory consolidated across spaced episodes; within a task, change the action after two identical failures | Foraging habituation rule; the repository’s learning loop |
+| “Connectivity alone is insufficient”: the connectome lacks synaptic sign and neuromodulation; anatomy underpredicts activity (Izquierdo & Beer, 2016; Cook et al., 2019) | A fully connected retrieval graph whose governance parameters are inert (§ 4.7) | Offline calibration, negative |
+
+The biological precedent justifies the measurement discipline directly. BAAIWorm, the most direct closed-loop claim in that literature (136 of 302 neurons), reproduces the experimental zigzag “extremely similarly” when driven by a periodic signal without feedback, and becomes *less* regular than the animal when the sensory current depends on the body’s position (Zhao et al., 2024): adding a mechanism — even the biologically faithful one — moved the model away from its measured baseline. That is the worm-shaped version of our measure-before-submit rule: an arm is compared offline against the same fixed task set, with a pre-established noise band, before it can cost any of the competition’s evaluation budget.
+
+One correspondence is worth stating with its epistemic label attached. Our preregistered calibration found two governance parameters of a completely connected retrieval graph exactly inert (α inert by construction under the lexical embedder; η_h moving nothing), with only the seeding threshold reaching the criterion window — the same shape, in our domain, as the claim that connectivity without electrophysiology and neuromodulation cannot determine behaviour. We present this as **analogical framing, not evidence**: it constrains nothing about biological networks; it supports only the methodological moral that structural completeness is no substitute for measuring what actually moves the metric.
+
+The foraging arm (fingerprint `fb8175c0e74e`) changes only the instruction file, adding a 298-word “Foraging Policy” whose five rules carry HTML comments naming the biological source of each (dwelling, escalation, pirouette, habituation, acting). [PENDING — Monday: run with the other arms.]
 
 ## 5. Threats to validity
 
@@ -165,7 +183,7 @@ The grid collapsed to three distinct behaviors. With the lexical embedder, α is
 
 ## 6. Reproducibility and data use
 
-Data cut-off: October 7, 2026, 02:30 UTC; post-cut-off additions: October 16, 2026 (§ 4.5 to § 4.7). The baseline configuration has fingerprint `3b0e87556166`, the edit-tool variant `7e2082197834` and the seventh condition `0f52de0b84cb`: the first 12 hexadecimal digits of the SHA-256 of the base64 encodings of the six configuration files, sorted as strings and concatenated with no names or separators. The replica and three instruction variants (navigation-first `af8cca829561`, budget-awareness `52ba08ceac25`, short-silent-thinking `9d0db7b946e7`) are fingerprinted with the same formula; the variants are prepared but not run. The validity scripts and leaderboard reader are public: https://github.com/cherrera0001/Agents_Learning_Loops. The competition forbids redistributing task content, so per-task results and traces are not published.
+Data cut-off: October 7, 2026, 02:30 UTC; post-cut-off additions: October 16–17, 2026 (§ 4.5 to § 4.8). The baseline configuration has fingerprint `3b0e87556166`, the edit-tool variant `7e2082197834` and the seventh condition `0f52de0b84cb`: the first 12 hexadecimal digits of the SHA-256 of the base64 encodings of the six configuration files, sorted as strings and concatenated with no names or separators. The replica and four instruction variants (navigation-first `af8cca829561`, budget-awareness `52ba08ceac25`, short-silent-thinking `9d0db7b946e7`, foraging `fb8175c0e74e`) are fingerprinted with the same formula; the variants are prepared but not run. The validity scripts and leaderboard reader are public: https://github.com/cherrera0001/Agents_Learning_Loops. The competition forbids redistributing task content, so per-task results and traces are not published.
 
 ## 7. Conclusion
 
@@ -175,20 +193,36 @@ Between identical runs, 1 or 2 tasks changed result, the total changed by at mos
 
 Aleithan, R., Xue, H., Mohajer, M. M., Nnorom, E., Uddin, G., & Wang, S. (2024). *SWE-Bench+: Enhanced coding benchmark for LLMs*. arXiv. https://doi.org/10.48550/arXiv.2410.06992
 
+Ardiel, E. L., & Rankin, C. H. (2010). An elegant mind: Learning and memory in *Caenorhabditis elegans*. *Learning & Memory, 17*(4), 191–201. https://doi.org/10.1101/lm.960510
+
+Bechtel, W., & Bich, L. (2023). *C. elegans* as a model of autonomy and its development. *BioSystems, 232*, 105017. https://doi.org/10.1016/j.biosystems.2023.105017
+
 Bjarnason, B. H., Silva, A., & Monperrus, M. (2026). *On randomness in agentic evals*. arXiv. https://doi.org/10.48550/arXiv.2602.07150
 
+Cook, S. J., Jarrell, T. A., Brittin, C. A., Wang, M., Bloniarz, A. E., Yakovlev, M. A., Nguyen, K. C. Q., Tang, L.-T. H., Bayer, E. A., Duerr, J. S., Bülow, H. E., Hobert, O., Hall, D. H., & Emmons, S. W. (2019). Whole-animal connectomes of both *Caenorhabditis elegans* sexes by musical assignment of synapses. *Nature, 571*, 63–71. https://doi.org/10.1038/s41586-019-1352-7
+
 Dietterich, T. G. (1998). Approximate statistical tests for comparing supervised classification learning algorithms. *Neural Computation, 10*(7), 1895–1923. https://doi.org/10.1162/089976698300017197
+
+Flavell, S. W., Raizen, D. M., & You, Y.-J. (2020). Behavioral states. *Current Biology*. https://pmc.ncbi.nlm.nih.gov/articles/PMC7536859/
 
 Gloaguen, T., Mündler-Sasahara, N., Müller, M. N., Raychev, V., & Vechev, M. (2026). *Evaluating AGENTS.md: Are repository-level context files helpful for coding agents?* arXiv. https://doi.org/10.48550/arXiv.2602.11988
 
 Gluzdov, D. (2026). *Gemma 4: Measure before you tune* (Version 7, last run October 1, 2026) [Computational notebook]. Kaggle. Retrieved October 4, 2026, from https://www.kaggle.com/code/dmitriigluzdov/gemma-4-measure-before-you-tune
 
+Haley, J. A., & Chalasani, S. H. (2024). Neural circuit mechanisms underlying *C. elegans* foraging strategies. *Cellular and Molecular Life Sciences, 81*, 277. https://doi.org/10.1007/s00018-024-05223-1
+
+Izquierdo, E. J., & Beer, R. D. (2016). Connecting a connectome to behavior: An ensemble of neuroanatomical models of *C. elegans* klinotaxis. *Current Opinion in Neurobiology, 40*, 153–163. https://www.sciencedirect.com/science/article/abs/pii/S0959438816300691
+
 Jimenez, C. E., Yang, J., Wettig, A., Yao, S., Pei, K., Press, O., & Narasimhan, K. (2024). SWE-bench: Can language models resolve real-world GitHub issues? In *The Twelfth International Conference on Learning Representations*. https://openreview.net/forum?id=VTF8yNQM66
 
 Nosek, B. A., Ebersole, C. R., DeHaven, A. C., & Mellor, D. T. (2018). The preregistration revolution. *Proceedings of the National Academy of Sciences, 115*(11), 2600–2606. https://doi.org/10.1073/pnas.1708274114
 
+Rose, J. K., & Rankin, C. H. (2001). Analyses of habituation in *Caenorhabditis elegans*. *Learning & Memory, 8*(2), 63–69. https://doi.org/10.1101/lm.37801
+
 Wang, Y., Pradel, M., & Liu, Z. (2026). Are "solved issues" in SWE-bench really solved correctly? An empirical study. In *Proceedings of the 2026 IEEE/ACM 48th International Conference on Software Engineering* (pp. 169–181). Association for Computing Machinery. https://doi.org/10.1145/3744916.3764576
 
 Xodarev, A. (2026). *119 of 129 sound: The Gemma 4 grader, rebuilt* (Version 22, last run October 1, 2026) [Computational notebook]. Kaggle. Retrieved October 4, 2026, from https://www.kaggle.com/code/busyaprime/119-of-129-sound-the-gemma-4-grader-rebuilt
+
+Zhao, F., et al. (2024). Whole-brain modelling of the nervous system of *Caenorhabditis elegans*. *Nature Computational Science, 4*, 1127–1139. https://doi.org/10.1038/s43588-024-00738-w
 
 Zhu, Y., Jin, T., Pruksachatkun, Y., Zhang, A., Liu, S., Cui, S., Kapoor, S., Longpre, S., Meng, K., Weiss, R., Barez, F., Gupta, R., Dhamala, J., Merizian, J., Giulianelli, M., Coppock, H., Ududec, C., Kellermann, A., Sekhon, J., . . . Kang, D. (2025). Establishing best practices in building rigorous agentic benchmarks. In *Advances in Neural Information Processing Systems 38* (pp. 184435–184475). Neural Information Processing Systems Foundation. https://doi.org/10.52202/085713-5547
