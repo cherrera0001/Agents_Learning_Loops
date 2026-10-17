@@ -121,20 +121,48 @@ rich actuales miden el peor caso (enunciado corto). Solo informe; no se cambia n
   **límite diario de envíos** y las **horas consumidas** (gates 3-4 de envío). Subir el nav hoy
   es decisión del dueño con esos datos aún no verificados.
 
-## Lunes (cuota reiniciada): contraste de CUATRO brazos
+## Lunes (cuota reiniciada): contraste de CINCO brazos
 1. ~~Decidir el fix de `clase_fallo`~~ → APLICADO el 2026-10-16 (`bc17aea`, ver arriba).
 2. Réplicas 2 y 3 de la condición 7 (brazo A; push v7/v8 de `replicas_c7/`, poller, pull,
    commits) → miden la **banda de ruido**.
 3. Un run de cada variante sobre las mismas 20 tareas: navegación (`af8cca829561`), presupuesto
-   (`52ba08ceac25`), thinking (`9d0db7b946e7`).
-4. **Coste estimado: 4 brazos × 1 run × 20 tareas ≈ 6,5 h de GPU en total** (≈1,5-1,7 h por
-   corrida con carga de modelo ~6-19 min + 20 × 4,5 min + márgenes), dentro de los 30 h
-   semanales con margen para reintentos.
+   (`52ba08ceac25`), thinking (`9d0db7b946e7`), **forrajeo (`fb8175c0e74e`, Project WORM)**.
+4. **Coste estimado: 7 corridas × ~93 min ≈ 10,9 h de GPU en total** (2 réplicas de ruido + 5
+   brazos; ≈1,5-1,7 h por corrida con carga de modelo ~6-19 min + 20 × 4,5 min + márgenes),
+   dentro de los 30 h semanales con margen para reintentos. El forrajeo se corre como
+   `kaggle kernels push -p experiments/gemma_developer_agent/replicas_c7_forrajeo -t 9000 --accelerator NvidiaL4`
+   (kernel `cs4all/c7-forrajeo-condicion-7`, preflight 24/24 verde el 2026-10-17).
 5. **Regla de decisión (fijada antes de correr)**: cualquier brazo que supere a A en más de la
    banda de ruido (medida en las réplicas 2-3; si la banda resulta ≥3 tareas, ninguna
    decisión) pasa a ser **candidato de envío para la semana siguiente**, sujeto a las gates de
    envío vigentes (reglas del concurso, horas consumidas del presupuesto de 12 h, límite diario).
 6. Con todo: `docs/c7_ruido.md` + informe del contraste + episodio devlog + STATUS COMPLETE.
+
+## Project WORM (2026-10-17): del documento de gusanos a un quinto brazo
+
+- **Mapeo**: `docs/c7_gusano_mapping.md` — extracción con citas de los cuatro niveles de autonomía,
+  la paradoja del lazo cerrado de BAAIWorm (lazo abierto «extremadamente similar»; cerrado, menos
+  regular que el animal), pirueta/sesgo + secuencia local ~15 min → global, habituación con
+  entrenamiento espaciado (4 bloques × 1 h para memoria de 24 h), y «la conectividad sola no
+  basta»; con el análogo en el arnés (HARNESS_README §2.2, §5.3, §6.1, §6.3) por principio.
+- **Quinto brazo construido**: `replicas_c7_forrajeo/` (WIP, sin subir ni correr). Único cambio:
+  `prompts/system.md` con la «Foraging Policy» de 298 palabras (búsqueda local primero con
+  escalada a ~⅓ del presupuesto, reorientación tras dos intentos estériles, habituación a fallo
+  repetido, cierre de lazo actuar); cada principio etiquetado en comentario HTML con su fuente
+  biológica. Huella de configuración **`fb8175c0e74e`** (fórmula del manuscrito, recomputable con
+  `armar_notebook_forrajeo.py`; kit de referencia = descarga de réplica 1 sin `adapters/`).
+- **Verificación**: armar ×5 reproduce las 5 huellas sin deriva; preflight 24/24 «Se puede subir»
+  ×5; ruff check/format y mypy verdes; verificador de frontera 0 colisiones de ruta y 0 de hash
+  (corrida 2026-10-17; INCOMPLETO solo por los 4 `.safetensors` root conocidos, sin impacto en lo
+  versionado); pytest completo 3479 passed / 5 skipped / 0 failed.
+- **Paper**: `docs/paper/manuscript_en.md` §4.8 «Discussion: Levels of autonomy, biological
+  precedent» commiteado en main (`36b942a`): tabla de mapeo, paradoja BAAIWorm como
+  justificación del measure-before-submit, y el negativo de calibración conectado a
+  «connectivity alone is insufficient» **etiquetado como framing analógico, no evidencia**; §6
+  con la huella forrajeo y la lista [PENDING — Monday] de 7 corridas (10,9 h ≤ 30 h).
+- **Reanudación exacta**: es la sección «Lunes» de arriba; el brazo forrajeo se corre con el
+  comando del punto 4 tras las réplicas 2-3 y las variantes previas, mismas 20 tareas
+  (`tareas_c7.json` ids_20_rich).
 
 ## Siguiente (resume EXACTO para la sesión que reanude, tras el reinicio semanal de cuota GPU)
 1. `cd '/mnt/f/Code/Agents Learning Loops' && git switch exp/kaggle-c7-replicates` (ya estará).
