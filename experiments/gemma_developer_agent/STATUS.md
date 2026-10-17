@@ -1,10 +1,11 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~02:00 UTC (envío forzado de sub-019: RECHAZADO por pending de sub-018,
-registrado literal; vigía ampliado con regla de desbloqueo). **Bloqueo de cuota GPU sigue
-vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `d60ddc0`.
+Actualizado: 2026-10-17 ~05:20 UTC (loop autónomo: sub-018 SCORED 0.10 → sub-019 ENVIADO ref
+57296502 en el mismo despertar; el loop vigía ahora 57296502). **Bloqueo de cuota GPU sigue
+vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `f16225e` + commit de
+este despertar.
 
-## Kit v2 «presupuesto-corregido» (sub-019, CONSTRUIDO NO ENVIADO)
+## Kit v2 «presupuesto-corregido» (sub-019, ENVIADO 2026-10-17 05:18 UTC, ref 57296502)
 
 - **Valores leídos del kit nav real** (los 6 archivos, Tarea 1): eval_config.yaml =
   `timeout_seconds 60, max_tool_calls 60, max_time_minutes 4.5, max_turns 100`;
@@ -34,14 +35,14 @@ vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `d60dd
   del lunes se mide a 4.5 min por comparabilidad — sub-019 es candidato de LEADERBOARD, no del
   contraste). Compilación `adk-submission 0.2.13` oficial: **OK** (venv desechable
   `/tmp/venv_pack` con las ruedas locales).
-- **sub-019** registrado. **INTENTO DE ENVÍO 2026-10-17 ~01:50 UTC (orden expresa del dueño, un
-  solo intento): RECHAZADO** — mensaje literal de la plataforma: «Submission not allowed: Your
-  team already has 1 pending submissions; please wait for one to finish scoring.»
-  (FAILED_PRECONDITION). El cupo diario estaba libre (0 envíos hoy UTC) y el sha se verificó
-  antes de subir; el bloqueo es sub-018 PENDING, no cuota GPU ni zip. Registry: status
-  `submit_failed` con el mensaje en notes; test tripwire 61 passed. **Queda listo para reenviar
-  en cuanto sub-018 puntúe**; el reenvío requiere confirmación explícita del dueño (la regla
-  «el lunes decide» sigue vigente para elegir entre sub-019 y un brazo ganador).
+- **sub-019: ENVIADO 2026-10-17 05:18:13 UTC, ref `57296502`** (sha `c08e5327…`, huella
+  `355f4954f50c`, kit v2 con `max_time_minutes 5.0`). Antes, dos intentos del 01:50/01:56 UTC
+  fueron rechazados con el FAILED_PRECONDITION de «1 pending submission» (sub-018) — registrados
+  literales en notes. La Fase 2 del loop lo envió en el mismo despertar en que sub-018 puntúo
+  (0.10, 05:15 UTC) y liberó el cupo; slot del día consumido («0 submissions remaining today»).
+  Registry: status `pending` con el ref en notes; test tripwire 61 passed. El loop vigía ahora
+  **57296502**; al puntuar registrará la comparación (vs 0.10 de sub-018, vs 0.13 del kit viejo,
+  banda ±0.05) y se autodestruirá con la tabla final de la campaña.
 - **Tarea 6 (gold-patch CPU local)**: estimado >2 h en CPU (129 tareas × pytest en 2 vCPU) →
   **programada para el lunes** como primer paso opcional del runbook (fijar el conjunto
   medible real antes de cualquier nuevo measurement set; los públicos 109/129 vs «~la mitad»

@@ -615,13 +615,12 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
     assert "Score 0.10" in nav["notes"] and "RUIDO" in nav["notes"]
 
-    # El kit v2 presupuesto-corregido: construido y compilado; el envío fue rechazado
-    # porque sub-018 sigue pending (un solo intento, 2026-10-17)
+    # El kit v2 presupuesto-corregido: enviado al puntuar sub-018; pendiente de score
     v2 = filas["sub-019"]
-    assert (v2["status"], v2["public_score"], v2["date"]) == ("submit_failed", None, "2026-10-17")
+    assert (v2["status"], v2["public_score"], v2["date"]) == ("pending", None, "2026-10-17")
     assert v2["sha256"].startswith("c08e5327") and v2["condition"] == "NAV-V2"
     assert "355f4954f50c" in v2["notes"] and "5.0" in v2["notes"] and "4.5" in v2["notes"]
-    assert "FAILED_PRECONDITION" in v2["notes"] and "pending submissions" in v2["notes"]
+    assert "57296502" in v2["notes"] and "0 submissions remaining" in v2["notes"]
     assert "REFUTADA" in v2["notes"]
 
     # Los cambios de estado quedan en los enviados: el resto de candidatos sigue sin enviar
