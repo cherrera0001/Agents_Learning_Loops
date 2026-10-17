@@ -467,6 +467,11 @@ def clase_fallo(res):
     return "parche_no_resuelto"
 
 
+def patch_de(res):
+    """Parche tal como el arnés lo registró en TaskResult (cosecha incluida; vacío si no hubo)."""
+    return str(getattr(res, "agent_patch", None) or getattr(res, "generated_patch", None) or "")
+
+
 T_SESION = inicio_de_sesion()
 T_TAREAS = time.time()
 seccion = yaml.safe_load((AGENT_DIR / "eval_config.yaml").read_text(encoding="utf-8"))
@@ -520,6 +525,7 @@ for idx, task in enumerate(TAREAS, start=1):
     t0 = time.time()
     try:
         res = con_tope_tarea(evaluator.evaluate_task, task=task, task_index=idx, total_tasks=len(TAREAS))
+        _patch = patch_de(res)
         fila = {
             "id": task.instance_id,
             "resuelta": bool(getattr(res, "resolved", False)),
@@ -528,6 +534,9 @@ for idx, task in enumerate(TAREAS, start=1):
             "segundos_reloj": round(time.time() - t0, 1),
             "llamadas_herramientas": getattr(res, "tool_calls", None),
             "llamadas_modelo": getattr(res, "total_llm_calls", None),
+            "parche_bytes": len(_patch),
+            "parche_sha256": hashlib.sha256(_patch.encode()).hexdigest()[:16] if _patch else None,
+            "parche_no_vacio": bool(_patch.strip()),
         }
     except TareaColgada as colgada:
         fila = {

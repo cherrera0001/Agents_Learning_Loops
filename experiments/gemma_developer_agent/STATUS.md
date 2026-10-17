@@ -267,6 +267,38 @@ se cambia nada.
    propio; re-medir nav@5.0 local el lunes antes de que un brazo lo supere; la predicción sellada
    quedó FUERA por arriba (apéndice A5 del análisis crítico).
 
+## Fase 0 (fin de semana 2026-10-17, 0 GPU-h — plan del dueño procesado del log)
+
+- **Gate anti-patch-vacío IMPLEMENTADO** (medición, no el contrato de envío): las 6 fuentes
+  `notebook_c7_*.py` registran por tarea `parche_bytes`, `parche_sha256` (16 hex) y
+  `parche_no_vacio` (la cosecha del arnés cuenta como parche si viajó en `agent_patch`).
+  Huellas de kit SIN cambio (af8cca829561 / 52ba08ceac25 / 9d0db7b946e7 / fb8175c0e74e /
+  3a28671c4f60), armar ×6 sin deriva, preflight 24/24 ×6, ruff/format limpios. Desviación
+  declarada: código de medición ya no byte-idéntico con réplica 1 (mismo precedente que
+  `bc17aea`); el kit del agente sí lo es.
+- **Frontera de fallos registrada**: [`docs/c7_frontera_2026-10-17.md`](docs/c7_frontera_2026-10-17.md).
+  Corrección de observabilidad: las ~48 no resueltas de sub-019 NO son observables (Kaggle no
+  publica por tarea); la frontera real observable = 41/48 tareas nunca resueltas localmente;
+  top-3 clases: parche_no_pasa 51, llamadas_agotadas_sin_parche 34, sin_parche 27 (parte del
+  `sin_parche` era el bug ya corregido).
+- **Gold-patch CPU HECHO** (H1 del plan): venv `/tmp/venv_gold` (4 ruedas del arnés + google-genai/
+  litellm/docker), driver corregido (el del forense importaba `DockerSandboxManager`, inexistente
+  en 0.2.11; el real es `ContainerManager` + `ContainerConfig(image=config.image)`). Resultado en
+  [`analisis_c7/gold_results_2026-10-17.jsonl`](analisis_c7/gold_results_2026-10-17.jsonl):
+  **20/129 con snapshot local (15 rich + 5 fastapi), 109 sin snapshot; gold-pasa 15/20**
+  (rich 13/15, fastapi 2/5) → **conjunto medible real hoy = 15 tareas**.
+  **Corrección de precisión**: el concilio contó «47 cubiertas / 82 faltantes»; el conteo real en
+  `data/snapshots/` es **20 cubiertas / 109 faltantes** (auditor incluido — el dictamen se
+  corrige aquí). En el set sustituto de 20: 15 cubiertas, **13 gold-pasan, 2 gold-fallan**
+  (rich_3472 y rich_4079 — de las 4 «ganables» del QA, 2 no pasan el gold local). La contradicción
+  pública (109/129 vs «~la mitad») se matiza: en el subconjunto cubierto pasa el 75%.
+  Implicación para el lunes: la decisión de descargar snapshots (tuya) pesa más con 109 faltantes;
+  el pre-screening local arranca sobre una base de 15 tareas (todas rich salvo 2 fastapi).
+  Matiz del plan: la «calibración contra los 3 scores» sigue sin poder ejecutarse en CPU puro
+  (exige corridas locales de los kits = GPU); lo entregado es el conjunto medible.
+- **Cron de campaña del lunes**: despertador 08:00 -03:00 (2026-10-19) que arranca el runbook
+  §Lunes (quota check → réplica 2 → poller → …). Cancelable/modificable con el id en CronList.
+
 ## Concilio C7 Fase 4 (2026-10-17, vuelta 49 / concilio 51)
 
 Pregunta: ¿las recomendaciones de Fase 4 del análisis crítico se sostienen y qué falta medir para

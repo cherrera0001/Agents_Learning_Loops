@@ -1,7 +1,12 @@
 {
   "version": 1,
   "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso (vueltas 3 a 42) y puesto al día en la vuelta 43; donde una cifra no la recalculó el auditor del método, la fila lo dice. El vigía de inicio de sesión imprime los que llevan más de una vuelta en `medido`.",
-  "estados": ["medido", "decidido", "aplicado", "descartado"],
+  "estados": [
+    "medido",
+    "decidido",
+    "aplicado",
+    "descartado"
+  ],
   "hallazgos": [
     {
       "id": "repeticiones_identicas",
@@ -629,14 +634,19 @@
     },
     {
       "id": "gold_patch_no_ejecutable_2026_10_17",
-      "que_se_midio": "Gold-patch en CPU local: faltan 82/129 snapshots (48 fastapi/33 rich/1 httpx; 47 cubiertas) y el venv del arnés (.venv-linux sin google-genai/litellm/docker-sdk). Driver escrito en la carpeta forense de analisis_c7/guiones_concilio_2026-10-17/, no corrido.",
+      "que_se_midio": "Gold-patch en CPU local con el arnés propio (2026-10-17): ejecutado tras corregir el driver (ContainerManager, no DockerSandboxManager). Resultado: 20/129 tareas con snapshot local (15 rich + 5 fastapi), 109 sin snapshot; gold-pasa 15/20 (rich 13/15, fastapi 2/5). Corrección del conteo del concilio: son 20 cubiertas / 109 faltantes, no 47/82. Set sustituto: 15 cubiertas, 13 gold-pasan (2 tareas del set sustituto fallan). Evidencia: analisis_c7/gold_results_2026-10-17.jsonl.",
       "primera_vuelta": 49,
       "primera_fecha": "2026-10-17",
       "vueltas_medido": [49],
-      "estado": "medido",
-      "decision": null,
+      "estado": "aplicado",
+      "decision": {
+        "texto": "Driver corregido y corrida archivada; conjunto medible = 15 tareas (13 del set sustituto). La descisión de descargar los 109 snapshots que faltan queda pendiente del dueño; el pre-screening del lunes normaliza por el conjunto medible.",
+        "quien": "orquestador (Kimi Code, Fase 0 del plan del dueño)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
       "motivo_descarte": null,
-      "por_que_sigue_abierto": "Falta decisión del dueño: descargar los 82 snapshots que faltan o correr las 47 cubiertas; y montar el venv del arnés con ruedas locales."
+      "por_que_sigue_abierto": null
     },
     {
       "id": "h11_y_dirty_equals_en_build_sandbox",

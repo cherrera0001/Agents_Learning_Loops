@@ -37,7 +37,7 @@ from pathlib import Path
 from swegemma.config import EvalConfig
 from swegemma.harness.verification import verify_task
 from swegemma.models.task import Task, load_tasks
-from swegemma.sandbox.docker import DockerSandboxManager  # manager concreto del backend docker
+from swegemma.sandbox.docker import ContainerConfig, ContainerManager  # manager real (0.2.11)
 
 
 async def una(config: EvalConfig, docker, task: Task) -> dict:
@@ -91,7 +91,7 @@ async def main() -> None:
         models=None,  # type: ignore[arg-type]  # la Fase 2 no toca el modelo
         wheels_dir=Path(args.wheels),
     )
-    docker = DockerSandboxManager()
+    docker = ContainerManager(ContainerConfig(image=config.image, timeout_seconds=300))
     tareas = load_tasks(Path(args.tasks))
     with (resultados / "gold_results.jsonl").open("a", encoding="utf-8") as fh:
         for task in tareas:
