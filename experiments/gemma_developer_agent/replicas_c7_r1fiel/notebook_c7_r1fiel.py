@@ -7,8 +7,10 @@
 # tiempo en el muro por tarea. Dos deltas puros de configuración respecto a la condición 7
 # (0f52de0b84cb): (a) configs/sampling.yaml thinking_budget 4096 -> 0 (resto de sampling,
 # incluido include_thoughts: true, idéntico a la condición 7); (b) eval_config.yaml
-# max_time_minutes 4.5 -> 6.0 (el envelope del auditor: 6.0 min cabe en la cap de 12 h con
-# margen; 9-10 min no caben con las muertes observadas). El prompt es BYTE-IDENTICO al de la
+# max_time_minutes 4.5 -> 5.0 (REESPECIFICADO 2026-10-18: el valor 6.0 se movio a 5.0 —
+# la regla publica no archivada de ~5.5 min/tarea del evaluador queda sin verificar y 5.0 esta
+# probado en produccion (sub-019) y deja un A/B limpio vs el kit de referencia aislando solo
+# thinking_budget). El prompt es BYTE-IDENTICO al de la
 # condición 7 (sin cambios de instrucción): el armar lo verifica contra la descarga de réplica 1.
 # Mismas 20 tareas, mismos demás topes. NO se ha subido ni corrido; correrlo es decisión del
 # dueño (STATUS §Lunes addendum 7c).
@@ -17,7 +19,7 @@
 # celdas: ``armar_notebook_r1fiel.py`` lo parte en celdas, inserta la guarda de versiones del
 # arnés (scripts/kaggle_arnes.py) y escribe ``notebook_c7_r1fiel.ipynb`` + ``kernel-metadata.json``.
 #
-# Qué mide: una pasada de la condición 7 con pensamiento apagado y 6.0 min/tarea sobre la lista
+# Qué mide: una pasada de la condición 7 con pensamiento apagado y 5.0 min/tarea sobre la lista
 # fija de tareas, y escribe los resultados por tarea con marca de tiempo. No cambia nada entre
 # réplicas: la etiqueta de salida sale del reloj, no de la configuración.
 #
@@ -183,7 +185,7 @@ for _f in ("agent.yaml", "sub_agents/code_analyzer.yaml"):
 # La condición 7 son exactamente tres valores distintos del kit original (registry.json,
 # sub-005): eval_config.yaml (60 llamadas, 4,5 min) e include_thoughts: true en el muestreo.
 (AGENT_DIR / "eval_config.yaml").write_text(
-    "evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 60\n  max_time_minutes: 6.0\n  max_turns: 100\n",
+    "evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 60\n  max_time_minutes: 5.0\n  max_turns: 100\n",
     encoding="utf-8",
 )
 _SAMPLING_R1FIEL = "temperature: 0.2\ntop_p: 0.95\nmax_output_tokens: 8192\nthinking_config:\n  thinking_budget: 0\n  include_thoughts: true\n"
@@ -210,7 +212,7 @@ def huella_config(directorio):
     return hashlib.sha256("".join(sorted(partes)).encode()).hexdigest()[:12]
 
 
-HUELLA_R1FIEL = "3a28671c4f60"
+HUELLA_R1FIEL = "5e1638518420"
 HUELLA = huella_config(AGENT_DIR)
 print(
     "HUELLA configuracion:",
@@ -491,6 +493,11 @@ def clase_fallo(res):
     return "parche_no_resuelto"
 
 
+def patch_de(res):
+    """Parche tal como el arnés lo registró en TaskResult (cosecha incluida; vacío si no hubo)."""
+    return str(getattr(res, "agent_patch", None) or getattr(res, "generated_patch", None) or "")
+
+
 T_SESION = inicio_de_sesion()
 T_TAREAS = time.time()
 seccion = yaml.safe_load((AGENT_DIR / "eval_config.yaml").read_text(encoding="utf-8"))
@@ -544,6 +551,7 @@ for idx, task in enumerate(TAREAS, start=1):
     t0 = time.time()
     try:
         res = con_tope_tarea(evaluator.evaluate_task, task=task, task_index=idx, total_tasks=len(TAREAS))
+        _patch = patch_de(res)
         fila = {
             "id": task.instance_id,
             "resuelta": bool(getattr(res, "resolved", False)),
@@ -552,6 +560,9 @@ for idx, task in enumerate(TAREAS, start=1):
             "segundos_reloj": round(time.time() - t0, 1),
             "llamadas_herramientas": getattr(res, "tool_calls", None),
             "llamadas_modelo": getattr(res, "total_llm_calls", None),
+            "parche_bytes": len(_patch),
+            "parche_sha256": hashlib.sha256(_patch.encode()).hexdigest()[:16] if _patch else None,
+            "parche_no_vacio": bool(_patch.strip()),
         }
     except TareaColgada as colgada:
         fila = {

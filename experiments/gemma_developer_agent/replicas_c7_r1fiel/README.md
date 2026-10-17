@@ -6,35 +6,37 @@ recomendación #1 del análisis crítico **fielmente**. Hallazgo del concilio: e
 (`9d0db7b946e7`) solo *oculta* los pensamientos (`include_thoughts:false` con
 `thinking_budget:1024` — el modelo sigue razonando y quemando reloj); apagar de verdad exige
 `thinking_budget:0` (verificado en el código del compilador; el validador inyecta budget=max si
-falta). Y el envelope de la cap de 12 h del auditor rechaza la reinversión a 9-10 min
-(break-even f≈0,49; a f=0,65 de réplica 1 no cabe) — **6,0 min sí cabe con margen** (641 min de
-720).
+falta). **REESPECIFICADO el 2026-10-18 a 5.0 min** (antes 6.0): una regla atribuida al equipo de
+Google en los foros («~5,5 min/tarea incl. setup; even 6 min cap is out of reach») no pudo
+verificarse desde el repo (muro de cookies), y ante la duda 5.0 es seguro bajo cualquiera de los
+dos muros, está probado en producción (sub-019) y convierte al brazo en un A/B limpio contra
+sub-019@5.0 que aísla solo `thinking_budget: 0`. El envelope de 12 h sobra a 5.0 (562-698 min).
 
 Dos deltas **puros de configuración** respecto a la condición 7 (`0f52de0b84cb`):
 
 - **(a) Config**: `configs/sampling.yaml` con `thinking_budget: 0` (el resto idéntico a la
   condición 7, incluido `include_thoughts: true`; con presupuesto 0 no hay pensamientos que
   mostrar u ocultar).
-- **(b) Muro**: `eval_config.yaml` con `max_time_minutes: 6.0` (la condición 7 usa 4.5).
+- **(b) Muro**: `eval_config.yaml` con `max_time_minutes: 5.0` (la condición 7 usa 4.5; sub-019 probó 5.0).
 - **Prompt sin tocar**: byte-identico al `prompts/system.md` de la condición 7 — el armar lo
   verifica contra la descarga de réplica 1.
 
 | | condición 7 (réplicas) | brazo R1-fiel |
 |---|---|---|
-| huella de configuración | `0f52de0b84cb` | **`3a28671c4f60`** |
+| huella de configuración | `0f52de0b84cb` | **`5e1638518420`** |
 | kernel (si se sube) | `cs4all/c7-replica-condicion-7` | `cs4all/c7-r1fiel-condicion-7` |
 
 ## Qué hay aquí
 
 | Archivo | Rol |
 |---|---|
-| `notebook_c7_r1fiel.py` | Guion del notebook (fuente de verdad). Copia de `replicas_c7_thinking/notebook_c7_thinking.py`: la celda «kit» escribe `_SAMPLING_R1FIEL` y el `eval_config` con 6.0 min; el prompt queda como el de la condición 7; la guarda exige `HUELLA_R1FIEL`. |
+| `notebook_c7_r1fiel.py` | Guion del notebook (fuente de verdad). Copia de `replicas_c7_thinking/notebook_c7_thinking.py`: la celda «kit» escribe `_SAMPLING_R1FIEL` y el `eval_config` con 5.0 min; el prompt queda como el de la condición 7; la guarda exige `HUELLA_R1FIEL`. |
 | `armar_notebook_r1fiel.py` | Genera `notebook_c7_r1fiel.ipynb` + `kernel-metadata.json`. Verifica el literal `_SYSTEM_R1FIEL` contra el `prompts/system.md` de la descarga de réplica 1, `_SAMPLING_R1FIEL` contra su constante, la presencia de los dos deltas en el guion, monta el kit de huella (descarga sin `adapters/` + sampling y eval_config de la variante) y exige huella == `HUELLA_R1FIEL`. |
 | `huella_r1fiel.txt` | Registro: huella condición 7 ↔ huella R1-fiel y los dos deltas. |
 
 ## Verificación (2026-10-17, todo en local, 0 GPU)
 
-- Armar re-ejecutado 5 veces: huella estable `3a28671c4f60`.
+- Armar re-ejecutado 5 veces tras la reespecificación: huella estable `5e1638518420` (la huella 3a28671c4f60 del valor 6.0 queda obsoleta, no referenciada en ningún envío).
 - Preflight 24/24 «Se puede subir» (`scripts.kaggle_preflight comprobar … --ruedas …`).
 - Comparación archivo-a-archivo contra el kit de la condición 7: los únicos diffs son
   `configs/sampling.yaml` (solo `thinking_budget: 4096 → 0`) y `eval_config.yaml` (solo

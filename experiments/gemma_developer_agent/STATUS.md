@@ -250,11 +250,16 @@ se cambia nada.
    b. **Regla de empate**: banda observada 0-2 flips; ventaja ≤3 tareas ⇒ exploratorio + réplicas
       del líder con la cuota restante. Veto a adoptar con Δ≤3.
    c. El brazo thinking (`9d0db7b946e7`) mide «thoughts ocultos vs visibles», NO thinking-off.
-      **Sexto brazo R1-fiel CONSTRUIDO el 2026-10-17** (`replicas_c7_r1fiel/`): `thinking_budget:0`
-      + 6,0 min + prompt byte-identico a A (delta puro verificado archivo-a-archivo), huella
-      **`3a28671c4f60`**, preflight 24/24 «Se puede subir», armar ×5 sin deriva, kernel
-      `cs4all/c7-r1fiel-condicion-7`. Correrlo decide el dueño, tras réplicas 2-3 y gold-patch y
-      reconciliando cuota con la reserva del concilio 50.
+      **Sexto brazo R1-fiel CONSTRUIDO y REESPECIFICADO el 2026-10-18 a 5.0 min**
+      (`replicas_c7_r1fiel/`): `thinking_budget:0` + 5.0 min + prompt byte-identico a A (delta
+      puro), huella **`5e1638518420`**, preflight 24/24, armar ×5 sin deriva, kernel
+      `cs4all/c7-r1fiel-condicion-7`. La reespecificación (antes 6.0, huella obsoleta
+      `3a28671c4f60`) responde a una regla atribuida al equipo de Google en los foros
+      («~5,5 min/tarea incl. setup») que NO pudo verificarse desde el repo: 5.0 es seguro bajo
+      ambos muros, probado en producción (sub-019) y deja un A/B limpio vs sub-019 aislando solo
+      `thinking_budget`. Si la regla de 5,5 min se verifica el lunes, el kit ya cumple; si se
+      refuta, 5.0 sigue siendo el diseño correcto (A/B limpio). Correrlo decide el dueño tras
+      réplicas 2-3 y gold-patch, reconciliando cuota con la reserva del concilio 50.
    d. **Gold-patch CPU tiene bloqueo hoy**: faltan 82/129 snapshots (48 fastapi/33 rich/1 httpx; 47
       cubiertas) y el venv del arnés (google-genai/litellm/docker-sdk; ruedas h11/dirty_equals en
       `data/build_sandbox_20261003_v2/wheels`). Decisión del dueño: descargar los snapshots o
@@ -266,6 +271,30 @@ se cambia nada.
    4.5→5.0): **+0.07 fuera de ruido**; el muro SÍ era cuello del score. nav-v2 = mejor envío
    propio; re-medir nav@5.0 local el lunes antes de que un brazo lo supere; la predicción sellada
    quedó FUERA por arriba (apéndice A5 del análisis crítico).
+
+## Reglas del concurso — verificación 2026-10-18 (respuesta a «¿hay alguna regla que desconozco?»)
+
+**Por qué esperar al lunes no es una regla oculta**: (1) la cuota GPU semanal del dueño está
+bloqueada hasta el lunes (reinicio semanal, observado dos semanas seguidas); (2) la regla
+pre-registrada de la campaña retiene el slot diario salvo ganador local > 0.17 + banda; (3) el
+cupo de 1 envío/día se observó en vivo («0 submissions remaining today»). No hay premura:
+**deadline principal 2026-12-02 23:59** (CLI oficial; corrige el «25 nov» del documento del
+dueño — hay ~6,5 semanas; el «2 nov» de la prensa es probablemente el cierre de altas/merge).
+
+**Verificado por CLI (2026-10-18)**: deadline 2026-12-02; **Paper Track
+`gemma-4-developer-agent-paper`: deadline 2026-11-12, 35.000 USD, 249 equipos, equipo YA
+inscrito** (userHasEntered=True) — el manuscrito del repo es candidato natural y no gasta slot;
+3.061 equipos; rank 853.
+
+**Pendiente de verificación el lunes (fuentes del análisis del dueño sin archivo propio)**:
+(1) regla atribuida al equipo de Google en foros: «~5,5 min/tarea incl. setup» — el diseño ya es
+robusto a ella (R1-fiel a 5.0); asignar lectura de hilos clavados con sesión autenticada;
+(2) mecánica de las **2 selecciones finales** (elegir a mano, diversificando familias; no dejar
+la auto-selección de Kaggle); (3) LB público ≈ 50% del test (el 0.17 es sobre la mitad del
+campo; no sobreajustar deltas públicos); (4) **regla de variantes** (todos los agentes con la
+misma variante; LoRAs permitidos) → auditar los kits finales contra ella antes de enviar;
+(5) tope de compute del notebook (fallos «Notebook Exceeded Allowed Compute» reportados) →
+nav-v2 ≈ 5-6 h deja margen sano; verificar en cualquier kit nuevo.
 
 ## Fase 0 (fin de semana 2026-10-17, 0 GPU-h — plan del dueño procesado del log)
 
@@ -331,6 +360,9 @@ y cambios operativos:
   corregido `c7_fallos_r1.md` (addendum 2); el arnés acepta entregas no confirmadas por el agente.
 - Set sustituto: solo **4/20 tareas ganables** (16 ceros estructurales); la banda 0-2 hace la
   regla del lunes justa pero de rango casi nulo — la regla de empate cubre ese hueco.
+- **Sexto brazo R1-fiel construido y reespecificado a 5.0 min** (2026-10-18; ver §Lunes
+  addendum 7c): la regla no verificada de «~5,5 min/tarea» del evaluador se resolvió con
+  robustez — 5.0 cumple bajo ambos muros y deja A/B limpio vs sub-019.
 - Fallo de la vuelta (orquestador): recall inicial sin episodios 100-101 (rama no al día con
   main) — detectado en vuelta, merge `origin/main` hecho y recall repetido; queda en el episodio.
 - Diversidad declarada: los 5 roles son el mismo modelo (quitar firmas evita deferencia, no da

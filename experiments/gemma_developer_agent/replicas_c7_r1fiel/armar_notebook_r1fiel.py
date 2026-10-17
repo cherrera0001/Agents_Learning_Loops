@@ -1,19 +1,29 @@
 """Arma el notebook de Kaggle del sexto brazo R1-FIEL desde ``notebook_c7_r1fiel.py``.
 
 Copia del patrón de ``replicas_c7_thinking/armar_notebook_thinking.py`` con la semántica propia
-de este brazo (concilio C7 Fase 4, 2026-10-17): **dos deltas puros de configuración** respecto a
-la condición 7 —(1) ``configs/sampling.yaml`` con ``thinking_budget: 0`` (apagado real; el resto
-idéntico a la condición 7, incluido ``include_thoughts: true``) y (2) ``eval_config.yaml`` con
-``max_time_minutes: 6.0``. El prompt NO cambia: es byte-idéntico al de la condición 7. Antes de
-escribir nada:
+de este brazo (concilio C7 Fase 4, 2026-10-17; REESPECIFICADO el 2026-10-18 a 5.0 min): **dos
+deltas puros de configuración** respecto a la condición 7 —(1) ``configs/sampling.yaml`` con
+``thinking_budget: 0`` (apagado real; el resto idéntico a la condición 7, incluido
+``include_thoughts: true``) y (2) ``eval_config.yaml`` con ``max_time_minutes: 5.0``. El prompt NO
+cambia: es byte-idéntico al de la condición 7. Antes de escribir nada:
 
 1. Verifica que el literal ``_SYSTEM_R1FIEL`` del guion == ``prompts/system.md`` de la descarga
    local de réplica 1 (proveniencia verificada, gitignored) y que el literal ``_SAMPLING_R1FIEL``
    coincide con la constante ``SAMPLING_R1FIEL``; y que el guion escribe el eval_config con
-   ``max_time_minutes: 6.0``.
+   ``max_time_minutes: 5.0``.
 2. Monta el kit de referencia desde esa descarga sin ``adapters/``, con el ``system.md`` de la
    propia descarga, el ``sampling.yaml`` de la variante y el ``eval_config.yaml`` de la variante,
    y exige que la huella recomputada == ``HUELLA_R1FIEL``.
+
+Reespecificación 2026-10-18 (decisión del orquestador con evidencia del envelope del auditor):
+el valor original 6.0 min se movió a 5.0. Razones: (a) regla pública no archivada atribuida al
+equipo de Google en los foros («~5,5 min/tarea incl. setup; even 6 min cap is out of reach») —
+NO verificada desde el repo (muro de cookies de Kaggle); ante la duda, 5.0 es seguro bajo
+cualquiera de los dos muros; (b) 5.0 min está probado en producción (sub-019, 0.17, ~15,4 h de
+evaluación sin corte de sesión); (c) la ciencia mejora: R1-fiel@5.0 es un A/B limpio contra
+sub-019@5.0 aislando ``thinking_budget: 0`` (mismo muro, mismo prompt, misma configuración base);
+(d) el envelope de 12 h sobra a 5.0 (562-698 min según setup). El valor 6.0 queda descartado
+para envío; si se quiere medir H3 (más minutos) el lunes, es medición local pura, no candidato.
 
 El resto del kit no se versiona (los tres archivos de plantilla son contenido de la competencia).
 
@@ -37,7 +47,7 @@ from scripts import kaggle_arnes
 AQUI = Path(__file__).resolve().parent
 MARCADOR = re.compile(r"^# ==== CELDA: (\w+) ====$", re.M)
 MARCA_VERSIONES = "# Versiones del arnes (#195)"
-HUELLA_R1FIEL = "3a28671c4f60"
+HUELLA_R1FIEL = "5e1638518420"
 FUENTE_KIT = AQUI.parent / "data/replicas_c7/replica_1/c7_submission"
 SAMPLING_R1FIEL = (
     "temperature: 0.2\n"
@@ -48,7 +58,7 @@ SAMPLING_R1FIEL = (
     "  include_thoughts: true\n"
 )
 EVAL_CONFIG_R1FIEL = (
-    "evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 60\n  max_time_minutes: 6.0\n  max_turns: 100\n"
+    "evaluation:\n  timeout_seconds: 60\n  max_tool_calls: 60\n  max_time_minutes: 5.0\n  max_turns: 100\n"
 )
 
 KERNEL_METADATA = {
@@ -122,8 +132,8 @@ def main() -> int:
     if literal_del_guion(guion, "_SAMPLING_R1FIEL") != SAMPLING_R1FIEL:
         print("error: _SAMPLING_R1FIEL del guion != SAMPLING_R1FIEL de este script", file=sys.stderr)
         return 2
-    if "max_time_minutes: 6.0" not in guion or "thinking_budget: 0" not in guion:
-        print("error: el guion no escribe los deltas del brazo (6.0 min / budget 0)", file=sys.stderr)
+    if "max_time_minutes: 5.0" not in guion or "thinking_budget: 0" not in guion:
+        print("error: el guion no escribe los deltas del brazo (5.0 min / budget 0)", file=sys.stderr)
         return 2
     try:
         huella = huella_config(kit_para_huella(prompt_archivo))
