@@ -477,13 +477,15 @@ def clase_fallo(res):
     error = str(getattr(res, "error_message", "") or "")
     if "context" in error.lower() or "maximum context length" in error.lower():
         return "rechazo_contexto"
-    patch = str(getattr(res, "generated_patch", "") or "")
+    # agent_patch es el campo real de TaskResult (swegemma 0.2.11, models/task.py:162);
+    # generated_patch se conserva solo como respaldo (addendum docs/c7_fallos_r1.md A1/A3).
+    patch = str(getattr(res, "agent_patch", None) or getattr(res, "generated_patch", None) or "")
     agotado = getattr(res, "agent_budget_exhausted", None) or getattr(res, "timed_out", None)
     if agotado:
         return "tiempo_agotado_con_parche" if patch.strip() else "tiempo_agotado_sin_parche"
     if not patch.strip():
         return "sin_parche"
-    return "pruebas_fallan"
+    return "parche_no_resuelto"
 
 
 T_SESION = inicio_de_sesion()
@@ -543,6 +545,7 @@ for idx, task in enumerate(TAREAS, start=1):
             "id": task.instance_id,
             "resuelta": bool(getattr(res, "resolved", False)),
             "clase": clase_fallo(res),
+            "error": str(getattr(res, "error_message", "") or "") or None,
             "segundos_reloj": round(time.time() - t0, 1),
             "llamadas_herramientas": getattr(res, "tool_calls", None),
             "llamadas_modelo": getattr(res, "total_llm_calls", None),
