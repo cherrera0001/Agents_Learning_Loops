@@ -1,8 +1,46 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~15:00 UTC (registro de push/auth + runbook del lunes completo; sin GPU,
-sin pushes a Kaggle). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
-2026-10-19 es lo esperado). Cabeza: `f91997c`.
+Actualizado: 2026-10-17 ~16:30 UTC (auditoría de presupuesto del kit nav + sub-019 CONSTRUIDO, no
+enviado; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
+2026-10-19 es lo esperado). Cabeza: `6cde51b`.
+
+## Kit v2 «presupuesto-corregido» (sub-019, CONSTRUIDO NO ENVIADO)
+
+- **Valores leídos del kit nav real** (los 6 archivos, Tarea 1): eval_config.yaml =
+  `timeout_seconds 60, max_tool_calls 60, max_time_minutes 4.5, max_turns 100`;
+  configs/sampling.yaml = `temperature 0.2, top_p 0.95, max_output_tokens 8192,
+  thinking_budget 4096, include_thoughts true`. Defaults del harness (60 min/100 llamadas/
+  500 turnos/300 s) NO están en uso.
+- **Aritmética con evidencia propia** (réplica 1, salida `c7_20261016T0459Z.json`): carga de
+  modelo 367 s (una vez, L4); por tarea media 255 s / mediana 272 s; **15/20 tareas mueren en
+  el muro de 270 s**; llamadas medias 24/60 (máx 52, sin saturar); warm pooling con
+  `reuse_containers=True` (HARNESS_README §4.1) → setup por tarea ≈0-45 s (la mediana 272 ≈
+  270 del muro lo confirma). Proyección del kit v1 a 120 tareas: **540-637 min de 720 → cabe,
+  con 83-180 min de margen**.
+- **Veredicto sobre la causa sospechada**: la hipótesis «0.13 estancado por tareas no
+  intentadas» queda **REFUTADA** (el kit actual ya intenta las ~120). La restricción activa
+  observada es el **muro de tiempo por tarea** (15/20), no las llamadas (24/60) — consistente
+  con el ledger del dueño (EXP-004: subir llamadas 40→100 aumentó loops → discard).
+- **Corrección aplicada (cada número citado)**: `max_time_minutes 4.5 → 5.0`. Cabe incluso en
+  el peor caso: 120×300 s + 120×45 s setup + 367 s carga = **698 min ≤ 720**; en el caso base
+  (~0-30 s setup) ≈630 min. Todo lo demás intacto (llamadas 60: EXP-004; turnos 100: no
+  activos; timeout 60: sin evidencia en contra; sampling: lo deciden los brazos
+  thinking/presupuesto el lunes, NO se toca).
+- **Artefactos**: kit en `data/envios/nav_kit_v2/` (gitignored), zip
+  `data/envios/submission_nav_v2_2026-10-17.zip` (3.931 B, `agent.yaml` en raíz, 6 entradas
+  .yaml/.md, sin symlinks, 6.487 B descomprimido « 3 GiB), **sha256
+  `c08e53279ed2dba948bebd0c59e2345db4596adf1e2b7e42a82a19d5509cf066`**, huella de
+  configuración **`355f4954f50c`** (la de sub-018 `af8cca829561` queda como era: el brazo nav
+  del lunes se mide a 4.5 min por comparabilidad — sub-019 es candidato de LEADERBOARD, no del
+  contraste). Compilación `adk-submission 0.2.13` oficial: **OK** (venv desechable
+  `/tmp/venv_pack` con las ruedas locales).
+- **sub-019** registrado (registry.json, status `prepared`, test tripwire 61 passed). Se sube
+  solo tras gates: cupo 1/día, horas consumidas del dueño, y **después** del contraste del
+  lunes si un brazo lo justifica mejor.
+- **Tarea 6 (gold-patch CPU local)**: estimado >2 h en CPU (129 tareas × pytest en 2 vCPU) →
+  **programada para el lunes** como primer paso opcional del runbook (fijar el conjunto
+  medible real antes de cualquier nuevo measurement set; los públicos 109/129 vs «~la mitad»
+  se contradicen y no valen).
 
 ## Push y auth (2026-10-17)
 - **Repo público al día**: `origin/main` = `36b942a` y `origin/exp/kaggle-c7-replicates` =

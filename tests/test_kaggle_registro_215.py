@@ -588,10 +588,10 @@ def test_una_tarea_sin_fin_no_tiene_causa() -> None:
 def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     datos = json.loads(REGISTRO_DE_ENVIOS.read_text(encoding="utf-8"))
     filas = {s["submission_id"]: s for s in datos["submissions"]}
-    assert len(filas) == len(datos["submissions"]) == 18
+    assert len(filas) == len(datos["submissions"]) == 19
     for fila in filas.values():
         SubmissionRecord(**fila)
-    assert datos["last_updated"] == "2026-10-16"
+    assert datos["last_updated"] == "2026-10-17"
 
     # El envío del 12: completo con nota, y la hora de la primera lectura que lo vio así
     leido = filas["sub-008"]
@@ -614,6 +614,13 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "57274153" in nav["notes"] and "2026-10-16 15:30:14 UTC" in nav["notes"]
     assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
 
+    # El kit v2 presupuesto-corregido: construido y compilado, sin enviar
+    v2 = filas["sub-019"]
+    assert (v2["status"], v2["public_score"], v2["date"]) == ("prepared", None, "2026-10-17")
+    assert v2["sha256"].startswith("c08e5327") and v2["condition"] == "NAV-V2"
+    assert "355f4954f50c" in v2["notes"] and "5.0" in v2["notes"] and "4.5" in v2["notes"]
+    assert "NO ENVIADO" in v2["notes"] and "REFUTADA" in v2["notes"]
+
     # Los cambios de estado quedan en los tres enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
     assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010", "sub-018"]
@@ -629,6 +636,7 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
         "sub-015",
         "sub-016",
         "sub-017",
+        "sub-019",
     ]
     assert {k: filas[k]["public_score"] for k in ("sub-002", "sub-003", "sub-005", "sub-006")} == {
         "sub-002": 0.06,

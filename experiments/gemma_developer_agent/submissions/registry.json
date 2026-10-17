@@ -2,7 +2,7 @@
   "schema_version": "kaggle-submission-registry/1",
   "competition_id": 149921,
   "competition_slug": "gemma-4-developer-agent",
-  "last_updated": "2026-10-16",
+  "last_updated": "2026-10-17",
   "submissions": [
     {
       "submission_id": "sub-001",
@@ -237,6 +237,19 @@
       "public_score": null,
       "kaggle_url": null,
       "notes": "Variante navegacion-primero: unico cambio prompts/system.md (procedimiento identificadores->search_similar_code multi-palabra->get_code_neighbors->leer->editar) sobre kit condicion 7; fingerprint de configuracion af8cca829561. ENVIADO 2026-10-16 15:30:14 UTC (ref 57274153, estado inicial PENDING) por decision expresa del dueno; la plataforma exige el nombre submission.zip, asi que se subio una copia desde /tmp con ese nombre (contenido identico, mismo sha256). Slot diario consumido ('0 submissions remaining today'). Score pendiente."
+    },
+    {
+      "submission_id": "sub-019",
+      "date": "2026-10-17",
+      "condition": "NAV-V2",
+      "zip_filename": "submission_nav_v2_2026-10-17.zip",
+      "sha256": "c08e53279ed2dba948bebd0c59e2345db4596adf1e2b7e42a82a19d5509cf066",
+      "size_bytes": 3931,
+      "is_exploratory": false,
+      "status": "prepared",
+      "public_score": null,
+      "kaggle_url": null,
+      "notes": "Kit v2 presupuesto-corregido del brazo navegacion, CONSTRUIDO NO ENVIADO (subir solo tras gates; el lunes se mide primero contra la banda de ruido). Unico cambio vs sub-018: eval_config.yaml max_time_minutes 4.5 -> 5.0. Justificacion numerica (replica 1, 20 tareas): mediana 272s en el muro de 270s con 15/20 tareas muriendo por tiempo y llamadas medias 24/60 sin saturar (max 52) -> la restriccion activa es el tiempo, no las llamadas; la hipotesis '0.13 por tareas no intentadas' queda REFUTADA (proyeccion del kit v1: 540-637 min de 720, con warm pooling reuse_containers=True el setup por tarea es ~0-45s). Subida a 5.0 min: 120 x 300s + 120 x 45s setup + 367s carga = 698 min <= 720 incluso en el peor caso. Huella de configuracion 355f4954f50c (la de sub-018, af8cca829561, no cambia de significado: sigue siendo el brazo nav medido el lunes a 4.5 min por comparabilidad). max_tool_calls se mantiene en 60 (EXP-004 del ledger: 40->100 aumento loops, discard). sampling.yaml sin tocar (temp 0.2, output 8192, thinking on): lo decide la medicion de los brazos thinking/presupuesto. Compilado con adk-submission 0.2.13 oficial (venv desechable /tmp/venv_pack, ruedas locales): OK."
     }
   ]
 }
