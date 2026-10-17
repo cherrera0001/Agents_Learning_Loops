@@ -1,8 +1,8 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~00:05 UTC (sesión con autorización total: push intentado y bloqueado,
-fix `clase_fallo` aplicado y verificado). **Bloqueo de cuota GPU sigue vigente** (reinicio
-semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `bc17aea`.
+Actualizado: 2026-10-17 ~04:00 UTC (sesión de cierre y reconciliación C7: sub-018 consulta,
+Track C verificado local, bandera 12 h resuelta; sin GPU, sin pushes). **Bloqueo de cuota GPU
+sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `1341802`.
 
 ## Verified 2026-10-16 (pasada V1–V5, sesión ~16:25 UTC)
 
@@ -94,32 +94,50 @@ semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `bc17aea`.
 
 ## Track C: preguntas del dataset (22 GB, fuera del repo; `data/` cubierto por .gitignore)
 
-**(i) ¿Los 3 paquetes de test del apunte 71→103 están en el wheelhouse? VEREDICTO: palanca
-MUERTA confirmada (2 de 4 candidatos presentes, los 2 test-only ausentes).** El único conjunto
+**(i) ¿Los 3 paquetes de test del apunte 71→103 están en el wheelhouse? VEREDICTO: dead lever
+confirmado (2026-10-17, comando del dueño sobre el wheelhouse local).** El único conjunto
 candidato trazable es el del lock de desviaciones (`docs/desviaciones_entorno_wheels.lock`,
 2026-10-03): typing-inspection 0.4.4, h11 0.16.0, dirty-equals 0.11 (faltantes entonces) +
-python-multipart 0.0.18 (ya presente). Listado de `data/wheels/` (115 ruedas): **typing_inspection
-0.4.4 SÍ**, **python_multipart 0.0.18 SÍ**, **h11 NO**, **dirty_equals NO**. Caveat: el trio
-exacto de la nota 71→103 no se nombra en ningún archivo commiteado; con los candidatos
-trazables, la medición 71→103 no es reproducible desde el wheelhouse mientras falten h11 y
-dirty_equals (starlette ya sube a 0.50.0 — el entorno evolucionó desde el lock).
+python-multipart 0.0.18 (ya presente). `ls data/wheels/ | grep -iE "h11|dirty|typing_inspection|
+python_multipart"` (115 ruedas): **typing_inspection 0.4.4 SÍ**, **python_multipart 0.0.18 SÍ**,
+**h11 NO**, **dirty_equals NO** — 0 coincidencias para los dos test-only. Misma ausencia en
+`ruedas/` del arnés (son solo las 4 ruedas del harness, no del entorno). Caveat: el trio exacto
+de la nota 71→103 no se nombra en ningún archivo commiteado (la sesión web paralela lo
+confirmó: el apunte no viajó al repo); con los candidatos trazables, la medición 71→103 no es
+reproducible desde el wheelhouse mientras falten h11 y dirty_equals (starlette ya sube a 0.50.0
+— el entorno evolucionó desde el lock).
 
-**(ii) tasks.jsonl: 129 tareas** — repos: fastapi/fastapi 67, Textualize/rich 48, psf/requests 13,
-encode/httpx 1. `hints_text`: presente como campo en las 129 pero **VACÍO en todas** (el arnés
-soporta `{hints}` en instrucciones, HARNESS_README §2.3, pero el dataset público no trae ninguna).
-Mediana de caracteres del enunciado: fastapi 677, rich **146** (confirma el problema de
-enunciados-casi-título del manuscrito), requests 406, httpx 243. Entrada para un mejor conjunto
-de medición que las 20 rich: priorizar enunciados largos y tareas que discriminen (validez
-71/103), y considerar fastapi (mediana 677) si el objetivo es separación agente↔tarea; las 20
-rich actuales miden el peor caso (enunciado corto). Solo informe; no se cambia nada.
+**(ii) tasks.jsonl (local, 2026-10-17): verificación contra EDA público — COINCIDE en todo.**
+129 tareas — repos: fastapi/fastapi 67, Textualize/rich 48, psf/requests 13, encode/httpx 1.
+`hints_text`: presente como campo en las 129 pero **VACÍO en 129/129** (el arnés soporta
+`{hints}` en instrucciones, HARNESS_README §2.3, pero el dataset público no trae ninguna). Con
+`hints_text` vacío universal, el conjunto «20 rich» **nunca fue una categoría de hints**: son
+~20 tareas (28 rich tienen enunciado <300 chars) con enunciado corto título+link. Mediana de
+caracteres del enunciado, local: fastapi 677, rich **138,5** (corrige el 146 anterior), requests
+406, httpx 243. Medición futura: estratificar por repo × riqueza de enunciado × tamaño de
+patch, **gateada por gold-patch-pass en nuestro propio harness** — los números públicos de
+gold-patch se contradicen (109/129 vs «~la mitad»); solo vale el rerun local. Solo informe; no
+se cambia nada.
 
-## Flags de verificación pendientes
-- **Presupuesto de 12 h de evaluación: FUENTE NO VERIFICADA.** El dato «12 h / ~120 tareas»
-  usado en la §3 del manuscrito (aritmética ~6 min/tarea) procede de la página de reglas, que no
-  fue legible desde aquí (JS/cookies); el HARNESS_README fija los mecanismos por tarea pero no
-  el total. Marcar como UNVERIFIED hasta que el dueño lo lea de las reglas. Mismo estatus para el
-  **límite diario de envíos** y las **horas consumidas** (gates 3-4 de envío). Subir el nav hoy
-  es decisión del dueño con esos datos aún no verificados.
+## Flags de verificación
+- **Presupuesto de 12 h de evaluación: VERIFIED-OFFICIAL (2026-10-17).** Cita verbatim de la
+  página oficial (Overview → Evaluation), obtenida por fetch directo en la sesión web paralela y
+  archivada aquí: «Your agent has a limit of 12 hours to submit patches for all tasks, inclusive
+  of sandbox setup time, but excluding time for patch validation». Esto resuelve la bandera
+  UNVERIFIED anterior (la página no era legible desde el CLI por JS/cookies). Sin discrepancia
+  con el HARNESS_README (fija mecanismos por tarea, no el total); el notebook comunitario
+  «12-Hour Budget» es solo un calculador sobre esa regla, no fuente normativa. La aritmética
+  ~6 min/tarea de la §3 del manuscrito queda respaldada.
+- **Límite diario de envíos: VERIFIED-OFFICIAL.** 1 envío/día y 2 selecciones finales
+  (mecánica oficial de Submit Predictions; corroborado en vivo el 2026-10-16: tras subir sub-018
+  la plataforma devolvió «0 submissions remaining today»).
+- **Horas consumidas del presupuesto: sigue siendo del DUEÑO** (no hay endpoint legible desde
+  aquí; ver en la página del concurso). Única gate de envío pendiente de dato.
+- **sub-018 (57274153): PENDING a la última lectura** (enviada 2026-10-16 15:30 UTC; consultas
+  del vigía a t+10 h y t+12 h: PENDING; última de esta sesión: PENDING ~t+14 h — dentro de lo
+  normal: 12 h oficiales de presupuesto + cola). Si el score llega anómalo, la versión con el
+  fix `clase_fallo` ya está en la rama (`bc17aea`) y se sube al día siguiente; no se reenvía
+  nada (cupo 1/día).
 
 ## Lunes (cuota reiniciada): contraste de CINCO brazos
 1. ~~Decidir el fix de `clase_fallo`~~ → APLICADO el 2026-10-16 (`bc17aea`, ver arriba).
