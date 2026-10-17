@@ -1,10 +1,12 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
 Actualizado: 2026-10-17 ~15:05 UTC (consulta: sub-019 sigue PENDING t+9,8h — dentro del rango
-histórico de 13,75 h de sub-018; vigía rearmado como cron `01M5566GGN02AHRY64CM7XKF3Z` a :09/:39,
-con protocolo de registro autocontenido y autodestrucción al puntuar; la sesión que lo aloja no
-debe cerrarse). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es
-lo esperado). Cabeza: `4ff7554`.
+histórico de 13,75 h de sub-018; vigía rearmado como loop «vigía + avance condicional»
+(cron `01M556RTC88NBYKVHQT9M14ATE` a :09/:39: al puntuar registra, aplica el árbol de decisión
+por score — ≥0.18 candidato de referencia / 0.08-0.18 plan del lunes sin cambios / <0.08
+sospecha de regresión — y se autodestruye; la sesión que lo aloja no debe cerrarse). **Bloqueo de
+cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es
+lo esperado). Cabeza: `4ff7554` + push al día.
 
 ## Kit v2 «presupuesto-corregido» (sub-019, ENVIADO 2026-10-17 05:18 UTC, ref 57296502)
 
