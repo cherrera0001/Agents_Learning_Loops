@@ -141,6 +141,34 @@ real ___ → veredicto: dentro de ruido si |real−0.10| ≤ 0.041 relativo al i
 Nota de contrato [DATO, HARNESS_README §2.1]: el envío es declarativo-only — las palancas de
 código (harness, tools) no están disponibles; todo pasa por instrucciones, sampling y budgets.
 
+## Anexos (2026-10-17, misma sesión)
+
+**A1. La riqueza del enunciado domina la resolución** [DATO, join `corridas_tareas` ×
+`tareas_features`, n=168]: mediana de `enunciado_chars` = **1.672 en las 29 tareas resueltas vs
+159 en las 139 no resueltas** (~10×). `patch_lineas`: 16 vs 30 (las resueltas son parches más
+cortos — tareas más triviales, [INFERENCIA]). Implicación: la variable explicativa dominante del
+score es **qué tan informado está el enunciado**, antes que config del agente; el measurement set
+estratificado (Fase 4 #3) no es opcional, y optimizar sobre rich de 138 chars (el set sustituto
+actual) subestima cualquier mejora real.
+
+**A2. Conducta asociada a resolver** [DATO, iteraciones con anatomía, n=103 con primera edición]:
+primera edición en la llamada **5 (resueltas) vs 20 (no resueltas)**; errores de herramienta 1.7
+vs 2.4 de media. Editar temprano y sin errores separa los grupos mejor que cualquier otra
+variable medida. Matiza EXP-005 del ledger («ediciones tempranas apresuradas rotas»): temprana +
+correcta es la que resuelve; la lección es **editar temprano con verificación, no editar pronto**.
+
+**A3. Simulación de la cap de 12 h** [DATO, bootstrap sobre tiempos reales por tarea, 2.000
+simulaciones, setup 45 s/tarea + 7 min una vez]: reasoning-on consume **607 min de media (p95
+638) de 720 — cabe, sin margen para nada**; sin razonamiento consume **314 min (p95 336) — deja
+~406 min de slack**, suficiente para **duplicar el tiempo por tarea** (p.ej. 4.5 → 9-10 min) o
+duplicar intentos. Actualiza la recomendación #1 de Fase 4: **thinking-off + reinversión del
+tiempo ahorrado** ataca a la vez el wall-death (75% de muertes en la única corrida
+reasoning-on) y la cap; es la palanca de mayor ganancia esperada por GPU-hora del inventario.
+
+**A4. Leaderboard, página 3** [DATO]: filas 41-60 todas 0.20 → top-60 = 0.24×2, 0.22×27,
+0.20×31. La mediana del LB completo queda pendiente (2.951 equipos ≈ 148 páginas; token de
+paginación disponible en el historial de la sesión).
+
 ## Limitaciones
 
 - Las corridas 2026-10-06 son de otra era (arnés 0.2.7/0.2.11, configs A/R/D/E/F sin mapear
