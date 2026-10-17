@@ -274,6 +274,19 @@ se cambia nada.
 
 ## Reglas del concurso — verificación 2026-10-18 (respuesta a «¿hay alguna regla que desconozco?»)
 
+**Mecánica del cupo (Fase B, 2026-10-18)**: 1 envío/día **VERIFICADO** en vivo («0 submissions
+remaining today» tras sub-018, 2026-10-16). **Hora de reset**: no expuesta por CLI; evidencia
+circunstancial a favor de **~00:00 UTC** (sub-019 aceptado 05:18 UTC del 17 tras sub-018 de
+15:30 UTC del 16 — no es rolling-24h). Se confirma observando el domingo (Fase C: la hora UTC
+del rechazo/aceptación queda en registry notes). **Tope total de envíos**: **no visible vía CLI**
+(el cliente no expone el límite para esta competencia) — documentado como NO VERIFICADO con
+evidencia empírica favorable (19 envíos en 3+ semanas sin tope alcanzado); condición (b) del
+envío dominical se apoya en eso. Detalle operativo re-verificado: la plataforma exige el nombre
+`submission.zip` y un rechazo por cupo/pending **no** consume el slot (dos rechazos el
+2026-10-17 01:50/01:56, slot intacto). Verificación de foros (regla ~5,5 min, 2 selecciones
+finales, LB 50%, variantes): **sin sesión autenticada en el CLI** — queda asignada al paso 0
+del lunes (cron); el diseño ya es robusto a 5,5 (R1-fiel a 5.0).
+
 **Por qué esperar al lunes no es una regla oculta**: (1) la cuota GPU semanal del dueño está
 bloqueada hasta el lunes (reinicio semanal, observado dos semanas seguidas); (2) la regla
 pre-registrada de la campaña retiene el slot diario salvo ganador local > 0.17 + banda; (3) el
