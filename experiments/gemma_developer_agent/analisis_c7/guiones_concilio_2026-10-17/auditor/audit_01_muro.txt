@@ -1,0 +1,51 @@
+== A) Criterio CSV: columna muro (replica1: segundos_reloj >= 260) ==
+muro=True: 15/20
+  rich_3278:   263.1 s  resuelta=True  clase=resuelta
+  rich_3130:   269.1 s  resuelta=False  clase=sin_parche
+  rich_3180:   272.1 s  resuelta=False  clase=sin_parche
+  rich_3521:   272.2 s  resuelta=False  clase=sin_parche
+  rich_3472:   272.4 s  resuelta=False  clase=sin_parche
+  rich_3782:   272.4 s  resuelta=False  clase=sin_parche
+  rich_4076:   274.4 s  resuelta=False  clase=sin_parche
+  rich_3953:   274.7 s  resuelta=False  clase=sin_parche
+  rich_3043:   274.9 s  resuelta=True  clase=resuelta
+  rich_3938:   275.0 s  resuelta=False  clase=sin_parche
+  rich_3061:   275.0 s  resuelta=False  clase=sin_parche
+  rich_3470:   275.3 s  resuelta=False  clase=sin_parche
+  rich_4079:   275.5 s  resuelta=False  clase=sin_parche
+  rich_3486:   275.7 s  resuelta=False  clase=sin_parche
+  rich_3772:   573.7 s  resuelta=False  clase=sin_parche
+muro=True y no resuelta (muerte por tiempo bajo criterio CSV): 13/16 fallos
+  ids muro=True resueltas (falsos positivos de 'muerte'): ['rich_3043', 'rich_3278']
+
+== B) Criterio log del arnés: 'agent timed out' en el kernel log ==
+lineas 'agent timed out': 26; ids únicos: 13
+  rich_3043
+  rich_3061
+  rich_3180
+  rich_3470
+  rich_3472
+  rich_3486
+  rich_3521
+  rich_3772
+  rich_3782
+  rich_3938
+  rich_3953
+  rich_4076
+  rich_4079
+en muro=True (CSV) pero SIN timeout en log: ['rich_3130', 'rich_3278']
+con timeout en log pero SIN muro=True (CSV): []
+resueltas réplica 1: ['rich_3043', 'rich_3278', 'rich_3894', 'rich_3905']
+timeouts en log y no resueltas (muerte por tiempo, criterio log): 12/16 fallos
+timeouts en log PERO resueltas (cosecha del árbol): ['rich_3043']
+
+== C) Síntesis ==
+fallos totales: 16
+CSV  muro>=260:            15/20 tocó el muro | 13/16 fallos
+LOG  'agent timed out':    13/20 tocó el muro | 12/16 fallos
+
+Verificación JSON crudo: resuelta/clase/segundos de 3130, 3043, 3278
+  rich_3278: resuelta=True segundos_reloj=263.1 clase=resuelta llamadas_herramientas=11
+  rich_3130: resuelta=False segundos_reloj=269.1 clase=sin_parche llamadas_herramientas=31
+  rich_3043: resuelta=True segundos_reloj=274.9 clase=resuelta llamadas_herramientas=23
+resueltas en JSON crudo: 4/20

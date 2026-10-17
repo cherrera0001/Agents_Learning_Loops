@@ -1,0 +1,11 @@
+join fila-nivel: n=168 (de 168 filas)
+filas resueltas: n=29 | no resueltas: n=139
+mediana enunciado_chars fila: resueltas 1672 vs no 159 -> x10.5
+mediana patch_lineas fila:    resueltas 16 vs no 30
+banda 1000: tasa resolucion en filas con enunciado>=1000: 0.56 (n=41) vs <1000: 0.05 (n=127)
+
+task_id distintos en el join: 48
+tarea única: resueltas (alguna vez) n=7 | nunca resueltas n=41
+mediana enunciado_chars tarea: resueltas 1216 vs no 239 -> x5.1
+mediana patch_lineas tarea:    resueltas 14 vs no 20
+[sensibilidad, fracc>=0.5] resueltas n=6 vs no n=42: 1405.0 vs 253.5 -> x5.5

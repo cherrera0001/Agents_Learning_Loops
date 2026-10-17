@@ -1,0 +1,67 @@
+{
+  "seq": 102,
+  "id": "vuelta-49-concilio-51-c7-fase4",
+  "goal": "Vuelta de experimento con concilio completo: medir si las recomendaciones de Fase 4 del análisis crítico C7 se sostienen sobre los datos del repositorio antes del contraste de 5 brazos del lunes 2026-10-19",
+  "ref": "concilio-51",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": false,
+      "error": "El recall inicial corrió desde exp/kaggle-c7-replicates sin los episodios 100-101 de origin/main (rama no al día con main, mismo defecto que el episodio 096); detectado al preparar el registro, antes de cerrar la vuelta"
+    },
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "Merge de origin/main (6 commits: campaña C0 calibración offline) y recall repetido; las lecciones nuevas eran relevantes (generated_patch/agent_patch; registrar submit_patch con patch_size/files_changed)"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Primera ronda del concilio: 4 roles del staff en paralelo (analista de datos, forense del arnés, QA de trayectorias, arquitecto de IA) sobre los mismos archivos, solo lectura, informes en scratch/concilio-c7-fase4/"
+    },
+    {
+      "action": "review_code",
+      "success": true,
+      "note": "Revisión cruzada con expediente sin firma: 4 revisiones; retiros — analista (la forma plana «el 75% está inflado»), forense (el «submit previo al timeout» de rich_3043), QA («15/20 mueren en el muro»), arquitecto (la era «sin razonamiento» y la cuenta «719≤720»)"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Auditor del método recontó las 8 cifras de decisión con guiones propios: muro 13/20 (12/16 de los fallos), submits 7/20, 18/148 ≥230 s, banda 0-2 flips, IC95 ±0,041 (el ±0,036 es artefacto), envelope rechaza 9 min (break-even f≈0,49; 6 min cabe), A1 10,5×/5,1×, 82 snapshots faltantes, include_thoughts:false no apaga el razonamiento"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Bitácora c7_concilio_2026-10-17.md (pareceres tal cual, dictámenes, vetos, fallos de la vuelta); correcciones [corregido] en c7_analisis_critico.md; addendum 2 en c7_fallos_r1.md (cosecha del árbol); STATUS §Concilio + §Lunes addenda 7a-7e; manuscrito §6 pre-regla de empate; 8 hallazgos nuevos (primera_vuelta 49)"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "Guiones del concilio comiteados en analisis_c7/guiones_concilio_2026-10-17/ (auditor con salidas, analista 01-08, qa06+parser, cuenta_presupuesto, driver gold-patch) y leaderboard público archivado (antes solo en /tmp)"
+    }
+  ],
+  "lessons": [
+    "Antes de convocar un concilio, comprueba que la rama está al día con origin/main: los episodios nuevos cambian el recall, y este es el segundo concilio que repite el fallo del episodio 096",
+    "Un rol al que se le entrega la hipótesis la devuelve confirmada: el encargo lleva la pregunta, las rutas y las prohibiciones, nunca cifras ni conclusiones del orquestador",
+    "Cuando dos roles miden lo mismo por vías distintas (log del arnés vs proxy CSV del umbral), manda el dictamen del auditor sobre qué criterio de lectura vale, no la cifra mayor",
+    "include_thoughts:false solo oculta los pensamientos del contexto; apagar el razonamiento exige thinking_budget:0 — leer el compilador (generation.py), no el README",
+    "El arnés cosecha el diff del árbol al cortar el tiempo: una tarea puede resolver sin ninguna llamada submit_patch (rich_3043) — verificar las trazas en bytes antes de relatar causas"
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-17",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Kimi Code",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Kimi Code",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 0
+  }
+}

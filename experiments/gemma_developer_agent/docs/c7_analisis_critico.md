@@ -4,6 +4,16 @@ Fecha: 2026-10-17. Rama `exp/kaggle-c7-replicates`. Autor: sesión Kimi Code del
 Regla de oro: cada afirmación va etiquetada **[DATO]** (medido, con fuente), **[INFERENCIA]**
 (deducción de datos) o **[ESPECULACIÓN]** (hipótesis sin evidencia directa).
 
+> **Correcciones del concilio 2026-10-17** (vuelta 49 / concilio 51, bitácora
+> [`c7_concilio_2026-10-17.md`](c7_concilio_2026-10-17.md); guiones en
+> `analisis_c7/guiones_concilio_2026-10-17/`): «15/20 (75%) mueren en el muro» → **13/20 (65%)**
+> timeouts y **12/16 (75%) de los fallos**; «0/148 bajo 230 s» → **18/148 ≥230 s**; «submit 20%
+> (4/20)» → el intento con status ok fue **7/20 (35%)**, 4/20 es resolución; «mediana 79-93 s» y
+> «×3-4 wall-clock» tomaban subconjuntos (rango real 61,2-213,4 s por corrida; ×2,3-3,3). La era
+> 2026-10-06 **no era thinking-off**: `thinking_budget:4096` con `include_thoughts:false`
+> (pensamiento oculto, no apagado), así que la proyección «thinking-off ≈ 314 min» queda como
+> hipótesis sin medir. Las cifras corregidas aparecen marcadas [corregido] en el texto.
+
 ## Trazabilidad (fuentes)
 
 | Fuente | Ruta | Uso |
@@ -48,15 +58,23 @@ estable; el 0.10 de sub-018 (nav) y el 0.13 (viejo) son indistinguibles (Δ=0.03
 §STATUS «Kit v2») da 540-637 min consumidas de 720 con el kit actual — las ~120 tareas caben.
 [DATO] en nuestras corridas locales la tasa de submit fue 91% (135/148, era 4 min) y 20% (4/20,
 era 4.5 min con razonamiento) — la diferencia es conducta del agente, no capacidad del run.
+[corregido, concilio 2026-10-17] el «20%» rotula resolución: el submit con status ok en réplica 1
+fue **7/20 (35%)** (auditor, `guiones_concilio_2026-10-17/auditor/audit_02_submits.py`); sin bytes
+de parche mide intento, y 44/135 submits de la era están vacíos — la métrica sana es parche no
+vacío.
 
 **Tasa de resolución** [DATO]: replica1 4/20 (20%); iteraciones 25/148 (16.9%); ledger: EXP-002
 6/30, EXP-007 7/30, EXP-011 5/12, EXP-012 5/12. Por repo solo tenemos rich (todas las corridas
 locales son rich): 17-20%. Para fastapi/requests no hay corrida local por-tarea (hueco declarado).
 
-**Muerte en el muro de tiempo** [DATO]: 4.5 min + razonamiento: 15/20 (75%) mueren en el muro,
-mediana 272 s. 4 min sin razonamiento: 0/148 bajo el umbral de 230 s, mediana 79-93 s. El
-razonamiento encendido multiplica ×3-4 el wall-clock por tarea (272 vs 79-93 s) **sin cambiar la
-resolución local** (20% vs 17-18%, n pequeño).
+**Muerte en el muro de tiempo** [DATO] [corregido, concilio 2026-10-17]: 4.5 min + razonamiento:
+**13/20 (65%)** tocaron el muro por log del arnés y **12/16 (75%) de los fallos** murieron en él
+(el «15/20» mezclaba denominadores; dos `muro=True` no murieron: rich_3278 y rich_3130; rich_3043
+resolvió por cosecha del árbol al timeout con 0 llamadas `submit_patch`),
+mediana 272 s. 4 min «sin razonamiento» [corregido: era `thinking_budget:4096` con thoughts
+ocultos, no apagado]: **18/148 ≥230 s** (el «0/148» era falso), medianas por corrida 61,2-213,4 s
+(el «79-93» tomaba un subconjunto). El razonamiento encendido multiplica ×2,3-3,3 el wall-clock
+por tarea **sin cambiar la resolución local** (20% vs 17-18%, n pequeño).
 
 **Veredicto Q1** [INFERENCIA]: el 0.13 es el techo **observado** de kit+instrumento, no una
 meseta causal única. El instrumento aporta σ≈0.02; el kit aporta una tasa de resolución real del
@@ -114,8 +132,8 @@ El loop autónomo registrará el score real cuando caiga; la comparación se har
 | sub-019 (nav v2, 5.0 min) score LB | **0.10** | [0.06, 0.14] | sub-018=0.10 + Δ(0-1 tareas/58); ruido IC95 ±0.041 |
 | lunes A (local, 20 rich) | 4/20 | [2, 6] | réplica 1 = mismo config |
 | lunes nav (local) | 4/20 | [2, 6] | réplica 1 |
-| lunes presupuesto (local) | 5/20 | [3, 7] | ataca el 75% de muertes en muro [INFERENCIA] |
-| lunes thinking (local) | 4/20 | [2, 6] | era sin razonamiento 17-18% en las mismas rich [DATO] |
+| lunes presupuesto (local) | 5/20 | [3, 7] | ataca 12/16 fallos que mueren en el muro [INFERENCIA] |
+| lunes thinking (local) | 4/20 | [2, 6] | era con thoughts ocultos (budget 4096), 17-18% en las mismas rich [DATO] |
 | lunes forrajeo (local) | 5/20 | [2, 7] | prior débil [ESPECULACIÓN]; el test es el valor |
 
 Tabla comparativa preparada (se rellena con el dato real): sub-019 predicho 0.10 [0.06, 0.14] vs
@@ -124,16 +142,23 @@ real ___ → veredicto: dentro de ruido si |real−0.10| ≤ 0.041 relativo al i
 
 ## Fase 4 — Recomendaciones rankeadas (ganancia esperada de score por hora-GPU; presupuesto 30 h)
 
-1. **Thinking bajo/apagado con el budget reinvertido en tiempo** — [DATO] ×3-4 wall-clock sin
-   ganancia local de resolución; EXP-010 verificó `thinking_budget: 0` en el arnés nuevo. Esperado:
+1. **Thinking bajo/apagado con el budget reinvertido en tiempo** — [DATO] ×2,3-3,3 wall-clock sin
+   ganancia local de resolución; EXP-010 verificó `thinking_budget: 0` en el arnés nuevo. [corregido,
+   concilio 2026-10-17]: la era de contraste NO era thinking-off (era budget 4096 con thoughts
+   ocultos; `include_thoughts:false` solo oculta — el apagado real exige `thinking_budget:0`), y el
+   envelope de la cap rechaza 9-10 min/tarea salvo que thinking-off baje las muertes a menos de la
+   mitad (break-even f≈0,49; a f=0,65 de réplica 1 no cabe: 874>720; **6,0 min sí cabe: 641 min**).
+   La configuración fiel a esta recomendación es un sexto brazo `thinking_budget:0` + 6,0 min +
+   prompt de A (delta puro de config). Esperado:
    eliminar riesgo de cap en el envío + 0-2 tareas/58 [INFERENCIA]. Coste: 1 corrida ≈ 1.7 h GPU.
-   **Mejor ganancia/hora.**
+   **Mejor ganancia/hora, condicionada a medir f el lunes.**
 2. **Gold-patch rerun local (CPU)** — 0 GPU-h. [DATO] la discusión 747248 muestra que la
    medibilidad real difiere del nombre de la tarea (61/67 fastapi); sin el conjunto medible real,
    cualquier optimización posterior apunta a tareas rotas. Programado para el lunes (STATUS).
 3. **Measurement set estratificado** (repo × riqueza × tamaño de patch) — 0 GPU-h; rediseña las 20
    tareas sustitutas tras (2). Evita sobre-optimizar el peor caso (enunciados rich de 138 chars).
-4. **Brazo presupuesto** — [DATO] 75% de muertes en el muro en la única corrida reasoning-on;
+4. **Brazo presupuesto** — [DATO] 12/16 de los fallos mueren en el muro en la única corrida
+   reasoning-on [corregido, concilio 2026-10-17: era «75% de muertes» con denominador mezclado];
    el brazo existe y cuesta 1 corrida. Esperado +0-2 tareas/20 [INFERENCIA].
 5. **Kit v2 (5.0 min, sub-019)** — ya enviado; esperado +0-1 tareas/58. Coste 0 (hecho).
 6. **Brazo forrajeo** — test pre-registrado (Q2); upside exploratorio, coste 1 corrida.
@@ -158,12 +183,18 @@ variable medida. Matiza EXP-005 del ledger («ediciones tempranas apresuradas ro
 correcta es la que resuelve; la lección es **editar temprano con verificación, no editar pronto**.
 
 **A3. Simulación de la cap de 12 h** [DATO, bootstrap sobre tiempos reales por tarea, 2.000
-simulaciones, setup 45 s/tarea + 7 min una vez]: reasoning-on consume **607 min de media (p95
-638) de 720 — cabe, sin margen para nada**; sin razonamiento consume **314 min (p95 336) — deja
-~406 min de slack**, suficiente para **duplicar el tiempo por tarea** (p.ej. 4.5 → 9-10 min) o
-duplicar intentos. Actualiza la recomendación #1 de Fase 4: **thinking-off + reinversión del
-tiempo ahorrado** ataca a la vez el wall-death (75% de muertes en la única corrida
-reasoning-on) y la cap; es la palanca de mayor ganancia esperada por GPU-hora del inventario.
+simulaciones, setup 45 s/tarea + 7 min una vez; guion cometido en
+`guiones_concilio_2026-10-17/analista/06_a3_bootstrap_cap12h.py`]: reasoning-on consume **607 min de
+media (p95 636-638) de 720 — cabe, sin margen para nada**. [corregido, concilio 2026-10-17]: la
+era «sin razonamiento» consumía **314 min (p95 336)** con `thinking_budget:4096` y thoughts
+**ocultos** — no apagados —, así que esa proyección NO calibra pensamiento apagado: es la cifra de
+«ocultar los pensamientos», hipótesis sin medir para `thinking_budget:0`. La misma simulación con
+la distribución real y la cap incluyendo setup (auditor, `auditor/audit_05_envelope.py`) da:
+reinversión a **9,0 min solo cabe si f≤0,47-0,49** (a f=0,65 de réplica 1: 874 min, no cabe);
+**6,0 min cabe con margen** (641 min a f=0,65; break-even f≈0,81). Actualiza la recomendación #1
+de Fase 4: **thinking-off real (`thinking_budget:0`) + reinversión moderada (6,0 min)** ataca el
+wall-death (12/16 de los fallos en la única corrida reasoning-on) y la cap; el detector de
+pérdida de capacidad es la subida de `parche_no_resuelto`/`err_tool_count`.
 
 **A4. Leaderboard completo** [DATO, descarga oficial del LB 2026-10-17 15:01 UTC, 3.043 equipos]:
 **mediana 0.13, media 0.119** (p25 0.08 / p75 0.17 / p90 0.18). Cabeza: 0.24×2, 0.22×27,

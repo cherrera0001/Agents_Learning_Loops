@@ -59,6 +59,12 @@ extend-exclude = [
     "experiments/gemma_developer_agent/replicas_c7_forrajeo/notebook_c7_forrajeo.ipynb",
     # Directorio local de hooks de Codex; no está trackeado (CI no lo ve) y no es fuente del repo.
     ".codex",
+    # Guiones de apoyo del concilio 2026-10-17 (analisis_c7/guiones_concilio_2026-10-17/): son
+    # artefactos de reproducibilidad escritos por los roles del staff; se validan reejecutándolos,
+    # no linteándolos (mismo precedente que los notebooks generados).
+    "experiments/gemma_developer_agent/analisis_c7/guiones_concilio_2026-10-17",
+    # Generado por replicas_c7_r1fiel/armar_notebook_r1fiel.py (sexto brazo R1-fiel).
+    "experiments/gemma_developer_agent/replicas_c7_r1fiel/notebook_c7_r1fiel.ipynb",
 ]
 
 [tool.ruff.lint]

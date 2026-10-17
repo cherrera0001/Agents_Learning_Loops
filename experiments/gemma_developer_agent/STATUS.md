@@ -1,12 +1,10 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~15:05 UTC (consulta: sub-019 sigue PENDING t+9,8h — dentro del rango
-histórico de 13,75 h de sub-018; vigía rearmado como loop «vigía + avance condicional»
-(cron `01M556RTC88NBYKVHQT9M14ATE` a :09/:39: al puntuar registra, aplica el árbol de decisión
-por score — ≥0.18 candidato de referencia / 0.08-0.18 plan del lunes sin cambios / <0.08
-sospecha de regresión — y se autodestruye; la sesión que lo aloja no debe cerrarse). **Bloqueo de
-cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es
-lo esperado). Cabeza: `4ff7554` + push al día.
+Actualizado: 2026-10-17 ~20:00 UTC (concilio C7 Fase 4 ejecutado y registrado — bitácora
+[`docs/c7_concilio_2026-10-17.md`](docs/c7_concilio_2026-10-17.md); loop vigía sub-019 activo,
+cron `01M556RTC88NBYKVHQT9M14ATE`; merge de `origin/main` (campaña C0 calibración offline,
+episodios 100-101) hecho en la vuelta). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal;
+el lunes 2026-10-19 es lo esperado). Cabeza: merge `001c573` + commits de esta vuelta.
 
 ## Kit v2 «presupuesto-corregido» (sub-019, ENVIADO 2026-10-17 05:18 UTC, ref 57296502)
 
@@ -187,7 +185,10 @@ python_multipart"` (115 ruedas): **typing_inspection 0.4.4 SÍ**, **python_multi
 de la nota 71→103 no se nombra en ningún archivo commiteado (la sesión web paralela lo
 confirmó: el apunte no viajó al repo); con los candidatos trazables, la medición 71→103 no es
 reproducible desde el wheelhouse mientras falten h11 y dirty_equals (starlette ya sube a 0.50.0
-— el entorno evolucionó desde el lock).
+— el entorno evolucionó desde el lock). **Matiz del concilio 2026-10-17 (forense, verificado en
+bytes)**: la ausencia vale solo para `data/wheels/` (espejo de Kaggle, 115 ruedas) — en
+`data/build_sandbox_20261003_v2/wheels` (117 ruedas) **h11-0.16.0 y dirty_equals-0.11 SÍ están**;
+la medición 71→103 queda executable en local con el build sandbox, no desde el espejo.
 
 **(ii) tasks.jsonl (local, 2026-10-17): verificación contra EDA público — COINCIDE en todo.**
 129 tareas — repos: fastapi/fastapi 67, Textualize/rich 48, psf/requests 13, encode/httpx 1.
@@ -238,6 +239,63 @@ se cambia nada.
    decisión) pasa a ser **candidato de envío para la semana siguiente**, sujeto a las gates de
    envío vigentes (reglas del concurso, horas consumidas del presupuesto de 12 h, límite diario).
 6. Con todo: `docs/c7_ruido.md` + informe del contraste + episodio devlog + STATUS COMPLETE.
+7. **Addenda del concilio 2026-10-17 (pre-registradas antes de correr)**:
+   a. **Métrica de entrega: parche no vacío** (44/135 submits de la era estaban vacíos; `submit>0`
+      solo cuenta intento). Leer con `clase_fallo` corregido (`bc17aea`) y verificar que
+      `res.error` viaja en la salida.
+   b. **Regla de empate**: banda observada 0-2 flips; ventaja ≤3 tareas ⇒ exploratorio + réplicas
+      del líder con la cuota restante. Veto a adoptar con Δ≤3.
+   c. El brazo thinking (`9d0db7b946e7`) mide «thoughts ocultos vs visibles», NO thinking-off.
+      **Sexto brazo R1-fiel CONSTRUIDO el 2026-10-17** (`replicas_c7_r1fiel/`): `thinking_budget:0`
+      + 6,0 min + prompt byte-identico a A (delta puro verificado archivo-a-archivo), huella
+      **`3a28671c4f60`**, preflight 24/24 «Se puede subir», armar ×5 sin deriva, kernel
+      `cs4all/c7-r1fiel-condicion-7`. Correrlo decide el dueño, tras réplicas 2-3 y gold-patch y
+      reconciliando cuota con la reserva del concilio 50.
+   d. **Gold-patch CPU tiene bloqueo hoy**: faltan 82/129 snapshots (48 fastapi/33 rich/1 httpx; 47
+      cubiertas) y el venv del arnés (google-genai/litellm/docker-sdk; ruedas h11/dirty_equals en
+      `data/build_sandbox_20261003_v2/wheels`). Decisión del dueño: descargar los snapshots o
+      correr las 47 cubiertas; driver escrito en
+      `analisis_c7/guiones_concilio_2026-10-17/forense/gold_patch_local.py`.
+   e. Contar la «cosecha del árbol» (resuelta sin `submit_patch`, caso rich_3043) como entrega
+      válida al leer resultados ajenos.
+
+## Concilio C7 Fase 4 (2026-10-17, vuelta 49 / concilio 51)
+
+Pregunta: ¿las recomendaciones de Fase 4 del análisis crítico se sostienen y qué falta medir para
+el lunes? Procedimiento completo del skill (recall+rescate → 4 roles en paralelo → revisión
+cruzada sin firma → auditor → registro). Bitácora completa con los pareceres tal cual:
+[`docs/c7_concilio_2026-10-17.md`](docs/c7_concilio_2026-10-17.md). Dictámenes del auditor (mandan)
+y cambios operativos:
+
+- **Correcciones al análisis crítico** (hechas, con guiones comiteados en
+  `analisis_c7/guiones_concilio_2026-10-17/`): muro **13/20 (65%)** timeouts y **12/16 (75%) de
+  los fallos** (no «15/20»); submit réplica 1 **7/20 (35%)** intento-ok y 4/20 resolución (44/135
+  submits de la era vacíos → métrica del lunes: **parche no vacío**); **18/148 ≥230 s** (el
+  «0/148» era falso); A1 10,5× fila / 5,1× tarea única; era 2026-10-06 = **thoughts ocultos
+  (budget 4096), no thinking-off**.
+- **El brazo thinking del lunes (huella `9d0db7b946e7`) NO prueba R1**: `include_thoughts:false`
+  solo oculta pensamientos; el apagado real exige `thinking_budget:0` (verificado en código del
+  compilador; el validador inyecta budget=max si falta). Sexto brazo R1-fiel propuesto:
+  `thinking_budget:0` + **6,0 min** (el envelope rechaza 9-10 min: a f=0,65 no caben; 6 min = 641
+  min de 720) + prompt de A, delta puro de config. Construcción 0 GPU-h; correrlo es decisión del
+  dueño (después de réplicas 2-3 y gold-patch, y reconciliando cuota con la reserva del
+  concilio 50).
+- **Regla de empate PRE-REGISTRADA hoy**: banda A-vs-A observada 0–2 flips; ventaja ≤3 tareas ⇒
+  resultado exploratorio + réplicas del líder con la cuota restante; banda ≥3 ⇒ nada se adopta.
+  Veto: no adoptar con Δ≤3 (p≈0,24–0,43), no decidir por `submit>0` sin filtrar vacíos.
+- **Gold-patch CPU no ejecutable hoy**: faltan 82/129 snapshots (48 fastapi/33 rich/1 httpx; 47
+  cubiertas) y el venv del arnés (google-genai/litellm/docker-sdk). **Corrección al Track C(i):
+  h11-0.16.0 y dirty_equals-0.11 SÍ existen en `data/build_sandbox_20261003_v2/wheels`** (no en
+  `data/wheels/`, espejo de Kaggle — dos directorios distintos).
+- **rich_3043 resolvió sin `submit_patch`** (cosecha del árbol al timeout, verificado en bytes) —
+  corregido `c7_fallos_r1.md` (addendum 2); el arnés acepta entregas no confirmadas por el agente.
+- Set sustituto: solo **4/20 tareas ganables** (16 ceros estructurales); la banda 0-2 hace la
+  regla del lunes justa pero de rango casi nulo — la regla de empate cubre ese hueco.
+- Fallo de la vuelta (orquestador): recall inicial sin episodios 100-101 (rama no al día con
+  main) — detectado en vuelta, merge `origin/main` hecho y recall repetido; queda en el episodio.
+- Diversidad declarada: los 5 roles son el mismo modelo (quitar firmas evita deferencia, no da
+  diversidad). Nuevos hallazgos en `hallazgos.json` (primera_vuelta 49); ningún hallazgo abierto
+  previo fue re-medido en esta vuelta.
 
 ## Project WORM (2026-10-17): del documento de gusanos a un quinto brazo
 

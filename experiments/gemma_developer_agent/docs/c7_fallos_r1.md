@@ -131,6 +131,16 @@ etiqueta: 16 `sin_parche` ≠ 16 «sin parche». Si alguno de los 4 «merecía»
 determinable offline (los parches no se guardan, por la frontera de datos; haría falta re-correr
 con captura de parche o recibos con hash).
 
+**Addendum 2 (2026-10-17, concilio C7 Fase 4 — corrige el punto 3 de arriba):** rich_3043 **no
+hizo `submit_patch` antes del timeout** — su traza tiene 0 llamadas `submit_patch` (verificado en
+bytes por forense, QA y auditor del método, concilio 51 / vuelta 49,
+[`c7_concilio_2026-10-17.md`](c7_concilio_2026-10-17.md)). Resolvió por **cosecha automática del
+diff del árbol de trabajo al cortar el tiempo** (`agent_runner.py:1054-1097`): el parche se
+colecciona del árbol aunque el agente no lo envíe. El hecho corrige el relato («el submit fue
+anterior al timeout» es falso) y abre la clase «resuelta sin submit por cosecha» — el arnés
+acepta entregas que el agente nunca confirmó, lo que importa para leer tiempos-límite ajenos y
+para el contraste del lunes (contar la cosecha como entrega válida).
+
 **Fix propuesto para réplicas 2-3 (decisión del dueño):** leer `res.agent_patch` en `clase_fallo`
 y añadir `clase = "parche_no_resuelto"` cuando haya parche sin resolución, registrando también
 `res.error`. No cambia la huella (es código del notebook, no del kit) pero rompe la identidad
