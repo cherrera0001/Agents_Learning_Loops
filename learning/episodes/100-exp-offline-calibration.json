@@ -1,0 +1,78 @@
+{
+  "seq": 100,
+  "id": "exp-offline-calibration",
+  "goal": "Calibrar offline η_h, α y τ_seed de la memoria del devlog reproduciendo los episodios de la bitácora, con regla de decisión pre-registrada (>=5 pp en validación o se conservan los defaults)",
+  "ref": "rama exp/offline-calibration (sin issue)",
+  "steps": [
+    {
+      "action": "recall_memory",
+      "success": true,
+      "note": "devlog recall antes de implementar: recuperó las lecciones de clasificación por palabras (#167) y de citar el commit de los episodios al recircular cifras"
+    },
+    {
+      "action": "estimate_issue",
+      "success": true,
+      "note": "Talla M (A2 I2 R2 V3 = 9): varios archivos, diseño fijado por el dueño, la recomendación podría proponer cambiar defaults de la biblioteca, verificación = experimento de análisis. Agente no Claude: sin tabla de modelos (docs/estimation.md §2.3)"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Pre-registro C0 (f0ee4e0) commiteado solo, antes de cualquier corrida, con las dos addiciones del dueño: denominadores por ventana con tasa sin-clase, y tasa de calibración de la ganadora junto a la de validación. Desviaciones fijadas ahí: 97 episodios (el '43' del pedido era la foto del README del 2026-10-02) y failure_classes.json como etiqueta causal (benchmark/private indexa tareas de Task Ledger, no episodios de desarrollo; no se leyó)"
+    },
+    {
+      "action": "run_tests",
+      "success": false,
+      "error": "python no existe en WSL y .venv/ es el venv de Windows (Scripts/python.exe); se creó .venv-linux aparte (excluido vía .git/info/exclude) y se instaló -e .[dev]"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/offline_calibration.py: replay online fiel al ciclo (RETRIEVE -> medir -> consolidar con activación), grid 3x3x3, selección en calibración, comparación pareada con bootstrap y McNemar. tests/integration/test_offline_calibration.py con episodios sintéticos fijos"
+    },
+    {
+      "action": "review_code",
+      "success": false,
+      "error": "Revisando la salida del primer run: la línea de McNemar decía «solo default 66, solo ganadora 67», pero 66 y 67 son los totales de repetidos por config; los pares discordantes reales son 9 y 10 (57 repetidos bajo ambas, 41 bajo ninguna). compare() contaba repetidos por config, no discordancias"
+    },
+    {
+      "action": "write_tests",
+      "success": true,
+      "note": "Test de regresión que construye 4 pares (ambos/solo default/solo ganadora/ninguno) y exige b=1, c=1; 9 tests en verde, ruff y mypy (src) limpios, suite completa 3487 passed"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Re-corrida con el fix (f6c4af2): ganadora en calibración τ_seed=0.4 (51.9%), pero en validación 57.3% frente a 56.4% de los defaults; Δ=-0.9 pp (IC95 bootstrap [-10.7, +9.3]). Regla pre-registrada >=5 pp NO cumplida: resultado negativo, defaults conservados. El grid colapsó: α inerte con embedder léxico (ambos canales computan el mismo coseno), η_h sin efecto en visibilidad; solo τ_seed movió la métrica, e inconsistente entre ventanas (τ=0.1: peor en calibración, mejor en validación)"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "docs/results/offline-calibration.md en el formato de los informes (Trazabilidad/Datos/Regla/Lo que la regla no dice) con todos los números trazables a results/offline-calibration-v1/aggregates.json (generado, no editado)"
+    }
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-15",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Kimi Code (agente no Claude; §2.3 de docs/estimation.md)",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Kimi Code",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 0
+  },
+  "lessons": [
+    "Antes de fijar una métrica con etiquetas causales, verifica que el archivo de etiquetas indexa el objeto a medir: benchmark/private indexa tareas de Task Ledger, no episodios de la bitácora; para estos, la etiqueta disponible es failure_classes.json",
+    "Los conteos del README son fotos con fecha: cuenta los archivos reales (97 episodios, no 43) antes de pre-registrar denominadores",
+    "Al pre-registrar una comparación pareada con McNemar, escribe la definición de discordante en el pre-registro y pruébala con pares artificiales: los totales por config pasan todos los tests si ninguno ejercita la discordancia",
+    "Con el embedder léxico, α cancela en la siembra híbrida (α·cos + (1-α)·léxica con el mismo coseno en ambos canales) y η_h no cambia qué lecciones son visibles: un grid 3x3x3 colapsó a 3 comportamientos; mide la sensibilidad de la métrica a cada parámetro antes de correr el grid entero",
+    "Selección y evaluación deben usar ventanas distintas: con 27 configs sobre la misma ventana, el ganador de calibración (τ=0.4) fue peor en validación y el mejor en validación (τ=0.1) fue malo en calibración",
+    "El resultado negativo también se entrega completo: regla pre-registrada aplicada, defaults intactos, y la decisión de cambiarlos (si algún día se reconsidera) es del dueño, no del implementador"
+  ]
+}
