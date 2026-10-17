@@ -1,8 +1,21 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~14:30 UTC (ciclo «corregir→enviar» nav: PARADO sin envío — el kit
-corregido es idéntico al de sub-018; evidencia abajo). **Bloqueo de cuota GPU sigue vigente**
-(reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `79bfd57`.
+Actualizado: 2026-10-17 ~15:00 UTC (registro de push/auth + runbook del lunes completo; sin GPU,
+sin pushes a Kaggle). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
+2026-10-19 es lo esperado). Cabeza: `f91997c`.
+
+## Push y auth (2026-10-17)
+- **Repo público al día**: `origin/main` = `36b942a` y `origin/exp/kaggle-c7-replicates` =
+  `f91997c` (0 ahead/0 behind en ambas; verificado con fetch). Requisito de reproducibilidad de
+  las reglas del concurso cumplido (método y ablaciones citados en la descripción de sub-018).
+- **Auth**: `gh` autenticado como `cherrera0001` (PAT por stdin; sin eco, sin tocar `.env`, sin
+  commitear). **Pendiente del dueño: ROTAR el PAT en GitHub Settings** — transitó por el chat en
+  claro con scopes amplios; tratar como expuesto (el push ya está hecho, no hay prisa operativa).
+- **Discrepancia resuelta (sesión web paralela)**: esa sesión rebuildó la variante thinking con
+  huella `5e4ccbe0…` desde fuentes públicas, sin el kit verificado de réplica 1. La huella
+  **canónica sigue siendo `9d0db7b946e7`** (armar la recompute sobre la descarga de réplica 1,
+  preflight 24/24). Nadie debe usar `5e4ccbe0…` para medir ni enviar; sus 12/12 checks son un
+  subconjunto de nuestros 24/24.
 
 ## Ciclo corregir→enviar 2026-10-17 (autorizado; verificación completa, PARADO antes del envío)
 
@@ -232,15 +245,38 @@ se cambia nada.
 - Conjunto de 19 tareas original: irrecuperable (evidencia en replicas_c7/tareas_c7.json).
 
 ## Ahora
-- Fase 1: conjunto sustituto = las 20 tareas rich rescatadas (ids_rich_provisional.txt, la pasada
-  real `sesion-unica-a` de 20 tareas). DESVIACIÓN declarada: 20 rich, no las 19 mixtas del 9/19.
-- Próximo paso exacto: actualizar tareas_c7.json + guard del notebook, rebuild, preflight, commit,
-  lanzar corrida 1/3 con `kaggle kernels push -p experiments/gemma_developer_agent/replicas_c7
-  -t 9000 --accelerator NvidiaL4`.
+- **Estado: CERRADO hasta el lunes 2026-10-19** (reinicio de la cuota GPU). Todo el código está
+  commiteado, verificado y empujado; sub-018 en PENDING la vigía el cron (reglas a/b/c).
+- **Próximo paso exacto**: la sección «Lunes» de arriba (5 brazos + 2 réplicas de ruido) y el
+  «Siguiente (resume)» de abajo. Kernel ids: `cs4all/c7-replica-condicion-7` (A, v6=v1 hecha;
+  push v7/v8 = réplicas 2-3), `cs4all/c7-navegacion-condicion-7`, `-presupuesto-`… los metadatos
+  de cada kernel están en su `kernel-metadata.json`.
 
-## Siguiente (resume)
-Si la sesión se interrumpe: leer este archivo; continuar en el paso «Ahora». Kernel id/URL de cada
-corrida se anota abajo en cuanto exista.
+## Siguiente (resume EXACTO — lunes 2026-10-19, cuota reiniciada)
+0. `git switch exp/kaggle-c7-replicates` (ya está) y spot-check: los 5 armar corren y reproducen
+   huellas (A `0f52de0b84cb`, nav `af8cca829561`, presupuesto `52ba08ceac25`, thinking
+   `9d0db7b946e7`, forrajeo `fb8175c0e74e`); preflight 5/5 «Se puede subir».
+1. **Réplica 2 (A)**: `kaggle kernels push -p experiments/gemma_developer_agent/replicas_c7
+   -t 9000 --accelerator NvidiaL4` → crea v7. Si responde error de cuota semanal: PARAR, anotar
+   mensaje literal, esperar (no reintentar en bucle).
+2. Poller en background (sleep 240 + `kaggle kernels status -k cs4all/c7-replica-condicion-7`
+   cada 5 min, hasta terminal, timeout 14.400 s). Al COMPLETE:
+   `kaggle kernels output -k cs4all/c7-replica-condicion-7 -p experiments/gemma_developer_agent/data/replicas_c7/replica_2 -o -q`;
+   validar salida (20 filas, huella `0f52de0b84cb`, cortado_por null); commit.
+3. **Réplica 3 (A)**: mismo ciclo (push → v8) hacia `replica_3/`. Con réplicas 1-3: banda de
+   ruido = flips por tarea entre las tres.
+4. **Cuatro variantes**, en este orden (mismo patrón push → poller → pull → validar → commit;
+   datos bajo `data/replicas_c7/<variante>_run1/`): nav (`-p …/replicas_c7_nav`), presupuesto,
+   thinking, **forrajeo** (`cs4all/c7-forrajeo-condicion-7`). Verificar en cada salida la huella
+   de su brazo y 20 filas.
+5. **Análisis**: `docs/c7_ruido.md` (formato del repo; resueltas por corrida, flips por tarea,
+   dónde cae el 9/19 original declarando el conjunto sustituto, denominadores 20/19) + informe
+   del contraste. Regla de decisión fijada: un brazo solo cuenta si supera a A en MÁS de la banda
+   de ruido; banda ≥3 tareas → ninguna decisión. El ganador pasa a candidato de envío de la
+   semana siguiente, sujeto a gates (1/día oficiales, horas consumidas del dueño, sin duplicados
+   de contenido).
+6. **Cierre de campaña**: episodio devlog (101/102 según numeración vigente) + STATUS COMPLETE.
+   Si a mitad cae la cuota o la sesión: registrar ids/URLs de kernels lanzados aquí y STOP.
 
 ## Corridas lanzadas
 - v1 ERROR: makedirs('') en guarda de versiones. v2 ERROR: sin celda de instalacion. v3 ERROR:
