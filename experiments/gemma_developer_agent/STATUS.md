@@ -1,9 +1,10 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~05:20 UTC (loop autónomo: sub-018 SCORED 0.10 → sub-019 ENVIADO ref
-57296502 en el mismo despertar; el loop vigía ahora 57296502). **Bloqueo de cuota GPU sigue
-vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `f16225e` + commit de
-este despertar.
+Actualizado: 2026-10-17 ~15:05 UTC (consulta: sub-019 sigue PENDING t+9,8h — dentro del rango
+histórico de 13,75 h de sub-018; vigía rearmado como cron `01M5566GGN02AHRY64CM7XKF3Z` a :09/:39,
+con protocolo de registro autocontenido y autodestrucción al puntuar; la sesión que lo aloja no
+debe cerrarse). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es
+lo esperado). Cabeza: `4ff7554`.
 
 ## Kit v2 «presupuesto-corregido» (sub-019, ENVIADO 2026-10-17 05:18 UTC, ref 57296502)
 
@@ -41,8 +42,9 @@ este despertar.
   literales en notes. La Fase 2 del loop lo envió en el mismo despertar en que sub-018 puntúo
   (0.10, 05:15 UTC) y liberó el cupo; slot del día consumido («0 submissions remaining today»).
   Registry: status `pending` con el ref en notes; test tripwire 61 passed. El loop vigía ahora
-  **57296502**; al puntuar registrará la comparación (vs 0.10 de sub-018, vs 0.13 del kit viejo,
-  banda ±0.05) y se autodestruirá con la tabla final de la campaña.
+  **57296502** (consulta 2026-10-17 ~15:05 UTC: PENDING, t+9,8h — dentro del rango histórico);
+  al puntuar registrará la comparación (vs 0.10 de sub-018, vs 0.13 del kit viejo, banda ±0.05;
+  predicción sellada 0.10 [0.06,0.14]) y se autodestruirá con la tabla final de la campaña.
 - **Tarea 6 (gold-patch CPU local)**: estimado >2 h en CPU (129 tareas × pytest en 2 vCPU) →
   **programada para el lunes** como primer paso opcional del runbook (fijar el conjunto
   medible real antes de cualquier nuevo measurement set; los públicos 109/129 vs «~la mitad»
