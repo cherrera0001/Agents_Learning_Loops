@@ -165,9 +165,12 @@ duplicar intentos. Actualiza la recomendación #1 de Fase 4: **thinking-off + re
 tiempo ahorrado** ataca a la vez el wall-death (75% de muertes en la única corrida
 reasoning-on) y la cap; es la palanca de mayor ganancia esperada por GPU-hora del inventario.
 
-**A4. Leaderboard, página 3** [DATO]: filas 41-60 todas 0.20 → top-60 = 0.24×2, 0.22×27,
-0.20×31. La mediana del LB completo queda pendiente (2.951 equipos ≈ 148 páginas; token de
-paginación disponible en el historial de la sesión).
+**A4. Leaderboard completo** [DATO, descarga oficial del LB 2026-10-17 15:01 UTC, 3.043 equipos]:
+**mediana 0.13, media 0.119** (p25 0.08 / p75 0.17 / p90 0.18). Cabeza: 0.24×2, 0.22×27,
+0.20×95, 0.18×317, 0.17×401, 0.15×412, 0.13×344. Con ≥0.13 hay 1.598 equipos (top ~52%): el
+0.13 del kit viejo está **exactamente en la mediana del campo**, y el 0.10 de sub-018 por debajo
+de ella. La mediana completa corrige la estimación de página 3 (0.20×31 en top-60 → 0.20×95 en
+todo el LB): la cola es mucho más densa en 0.13-0.18 de lo que sugiere el top-60.
 
 ## Limitaciones
 
