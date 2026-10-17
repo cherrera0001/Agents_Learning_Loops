@@ -1,8 +1,8 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-16 ~23:55 UTC (sesión de retoma conservadora: inspección local + una consulta
-de solo lectura del estado de sub-018; sin GPU, sin commits). **Bloqueo de cuota GPU sigue vigente**
-(reinicio semanal; el lunes 2026-10-19 es lo esperado).
+Actualizado: 2026-10-17 ~00:05 UTC (sesión con autorización total: push intentado y bloqueado,
+fix `clase_fallo` aplicado y verificado). **Bloqueo de cuota GPU sigue vigente** (reinicio
+semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `bc17aea`.
 
 ## Verified 2026-10-16 (pasada V1–V5, sesión ~16:25 UTC)
 
@@ -82,8 +82,15 @@ de solo lectura del estado de sub-018; sin GPU, sin commits). **Bloqueo de cuota
   declarativo-only, sin gancho de entorno; HARNESS_README §2.1-2.4). Nuevo matiz del Track C(i):
   el WHEELHOUSE del dataset oficial (lado datos, no envío) trae typing_inspection y
   python_multipart pero **no** h11 ni dirty_equals.
-- **Pendiente de decisión del dueño**: fix de `clase_fallo` (leer `agent_patch`) antes de réplicas
-  2-3. Recomendado: aplicar — la clase actual no mide nada.
+- **fix de `clase_fallo` = APLICADO** (2026-10-16 ~23:59 UTC, `bc17aea`, decisión tomada con
+  autorización expresa del dueño en sesión; antes pendiente aquí): los 4 notebooks leen
+  `res.agent_patch` (TaskResult 0.2.11, models/task.py:162) con `generated_patch` como respaldo;
+  nueva clase `parche_no_resuelto` (sustituye a `pruebas_fallan`, que el bug impedía emitir) y la
+  fila de resultados registra además `error`. Huellas de configuración sin cambio (re-aseguradas
+  con armar), preflight 24/24 ×4 verde, lógica ejercitada offline contra 9 casos simulados.
+  Desviación declarada: réplicas 2-3 ya no son byte-idénticas en código de medición con la
+  réplica 1 (el kit del agente sí lo es; la taxonomía de réplica 1 queda corregida a mano en
+  docs/c7_fallos_r1.md).
 
 ## Track C: preguntas del dataset (22 GB, fuera del repo; `data/` cubierto por .gitignore)
 
@@ -115,7 +122,7 @@ rich actuales miden el peor caso (enunciado corto). Solo informe; no se cambia n
   es decisión del dueño con esos datos aún no verificados.
 
 ## Lunes (cuota reiniciada): contraste de CUATRO brazos
-1. Decidir el fix de `clase_fallo` (recomendado: aplicar).
+1. ~~Decidir el fix de `clase_fallo`~~ → APLICADO el 2026-10-16 (`bc17aea`, ver arriba).
 2. Réplicas 2 y 3 de la condición 7 (brazo A; push v7/v8 de `replicas_c7/`, poller, pull,
    commits) → miden la **banda de ruido**.
 3. Un run de cada variante sobre las mismas 20 tareas: navegación (`af8cca829561`), presupuesto
