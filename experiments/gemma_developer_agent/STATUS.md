@@ -1,8 +1,29 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~04:00 UTC (sesión de cierre y reconciliación C7: sub-018 consulta,
-Track C verificado local, bandera 12 h resuelta; sin GPU, sin pushes). **Bloqueo de cuota GPU
-sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `1341802`.
+Actualizado: 2026-10-17 ~14:30 UTC (ciclo «corregir→enviar» nav: PARADO sin envío — el kit
+corregido es idéntico al de sub-018; evidencia abajo). **Bloqueo de cuota GPU sigue vigente**
+(reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `79bfd57`.
+
+## Ciclo corregir→enviar 2026-10-17 (autorizado; verificación completa, PARADO antes del envío)
+
+- **Corrección de premisa (con evidencia, no enviada)**: el fix `clase_fallo` (`bc17aea`,
+  `agent_patch`) vive en los **notebooks de réplica** (código de medición de la campaña), NO en
+  el kit del envío — el contrato es declarativo-only (6 archivos `.yaml`/`.md`, cero código;
+  `grep -r generated_patch\|agent_patch kit_nav/` → sin coincidencias). Por tanto **sub-018 nunca
+  estuvo afectada por el bug**: su paquete YA es la versión «corregida».
+- **Prueba de identidad**: reconstrucción del kit desde HEAD (receta documentada: `c7_submission`
+  sin `adapters/` + `kit_nav/prompts/system.md`) → huella reproducida `af8cca829561` (armar, sin
+  deriva) y zip reconstruido con la receta determinista de `pack_submission`: **6/6 entradas con
+  CRC y tamaño idénticos** al zip de sub-018 (solo difiere `external_attr`, bits de permiso del
+  contenedor: sha del rebuild `e04f8733…` vs `648d312c…`). El contenido es el mismo paquete.
+- **Decisión**: NO se envió nada. Enviar quemaría el cupo 1/día (oficial, verificado) en un zip
+  de contenido idéntico — contra la regla dura «never submit an identical or hash-equal zip».
+  sub-019 **no existe**; registry y cron vigía sin cambios (siguen sub-018).
+- **Consecuencia práctica**: el «reenvío corregido» queda descartado como concepto; el próximo
+  envío distinto será, según la regla de decisión fijada, el brazo que supere a A en más de la
+  banda de ruido el lunes (forrajeo `fb8175c0e74e` y las demás variantes ya están construidas).
+- Nota: el texto de descripción propuesto en el ciclo («parseo agent_patch») habría sido falso
+  en el paquete; queda descartado con el envío. Artefactos del rebuild en `/tmp` (fuera del repo).
 
 ## Verified 2026-10-16 (pasada V1–V5, sesión ~16:25 UTC)
 
