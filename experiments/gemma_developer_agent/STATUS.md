@@ -1,8 +1,8 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~16:30 UTC (auditoría de presupuesto del kit nav + sub-019 CONSTRUIDO, no
-enviado; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes
-2026-10-19 es lo esperado). Cabeza: `6cde51b`.
+Actualizado: 2026-10-17 ~02:00 UTC (envío forzado de sub-019: RECHAZADO por pending de sub-018,
+registrado literal; vigía ampliado con regla de desbloqueo). **Bloqueo de cuota GPU sigue
+vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado). Cabeza: `d60ddc0`.
 
 ## Kit v2 «presupuesto-corregido» (sub-019, CONSTRUIDO NO ENVIADO)
 
@@ -34,9 +34,14 @@ enviado; sin GPU). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el 
   del lunes se mide a 4.5 min por comparabilidad — sub-019 es candidato de LEADERBOARD, no del
   contraste). Compilación `adk-submission 0.2.13` oficial: **OK** (venv desechable
   `/tmp/venv_pack` con las ruedas locales).
-- **sub-019** registrado (registry.json, status `prepared`, test tripwire 61 passed). Se sube
-  solo tras gates: cupo 1/día, horas consumidas del dueño, y **después** del contraste del
-  lunes si un brazo lo justifica mejor.
+- **sub-019** registrado. **INTENTO DE ENVÍO 2026-10-17 ~01:50 UTC (orden expresa del dueño, un
+  solo intento): RECHAZADO** — mensaje literal de la plataforma: «Submission not allowed: Your
+  team already has 1 pending submissions; please wait for one to finish scoring.»
+  (FAILED_PRECONDITION). El cupo diario estaba libre (0 envíos hoy UTC) y el sha se verificó
+  antes de subir; el bloqueo es sub-018 PENDING, no cuota GPU ni zip. Registry: status
+  `submit_failed` con el mensaje en notes; test tripwire 61 passed. **Queda listo para reenviar
+  en cuanto sub-018 puntúe**; el reenvío requiere confirmación explícita del dueño (la regla
+  «el lunes decide» sigue vigente para elegir entre sub-019 y un brazo ganador).
 - **Tarea 6 (gold-patch CPU local)**: estimado >2 h en CPU (129 tareas × pytest en 2 vCPU) →
   **programada para el lunes** como primer paso opcional del runbook (fijar el conjunto
   medible real antes de cualquier nuevo measurement set; los públicos 109/129 vs «~la mitad»
@@ -205,11 +210,13 @@ se cambia nada.
   la plataforma devolvió «0 submissions remaining today»).
 - **Horas consumidas del presupuesto: sigue siendo del DUEÑO** (no hay endpoint legible desde
   aquí; ver en la página del concurso). Única gate de envío pendiente de dato.
-- **sub-018 (57274153): PENDING a la última lectura** (enviada 2026-10-16 15:30 UTC; consultas
-  del vigía a t+10 h y t+12 h: PENDING; última de esta sesión: PENDING ~t+14 h — dentro de lo
-  normal: 12 h oficiales de presupuesto + cola). Si el score llega anómalo, la versión con el
-  fix `clase_fallo` ya está en la rama (`bc17aea`) y se sube al día siguiente; no se reenvía
-  nada (cupo 1/día).
+- **sub-018 (57274153): PENDING >24 h — ANÓMALO** (enviada 2026-10-16 15:30 UTC; lecturas del
+  vigía t+10/12/15/26/34 h: PENDING). Cruzó el umbral de las 12 h oficiales de evaluación + cola:
+  **dueño revisa la cola en la página web del concurso; si aparece atascada, cancelarla desde la
+  UI** (yo no la cancelo). Bloqueo colateral verificado: la plataforma rechaza envíos nuevos
+  mientras haya 1 pending («Your team already has 1 pending submissions») → sub-019 no puede
+  subir hasta que sub-018 termine. Vigía (id `01M53RZD2AY1YN3V23FXG1GT6Q`) vigila sub-018 con
+  reglas a/b/c + aviso de desbloqueo de sub-019 (regla d, sin enviar por su cuenta).
 
 ## Lunes (cuota reiniciada): contraste de CINCO brazos
 1. ~~Decidir el fix de `clase_fallo`~~ → APLICADO el 2026-10-16 (`bc17aea`, ver arriba).

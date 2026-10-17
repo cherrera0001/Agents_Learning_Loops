@@ -614,12 +614,14 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "57274153" in nav["notes"] and "2026-10-16 15:30:14 UTC" in nav["notes"]
     assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
 
-    # El kit v2 presupuesto-corregido: construido y compilado, sin enviar
+    # El kit v2 presupuesto-corregido: construido y compilado; el envío fue rechazado
+    # porque sub-018 sigue pending (un solo intento, 2026-10-17)
     v2 = filas["sub-019"]
-    assert (v2["status"], v2["public_score"], v2["date"]) == ("prepared", None, "2026-10-17")
+    assert (v2["status"], v2["public_score"], v2["date"]) == ("submit_failed", None, "2026-10-17")
     assert v2["sha256"].startswith("c08e5327") and v2["condition"] == "NAV-V2"
     assert "355f4954f50c" in v2["notes"] and "5.0" in v2["notes"] and "4.5" in v2["notes"]
-    assert "NO ENVIADO" in v2["notes"] and "REFUTADA" in v2["notes"]
+    assert "FAILED_PRECONDITION" in v2["notes"] and "pending submissions" in v2["notes"]
+    assert "REFUTADA" in v2["notes"]
 
     # Los cambios de estado quedan en los tres enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
@@ -636,7 +638,6 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
         "sub-015",
         "sub-016",
         "sub-017",
-        "sub-019",
     ]
     assert {k: filas[k]["public_score"] for k in ("sub-002", "sub-003", "sub-005", "sub-006")} == {
         "sub-002": 0.06,
