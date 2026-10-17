@@ -159,7 +159,10 @@ for _f in ("agent.yaml", "sub_agents/code_analyzer.yaml"):
 # Brazo 12B: la variante del modelo es el delta principal (una sola variante por envio, regla oficial).
 for _f in ("agent.yaml", "sub_agents/code_analyzer.yaml"):
     _p = AGENT_DIR / _f
-    _p.write_text(_p.read_text(encoding="utf-8").replace("gemma-4-31b-it-qat-w4a16-ct", "gemma-4-12b-it-qat-w4a16-ct"), encoding="utf-8")
+    _texto = _p.read_text(encoding="utf-8").replace(
+        "gemma-4-31b-it-qat-w4a16-ct", "gemma-4-12b-it-qat-w4a16-ct"
+    )
+    _p.write_text(_texto, encoding="utf-8")
 
 # Brazo 12B: eval_config con 5.0 min (delta 2); sampling identico a la condicion 7 (thinking 4096).
 (AGENT_DIR / "eval_config.yaml").write_text(
