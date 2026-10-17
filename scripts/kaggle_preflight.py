@@ -169,11 +169,32 @@ def comprobar_metadatos(meta: Any, directorio: Path) -> list[Hallazgo]:
     return out
 
 
-def arbol_de_entrada(raiz: Path, disposicion: str, *, ruedas_arnes: bool = True) -> None:
+def modelo_de_metadatos(meta: Any) -> str:
+    """La variante que el notebook adjunta (``model_sources``: ``google/gemma-4/<marco>/<variante>/<v>``).
+
+    Si no hay una sola fuente de modelo con esa forma, la variante por defecto (31B). Así la guardia de un
+    brazo con otra variante (12B, E4B, E2B: una sola por envío, regla oficial) se ejecuta contra la
+    estructura que verá de verdad.
+    """
+    fuentes = meta.get("model_sources") if isinstance(meta, dict) else None
+    if not isinstance(fuentes, list):
+        return MODELO
+    variantes = []
+    for fuente in fuentes:
+        partes = str(fuente).split("/")
+        if len(partes) >= 4 and partes[1] == "gemma-4" and partes[3].startswith("gemma-4-"):
+            variantes.append(partes[3])
+    return variantes[0] if len(variantes) == 1 else MODELO
+
+
+def arbol_de_entrada(
+    raiz: Path, disposicion: str, *, ruedas_arnes: bool = True, modelo: str = MODELO
+) -> None:
     """Crea bajo ``raiz`` un /kaggle/input de relleno con la estructura real, en una de sus dos formas.
 
     ``lotes`` es la de las corridas por API (``competitions/``, ``datasets/<dueño>/``, ``models/``);
-    ``plana`` cuelga cada fuente de la raíz por su nombre. Los archivos están vacíos.
+    ``plana`` cuelga cada fuente de la raíz por su nombre. Los archivos están vacíos. ``modelo`` es la
+    variante adjunta (por defecto la 31B).
     """
     if disposicion not in DISPOSICIONES:
         raise ValueError(f"Disposición desconocida: {disposicion}")
@@ -183,9 +204,9 @@ def arbol_de_entrada(raiz: Path, disposicion: str, *, ruedas_arnes: bool = True)
     else:
         datos = raiz / COMPETITION_SLUG
         ruedas = raiz / WHEELHOUSE.split("/")[1]
-    modelo = raiz / "models" / "google" / "gemma-4" / "other" / MODELO / "2"
+    ruta_modelo = raiz / "models" / "google" / "gemma-4" / "other" / modelo / "2"
     archivos = [datos / relativo for relativo in DATOS_COMPETENCIA]
-    archivos += [modelo / nombre for nombre in ARCHIVOS_MODELO]
+    archivos += [ruta_modelo / nombre for nombre in ARCHIVOS_MODELO]
     if ruedas_arnes:
         archivos += [ruedas / nombre for nombre in RUEDAS_ARNES]
     for archivo in archivos:
@@ -205,13 +226,13 @@ def ejecutar_guardia(primera: str, raiz: Path) -> int:
     return proceso.returncode
 
 
-def comprobar_guardia_ejecutada(primera: str) -> list[Hallazgo]:
+def comprobar_guardia_ejecutada(primera: str, modelo: str = MODELO) -> list[Hallazgo]:
     """La guardia, ejecutada: pasa con la estructura real y se detiene sin las ruedas del arnés."""
     out: list[Hallazgo] = []
     for disposicion in DISPOSICIONES:
         with tempfile.TemporaryDirectory() as tmp:
             raiz = Path(tmp) / "input"
-            arbol_de_entrada(raiz, disposicion)
+            arbol_de_entrada(raiz, disposicion, modelo=modelo)
             codigo = ejecutar_guardia(primera, raiz)
         out.append(
             _bien(f"Ejecutada con la estructura real ({disposicion}), la guardia pasa.")
@@ -224,7 +245,7 @@ def comprobar_guardia_ejecutada(primera: str) -> list[Hallazgo]:
         )
     with tempfile.TemporaryDirectory() as tmp:
         raiz = Path(tmp) / "input"
-        arbol_de_entrada(raiz, "lotes", ruedas_arnes=False)
+        arbol_de_entrada(raiz, "lotes", ruedas_arnes=False, modelo=modelo)
         codigo = ejecutar_guardia(primera, raiz)
     out.append(
         _mal("Ejecutada sin las ruedas del arnés, la guardia no se detiene: la corrida gastaría cuota.")
@@ -234,10 +255,11 @@ def comprobar_guardia_ejecutada(primera: str) -> list[Hallazgo]:
     return out
 
 
-def comprobar_guardia(primera: str) -> list[Hallazgo]:
+def comprobar_guardia(primera: str, modelo: str = MODELO) -> list[Hallazgo]:
     """La primera celda localiza las ruedas en /kaggle/input; no espera, no arranca nada y se detiene sola.
 
     Nombrar el dataset no basta: una guardia con una ruta inventada lo nombra y falla ya dentro de Kaggle.
+    ``modelo`` es la variante que la estructura simulada adjunta (la del ``kernel-metadata.json``).
     """
     out: list[Hallazgo] = []
     lista = "os.listdir" in primera and RAIZ_ENTRADA in primera
@@ -266,7 +288,7 @@ def comprobar_guardia(primera: str) -> list[Hallazgo]:
         else _bien("La guardia no arranca el servidor del modelo.")
     )
     if all(h.ok for h in out):
-        out += comprobar_guardia_ejecutada(primera)
+        out += comprobar_guardia_ejecutada(primera, modelo)
     return out
 
 
@@ -317,7 +339,7 @@ def comprobar_notebook(notebook: Any, meta: dict[str, Any]) -> list[Hallazgo]:
         if fijas
         else _bien("Ninguna celda escribe una ruta fija bajo /kaggle/input.")
     )
-    out += comprobar_guardia(fuentes[0])
+    out += comprobar_guardia(fuentes[0], modelo_de_metadatos(meta))
     if re.search(r"VllmServer|TransformersServer", todo):
         out.append(
             _bien("Si el servidor del modelo falla, el notebook toma la causa de la salida de la excepción.")

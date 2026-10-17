@@ -65,6 +65,8 @@ extend-exclude = [
     "experiments/gemma_developer_agent/analisis_c7/guiones_concilio_2026-10-17",
     # Generado por replicas_c7_r1fiel/armar_notebook_r1fiel.py (sexto brazo R1-fiel).
     "experiments/gemma_developer_agent/replicas_c7_r1fiel/notebook_c7_r1fiel.ipynb",
+    # Generado por replicas_c7_12b/armar_notebook_12b.py (brazo 12B, variante de modelo).
+    "experiments/gemma_developer_agent/replicas_c7_12b/notebook_c7_12b.ipynb",
 ]
 
 [tool.ruff.lint]

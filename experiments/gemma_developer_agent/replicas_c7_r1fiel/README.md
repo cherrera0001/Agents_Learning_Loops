@@ -40,7 +40,16 @@ Dos deltas **puros de configuración** respecto a la condición 7 (`0f52de0b84cb
 - Preflight 24/24 «Se puede subir» (`scripts.kaggle_preflight comprobar … --ruedas …`).
 - Comparación archivo-a-archivo contra el kit de la condición 7: los únicos diffs son
   `configs/sampling.yaml` (solo `thinking_budget: 4096 → 0`) y `eval_config.yaml` (solo
-  `max_time_minutes: 4.5 → 6.0`); prompt byte-identico.
+  `max_time_minutes: 4.5 → 5.0`; la cifra 6.0 fue la del diseño inicial); prompt byte-identico.
+- **Corrección 2026-10-18 (sesión de cierre, verificada por sha256)**: el prompt de la condición 7
+  (`replica_1/c7_submission/prompts/system.md`, sha `f1cbf794…`) es idéntico al de `i_razona`
+  (0.08/0.13/0.13) y **distinto** al de `nav_kit_v2` / sub-019 (sha `f5bd1995…`). Por tanto este
+  brazo **NO es un A/B limpio contra sub-019**: respecto a sub-019 difiere en prompt (cond. 7 vs
+  navegación) y en `thinking_budget`; respecto a `i_razona` difiere en `thinking_budget` y en
+  `max_time_minutes` (4.5 → 5.0). El único A/B limpio que ofrece es contra una condición 7 a 5.0 min
+  con thinking 4096, que no existe en el LB. La afirmación «aísla solo thinking_budget» de los
+  párrafos anteriores queda retirada; la predicción sellada de un envío de este brazo debe
+  declararse como comparación de familia (cond. 7), no como A/B.
 - `ruff check`/`format` limpios; mypy con los dos avisos heredados del patrón thinking.
 
 ## Estado

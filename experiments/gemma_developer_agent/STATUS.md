@@ -284,8 +284,9 @@ evidencia empírica favorable (19 envíos en 3+ semanas sin tope alcanzado); con
 envío dominical se apoya en eso. Detalle operativo re-verificado: la plataforma exige el nombre
 `submission.zip` y un rechazo por cupo/pending **no** consume el slot (dos rechazos el
 2026-10-17 01:50/01:56, slot intacto). Verificación de foros (regla ~5,5 min, 2 selecciones
-finales, LB 50%, variantes): **sin sesión autenticada en el CLI** — queda asignada al paso 0
-del lunes (cron); el diseño ya es robusto a 5,5 (R1-fiel a 5.0).
+finales, LB 50%, variantes): **HECHA el 2026-10-17 22:00-22:40 UTC** con la sesión del CLI vía
+`kagglesdk` (guion `analisis_c7/leer_foro_kaggle.py`; páginas oficiales y 29 hilos volcados en
+`data/foro_kaggle/2026-10-18/`, gitignored) — tabla «Fase B» más abajo.
 
 **Por qué esperar al lunes no es una regla oculta**: (1) la cuota GPU semanal del dueño está
 bloqueada hasta el lunes (reinicio semanal, observado dos semanas seguidas); (2) la regla
@@ -299,15 +300,21 @@ dueño — hay ~6,5 semanas; el «2 nov» de la prensa es probablemente el cierr
 inscrito** (userHasEntered=True) — el manuscrito del repo es candidato natural y no gasta slot;
 3.061 equipos; rank 853.
 
-**Pendiente de verificación el lunes (fuentes del análisis del dueño sin archivo propio)**:
-(1) regla atribuida al equipo de Google en foros: «~5,5 min/tarea incl. setup» — el diseño ya es
-robusto a ella (R1-fiel a 5.0); asignar lectura de hilos clavados con sesión autenticada;
-(2) mecánica de las **2 selecciones finales** (elegir a mano, diversificando familias; no dejar
-la auto-selección de Kaggle); (3) LB público ≈ 50% del test (el 0.17 es sobre la mitad del
-campo; no sobreajustar deltas públicos); (4) **regla de variantes** (todos los agentes con la
-misma variante; LoRAs permitidos) → auditar los kits finales contra ella antes de enviar;
-(5) tope de compute del notebook (fallos «Notebook Exceeded Allowed Compute» reportados) →
-nav-v2 ≈ 5-6 h deja margen sano; verificar en cualquier kit nuevo.
+**Fase B — reglas verificadas con lectura autenticada (2026-10-17 22:00-22:40 UTC)**. Fuentes: páginas
+oficiales de la competencia (Evaluation, Rules, Model Selection…, Data) leídas por la API, hilos del
+foro (id = `/discussion/<id>`) y la API de límites. La API no expone el autor de cada mensaje: «host»
+se atribuye cuando el mensaje responde a @ryanholbrook con voz de organizador.
+
+| Regla | Estado | Fuente y fecha |
+|---|---|---|
+| **a. Semántica de las 12 h**: es **un solo presupuesto para toda la corrida**, secuencial, **incluye** la preparación del sandbox y **excluye** la validación de parches; los límites por tarea en `eval_config.yaml` son opcionales. Superar las 12 h hace **fallar el envío entero**; el arreglo «no terminadas = 0» sigue **sin implementar** y el host duda de él («could lead to inconsistent results on the public and private leaderboards»). | **VERIFICADO**. La semántica **no cambió**: nunca hubo tope por tarea impuesto; el envelope de 5.0 min (698 min peor caso ≤ 720) sigue válido. | Página Evaluation (texto oficial); hilo 743063, respuesta del host 2026-09-24 («Sequentially… hitting the 12-hour limit will error»); hilo 749597, respuesta 2026-10-15. |
+| **b. Errores y rechazos no queman cupo**: rechazo por cupo o por envío pendiente (`FAILED_PRECONDITION`) **no consume** el slot (propio, 2 rechazos el 2026-10-17); «Kaggle Error» de plataforma: el host anunció recuperación en lote **sin reenviar** («No action needed: You do not need to resubmit»); existe un **límite de 1 envío pendiente por equipo**, separado del 1/día. Un envío con estado «Kaggle Error» **no consume** el envío: respuesta del host en el mismo hilo («Kaggle Error should not consume a submission anyway»; la recuperación en lote fue única, para el timeout de cola). Sí se **pierde** el día si el envío anterior sigue pendiente cuando resetea el cupo (host: «It's possible, yes, that you will lose a daily submission this way»). Sobre el arreglo de las 12 h el host añade: «I may not implement this». API de límites (2026-10-17 22:10 UTC): `limited_by_total=false` (**sin tope total, VERIFICADO**), `max_daily_submissions=1`, `num_today=1`, `num_allowed_now=0` (sub-019 fue a las 05:18 UTC → el día no ha reseteado a las 22:10: compatible con reset 00:00 UTC, a confirmar tras la medianoche), `num_total=8` (qué cuenta ese 8 frente a los 19 envíos propios: NO VERIFICADO). | **VERIFICADO** (salvo lo marcado) | Hilo 747519 (sticky, host, 2026-10-08); `ApiGetSubmissionLimits`; registro propio 2026-10-17. |
+| **c. Origen de «~5,5 min/tarea»**: es **aritmética de participantes** (720 min / ~120 tareas), **no una regla del host**. El autor de la frase que citó el dueño («even 6 min cap is out of reach») escribe dos días después: «a 5.5-minute cap allows up to 11 hours of agent time… **This is our chosen budget, not a competition rule**». Kits públicos de 8 min / 28 llamadas han puntuado (Budget-Fit declara una corrida puntuada < 12 h; equipos en 0.18-0.20). | **REFUTADA como regla** (la atribución a Google era errónea). R1-fiel a 5.0 sigue siendo un diseño seguro; 6.0 nunca estuvo prohibido, solo arriesga el envelope. | Hilos 746469 (2026-10-07), 746250 (comentario), 747857 (2026-10-09), 748618 (2026-10-12). |
+| **d. Pytest 8 / httpbin en requests**: conftest antiguo con fixture `httpbin` recursiva → error de colección en pytest 8.4.2 → `resolved=False` aunque el parche sea el gold; `conftest.py` es protegido (se revierte). Además 8 tareas requests son irresolubles en py3.13 por el certificado de pytest-httpbin (6589, 6592, 6629, 6757, 7328, 7433, 7502, 7505): coinciden con 8 de nuestras 10 gold-fallan de requests (las otras: 6644, 7205). **Lo decisivo**: el host confirma que el set oculto está filtrado y que «a submission with "gold patches" validates at 100%» → los 52 gold-fallan son del set público/local, no del scorer. Impacto en el set medible: ya excluidas por el gold local; requests aporta 3 medibles. | **VERIFICADO** (local + foro). «fastapi ambiental de campo» **confirmado como fenómeno local/público**: 21/67 fastapi públicas importan `dirty_equals`/`inline_snapshot` ausentes en `data/wheels`; `task_soundness.csv` del organizador muestra el gold pasando en scoring. | Hilos 750253 (2026-10-17), 743973 (2026-09-28), 744259 (respuesta del host 2026-09-29), 750345 (2026-10-17), 745775, 747248. |
+| **e. Dos Final Submissions**: «You may select up to two (2) Final Submissions for judging»; «Final Submission» = la elegida por el usuario o automáticamente por Kaggle; el LB privado decide. **Cómo se combinan**: las reglas del concurso **no lo dicen**; el comportamiento estándar de la plataforma es «cuenta la mejor de las seleccionadas en el privado». LB público = «representative sample»; data description: «about 120 tasks… evenly divided between the public and private splits» (58 públicas inferidas por granularidad). | «Hasta 2» **VERIFICADO**; «mejor-de-2» **NO VERIFICADO documentalmente** (sin fuente abierta en esta sesión; se asume provisionalmente); 50 % **VERIFICADO**. | Rules §2.b y foundational §c/§e/§f; página Data; hilo 743506 (2026-09-26). |
+| **f. Variantes entre envíos**: cuatro variantes soportadas (`31b`, `12b`, `e4b`, `e2b`); «Every agent and subagent in your submission must use the same variant» → la restricción es **por envío**; nada prohíbe que envíos distintos usen variantes distintas. | **FAVORABLE, VERIFICADO** por el texto oficial. **Riesgo operativo**: tres equipos reportan «Notebook Threw Exception» al enviar con 12B el mismo bundle que puntúa con 31B (2026-10-14/15); al 2026-10-16 no hay un 12B puntuado de extremo a extremo confirmado en público. | Página «Model Selection, Budget, and Harness Rules»; hilo sticky 748287 (host, 2026-10-11); hilo 749259. |
+| g. (extra) Thinking: desde `adk_submission 0.2.13` `include_thoughts:false` ya **no** apaga el pensamiento; `thinking_budget:0` sí. «This was intended. My apologies.» | **VERIFICADO** (confirma el hallazgo del concilio 51) | Hilo 747914 (host, 2026-10-10). |
+| h. (extra) Tope de compute del notebook y colas: las corridas de scoring tardan 13-46 h por cola; un participante afirma que las 12 h cuentan desde el inicio de la corrida, no desde el envío. | NO VERIFICADO por el host | Hilo 748443 (2026-10-12). |
 
 ## Fase 0 (fin de semana 2026-10-17, 0 GPU-h — plan del dueño procesado del log)
 
@@ -338,8 +345,98 @@ nav-v2 ≈ 5-6 h deja margen sano; verificar en cualquier kit nuevo.
   el pre-screening local arranca sobre una base de 15 tareas (todas rich salvo 2 fastapi).
   Matiz del plan: la «calibración contra los 3 scores» sigue sin poder ejecutarse en CPU puro
   (exige corridas locales de los kits = GPU); lo entregado es el conjunto medible.
+- **Gold-patch CPU COMPLETO sobre 129/129 (2026-10-18 ~21:55 UTC, tras construir los 109
+  snapshots en `aa50041`)**: resultado en
+  [`analisis_c7/gold_results_2026-10-18.jsonl`](analisis_c7/gold_results_2026-10-18.jsonl)
+  (129 filas, 129 ids únicos, ninguna sin snapshot; 19,8 min de CPU, 9,2 s/tarea de media,
+  máx. 33 s). **gold-pasa 77/129, gold-falla 52/129 → conjunto medible nuevo = 77 tareas**
+  (antes 15). Por repo: rich **39/48** pasan (9 fallan), fastapi **35/67** (32 fallan, 48 %),
+  requests **3/13** (10 fallan), httpx **0/1**. Los 52 fallos son ambientales del arnés local
+  (51 con exit 1 de pytest sin mensaje; 1 rich con «Required test node did not pass»): el gold
+  no puede «no resolver» su propia tarea. Anotación **«fastapi ambiental de campo»**: el dueño
+  reporta hilos del foro donde el gold patch tampoco pasa en el evaluador (faltan dependencias
+  de test) y un quirk pytest 8 / httpbin en requests → su estado de verificación va en §Reglas
+  (Fase B). Consistencia con la corrida del 17: las 2 gold-fallan del set sustituto (rich_3472,
+  rich_4079) siguen fallando → el techo local del set de 20 sigue en 13/20. Implicación para el
+  lunes: las comparaciones de brazos se normalizan por el conjunto medible de 77; un fallo del
+  agente en una tarea gold-falla no cuenta como «no resuelta» del agente. Guion:
+  `analisis_c7/guiones_concilio_2026-10-17/forense/gold_patch_local.py` (sin cambios; salida en
+  `/tmp/gold_rerun_d2`, copiada al repo).
 - **Cron de campaña del lunes**: despertador 08:00 -03:00 (2026-10-19) que arranca el runbook
   §Lunes (quota check → réplica 2 → poller → …). Cancelable/modificable con el id en CronList.
+  **Sustituido** el 2026-10-18 por el cron de la sesión de cierre (ver §«Crons de esta sesión»): el
+  de la sesión Kimi murió con ella.
+
+## Cierre de noche 2026-10-18 (Fases A-F del plan del dueño, log 4; sesión Claude Code en WSL)
+
+Todo con 0 GPU y **sin enviar nada**. Commits de esta sesión en `exp/kaggle-c7-replicates`.
+
+- **Fase A — gold completo**: hecho, ver arriba (§Fase 0, bullet «Gold-patch CPU COMPLETO»): 77/129
+  medibles; conteos por repo rich 39/48, fastapi 35/67, requests 3/13, httpx 0/1.
+- **Fase B — foro**: hecho, tabla en §Reglas («Fase B — reglas verificadas»). Resumen: (a) las 12 h
+  **no cambiaron**: siempre fueron un solo presupuesto por corrida; (c) la regla «~5,5 min» era
+  aritmética de un participante («not a competition rule»), no de Google; (e) hasta 2 finales,
+  combinación no escrita en las reglas (asumido «mejor-de-2»); (f) variantes distintas entre envíos
+  **permitidas**, pero el scorer falla con 12B según tres reportes.
+- **Fase C — estudio del baseline «0.24»**: [`docs/c7_baseline024_estudio.md`](docs/c7_baseline024_estudio.md).
+  Hallazgo: **ningún autor de esos notebooks tiene 0.24** en el LB (0.18-0.20; solo 2 equipos de
+  3.043 tienen 0.24); la receta pública difiere en 8 min / 28 llamadas / 240 s / un agente / «edita
+  antes de la llamada 12». **Decisión (b)**: híbrido nav-v2 + `eval_config` público como brazo del
+  lunes con tres gates pre-registradas (≥ 6/20; media × 120 + 90 min ≤ 660 min; ≤ 3/20 con llamadas
+  agotadas sin parche), sin abandonar (c). Corrección colateral: **R1-fiel no es A/B limpio contra
+  sub-019** (prompt distinto, verificado por sha256; `replicas_c7_r1fiel/README.md` corregido).
+- **Fase D — brazo 12B construido** (`replicas_c7_12b/`, huella **`adb3004b2f76`**, armar ×5 sin
+  deriva, **preflight 24/24 «Se puede subir»**, override de vLLM del host incluido, README con
+  riesgos). Arreglo colateral: el simulador de `scripts/kaggle_preflight.py` fijaba el directorio
+  del 31B y hacía fallar la guardia de cualquier otra variante; ahora lee `model_sources` del
+  `kernel-metadata.json` (`modelo_de_metadatos`, con test propio; R1-fiel sigue 24/24). **No se
+  corre ni se envía** hasta ver un 12B puntuado de extremo a extremo en el foro.
+- **Fase E — outline del paper** actualizado (`docs/paper/paper_track_outline.md`): requisitos y
+  rúbrica del track verificados por la API (3.000 palabras máx., Writeup o PDF, cinco criterios),
+  A5, hallazgo fastapi de campo, contexto 0.24, modelos chicos, amenazas a la validez (nueve puntos),
+  presupuesto re-chequeado = 3.000.
+- **Fase F — selecciones finales**: **0/2 elegidas a mano** (auto = 0.17 + 0.13, verificado en la UI
+  por el dueño). **Protocolo**: revisar las selecciones (1) con cada score nuevo ≥ 0.17 y (2) **48 h
+  antes del cierre: 2026-11-30 23:59 UTC** (deadline 2026-12-02 23:59 UTC). Regla de combinación
+  (Fase B, fila e): si la plataforma cuenta la mejor de las dos (estándar, no escrito en las reglas),
+  la 2ª selección se elige **diversa** (otra familia: tiempo/presupuesto vs thinking/forrajeo) como
+  cobertura del 50 % privado; solo si se verificara «promedio», top-2. Mientras no se verifique:
+  **mejor-de-2 → diversa**. Nada se selecciona todavía.
+- **Predicción sellada sub-020** (R1-fiel): `analisis_c7/predicciones.csv`, fila
+  `sub-020_LB_score` 0.17 [0.13, 0.21], sellada 2026-10-17 22:45 UTC **antes** de cualquier envío,
+  con la advertencia de que no es A/B limpio.
+- **Zip de R1-fiel listo, NO enviado**: `data/envios/submission_r1fiel_2026-10-18.zip` (3.491 B,
+  6 archivos, huella `5e1638518420` recomputada, `verify` VÁLIDO, compilado con adk-submission
+  0.2.13 — `thinking_budget=0` visible en la config compilada), **sha256
+  `82a8ea619e5babb3f0287ed36c38221a3ee4f79091cea0634aa52ecddd90c1de`** (sin colisión en el registro).
+
+## Crons de esta sesión (2026-10-18; sesión Claude Code; mueren si la sesión se cierra)
+
+Los crons de la sesión Kimi (`01M55X4Z0TYD7392AHVP4AVSV9` envío dominical; `01M55WZC45XCQA2QWV8T1TX3KB`
+lunes) **murieron con esa sesión** y sus cuatro condiciones **no estaban escritas en el repo**. Estado
+en la sesión de cierre:
+
+| Cron | Id | Estado |
+|---|---|---|
+| 2026-10-17 21:04 -03 (00:04 UTC): leer la API de límites y anotar en §Reglas b si el reset es a las 00:00 UTC | `2dc96c0e` | creado |
+| Domingo 09:00 -03 (12:00 UTC) y reintento 16:00 -03: envío condicionado sub-020 (R1-fiel) | — | **no se pudo crear**: el clasificador de modo automático denegó programar un envío a Kaggle. **Nada envía automáticamente.** |
+| Lunes 08:00 -03 (11:00 UTC): despertador del runbook con conciencia de sub-020, paso 0.5 (híbrido) y 12B | `21e598f0` | creado |
+
+**Lo que el dueño decide sobre el domingo.** El envío de R1-fiel ya no es automático. Si decide
+hacerlo (por la UI o por el CLI, como con sub-018/019), las cuatro condiciones reconstruidas del plan
+son hechos a comprobar antes: (a) cupo diario disponible (la API de límites debe dar
+`num_allowed_now >= 1`; si el reset no es a medianoche, el segundo intento del plan era a las 19:00
+UTC); (b) sin tope total (`limited_by_total == false`, ya verificado); (c) ningún envío del equipo
+pendiente (la última fila de `submissions` sigue siendo 57296502 COMPLETE 0.17); (d) el zip íntegro
+(sha256 `82a8ea61…c1de`, huella `5e1638518420`) y la predicción sellada presente en
+`predicciones.csv`. El nombre que exige la plataforma es `submission.zip`; la descripción del envío
+debe citar la huella, la predicción sellada y el repositorio del método, como en sub-019. Tras un
+envío: registrar con `scripts.kaggle_submission register --condition r1fiel` (en `/tmp/venv_pack`),
+anotar ref y hora aquí y en §Kit v2, commit `feat(kaggle)` y suite verde antes del push. Si no se
+envía, el slot del domingo se pierde (no se acumula) y el lunes sigue igual. Evidencia nueva **en
+contra** de enviar R1-fiel: no es A/B limpio vs sub-019 y una ablación pública (no verificada) predice
+que apagar el pensamiento reduce a la mitad las resueltas; **a favor**: el slot es gratis, la
+predicción está sellada y el LB conserva el mejor score.
 
 ## Concilio C7 Fase 4 (2026-10-17, vuelta 49 / concilio 51)
 
