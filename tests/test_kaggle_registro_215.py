@@ -615,13 +615,15 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
     assert "Score 0.10" in nav["notes"] and "RUIDO" in nav["notes"]
 
-    # El kit v2 presupuesto-corregido: enviado al puntuar sub-018; pendiente de score
+    # El kit v2 presupuesto-corregido: puntuado tras ~15,4 h; FUERA de ruido vs sub-018
     v2 = filas["sub-019"]
-    assert (v2["status"], v2["public_score"], v2["date"]) == ("pending", None, "2026-10-17")
+    assert (v2["status"], v2["public_score"], v2["date"]) == ("scored", 0.17, "2026-10-17")
     assert v2["sha256"].startswith("c08e5327") and v2["condition"] == "NAV-V2"
     assert "355f4954f50c" in v2["notes"] and "5.0" in v2["notes"] and "4.5" in v2["notes"]
     assert "57296502" in v2["notes"] and "0 submissions remaining" in v2["notes"]
     assert "REFUTADA" in v2["notes"]
+    assert "Score 0.17" in v2["notes"] and "FUERA" in v2["notes"]
+    assert "Prediccion sellada 0.10 [0.06,0.14]: FUERA" in v2["notes"]
 
     # Los cambios de estado quedan en los enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
@@ -633,6 +635,7 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
         "sub-006",
         "sub-008",
         "sub-018",
+        "sub-019",
     ]
     assert [k for k, v in estados.items() if v == "prepared"] == [
         "sub-001",

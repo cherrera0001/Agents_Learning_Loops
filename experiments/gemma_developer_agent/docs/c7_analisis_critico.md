@@ -203,6 +203,18 @@ pérdida de capacidad es la subida de `parche_no_resuelto`/`err_tool_count`.
 de ella. La mediana completa corrige la estimación de página 3 (0.20×31 en top-60 → 0.20×95 en
 todo el LB): la cola es mucho más densa en 0.13-0.18 de lo que sugiere el top-60.
 
+**A5. Resultado sub-019 (nav-v2 @5.0 min) vs predicción y vs el muro** [DATO, ref 57296502,
+scored 2026-10-17 20:39 UTC tras ~15,4 h]: **0.17**. Comparaciones: vs 0.10 de sub-018 (mismo
+kit a 4.5 min — A/B limpio, solo cambia `max_time_minutes`) = **+0.07 → FUERA de ruido** (banda
+IC95 ±0.041 del instrumento y ±0.05 de la regla de envío); vs 0.13 del kit viejo = +0.04 (dentro,
+en el borde; por encima de sus tres replicados 0.08/0.13/0.13). **Predicción sellada 0.10
+[0.06,0.14]: FUERA por arriba** — la premisa «el muro no es el cuello del score» queda
+refutada por el dato: +30 s/tarea compraron ~4 tareas/58. Refuerza la recomendación #1
+(wall-clock como palanca) y da al brazo presupuesto una base causal limpia. Matiz [INFERENCIA]:
+es un envío único; la atribución causal descansa en la limpieza del A/B (mismo zip-base, una
+clave de diferencia) y no en réplicas. nav-v2 = mejor envío propio hasta la fecha; el lunes se
+re-mide nav@5.0 en local antes de que cualquier brazo lo supere.
+
 ## Limitaciones
 
 - Las corridas 2026-10-06 son de otra era (arnés 0.2.7/0.2.11, configs A/R/D/E/F sin mapear

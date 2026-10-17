@@ -1,12 +1,12 @@
 # STATUS · Réplicas condición 7 (rama exp/kaggle-c7-replicates)
 
-Actualizado: 2026-10-17 ~20:00 UTC (concilio C7 Fase 4 ejecutado y registrado — bitácora
-[`docs/c7_concilio_2026-10-17.md`](docs/c7_concilio_2026-10-17.md); loop vigía sub-019 activo,
-cron `01M556RTC88NBYKVHQT9M14ATE`; merge de `origin/main` (campaña C0 calibración offline,
-episodios 100-101) hecho en la vuelta). **Bloqueo de cuota GPU sigue vigente** (reinicio semanal;
-el lunes 2026-10-19 es lo esperado). Cabeza: merge `001c573` + commits de esta vuelta.
+Actualizado: 2026-10-17 20:45 UTC (**sub-019 SCORED 0.17** — el mejor envío propio hasta la fecha;
+loop vigía cumplido y autodestruido; concilio C7 Fase 4 registrado, bitácora
+[`docs/c7_concilio_2026-10-17.md`](docs/c7_concilio_2026-10-17.md); merge de `origin/main` hecho).
+**Bloqueo de cuota GPU sigue vigente** (reinicio semanal; el lunes 2026-10-19 es lo esperado).
+Cabeza: `e97ef59` + commit de este registro.
 
-## Kit v2 «presupuesto-corregido» (sub-019, ENVIADO 2026-10-17 05:18 UTC, ref 57296502)
+## Kit v2 «presupuesto-corregido» (sub-019, SCORED 0.17 el 2026-10-17 20:39 UTC, ref 57296502)
 
 - **Valores leídos del kit nav real** (los 6 archivos, Tarea 1): eval_config.yaml =
   `timeout_seconds 60, max_tool_calls 60, max_time_minutes 4.5, max_turns 100`;
@@ -36,15 +36,19 @@ el lunes 2026-10-19 es lo esperado). Cabeza: merge `001c573` + commits de esta v
   del lunes se mide a 4.5 min por comparabilidad — sub-019 es candidato de LEADERBOARD, no del
   contraste). Compilación `adk-submission 0.2.13` oficial: **OK** (venv desechable
   `/tmp/venv_pack` con las ruedas locales).
-- **sub-019: ENVIADO 2026-10-17 05:18:13 UTC, ref `57296502`** (sha `c08e5327…`, huella
-  `355f4954f50c`, kit v2 con `max_time_minutes 5.0`). Antes, dos intentos del 01:50/01:56 UTC
-  fueron rechazados con el FAILED_PRECONDITION de «1 pending submission» (sub-018) — registrados
-  literales en notes. La Fase 2 del loop lo envió en el mismo despertar en que sub-018 puntúo
-  (0.10, 05:15 UTC) y liberó el cupo; slot del día consumido («0 submissions remaining today»).
-  Registry: status `pending` con el ref en notes; test tripwire 61 passed. El loop vigía ahora
-  **57296502** (consulta 2026-10-17 ~15:05 UTC: PENDING, t+9,8h — dentro del rango histórico);
-  al puntuar registrará la comparación (vs 0.10 de sub-018, vs 0.13 del kit viejo, banda ±0.05;
-  predicción sellada 0.10 [0.06,0.14]) y se autodestruirá con la tabla final de la campaña.
+- **sub-019: SCORED 0.17 el 2026-10-17 20:39 UTC, ref `57296502`** (sha `c08e5327…`, huella
+  `355f4954f50c`, kit v2 con `max_time_minutes 5.0`, tras ~15,4 h de evaluación). Comparaciones:
+  **vs 0.10 de sub-018 (nav @4.5 min) = +0.07 → FUERA DE RUIDO (±0.05)**; vs 0.13 del kit viejo
+  (i_razona) = +0.04 (dentro de banda, en el borde; por encima de los tres replicados del kit
+  viejo 0.08/0.13/0.13). **Predicción sellada 0.10 [0.06,0.14]: FUERA por arriba** — la predicción
+  (basada en «el muro no es el cuello del score») subestimó el efecto del muro: dar 30 s más por
+  tarea movió ~4 tareas/58 de media. nav-v2 es **el mejor envío propio hasta la fecha** y candidato
+  de referencia. Registry: status `scored`, public_score 0.17; test tripwire 61 passed. El loop
+  vigía se autodestruyó con este registro (tabla final abajo). Decisión para el dueño: la regla
+  del árbol (0.08-0.18 = plan sin cambios) se aplica con matiz registrado: el contraste del lunes
+  gana relevancia y **nav@5.0 local re-medido el lunes** antes de cualquier envío que lo supere.
+  **Tabla final de la campaña nav**: kit viejo (i_razona) 0.08/0.13/0.13 (tres replicados) ·
+  sub-018 nav @4.5 min 0.10 · **sub-019 nav-v2 @5.0 min 0.17**.
 - **Tarea 6 (gold-patch CPU local)**: estimado >2 h en CPU (129 tareas × pytest en 2 vCPU) →
   **programada para el lunes** como primer paso opcional del runbook (fijar el conjunto
   medible real antes de cualquier nuevo measurement set; los públicos 109/129 vs «~la mitad»
@@ -258,6 +262,10 @@ se cambia nada.
       `analisis_c7/guiones_concilio_2026-10-17/forense/gold_patch_local.py`.
    e. Contar la «cosecha del árbol» (resuelta sin `submit_patch`, caso rich_3043) como entrega
       válida al leer resultados ajenos.
+8. **sub-019 SCORED 0.17 (2026-10-17 20:39 UTC)** — A/B limpio vs sub-018 (solo max_time_minutes
+   4.5→5.0): **+0.07 fuera de ruido**; el muro SÍ era cuello del score. nav-v2 = mejor envío
+   propio; re-medir nav@5.0 local el lunes antes de que un brazo lo supere; la predicción sellada
+   quedó FUERA por arriba (apéndice A5 del análisis crítico).
 
 ## Concilio C7 Fase 4 (2026-10-17, vuelta 49 / concilio 51)
 
