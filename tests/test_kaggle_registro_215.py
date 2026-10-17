@@ -607,12 +607,13 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "57160374" in enviado["notes"] and "2026-10-14 00:07:20 UTC" in enviado["notes"]
     assert "PENDING" in enviado["notes"] and "lectura, no mejora" in enviado["notes"]
 
-    # El envío del 16: variante navegación, enviado y pendiente de puntuación
+    # El envío del 16: variante navegación, puntuado tras ~13,75 h; dentro de ruido
     nav = filas["sub-018"]
-    assert (nav["status"], nav["public_score"], nav["date"]) == ("submitted", None, "2026-10-16")
+    assert (nav["status"], nav["public_score"], nav["date"]) == ("scored", 0.1, "2026-10-16")
     assert nav["sha256"].startswith("648d312c") and nav["condition"] == "NAV"
     assert "57274153" in nav["notes"] and "2026-10-16 15:30:14 UTC" in nav["notes"]
     assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
+    assert "Score 0.10" in nav["notes"] and "RUIDO" in nav["notes"]
 
     # El kit v2 presupuesto-corregido: construido y compilado; el envío fue rechazado
     # porque sub-018 sigue pending (un solo intento, 2026-10-17)
@@ -623,9 +624,17 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "FAILED_PRECONDITION" in v2["notes"] and "pending submissions" in v2["notes"]
     assert "REFUTADA" in v2["notes"]
 
-    # Los cambios de estado quedan en los tres enviados: el resto de candidatos sigue sin enviar
+    # Los cambios de estado quedan en los enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
-    assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010", "sub-018"]
+    assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010"]
+    assert [k for k, v in estados.items() if v == "scored"] == [
+        "sub-002",
+        "sub-003",
+        "sub-005",
+        "sub-006",
+        "sub-008",
+        "sub-018",
+    ]
     assert [k for k, v in estados.items() if v == "prepared"] == [
         "sub-001",
         "sub-004",

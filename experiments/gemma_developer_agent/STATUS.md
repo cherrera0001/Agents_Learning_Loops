@@ -210,13 +210,12 @@ se cambia nada.
   la plataforma devolvió «0 submissions remaining today»).
 - **Horas consumidas del presupuesto: sigue siendo del DUEÑO** (no hay endpoint legible desde
   aquí; ver en la página del concurso). Única gate de envío pendiente de dato.
-- **sub-018 (57274153): PENDING >24 h — ANÓMALO** (enviada 2026-10-16 15:30 UTC; lecturas del
-  vigía t+10/12/15/26/34 h: PENDING). Cruzó el umbral de las 12 h oficiales de evaluación + cola:
-  **dueño revisa la cola en la página web del concurso; si aparece atascada, cancelarla desde la
-  UI** (yo no la cancelo). Bloqueo colateral verificado: la plataforma rechaza envíos nuevos
-  mientras haya 1 pending («Your team already has 1 pending submissions») → sub-019 no puede
-  subir hasta que sub-018 termine. Vigía (id `01M53RZD2AY1YN3V23FXG1GT6Q`) vigila sub-018 con
-  reglas a/b/c + aviso de desbloqueo de sub-019 (regla d, sin enviar por su cuenta).
+- **sub-018 (57274153): SCORED 0.10 el 2026-10-17 05:15 UTC** (~13,75 h de evaluación;
+  el «Notebook Running» no estaba atascado, era la evaluación completa). Comparación: vs **0.13**
+  del kit viejo (i_razona) = −0.03 → **DENTRO DE RUIDO (±0.05)**; vs 0.10 de C2 = igual. La
+  variante navegación-primero a 4.5 min **no batió al kit viejo** — el bottleneck observado en
+  réplica (localizar→editar dentro del presupuesto) no se resolvió con el procedimiento de
+  navegación solo. Cupo de pending liberado → Fase 2 ejecutada en el mismo despertar (sub-019).
 
 ## Lunes (cuota reiniciada): contraste de CINCO brazos
 1. ~~Decidir el fix de `clase_fallo`~~ → APLICADO el 2026-10-16 (`bc17aea`, ver arriba).

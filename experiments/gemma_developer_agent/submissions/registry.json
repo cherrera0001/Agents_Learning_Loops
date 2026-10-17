@@ -233,10 +233,10 @@
       "sha256": "648d312cd5349522f0fdf85ad50477dc3a9845bb0b4d3a9a4bbe4f2107497682",
       "size_bytes": 3932,
       "is_exploratory": false,
-      "status": "submitted",
-      "public_score": null,
+      "status": "scored",
+      "public_score": 0.1,
       "kaggle_url": null,
-      "notes": "Variante navegacion-primero: unico cambio prompts/system.md (procedimiento identificadores->search_similar_code multi-palabra->get_code_neighbors->leer->editar) sobre kit condicion 7; fingerprint de configuracion af8cca829561. ENVIADO 2026-10-16 15:30:14 UTC (ref 57274153, estado inicial PENDING) por decision expresa del dueno; la plataforma exige el nombre submission.zip, asi que se subio una copia desde /tmp con ese nombre (contenido identico, mismo sha256). Slot diario consumido ('0 submissions remaining today'). Score pendiente."
+      "notes": "Variante navegacion-primero: unico cambio prompts/system.md (procedimiento identificadores->search_similar_code multi-palabra->get_code_neighbors->leer->editar) sobre kit condicion 7; fingerprint de configuracion af8cca829561. ENVIADO 2026-10-16 15:30:14 UTC (ref 57274153, estado inicial PENDING) por decision expresa del dueno; la plataforma exige el nombre submission.zip, asi que se subio una copia desde /tmp con ese nombre (contenido identico, mismo sha256). Slot diario consumido ('0 submissions remaining today'). Score 0.10 el 2026-10-17 05:15 UTC (ref 57274153) tras ~13,75 h de evaluacion; comparacion: vs 0.13 del kit viejo (i_razona) = -0.03 -> DENTRO DE RUIDO (banda +/-0.05). La variante navegacion-primero a 4.5 min NO batio al kit viejo."
     },
     {
       "submission_id": "sub-019",
