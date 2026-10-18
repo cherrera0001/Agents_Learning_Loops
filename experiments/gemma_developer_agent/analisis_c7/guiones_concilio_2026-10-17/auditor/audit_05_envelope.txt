@@ -1,0 +1,51 @@
+era: n=148 media=109.0s mediana=90.6s p90=240.9s max=302.0s
+era solo A1-A4 (condicion A): n=60 media=97.7s mediana=86.3s
+
+== Mi envelope con distribución real (era 148; setup 45 s/tarea; carga 367 s; cap 720) ==
+  max_time  4.5 min, f=  0.0: media    314 min | p95    333 -> CABE
+  max_time  4.5 min, f=0.074: media    339 min | p95    358 -> CABE
+  max_time  4.5 min, f= 0.12: media    352 min | p95    372 -> CABE
+  max_time  4.5 min, f= 0.25: media    395 min | p95    414 -> CABE
+  max_time  4.5 min, f= 0.49: media    472 min | p95    487 -> CABE
+  max_time  4.5 min, f=  0.5: media    475 min | p95    490 -> CABE
+  max_time  4.5 min, f= 0.65: media    523 min | p95    536 -> CABE
+  max_time  4.5 min, f= 0.75: media    555 min | p95    566 -> CABE
+  max_time  4.5 min, f=  1.0: media    636 min | p95    636 -> CABE
+  max_time  6.0 min, f=  0.0: media    314 min | p95    335 -> CABE
+  max_time  6.0 min, f=0.074: media    352 min | p95    372 -> CABE
+  max_time  6.0 min, f= 0.12: media    373 min | p95    392 -> CABE
+  max_time  6.0 min, f= 0.25: media    440 min | p95    458 -> CABE
+  max_time  6.0 min, f= 0.49: media    561 min | p95    575 -> CABE
+  max_time  6.0 min, f=  0.5: media    565 min | p95    580 -> CABE
+  max_time  6.0 min, f= 0.65: media    641 min | p95    653 -> CABE
+  max_time  6.0 min, f= 0.75: media    691 min | p95    701 -> CABE
+  max_time  6.0 min, f=  1.0: media    816 min | p95    816 -> NO CABE
+  max_time  9.0 min, f=  0.0: media    314 min | p95    335 -> CABE
+  max_time  9.0 min, f=0.074: media    379 min | p95    398 -> CABE
+  max_time  9.0 min, f= 0.12: media    414 min | p95    433 -> CABE
+  max_time  9.0 min, f= 0.25: media    530 min | p95    547 -> CABE
+  max_time  9.0 min, f= 0.49: media    738 min | p95    753 -> NO CABE
+  max_time  9.0 min, f=  0.5: media    745 min | p95    760 -> NO CABE
+  max_time  9.0 min, f= 0.65: media    874 min | p95    887 -> NO CABE
+  max_time  9.0 min, f= 0.75: media    961 min | p95    972 -> NO CABE
+  max_time  9.0 min, f=  1.0: media   1176 min | p95   1176 -> NO CABE
+  max_time 10.0 min, f=  0.0: media    315 min | p95    336 -> CABE
+  max_time 10.0 min, f=0.074: media    388 min | p95    408 -> CABE
+  max_time 10.0 min, f= 0.12: media    429 min | p95    449 -> CABE
+  max_time 10.0 min, f= 0.25: media    560 min | p95    577 -> CABE
+  max_time 10.0 min, f= 0.49: media    797 min | p95    812 -> NO CABE
+  max_time 10.0 min, f=  0.5: media    805 min | p95    819 -> NO CABE
+  max_time 10.0 min, f= 0.65: media    953 min | p95    965 -> NO CABE
+  max_time 10.0 min, f= 0.75: media   1051 min | p95   1061 -> NO CABE
+  max_time 10.0 min, f=  1.0: media   1296 min | p95   1296 -> NO CABE
+
+== Reproducción de las dos cuentas en disputa (f=0.75, cap 9.0) ==
+arquitecto: A3_off(314) + f*N*(cap-270)s/60 = 314 + 0.75*120*270.0/60 = 719 min  <- suma la EXTENSIÓN sobre 270 s
+directa (misma f, muro entero 540 s + era mediana 91 s): 951 min
+break-even con era media 109 s: f*(9 min)=0.47 | f*(6 min)=0.81
+break-even con era mediana 91 s: f*(9 min)=0.49
+
+== f observados ==
+f era a muro 240 s (clase tiempo_agotado): 11/148 = 0.074 | columna muro era (>=230): 18/148 = 0.122
+f réplica 1 (reasoning-on, muro 270): 13/20 = 0.65 por log | 15/20 = 0.75 por CSV
+f era 'estirado' a 540 s: desconocido (la era se cortó a 240; no sabemos cuántas habrían muerto a 540)

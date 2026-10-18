@@ -1,7 +1,12 @@
 {
   "version": 1,
   "descripcion": "Registro de hallazgos medidos del experimento Kaggle. Solo conteos y descripciones genéricas: ningún identificador de tarea, enunciado, parche ni ruta de los repositorios de las tareas. Regla (CONTRIBUTING.md, «Vuelta de un experimento con modelo»): un hallazgo medido no puede aparecer en dos vueltas sin una decisión escrita. Sembrado el 2026-10-09 desde la bitácora del caso (vueltas 3 a 42) y puesto al día en la vuelta 43; donde una cifra no la recalculó el auditor del método, la fila lo dice. El vigía de inicio de sesión imprime los que llevan más de una vuelta en `medido`.",
-  "estados": ["medido", "decidido", "aplicado", "descartado"],
+  "estados": [
+    "medido",
+    "decidido",
+    "aplicado",
+    "descartado"
+  ],
   "hallazgos": [
     {
       "id": "repeticiones_identicas",
@@ -551,6 +556,124 @@
       },
       "motivo_descarte": null,
       "por_que_sigue_abierto": null
+    },
+    {
+      "id": "muro_de_tiempo_13_de_20",
+      "que_se_midio": "Muertes en el muro de 4.5 min de la réplica 1: por log del arnés 13/20 (65%) tareas tocaron el muro y 12/16 (75%) de los fallos murieron en él. Dos tareas marcadas por el proxy del umbral no murieron (una a ~263 s que resolvió; otra a ~269 s que perdió en veredicto). Una tercera tarea tocó el muro y resolvió por cosecha del árbol (0 llamadas submit_patch, verificado en bytes en su traza). El «15/20 (75%)» del análisis crítico mezclaba denominadores.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "aplicado",
+      "decision": {
+        "texto": "Corregidos c7_analisis_critico.md y STATUS con 13/20 timeouts y 12/16 de los fallos, trazable al guion audit_01_muro del concilio (analisis_c7/guiones_concilio_2026-10-17/auditor/). Criterio de lectura fijado: log del arnés, no el proxy CSV del umbral.",
+        "quien": "concilio 51 (vuelta 49, staff de experimento)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "thinking_off_exige_budget_cero",
+      "que_se_midio": "Semántica de thinking en el compilador adk-submission 0.2.13: include_thoughts:false solo retira los pensamientos del contexto (strip de thought parts) — el modelo sigue razonando y quemando reloj; el apagado real exige thinking_budget:0/level:none y, si falta, el validador inyecta budget=max (32768). La era 2026-10-06 (budget 4096, oculto) no calibra pensamiento apagado; el brazo thinking del lunes (huella 9d0db7b946e7: 1024/oculto, 4.5 min) no prueba la recomendación R1.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Pendiente del dueño: construir el sexto brazo R1-fiel (thinking_budget:0 + 6,0 min + prompt de A, delta puro de config; 0 GPU-h) y decidir si se corre el lunes. El envelope rechaza 9-10 min salvo f≤0,49, que nadie midió."
+    },
+    {
+      "id": "cosecha_del_arbol_al_timeout",
+      "que_se_midio": "Una tarea del set de 20 resolvió con 0 llamadas submit_patch: el recolector del arnés cosecha el diff del árbol de trabajo al cortar el tiempo. Corrige el relato de c7_fallos_r1.md («el submit fue anterior al timeout»).",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "aplicado",
+      "decision": {
+        "texto": "Addendum 2 añadido a c7_fallos_r1.md el mismo día (corrige «el submit fue anterior al timeout»). La cosecha se contará como entrega válida al leer resultados ajenos y en el contraste.",
+        "quien": "concilio 51 (vuelta 49, staff de experimento)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "submit_replica_1_7_de_20",
+      "que_se_midio": "Submit de réplica 1: 7/20 (35%) con status ok (intento) y 4/20 (20%) resolución; el análisis crítico rotulaba resolución como «tasa de submit». Además, 44/135 submits de la era 2026-10-06 están vacíos.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Métrica del contraste: parche no vacío (idealmente con hash), no submit>0. Pre-registrado en STATUS §Lunes addendum 7a.",
+        "quien": "concilio 51 (vuelta 49, staff de experimento)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "set_sustituto_4_de_20_ganables",
+      "que_se_midio": "Del set sustituto de 20 rich solo 4 tareas son ganables (16 ceros estructurales; requests 0/13 en su única corrida). Banda A-vs-A entre corridas idénticas: 0-2 flips.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "decidido",
+      "decision": {
+        "texto": "Regla de empate pre-registrada: banda 0-2 + ventaja ≤3 tareas ⇒ exploratorio + réplicas del líder; veto a adoptar con Δ≤3. Measurement set estratificado confirmado como necesario, gateado por gold-patch.",
+        "quien": "concilio 51 (vuelta 49, staff de experimento)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "gold_patch_no_ejecutable_2026_10_17",
+      "que_se_midio": "Gold-patch en CPU local con el arnés propio (2026-10-17): ejecutado tras corregir el driver (ContainerManager, no DockerSandboxManager). Resultado: 20/129 tareas con snapshot local (15 rich + 5 fastapi), 109 sin snapshot; gold-pasa 15/20 (rich 13/15, fastapi 2/5). Corrección del conteo del concilio: son 20 cubiertas / 109 faltantes, no 47/82. Set sustituto: 15 cubiertas, 13 gold-pasan (2 tareas del set sustituto fallan). Evidencia: analisis_c7/gold_results_2026-10-17.jsonl.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "aplicado",
+      "decision": {
+        "texto": "Driver corregido y corrida archivada; conjunto medible = 15 tareas (13 del set sustituto). La descisión de descargar los 109 snapshots que faltan queda pendiente del dueño; el pre-screening del lunes normaliza por el conjunto medible.",
+        "quien": "orquestador (Kimi Code, Fase 0 del plan del dueño)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "h11_y_dirty_equals_en_build_sandbox",
+      "que_se_midio": "h11-0.16.0 y dirty_equals-0.11 SÍ existen en data/build_sandbox_20261003_v2/wheels (117 ruedas) aunque NO en data/wheels/ (115, espejo de Kaggle): son dos directorios distintos; la nota previa de ausencia valía solo para el espejo.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "aplicado",
+      "decision": {
+        "texto": "Matiz añadido a STATUS Track C(i): la medición 71→103 es executable en local con el build sandbox (data/build_sandbox_20261003_v2/wheels).",
+        "quien": "concilio 51 (vuelta 49, staff de experimento)",
+        "vuelta": 49,
+        "fecha": "2026-10-17"
+      },
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": null
+    },
+    {
+      "id": "envelope_cap_rechaza_9_min",
+      "que_se_midio": "Envelope de la cap de 12 h con la distribución real (N=120, setup 45 s/tarea + 367 s carga, cap incl. setup): 9,0 min/tarea = ~950-960 min a f=0,75 y 874 min a f=0,65 (no cabe); break-even f≈0,47-0,49. 6,0 min cabe (641 min a f=0,65; break-even f≈0,81). El «719≤720 a f=0,75» fue artefacto aritmético y queda vetado.",
+      "primera_vuelta": 49,
+      "primera_fecha": "2026-10-17",
+      "vueltas_medido": [49],
+      "estado": "medido",
+      "decision": null,
+      "motivo_descarte": null,
+      "por_que_sigue_abierto": "Lo cierra el dato f real del sexto brazo: la reinversión a 9-10 min solo cabe si thinking-off baja las muertes a menos de la mitad (hipótesis sin medir)."
     }
   ]
 }

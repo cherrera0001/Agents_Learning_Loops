@@ -1,0 +1,21 @@
+# Registro de huella — brazo 12B, variante de modelo (2026-10-18)
+
+| brazo | huella |
+|---|---|
+| condición 7 (réplicas; descarga de réplica 1 sin `adapters/`) | `0f52de0b84cb` |
+| R1-fiel (`thinking_budget: 0` + `max_time_minutes: 5.0`, prompt idéntico) | `5e1638518420` |
+| **12B** (`model: gemma-4-12b-it-qat-w4a16-ct` en `agent.yaml` y `sub_agents/code_analyzer.yaml` + `max_time_minutes: 5.0`; sampling y prompt idénticos a la condición 7) | **`adb3004b2f76`** |
+
+Deltas puros respecto a la condición 7 (verificados por el armar contra la descarga de réplica 1):
+
+- `agent.yaml` y `sub_agents/code_analyzer.yaml`: `gemma-4-31b-it-qat-w4a16-ct → gemma-4-12b-it-qat-w4a16-ct`
+  (única variante en todo el envío: regla oficial «Model Selection»; distintos envíos pueden usar
+  variantes distintas — STATUS §Reglas f).
+- `eval_config.yaml`: `max_time_minutes: 4.5 → 5.0` (resto idéntico).
+- `configs/sampling.yaml`: idéntico (`thinking_budget: 4096`, `include_thoughts: true`).
+- `prompts/system.md`: byte-idéntico.
+
+Armar ejecutado 5 veces el 2026-10-18 (~22:35 UTC y de nuevo ~22:45 UTC tras el ajuste de formato
+del guion): huella estable `adb3004b2f76`. Procedencia: Fase D del plan del dueño (log 4),
+condicionada a la regla de variantes (verificada FAVORABLE el 2026-10-17). **No se ha subido ni
+corrido nada.**

@@ -588,10 +588,10 @@ def test_una_tarea_sin_fin_no_tiene_causa() -> None:
 def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     datos = json.loads(REGISTRO_DE_ENVIOS.read_text(encoding="utf-8"))
     filas = {s["submission_id"]: s for s in datos["submissions"]}
-    assert len(filas) == len(datos["submissions"]) == 17
+    assert len(filas) == len(datos["submissions"]) == 19
     for fila in filas.values():
         SubmissionRecord(**fila)
-    assert datos["last_updated"] == "2026-10-14"
+    assert datos["last_updated"] == "2026-10-17"
 
     # El envío del 12: completo con nota, y la hora de la primera lectura que lo vio así
     leido = filas["sub-008"]
@@ -607,9 +607,36 @@ def test_el_registro_de_envios_refleja_las_lecturas_guardadas() -> None:
     assert "57160374" in enviado["notes"] and "2026-10-14 00:07:20 UTC" in enviado["notes"]
     assert "PENDING" in enviado["notes"] and "lectura, no mejora" in enviado["notes"]
 
-    # Solo esos dos cambian de estado: los demás candidatos del bloque siguen sin enviar
+    # El envío del 16: variante navegación, puntuado tras ~13,75 h; dentro de ruido
+    nav = filas["sub-018"]
+    assert (nav["status"], nav["public_score"], nav["date"]) == ("scored", 0.1, "2026-10-16")
+    assert nav["sha256"].startswith("648d312c") and nav["condition"] == "NAV"
+    assert "57274153" in nav["notes"] and "2026-10-16 15:30:14 UTC" in nav["notes"]
+    assert "PENDING" in nav["notes"] and "submission.zip" in nav["notes"]
+    assert "Score 0.10" in nav["notes"] and "RUIDO" in nav["notes"]
+
+    # El kit v2 presupuesto-corregido: puntuado tras ~15,4 h; FUERA de ruido vs sub-018
+    v2 = filas["sub-019"]
+    assert (v2["status"], v2["public_score"], v2["date"]) == ("scored", 0.17, "2026-10-17")
+    assert v2["sha256"].startswith("c08e5327") and v2["condition"] == "NAV-V2"
+    assert "355f4954f50c" in v2["notes"] and "5.0" in v2["notes"] and "4.5" in v2["notes"]
+    assert "57296502" in v2["notes"] and "0 submissions remaining" in v2["notes"]
+    assert "REFUTADA" in v2["notes"]
+    assert "Score 0.17" in v2["notes"] and "FUERA" in v2["notes"]
+    assert "Prediccion sellada 0.10 [0.06,0.14]: FUERA" in v2["notes"]
+
+    # Los cambios de estado quedan en los enviados: el resto de candidatos sigue sin enviar
     estados = {k: v["status"] for k, v in filas.items()}
     assert [k for k, v in estados.items() if v == "submitted"] == ["sub-010"]
+    assert [k for k, v in estados.items() if v == "scored"] == [
+        "sub-002",
+        "sub-003",
+        "sub-005",
+        "sub-006",
+        "sub-008",
+        "sub-018",
+        "sub-019",
+    ]
     assert [k for k, v in estados.items() if v == "prepared"] == [
         "sub-001",
         "sub-004",

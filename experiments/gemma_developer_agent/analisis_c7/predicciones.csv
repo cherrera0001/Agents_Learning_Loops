@@ -1,0 +1,8 @@
+objetivo,prediccion,intervalo_inf,intervalo_sup,timestamp_sellado_utc,base,notas
+sub-019_LB_score,0.1,0.06,0.14,2026-10-17 10:57 UTC,"sub-018=0.10 (mismo kit nav, +30s/tarea); banda ruido IC95 +/-0.041 calculada de los envios replicados 65a02160 (0.08/0.13/0.13) y d8a3e1d3 (0.06/0.05)",El +30s esperado rinde 0-1 tareas extra de 58 (+0.000-0.017). Si el real > 0.14 => señal vs sub-018; si < 0.06 => contraseñal. Sellado ANTES de conocer el score.
+lunes_A_replica_local_20,4,2,6,2026-10-17 10:57 UTC,replica1 (mismo config) = 4/20,resueltas de 20 tareas rich
+lunes_nav_local_20,4,2,6,2026-10-17 10:57 UTC,replica1 = nav a 4.5min = 4/20,
+lunes_presupuesto_local_20,5,3,7,2026-10-17 10:57 UTC,replica1 con 75% de muertes en el muro; el brazo ataca eso [INFERENCIA],
+lunes_thinking_local_20,4,2,6,2026-10-17 10:57 UTC,era sin razonamiento 17-18% resolucion en las mismas 15 rich [DATO iteraciones],"thinking LOW: menos wall-clock, resolucion similar local"
+lunes_forrajeo_local_20,5,2,7,2026-10-17 10:57 UTC,"prior debil [ESPECULACION]; el valor es el test pre-registrado, no el punto",criterio: supera a A en > banda de ruido (flips >= 3 tareas)
+sub-020_LB_score,0.17,0.13,0.21,2026-10-17 22:45 UTC,"R1-fiel (huella 5e1638518420): kit condicion 7 + thinking_budget 0 + 5.0 min; referencias i_razona 0.08/0.13/0.13 @4.5 (mismo prompt) y sub-019 0.17 @5.0 (otro prompt)","Cifras fijadas por el dueno en el plan del 2026-10-17 (log 4); selladas ANTES del envio dominical condicionado. NO es A/B limpio vs sub-019 (difiere prompt y thinking). Si real < 0.13 => thinking-off resta (coherente con la ablacion publica 23 vs 48, no verificada); si > 0.21 => thinking-off libera reloj que se convierte en entregas."

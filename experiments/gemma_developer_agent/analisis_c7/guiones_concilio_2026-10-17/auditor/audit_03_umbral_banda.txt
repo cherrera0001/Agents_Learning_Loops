@@ -1,0 +1,62 @@
+== Cifra 3: umbral 230 s en iteraciones (n=148) ==
+segundos_reloj >= 230: 18/148
+columna muro verdadera: 18/148
+clase tiempo_agotado_*: 11/148
+clases de las >=230 s que no son tiempo_agotado: ['llamadas_agotadas_con_parche', 'llamadas_agotadas_sin_parche', 'sin_parche']
+filas >=230 s por corrida:
+  A1: 1
+  A2: 1
+  A3: 2
+  A4: 2
+  AF1: 1
+  AR1: 2
+  D1: 4
+  E1: 1
+  F1: 1
+  R1: 3
+medianas por corrida (s):
+  A1: 90.1 (n=15, min=31, max=242)
+  A2: 68.2 (n=15, min=25, max=241)
+  A3: 93.6 (n=15, min=24, max=244)
+  A4: 82.8 (n=15, min=31, max=245)
+  AF1: 89.6 (n=15, min=35, max=249)
+  AR1: 109.3 (n=13, min=61, max=302)
+  D1: 213.4 (n=15, min=26, max=243)
+  E1: 61.2 (n=15, min=44, max=254)
+  F1: 90.9 (n=15, min=27, max=241)
+  R1: 88.4 (n=15, min=40, max=301)
+
+== Cifra 4: banda A-vs-A (A1..A4, mismas 15 rich) ==
+  A1: 3/15 resueltas -> ['rich_3278', 'rich_3894', 'rich_3905']
+  A2: 3/15 resueltas -> ['rich_3043', 'rich_3894', 'rich_3905']
+  A3: 2/15 resueltas -> ['rich_3894', 'rich_3905']
+  A4: 3/15 resueltas -> ['rich_3043', 'rich_3894', 'rich_3905']
+  flips A1<->A2: 2 ['rich_3043', 'rich_3278']
+  flips A1<->A3: 1 ['rich_3278']
+  flips A1<->A4: 2 ['rich_3043', 'rich_3278']
+  flips A2<->A3: 1 ['rich_3043']
+  flips A2<->A4: 0 []
+  flips A3<->A4: 1 ['rich_3043']
+conteos: [3, 3, 2, 3]; rango: 1
+
+== IC95 banda de score (envios.csv) ==
+columnas: dict_keys(['submission_id', 'date', 'condition', 'status', 'public_score', 'sha256_12', 'zip_filename'])
+  {'submission_id': 'sub-001', 'date': '2026-10-03', 'condition': 'A', 'status': 'prepared', 'public_score': '', 'sha256_12': 'bcc4bf4efd2b', 'zip_filename': 'a_kit_submission.zip'}
+  {'submission_id': 'sub-002', 'date': '2026-10-03', 'condition': 'A', 'status': 'scored', 'public_score': '0.06', 'sha256_12': 'd8a3e1d3558f', 'zip_filename': 'submission_a_ajustado.zip'}
+  {'submission_id': 'sub-003', 'date': '2026-10-04', 'condition': 'A', 'status': 'scored', 'public_score': '0.05', 'sha256_12': 'd8a3e1d3558f', 'zip_filename': 'submission_a_ajustado.zip'}
+  {'submission_id': 'sub-004', 'date': '2026-10-09', 'condition': 'K', 'status': 'prepared', 'public_score': '', 'sha256_12': '3346af0e9a92', 'zip_filename': 'submission_k_interfaz_limpia.zip'}
+  {'submission_id': 'sub-005', 'date': '2026-10-07', 'condition': 'I', 'status': 'scored', 'public_score': '0.08', 'sha256_12': '65a0216007e1', 'zip_filename': 'submission_i_razona.zip'}
+  {'submission_id': 'sub-006', 'date': '2026-10-07', 'condition': 'I', 'status': 'scored', 'public_score': '0.13', 'sha256_12': '65a0216007e1', 'zip_filename': 'submission_i_razona.zip'}
+  {'submission_id': 'sub-007', 'date': '2026-10-12', 'condition': 'A0', 'status': 'prepared', 'public_score': '', 'sha256_12': '01a6d82fc42f', 'zip_filename': 'submission_a0_sin_razonar.zip'}
+  {'submission_id': 'sub-008', 'date': '2026-10-12', 'condition': 'I', 'status': 'scored', 'public_score': '0.13', 'sha256_12': '65a0216007e1', 'zip_filename': 'submission_i_razona.zip'}
+  {'submission_id': 'sub-009', 'date': '2026-10-13', 'condition': 'C1', 'status': 'prepared', 'public_score': '', 'sha256_12': 'a038a38925d7', 'zip_filename': 'submission_r1_c1_tres_cambios_6min.zip'}
+  {'submission_id': 'sub-010', 'date': '2026-10-14', 'condition': 'C2', 'status': 'submitted', 'public_score': '', 'sha256_12': 'aa0750f0f47f', 'zip_filename': 'submission_r1_c2_edicion_temprana.zip'}
+  {'submission_id': 'sub-011', 'date': '2026-10-13', 'condition': 'C3', 'status': 'prepared', 'public_score': '', 'sha256_12': 'e655e942abce', 'zip_filename': 'submission_r1_c3_pensamiento_1536.zip'}
+  {'submission_id': 'sub-012', 'date': '2026-10-13', 'condition': 'C4', 'status': 'prepared', 'public_score': '', 'sha256_12': '8e7009dda5d9', 'zip_filename': 'submission_r1_c4_triaje.zip'}
+  {'submission_id': 'sub-013', 'date': '2026-10-14', 'condition': 'R018', 'status': 'prepared', 'public_score': '', 'sha256_12': '4ac5ac329aad', 'zip_filename': 'submission_receta_018_exacta.zip'}
+  {'submission_id': 'sub-014', 'date': '2026-10-14', 'condition': 'R018-sinWF', 'status': 'prepared', 'public_score': '', 'sha256_12': '085ce81ea63d', 'zip_filename': 'submission_receta_sin_write_file.zip'}
+  {'submission_id': 'sub-015', 'date': '2026-10-14', 'condition': 'P24', 'status': 'prepared', 'public_score': '', 'sha256_12': '1fd1c07332da', 'zip_filename': 'submission_publico_024_exacta.zip'}
+  {'submission_id': 'sub-016', 'date': '2026-10-14', 'condition': 'P24-sinWF', 'status': 'prepared', 'public_score': '', 'sha256_12': 'b1f904c816a0', 'zip_filename': 'submission_024_sin_write_file.zip'}
+  {'submission_id': 'sub-017', 'date': '2026-10-14', 'condition': 'P24-LoRA0', 'status': 'prepared', 'public_score': '', 'sha256_12': '409f58feb294', 'zip_filename': 'submission_024_lora_nulo.zip'}
+  {'submission_id': 'sub-018', 'date': '2026-10-16', 'condition': 'NAV', 'status': 'scored', 'public_score': '0.1', 'sha256_12': '648d312cd534', 'zip_filename': 'submission_nav_2026-10-16.zip'}
+  {'submission_id': 'sub-019', 'date': '2026-10-17', 'condition': 'NAV-V2', 'status': 'pending', 'public_score': '', 'sha256_12': 'c08e53279ed2', 'zip_filename': 'submission_nav_v2_2026-10-17.zip'}

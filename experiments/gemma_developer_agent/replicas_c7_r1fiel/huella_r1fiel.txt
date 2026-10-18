@@ -1,0 +1,16 @@
+# Registro de huella — brazo R1-FIEL (2026-10-17)
+
+| brazo | huella |
+|---|---|
+| condición 7 (réplicas; descarga de réplica 1 sin `adapters/`) | `0f52de0b84cb` |
+| R1-fiel v1 (`thinking_budget: 0` + `max_time_minutes: 6.0`, prompt idéntico) | `3a28671c4f60` (obsoleta 2026-10-18) |
+| **R1-fiel** (`thinking_budget: 0` + `max_time_minutes: 5.0`, prompt idéntico) | **`5e1638518420`** |
+
+Deltas puros respecto a la condición 7 (verificados archivo-a-archivo el 2026-10-17):
+
+- `configs/sampling.yaml`: `thinking_budget: 4096 → 0` (resto idéntico, `include_thoughts: true`).
+- `eval_config.yaml`: `max_time_minutes: 4.5 → 5.0` (resto idéntico). Reespecificada 2026-10-18 (antes 6.0): ver README.md para la evidencia.
+- `prompts/system.md`: byte-identico.
+
+Procedencia: propuesta del concilio C7 Fase 4 (vuelta 49 / concilio 51,
+`docs/c7_concilio_2026-10-17.md`); decisión de correrlo pendiente del dueño.

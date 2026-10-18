@@ -1,0 +1,33 @@
+trazas: 20
+M_intento  (>=1 llamada submit_patch): 7/20 -> ['rich_3130', 'rich_3278', 'rich_3296', 'rich_3535', 'rich_3675', 'rich_3894', 'rich_3905']
+M_ok       (>=1 submit_patch status ok): 7/20 -> ['rich_3130', 'rich_3278', 'rich_3296', 'rich_3535', 'rich_3675', 'rich_3894', 'rich_3905']
+M_resolucion (resuelta=True): 4/20 -> ['rich_3043', 'rich_3278', 'rich_3894', 'rich_3905']
+
+ submits por tarea (n_intento, n_ok):
+  rich_3043: (0, 0)  <- resuelta
+  rich_3061: (0, 0)
+  rich_3130: (1, 1)
+  rich_3180: (0, 0)
+  rich_3278: (2, 2)  <- resuelta
+  rich_3296: (1, 1)
+  rich_3470: (0, 0)
+  rich_3472: (0, 0)
+  rich_3486: (0, 0)
+  rich_3521: (0, 0)
+  rich_3535: (1, 1)
+  rich_3675: (1, 1)
+  rich_3772: (0, 0)
+  rich_3782: (0, 0)
+  rich_3894: (2, 2)  <- resuelta
+  rich_3905: (1, 1)  <- resuelta
+  rich_3938: (0, 0)
+  rich_3953: (0, 0)
+  rich_4076: (0, 0)
+  rich_4079: (0, 0)
+
+== rich_3043: cosecha del árbol ==
+  submit_patch en traza: 0 llamadas
+  log: ,{"stream_name":"stderr","time":5144.289433686,"data":"WARNING:swegemma.harness.agent_runner:Task rich_3043 agent timed out.\n"}
+  log: ,{"stream_name":"stderr","time":5144.28947812,"data":"WARNING:swegemma.harness.agent_runner:Task rich_3043 agent timed out.\n"}
+  log: ,{"stream_name":"stdout","time":5146.871969429,"data":"TAREA 18 rich_3043 resuelta 274.9\n"}
+  JSON: resuelta=True segundos_reloj=274.9 llamadas=23

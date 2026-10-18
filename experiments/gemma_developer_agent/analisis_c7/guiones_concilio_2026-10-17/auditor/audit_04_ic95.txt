@@ -1,0 +1,14 @@
+d8a3e1d3558f [0.06, 0.05]
+65a0216007e1 [0.08, 0.13, 0.13]
+648d312cd534 [0.1]
+grupos con reenvíos: {'d8a3e1d3558f': [0.06, 0.05], '65a0216007e1': [0.08, 0.13, 0.13]}
+n=5, k=2, SS_dentro=0.001717
+estimador doc  sqrt(SS/(n-1)) = 0.0207 -> IC95 (1.96*sd) = ±0.0406
+pooled clásico sqrt(SS/(n-k)) = 0.0239 -> ±0.0469 | IC95 de la media t(3)=3.182: ±0.0340
+incluyendo nav/base: grupos={'d8a3e1d3558f': 2, '65a0216007e1': 3, 'nav+base': 1} sd=0.0185 -> ±0.0363
+
+traducción a tareas (denominador 58): 1 tarea = 1/58 = 0.0172
+  Δ2 flips = 0.034 en score; ¿dentro de ±0.041? True
+  Δ3 flips = 0.052 en score; ¿dentro de ±0.041? False
+  Δ4 flips = 0.069 en score; ¿dentro de ±0.041? False
+  Δ5 flips = 0.086 en score; ¿dentro de ±0.041? False

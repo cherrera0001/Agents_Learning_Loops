@@ -1,0 +1,23 @@
+a) replica1 segundos_reloj: mediana 272.4 s | media 255.2 s
+   sorted: ['118.5', '122.5', '126.9', '148.1', '192.4', '263.1', '269.1', '272.1', '272.2', '272.4', '272.4', '274.4', '274.7', '274.9', '275.0', '275.0', '275.3', '275.5', '275.7', '573.7']
+
+b) cluster: timeouts del log vs no-timeouts (muro=True)
+   rich_3278  263.1 s sin-timeout resuelta=True
+   rich_3130  269.1 s sin-timeout resuelta=False
+   rich_3180  272.1 s timeout-log resuelta=False
+   rich_3521  272.2 s timeout-log resuelta=False
+   rich_3472  272.4 s timeout-log resuelta=False
+   rich_3782  272.4 s timeout-log resuelta=False
+   rich_4076  274.4 s timeout-log resuelta=False
+   rich_3953  274.7 s timeout-log resuelta=False
+   rich_3043  274.9 s timeout-log resuelta=True
+   rich_3938  275.0 s timeout-log resuelta=False
+   rich_3061  275.0 s timeout-log resuelta=False
+   rich_3470  275.3 s timeout-log resuelta=False
+   rich_4079  275.5 s timeout-log resuelta=False
+   rich_3486  275.7 s timeout-log resuelta=False
+   rich_3772  573.7 s timeout-log resuelta=False
+
+c) sensibilidad de banda 'incluyendo nav'
+   5 reenvíos: sd=0.0207 -> ±0.0406
+   +1 punto (nav): sd=0.0185 -> ±0.0363  <- solo diluye n; el punto no aporta varianza
