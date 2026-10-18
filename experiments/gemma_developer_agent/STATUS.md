@@ -272,6 +272,19 @@ se cambia nada.
    propio; re-medir nav@5.0 local el lunes antes de que un brazo lo supere; la predicción sellada
    quedó FUERA por arriba (apéndice A5 del análisis crítico).
 
+## Integración a main (2026-10-18 01:00 UTC)
+
+- **main = exp al día**: `origin/main` `ace792f` (merge del dueño: todo el trabajo de la campaña C7,
+  con el árbol **byte-idéntico** a `exp/kaggle-c7-replicates` `c58afd4`, verificado con diff). Conflicto
+  del merge solo en 3 archivos (`pyproject.toml` exclusión ruff del híbrido; `STATUS.md`;
+  `c7_baseline024_estudio.md`), resueltos a favor de exp. Suite verde sobre ese árbol: 3492 passed / 5 skipped.
+- **PR #231 cerrado por superación** (validado): su rama de 2026-10-14 conflictuaba en
+  `scripts/kaggle_preflight.py` porque el archivo evolucionó por completo en la campaña (24 controles,
+  simulación por variante, sha256 de ruedas); aplicarla hubiera devuelto el archivo a un estado de hace
+  4 días. Si los controles de la sonda G3 se quieren, reabrir como issue contra el archivo actual.
+- Desviación declarada: el flujo normal del repo manda PR + revisor independiente; este merge directo a
+  main fue **orden expresa del dueño** el 2026-10-18.
+
 ## Auditoría de la página de submissions (2026-10-18 00:20 UTC)
 
 - **Reconciliación completa**: la plataforma tiene **8 envíos completados** — refs 57296502, 57274153,
