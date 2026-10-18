@@ -1,0 +1,17 @@
+# Registro de huella — brazo HÍBRIDO (2026-10-18)
+
+| brazo | huella |
+|---|---|
+| condición 7 (réplicas; descarga de réplica 1 sin `adapters/`) | `0f52de0b84cb` |
+| sub-019 nav-v2 (condición 7 + prompt navegación + 5.0 min) | `355f4954f50c` |
+| R1-fiel (`thinking_budget 0` + 5.0 min, prompt condición 7) | `5e1638518420` |
+| **HÍBRIDO** (kit nav-v2 con eval público 240 s / 28 llamadas / 8.0 min / 80 turnos) | **`0fad98b7fe4d`** |
+
+Deltas verificados archivo-a-archivo el 2026-10-18:
+
+- vs `data/envios/nav_kit_v2/` (sub-019): **solo** `eval_config.yaml`.
+- vs la condición 7: `eval_config.yaml` + `prompts/system.md` (dos deltas declarados).
+
+Armar ×5 el 2026-10-18 (huella estable); preflight 24/24. Procedencia: decisión (b) de
+`docs/c7_baseline024_estudio.md`, pre-construido 0 GPU para el paso 0.5 del lunes. **No se ha
+subido ni corrido nada**; las tres gates del README aplican antes de cualquier envío.
