@@ -419,8 +419,8 @@ dominical quedó **actualizado el 2026-10-18 00:10 UTC** para usar el zip ya ver
 | Cron | Id | Estado |
 |---|---|---|
 | 2026-10-17 21:04 -03 (00:04 UTC): leer la API de límites y anotar en §Reglas b si el reset es a las 00:00 UTC | `2dc96c0e` | **ejecutado**: reset a las 00:00 UTC confirmado (`num_allowed_now=1`, `num_today=0`); el slot del domingo está disponible desde las 00:00 UTC, no hace falta esperar a las 12:00 UTC |
-| Domingo 09:00 -03 (12:00 UTC): envío condicionado sub-020 (R1-fiel) con 4 condiciones + zip pre-verificado | `01M55X4Z0TYD7392AHVP4AVSV9` (actualizado 00:10 UTC) | **activo** — el ÚNICO camino que envía; nada más envía |
-| Lunes 08:00 -03 (11:00 UTC): despertador del runbook con conciencia de sub-020, paso 0.5 (híbrido) y 12B | `01M55WZC45XCQA2QWV8T1TX3KB` | **activo** |
+| Domingo 09:00 -03 (12:00 UTC): envío condicionado sub-020 (R1-fiel) con 4 condiciones + zip pre-verificado | `01M565FDVDPWM2TSH1033FX23N` (re-creado 00:10 UTC) | **activo** — el ÚNICO camino que envía; nada más envía |
+| Lunes 08:00 -03 (11:00 UTC): despertador del runbook con conciencia de sub-020, paso 0.5 (híbrido) y 12B | `01M565GSZBDYJ9QWVEAH77BT29` (re-creado 00:10 UTC) | **activo** |
 
 **Lo que el dueño decide sobre el domingo.** El envío de R1-fiel ya no es automático. Si decide
 hacerlo (por la UI o por el CLI, como con sub-018/019), las cuatro condiciones reconstruidas del plan
