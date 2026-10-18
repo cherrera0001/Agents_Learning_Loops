@@ -272,6 +272,23 @@ se cambia nada.
    propio; re-medir nav@5.0 local el lunes antes de que un brazo lo supere; la predicción sellada
    quedó FUERA por arriba (apéndice A5 del análisis crítico).
 
+## Auditoría de la página de submissions (2026-10-18 00:20 UTC)
+
+- **Reconciliación completa**: la plataforma tiene **8 envíos completados** — refs 57296502, 57274153,
+  57160374, 57098570, 56916129, 56895202, 56830336, 56808559 = sub-019, sub-018, sub-010, sub-008,
+  sub-006, sub-005, sub-003, sub-002. Esto **resuelve el `num_total=8`** de la API de límites
+  (antes NO VERIFICADO): cuenta los envíos completados en plataforma; los otros 11 del registry
+  están `prepared` (nunca enviados). Sin envíos huérfanos ni faltantes.
+- **Descripciones**: solo sub-018 y sub-019 llevan método + huella + enlace al repo (requisito de
+  reproducibilidad cubierto por el mejor envío). Los 6 envíos más viejos tienen notas cortas sin
+  enlace. **Las descripciones NO se pueden editar a posteriori**: el SDK del CLI no expone ningún
+  endpoint de actualización de envío (solo `update_competition_page`/`update_competition_settings`,
+  que son de la competencia, no del envío). Nada que «completar» ahí; queda registrado.
+- **Selecciones finales**: 0/2, sin tocar (protocolo §Fase F: revisar con cada score ≥0.17 y el
+  30-11 23:59 UTC). La mecánica de selección es manual en la UI; el cron del lunes lo recuerda.
+- **Acción del dueño en esa página hoy**: ninguna obligatoria. La página queda como tablero de
+  lectura; todo lo demás (registro, predicciones, huellas) vive en el repo.
+
 ## Reglas del concurso — verificación 2026-10-18 (respuesta a «¿hay alguna regla que desconozco?»)
 
 **Mecánica del cupo (Fase B, 2026-10-18)**: 1 envío/día **VERIFICADO** en vivo («0 submissions

@@ -1,0 +1,61 @@
+{
+  "seq": 103,
+  "id": "fin-de-semana-c7-2026-10-18",
+  "goal": "Fases B-F del plan del dueño sobre el cuarto log: verificar reglas del concurso con lectura autenticada del foro, estudiar los notebooks públicos «0.24», construir el brazo 12B, completar el gold sobre 129 snapshots, corregir el preflight por variante y auditar la página de submissions",
+  "ref": "plan-del-dueno-log-4",
+  "steps": [
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Lectura del foro con la sesión autenticada (analisis_c7/leer_foro_kaggle.py; el endpoint genérico de discusiones da 403, el de competencia funciona): 220 temas + 29 hilos clave + 10 páginas oficiales. Las 12 h son un presupuesto global (sin cambio); la regla «~5,5 min/tarea» es aritmética de un participante, no del host (REFUTADA como regla); «Kaggle Error» no consume envío; sin tope total; hasta 2 finales (combinación no escrita); variantes distintas entre envíos permitidas; el set oculto pasa gold al 100%"
+    },
+    {
+      "action": "analyze_results",
+      "success": true,
+      "note": "Estudio estructural de 4 notebooks públicos («0.24», Apex, Caveman 0.20, Budget-Fit): ningún autor tiene 0.24 en el LB (0.18-0.20); la receta pública es 8 min/28 llamadas/240 s/un agente; decisión (b) híbrido nav-v2 + eval público con 3 gates pre-registradas (docs/c7_baseline024_estudio.md). Hallazgo colateral por sha256: R1-fiel NO es A/B limpio vs sub-019 (prompt distinto)"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "Gold-patch sobre los 129 snapshots construidos: 77 medibles, 52 gold-fallan (de campo, no del scorer). Brazo 12B construido (huella adb3004b2f76, override vLLM del host, armar x5, preflight 24/24) sin correr"
+    },
+    {
+      "action": "write_code",
+      "success": true,
+      "note": "scripts/kaggle_preflight.py: la estructura simulada fijaba el 31B y hacía fallar la guardia de cualquier otra variante; ahora lee la variante de model_sources (modelo_de_metadatos) + tests/test_kaggle_preflight_modelo.py"
+    },
+    {
+      "action": "write_code",
+      "success": false,
+      "error": "El clasificador de modo automático de la sesión paralela denegó dos veces la creación de crons que envían a Kaggle (envío dominical y reintento); en la sesión Kimi los crons correspondientes seguían vivos y fueron re-creados con el zip pre-verificado — doble estado hasta reconciliar"
+    },
+    {
+      "action": "update_docs",
+      "success": true,
+      "note": "STATUS §Reglas Fase B (a-f con fuentes y fechas), auditoría de submissions (num_total=8 resuelto: envíos completados en plataforma; descripciones no editables), borrador del Paper Track con solo cifras verificadas, manuscrito §corregido (5,5 min refutada; R1-fiel no es A/B limpio)"
+    }
+  ],
+  "lessons": [
+    "Verificar una regla citada de memoria vale más que diseñar contra ella: la «regla de 5,5 min» gobernó una reespecificación entera y era aritmética de un participante («our chosen budget, not a competition rule»)",
+    "Dos sesiones de agentes en la misma máquina sin tablero compartido producen estados contradictorios (crons 'muertos' que estaban vivos; 'nada envía' con un envío programado): el STATUS es el tablero; reconciliarlo es tarea de cada cierre",
+    "El título de un notebook público no es evidencia: el «0.24» de tres notebooks no existe en el leaderboard de sus autores; contrastar siempre contra el CSV oficial antes de derivar decisiones",
+    "El SDK del CLI de Kaggle no expone edición de envíos: lo que se envía con su descripción se queda así; la reproducibilidad hay que meterla en la descripción ANTES de submit"
+  ],
+  "estimate": {
+    "version": 1,
+    "date": "2026-10-18",
+    "size": "M",
+    "points": 3,
+    "uncertainty": 2,
+    "risk": 2,
+    "planned_model": "Kimi Code + Claude Code (dos sesiones)",
+    "planned_effort": "high"
+  },
+  "outcome": {
+    "used_model": "Kimi Code + Claude Code",
+    "model_source": "self-reported",
+    "escalated": false,
+    "estimate_revisions": 0,
+    "prs": 0
+  }
+}
