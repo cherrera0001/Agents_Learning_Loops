@@ -67,6 +67,8 @@ extend-exclude = [
     "experiments/gemma_developer_agent/replicas_c7_r1fiel/notebook_c7_r1fiel.ipynb",
     # Generado por replicas_c7_12b/armar_notebook_12b.py (brazo 12B, variante de modelo).
     "experiments/gemma_developer_agent/replicas_c7_12b/notebook_c7_12b.ipynb",
+    # Generado por replicas_c7_hibrido/armar_notebook_hibrido.py (brazo híbrido, decisión (b)).
+    "experiments/gemma_developer_agent/replicas_c7_hibrido/notebook_c7_hibrido.ipynb",
 ]
 
 [tool.ruff.lint]

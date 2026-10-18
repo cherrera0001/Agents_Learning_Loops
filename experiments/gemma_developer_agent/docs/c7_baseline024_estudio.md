@@ -138,8 +138,9 @@ divide por dos las resueltas (23 vs 48); además R1-fiel **no es un A/B limpio c
 
 **Decisión: (b), como brazo adicional del lunes con gate de envelope, sin abandonar (c).** Orden
 del lunes: réplicas 2-3 de A (banda de ruido) → **híbrido (b) local sobre las 20 rich** → brazos
-intra-familia. (b) se construye con 0 GPU (`replicas_c7_hibrido/`, pendiente: no construido en esta
-sesión) y solo pasa a candidato de envío si cumple las tres gates pre-registradas:
+intra-familia. (b) quedó **pre-construido el 2026-10-18** en `replicas_c7_hibrido/` (huella
+`0fad98b7fe4d`, armar ×5 sin deriva, preflight 24/24, delta puro verificado: único diff vs el kit
+nav-v2 es `eval_config.yaml`); el lunes solo hay que correrlo. Las tres gates pre-registradas:
 
 1. resuelve **≥ 6/20** (réplica 1 de A: 4/20; banda de ruido pendiente de réplicas 2-3; techo
    medible 13/20);
